@@ -18,6 +18,7 @@
 using detail::cdouble;
 using detail::cfloat;
 using detail::intl;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -51,6 +52,7 @@ af_err af_where(af_array* idx, const af_array in) {
             case u64: res = where<uintl>(in); break;
             case s16: res = where<short>(in); break;
             case u16: res = where<ushort>(in); break;
+            case s8: res = where<schar>(in); break;
             case u8: res = where<uchar>(in); break;
             case b8: res = where<char>(in); break;
             default: TYPE_ERROR(1, type);

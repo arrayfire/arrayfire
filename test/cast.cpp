@@ -52,6 +52,7 @@ void cast_test() {
     REAL_TO_TESTS(Ti, char);     \
     REAL_TO_TESTS(Ti, int);      \
     REAL_TO_TESTS(Ti, unsigned); \
+    REAL_TO_TESTS(Ti, schar);    \
     REAL_TO_TESTS(Ti, uchar);    \
     REAL_TO_TESTS(Ti, intl);     \
     REAL_TO_TESTS(Ti, uintl);    \
@@ -67,6 +68,7 @@ REAL_TEST_INVOKE(double)
 REAL_TEST_INVOKE(char)
 REAL_TEST_INVOKE(int)
 REAL_TEST_INVOKE(unsigned)
+REAL_TEST_INVOKE(schar)
 REAL_TEST_INVOKE(uchar)
 REAL_TEST_INVOKE(intl)
 REAL_TEST_INVOKE(uintl)

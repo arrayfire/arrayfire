@@ -128,6 +128,7 @@ INSTANTIATE(cfloat)
 INSTANTIATE(cdouble)
 INSTANTIATE(int)
 INSTANTIATE(uint)
+INSTANTIATE(schar)
 INSTANTIATE(uchar)
 INSTANTIATE(char)
 INSTANTIATE(intl)
@@ -157,6 +158,8 @@ INSTANTIATE(half)
                                           Array<SRC_T> const &src);   \
     template void copyArray<SRC_T, ushort>(Array<ushort> & dst,       \
                                            Array<SRC_T> const &src);  \
+    template void copyArray<SRC_T, schar>(Array<schar> & dst,         \
+                                          Array<SRC_T> const &src);   \
     template void copyArray<SRC_T, uchar>(Array<uchar> & dst,         \
                                           Array<SRC_T> const &src);   \
     template void copyArray<SRC_T, char>(Array<char> & dst,           \
@@ -170,6 +173,7 @@ INSTANTIATE_COPY_ARRAY(int)
 INSTANTIATE_COPY_ARRAY(uint)
 INSTANTIATE_COPY_ARRAY(intl)
 INSTANTIATE_COPY_ARRAY(uintl)
+INSTANTIATE_COPY_ARRAY(schar)
 INSTANTIATE_COPY_ARRAY(uchar)
 INSTANTIATE_COPY_ARRAY(char)
 INSTANTIATE_COPY_ARRAY(short)
@@ -201,6 +205,7 @@ INSTANTIATE_GETSCALAR(cfloat)
 INSTANTIATE_GETSCALAR(cdouble)
 INSTANTIATE_GETSCALAR(int)
 INSTANTIATE_GETSCALAR(uint)
+INSTANTIATE_GETSCALAR(schar)
 INSTANTIATE_GETSCALAR(uchar)
 INSTANTIATE_GETSCALAR(char)
 INSTANTIATE_GETSCALAR(intl)

@@ -71,7 +71,7 @@ static af_err readImage_t(af_array* rImage, const uchar* pSrcLine,
             if (fi_color == 1) {
                 pDst0[indx] = *(src + (x * step));
             } else if (fi_color >= 3) {
-                if (static_cast<af_dtype>(af::dtype_traits<T>::af_type) == u8) {
+                if (static_cast<af_dtype>(af::dtype_traits<T>::af_type) == u8) { // FIXME s8?
                     pDst0[indx] = *(src + (x * step + FI_RGBA_RED));
                     pDst1[indx] = *(src + (x * step + FI_RGBA_GREEN));
                     pDst2[indx] = *(src + (x * step + FI_RGBA_BLUE));
@@ -102,6 +102,7 @@ static af_err readImage_t(af_array* rImage, const uchar* pSrcLine,
 }
 
 FREE_IMAGE_TYPE getFIT(FI_CHANNELS channels, af_dtype type) {
+    // FIXME s8?
     if (channels == AFFI_GRAY) {
         if (type == u8) { return FIT_BITMAP; }
         if (type == u16) {
@@ -364,7 +365,7 @@ static void save_t(T* pDstLine, const af_array in, const dim4& dims,
             if (channels == 1) {
                 *(pDstLine + x * step) = pSrc0[indx];  // r -> 0
             } else if (channels >= 3) {
-                if (static_cast<af_dtype>(af::dtype_traits<T>::af_type) == u8) {
+                if (static_cast<af_dtype>(af::dtype_traits<T>::af_type) == u8) { // FIXME s8?
                     *(pDstLine + x * step + FI_RGBA_RED) =
                         pSrc0[indx];  // r -> 0
                     *(pDstLine + x * step + FI_RGBA_GREEN) =

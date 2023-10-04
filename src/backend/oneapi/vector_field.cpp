@@ -31,6 +31,7 @@ INSTANTIATE(int)
 INSTANTIATE(uint)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
+INSTANTIATE(schar)
 INSTANTIATE(uchar)
 
 }  // namespace oneapi

@@ -31,7 +31,8 @@ class CorrelationCoefficient : public ::testing::Test {
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, double, int, uint, intl, uintl, char, uchar>
+typedef ::testing::Types<float, double, int, uint, intl, uintl, char, schar,
+                         uchar>
     TestTypes;
 
 // register the type list

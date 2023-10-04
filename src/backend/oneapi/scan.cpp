@@ -45,6 +45,7 @@ Array<To> scan(const Array<Ti>& in, const int dim, bool inclusiveScan) {
     INSTANTIATE_SCAN(ROp, intl, intl)       \
     INSTANTIATE_SCAN(ROp, uintl, uintl)     \
     INSTANTIATE_SCAN(ROp, char, uint)       \
+    INSTANTIATE_SCAN(ROp, schar, int)       \
     INSTANTIATE_SCAN(ROp, uchar, uint)      \
     INSTANTIATE_SCAN(ROp, short, int)       \
     INSTANTIATE_SCAN(ROp, ushort, uint)

@@ -30,6 +30,7 @@ using detail::getScalar;
 using detail::imag;
 using detail::intl;
 using detail::real;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -107,6 +108,7 @@ static af_err reduce_type(af_array *out, const af_array in, const int dim) {
             case s16: res = reduce<op, short, To>(in, dim); break;
             case b8: res = reduce<op, char, To>(in, dim); break;
             case u8: res = reduce<op, uchar, To>(in, dim); break;
+            case s8: res = reduce<op, schar, To>(in, dim); break;
             case f16: res = reduce<op, half, To>(in, dim); break;
             default: TYPE_ERROR(1, type);
         }
@@ -171,6 +173,9 @@ static af_err reduce_by_key_type(af_array *keys_out, af_array *vals_out,
             case u8:
                 reduce_key<op, uchar, To>(keys_out, vals_out, keys, vals, dim);
                 break;
+            case s8:
+                reduce_key<op, schar, To>(keys_out, vals_out, keys, vals, dim);
+                break;
             case f16:
                 reduce_key<op, half, To>(keys_out, vals_out, keys, vals, dim);
                 break;
@@ -210,6 +215,7 @@ static af_err reduce_common(af_array *out, const af_array in, const int dim) {
             case s16: res = reduce<op, short, short>(in, dim); break;
             case b8: res = reduce<op, char, char>(in, dim); break;
             case u8: res = reduce<op, uchar, uchar>(in, dim); break;
+            case s8: res = reduce<op, schar, schar>(in, dim); break;
             case f16: res = reduce<op, half, half>(in, dim); break;
             default: TYPE_ERROR(1, type);
         }
@@ -281,6 +287,10 @@ static af_err reduce_by_key_common(af_array *keys_out, af_array *vals_out,
                 reduce_key<op, uchar, uchar>(keys_out, vals_out, keys, vals,
                                              dim);
                 break;
+            case s8:
+                reduce_key<op, schar, schar>(keys_out, vals_out, keys, vals,
+                                             dim);
+                break;
             case f16:
                 reduce_key<op, half, half>(keys_out, vals_out, keys, vals, dim);
                 break;
@@ -342,6 +352,9 @@ static af_err reduce_promote(af_array *out, const af_array in, const int dim,
                 break;
             case u8:
                 res = reduce<op, uchar, uint>(in, dim, change_nan, nanval);
+                break;
+            case s8:
+                res = reduce<op, schar, int>(in, dim, change_nan, nanval);
                 break;
             case b8: {
                 if (op == af_mul_t) {
@@ -424,6 +437,10 @@ static af_err reduce_promote_by_key(af_array *keys_out, af_array *vals_out,
             case u8:
                 reduce_key<op, uchar, uint>(keys_out, vals_out, keys, vals, dim,
                                             change_nan, nanval);
+                break;
+            case s8:
+                reduce_key<op, schar, int>(keys_out, vals_out, keys, vals, dim,
+                                           change_nan, nanval);
                 break;
             case b8:
                 reduce_key<af_notzero_t, char, uint>(
@@ -575,6 +592,7 @@ static af_err reduce_all_type(double *real, double *imag, const af_array in) {
             case s16: *real = reduce_all<op, short,   To>(in); break;
             case b8:  *real = reduce_all<op, char,    To>(in); break;
             case u8:  *real = reduce_all<op, uchar,   To>(in); break;
+            case s8:  *real = reduce_all<op, schar,   To>(in); break;
             case f16: *real = reduce_all<op, half,    To>(in); break;
             // clang-format on
             default: TYPE_ERROR(1, type);
@@ -606,6 +624,7 @@ static af_err reduce_all_type_array(af_array *out, const af_array in) {
             case s16: res = reduce_all_array<op, short,   To>(in); break;
             case b8:  res = reduce_all_array<op, char,    To>(in); break;
             case u8:  res = reduce_all_array<op, uchar,   To>(in); break;
+            case s8:  res = reduce_all_array<op, schar,   To>(in); break;
             case f16: res = reduce_all_array<op, half,    To>(in); break;
             // clang-format on
             default: TYPE_ERROR(1, type);
@@ -644,6 +663,7 @@ static af_err reduce_all_common(double *real_val, double *imag_val,
             case s16: *real_val = reduce_all<op, short,  short>(in); break;
             case b8:  *real_val = reduce_all<op, char,   char>(in); break;
             case u8:  *real_val = reduce_all<op, uchar,  uchar>(in); break;
+            case s8:  *real_val = reduce_all<op, schar,  schar>(in); break;
             case f16: *real_val = reduce_all<op, half,   half>(in); break;
             // clang-format on
             case c32:
@@ -689,6 +709,7 @@ static af_err reduce_all_common_array(af_array *out, const af_array in) {
             case s16: res = reduce_all_array<op, short,  short>(in); break;
             case b8:  res = reduce_all_array<op, char,   char>(in); break;
             case u8:  res = reduce_all_array<op, uchar,  uchar>(in); break;
+            case s8:  res = reduce_all_array<op, schar,  schar>(in); break;
             case f16: res = reduce_all_array<op, half,   half>(in); break;
             // clang-format on
             case c32: res = reduce_all_array<op, cfloat, cfloat>(in); break;
@@ -728,6 +749,7 @@ static af_err reduce_all_promote(double *real_val, double *imag_val,
             case u16: *real_val = reduce_all<op, ushort,   uint>(in, change_nan, nanval); break;
             case s16: *real_val = reduce_all<op, short,     int>(in, change_nan, nanval); break;
             case u8:  *real_val = reduce_all<op, uchar,    uint>(in, change_nan, nanval); break;
+            case s8:  *real_val = reduce_all<op, schar,     int>(in, change_nan, nanval); break;
             // clang-format on
             case b8: {
                 if (op == af_mul_t) {
@@ -812,6 +834,9 @@ static af_err reduce_all_promote_array(af_array *out, const af_array in,
                 break;
             case u8:
                 res = reduce_all_array<op, uchar, uint>(in, change_nan, nanval);
+                break;
+            case s8:
+                res = reduce_all_array<op, schar, int>(in, change_nan, nanval);
                 break;
             case b8: {
                 if (op == af_mul_t) {
@@ -953,6 +978,7 @@ static af_err ireduce_common(af_array *val, af_array *idx, const af_array in,
             case s16: ireduce<op, short>(&res, &loc, in, dim); break;
             case b8: ireduce<op, char>(&res, &loc, in, dim); break;
             case u8: ireduce<op, uchar>(&res, &loc, in, dim); break;
+            case s8: ireduce<op, schar>(&res, &loc, in, dim); break;
             case f16: ireduce<op, half>(&res, &loc, in, dim); break;
             default: TYPE_ERROR(1, type);
         }
@@ -1028,6 +1054,7 @@ static af_err rreduce_common(af_array *val, af_array *idx, const af_array in,
                 break;
             case b8: rreduce<op, char>(&res, &loc, in, dim, ragged_len); break;
             case u8: rreduce<op, uchar>(&res, &loc, in, dim, ragged_len); break;
+            case s8: rreduce<op, schar>(&res, &loc, in, dim, ragged_len); break;
             case f16: rreduce<op, half>(&res, &loc, in, dim, ragged_len); break;
             default: TYPE_ERROR(2, type);
         }
@@ -1086,6 +1113,7 @@ static af_err ireduce_all_common(double *real_val, double *imag_val,
                 break;
             case b8: *real_val = ireduce_all<op, char, double>(loc, in); break;
             case u8: *real_val = ireduce_all<op, uchar, double>(loc, in); break;
+            case s8: *real_val = ireduce_all<op, schar, double>(loc, in); break;
 
             case c32:
                 cfval = ireduce_all<op, cfloat>(loc, in);

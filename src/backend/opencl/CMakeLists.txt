@@ -454,6 +454,7 @@ target_sources(afopencl
     kernel/convolve/conv2_f32.cpp
     kernel/convolve/conv2_f64.cpp
     kernel/convolve/conv2_impl.hpp
+    kernel/convolve/conv2_s8.cpp
     kernel/convolve/conv2_s16.cpp
     kernel/convolve/conv2_s32.cpp
     kernel/convolve/conv2_s64.cpp

@@ -18,6 +18,7 @@
 #include <af/signal.h>
 
 using af::dim4;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::ushort;
@@ -64,6 +65,7 @@ af_err af_medfilt1(af_array *out, const af_array in, const dim_t wind_width,
             case u16:
                 output = medfilt1<ushort>(in, wind_width, edge_pad);
                 break;
+            case s8: output = medfilt1<schar>(in, wind_width, edge_pad); break;
             case u8: output = medfilt1<uchar>(in, wind_width, edge_pad); break;
             default: TYPE_ERROR(1, type);
         }
@@ -128,6 +130,9 @@ af_err af_medfilt2(af_array *out, const af_array in, const dim_t wind_length,
             case u16:
                 output =
                     medfilt2<ushort>(in, wind_length, wind_width, edge_pad);
+                break;
+            case s8:
+                output = medfilt2<schar>(in, wind_length, wind_width, edge_pad);
                 break;
             case u8:
                 output = medfilt2<uchar>(in, wind_length, wind_width, edge_pad);

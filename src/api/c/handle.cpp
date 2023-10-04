@@ -21,6 +21,7 @@ using detail::cdouble;
 using detail::cfloat;
 using detail::createDeviceDataArray;
 using detail::intl;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -46,6 +47,7 @@ af_array retain(const af_array in) {
             case f64: return retainHandle<double>(in);
             case s32: return retainHandle<int>(in);
             case u32: return retainHandle<uint>(in);
+            case s8: return retainHandle<schar>(in);
             case u8: return retainHandle<uchar>(in);
             case c32: return retainHandle<detail::cfloat>(in);
             case c64: return retainHandle<detail::cdouble>(in);
@@ -70,6 +72,7 @@ af_array createHandle(const dim4 &d, af_dtype dtype) {
         case b8:  return createHandle<char   >(d);
         case s32: return createHandle<int    >(d);
         case u32: return createHandle<uint   >(d);
+        case s8:  return createHandle<schar  >(d);
         case u8:  return createHandle<uchar  >(d);
         case s64: return createHandle<intl   >(d);
         case u64: return createHandle<uintl  >(d);
@@ -91,6 +94,7 @@ af_array createHandleFromValue(const dim4 &d, double val, af_dtype dtype) {
         case b8:  return createHandleFromValue<char   >(d, val);
         case s32: return createHandleFromValue<int    >(d, val);
         case u32: return createHandleFromValue<uint   >(d, val);
+        case s8:  return createHandleFromValue<schar  >(d, val);
         case u8:  return createHandleFromValue<uchar  >(d, val);
         case s64: return createHandleFromValue<intl   >(d, val);
         case u64: return createHandleFromValue<uintl  >(d, val);
@@ -113,6 +117,7 @@ af_array createHandleFromDeviceData(const af::dim4 &d, af_dtype dtype,
         case b8:  return getHandle(createDeviceDataArray<char   >(d, data, false));
         case s32: return getHandle(createDeviceDataArray<int    >(d, data, false));
         case u32: return getHandle(createDeviceDataArray<uint   >(d, data, false));
+        case s8:  return getHandle(createDeviceDataArray<schar  >(d, data, false));
         case u8:  return getHandle(createDeviceDataArray<uchar  >(d, data, false));
         case s64: return getHandle(createDeviceDataArray<intl   >(d, data, false));
         case u64: return getHandle(createDeviceDataArray<uintl  >(d, data, false));
@@ -182,5 +187,6 @@ INSTANTIATE(char);
 INSTANTIATE(short);
 INSTANTIATE(ushort);
 INSTANTIATE(half);
+INSTANTIATE(schar);
 
 }  // namespace arrayfire

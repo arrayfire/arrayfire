@@ -11,7 +11,7 @@
 
 // This file instantiates sort_by_key as separate object files from CMake
 // The 3 lines below are read by CMake to determenine the instantiations
-// SBK_TYPES:float double int uint intl uintl short ushort char uchar
+// SBK_TYPES:float double int uint intl uintl short ushort char schar uchar
 // SBK_INSTS:0 1
 
 namespace arrayfire {

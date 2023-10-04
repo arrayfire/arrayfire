@@ -82,6 +82,7 @@ namespace af
             array_proxy& operator OP(const unsigned &a);            \
             array_proxy& operator OP(const bool &a);                \
             array_proxy& operator OP(const char &a);                \
+            array_proxy& operator OP(const signed char &a);         \
             array_proxy& operator OP(const unsigned char &a);       \
             array_proxy& operator OP(const long  &a);               \
             array_proxy& operator OP(const unsigned long &a);       \
@@ -762,8 +763,8 @@ namespace af
         bool isfloating() const;
 
         /**
-           \brief Returns true if the array type is \ref u8, \ref b8, \ref s32
-                  \ref u32, \ref s64, \ref u64, \ref s16, \ref u16
+           \brief Returns true if the array type is \ref s8, \ref u8, \ref b8,
+                  \ref s32, \ref u32, \ref s64, \ref u64, \ref s16, \ref u16
         */
         bool isinteger() const;
 
@@ -953,21 +954,22 @@ namespace af
         /// and then back to f64, then the cast to f32 will be skipped and that
         /// operation will *NOT* be performed by ArrayFire. The following table
         /// shows which casts will be optimized out. outer -> inner -> outer
-        /// | inner-> | f32 | f64 | c32 | c64 | s32 | u32 | u8 | b8 | s64 | u64 | s16 | u16 | f16 |
-        /// |---------|-----|-----|-----|-----|-----|-----|----|----|-----|-----|-----|-----|-----|
-        /// | f32     | x   | x   | x   | x   |     |     |    |    |     |     |     |     | x   |
-        /// | f64     | x   | x   | x   | x   |     |     |    |    |     |     |     |     | x   |
-        /// | c32     | x   | x   | x   | x   |     |     |    |    |     |     |     |     | x   |
-        /// | c64     | x   | x   | x   | x   |     |     |    |    |     |     |     |     | x   |
-        /// | s32     | x   | x   | x   | x   | x   | x   |    |    | x   | x   |     |     | x   |
-        /// | u32     | x   | x   | x   | x   | x   | x   |    |    | x   | x   |     |     | x   |
-        /// | u8      | x   | x   | x   | x   | x   | x   | x  | x  | x   | x   | x   | x   | x   |
-        /// | b8      | x   | x   | x   | x   | x   | x   | x  | x  | x   | x   | x   | x   | x   |
-        /// | s64     | x   | x   | x   | x   |     |     |    |    | x   | x   |     |     | x   |
-        /// | u64     | x   | x   | x   | x   |     |     |    |    | x   | x   |     |     | x   |
-        /// | s16     | x   | x   | x   | x   | x   | x   |    |    | x   | x   | x   | x   | x   |
-        /// | u16     | x   | x   | x   | x   | x   | x   |    |    | x   | x   | x   | x   | x   |
-        /// | f16     | x   | x   | x   | x   |     |     |    |    |     |     |     |     | x   |
+        /// | inner-> | f32 | f64 | c32 | c64 | s32 | u32 | s8 | u8 | b8 | s64 | u64 | s16 | u16 | f16 |
+        /// |---------|-----|-----|-----|-----|-----|-----|----|----|----|-----|-----|-----|-----|-----|
+        /// | f32     | x   | x   | x   | x   |     |     |    |    |    |     |     |     |     | x   |
+        /// | f64     | x   | x   | x   | x   |     |     |    |    |    |     |     |     |     | x   |
+        /// | c32     | x   | x   | x   | x   |     |     |    |    |    |     |     |     |     | x   |
+        /// | c64     | x   | x   | x   | x   |     |     |    |    |    |     |     |     |     | x   |
+        /// | s32     | x   | x   | x   | x   | x   | x   |    |    |    | x   | x   |     |     | x   |
+        /// | u32     | x   | x   | x   | x   | x   | x   |    |    |    | x   | x   |     |     | x   |
+        /// | s8      | x   | x   | x   | x   | x   | x   | x  | x  | x  | x   | x   | x   | x   | x   |
+        /// | u8      | x   | x   | x   | x   | x   | x   | x  | x  | x  | x   | x   | x   | x   | x   |
+        /// | b8      | x   | x   | x   | x   | x   | x   | x  | x  | x  | x   | x   | x   | x   | x   |
+        /// | s64     | x   | x   | x   | x   |     |     |    |    |    | x   | x   |     |     | x   |
+        /// | u64     | x   | x   | x   | x   |     |     |    |    |    | x   | x   |     |     | x   |
+        /// | s16     | x   | x   | x   | x   | x   | x   |    |    |    | x   | x   | x   | x   | x   |
+        /// | u16     | x   | x   | x   | x   | x   | x   |    |    |    | x   | x   | x   | x   | x   |
+        /// | f16     | x   | x   | x   | x   |     |     |    |    |    |     |     |     |     | x   |
         /// If you want to avoid this behavior use af_eval after the first cast
         /// operation. This will ensure that the cast operation is performed on
         /// the af::array
@@ -998,6 +1000,7 @@ namespace af
         array& OP2(const unsigned &val);            /**< \copydoc OP2##(const array &) */ \
         array& OP2(const bool &val);                /**< \copydoc OP2##(const array &) */ \
         array& OP2(const char &val);                /**< \copydoc OP2##(const array &) */ \
+        array& OP2(const signed char &val);         /**< \copydoc OP2##(const array &) */ \
         array& OP2(const unsigned char &val);       /**< \copydoc OP2##(const array &) */ \
         array& OP2(const long  &val);               /**< \copydoc OP2##(const array &) */ \
         array& OP2(const unsigned long &val);       /**< \copydoc OP2##(const array &) */ \
@@ -1144,6 +1147,7 @@ namespace af
     AFAPI array OP (const int& lhs, const array& rhs);                /**< \copydoc OP##(const array&, const array&) */ \
     AFAPI array OP (const unsigned& lhs, const array& rhs);           /**< \copydoc OP##(const array&, const array&) */ \
     AFAPI array OP (const char& lhs, const array& rhs);               /**< \copydoc OP##(const array&, const array&) */ \
+    AFAPI array OP (const signed char& lhs, const array& rhs);        /**< \copydoc OP##(const array&, const array&) */ \
     AFAPI array OP (const unsigned char& lhs, const array& rhs);      /**< \copydoc OP##(const array&, const array&) */ \
     AFAPI array OP (const long& lhs, const array& rhs);               /**< \copydoc OP##(const array&, const array&) */ \
     AFAPI array OP (const unsigned long& lhs, const array& rhs);      /**< \copydoc OP##(const array&, const array&) */ \
@@ -1157,6 +1161,7 @@ namespace af
     AFAPI array OP (const array& lhs, const int& rhs);                /**< \copydoc OP##(const array&, const array&) */ \
     AFAPI array OP (const array& lhs, const unsigned& rhs);           /**< \copydoc OP##(const array&, const array&) */ \
     AFAPI array OP (const array& lhs, const char& rhs);               /**< \copydoc OP##(const array&, const array&) */ \
+    AFAPI array OP (const array& lhs, const signed char& rhs);        /**< \copydoc OP##(const array&, const array&) */ \
     AFAPI array OP (const array& lhs, const unsigned char& rhs);      /**< \copydoc OP##(const array&, const array&) */ \
     AFAPI array OP (const array& lhs, const long& rhs);               /**< \copydoc OP##(const array&, const array&) */ \
     AFAPI array OP (const array& lhs, const unsigned long& rhs);      /**< \copydoc OP##(const array&, const array&) */ \
@@ -1394,6 +1399,7 @@ namespace af
     AFAPI array operator&(const array& lhs, const long long& rhs);
     AFAPI array operator&(const array& lhs, const long& rhs);
     AFAPI array operator&(const array& lhs, const short& rhs);
+    AFAPI array operator&(const array& lhs, const signed char& rhs);
     AFAPI array operator&(const array& lhs, const unsigned char& rhs);
     AFAPI array operator&(const array& lhs, const unsigned long long& rhs);
     AFAPI array operator&(const array& lhs, const unsigned long& rhs);
@@ -1409,6 +1415,7 @@ namespace af
     AFAPI array operator&(const long long& lhs, const array& rhs);
     AFAPI array operator&(const long& lhs, const array& rhs);
     AFAPI array operator&(const short& lhs, const array& rhs);
+    AFAPI array operator&(const signed char& lhs, const array& rhs);
     AFAPI array operator&(const unsigned char& lhs, const array& rhs);
     AFAPI array operator&(const unsigned long long& lhs, const array& rhs);
     AFAPI array operator&(const unsigned long& lhs, const array& rhs);
@@ -1437,6 +1444,7 @@ namespace af
     AFAPI array operator&&(const array& lhs, const long long& rhs);
     AFAPI array operator&&(const array& lhs, const long& rhs);
     AFAPI array operator&&(const array& lhs, const short& rhs);
+    AFAPI array operator&&(const array& lhs, const signed char& rhs);
     AFAPI array operator&&(const array& lhs, const unsigned char& rhs);
     AFAPI array operator&&(const array& lhs, const unsigned long long& rhs);
     AFAPI array operator&&(const array& lhs, const unsigned long& rhs);
@@ -1452,6 +1460,7 @@ namespace af
     AFAPI array operator&&(const long long& lhs, const array& rhs);
     AFAPI array operator&&(const long& lhs, const array& rhs);
     AFAPI array operator&&(const short& lhs, const array& rhs);
+    AFAPI array operator&&(const signed char& lhs, const array& rhs);
     AFAPI array operator&&(const unsigned char& lhs, const array& rhs);
     AFAPI array operator&&(const unsigned long long& lhs, const array& rhs);
     AFAPI array operator&&(const unsigned long& lhs, const array& rhs);

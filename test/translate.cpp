@@ -39,7 +39,7 @@ class TranslateInt : public ::testing::Test {
 
 // create a list of types to be tested
 typedef ::testing::Types<float, double, cfloat, cdouble> TestTypes;
-typedef ::testing::Types<int, intl, char, short> TestTypesInt;
+typedef ::testing::Types<int, intl, char, schar, short> TestTypesInt;
 
 // register the type list
 TYPED_TEST_SUITE(Translate, TestTypes);

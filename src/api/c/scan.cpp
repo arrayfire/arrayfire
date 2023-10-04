@@ -21,6 +21,7 @@
 using detail::cdouble;
 using detail::cfloat;
 using detail::intl;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -141,6 +142,7 @@ af_err af_accum(af_array* out, const af_array in, const int dim) {
             case u16: res = scan<af_add_t, ushort, uint>(in, dim); break;
             case s16: res = scan<af_add_t, short, int>(in, dim); break;
             case u8: res = scan<af_add_t, uchar, uint>(in, dim); break;
+            case s8: res = scan<af_add_t, schar, int>(in, dim); break;
             // Make sure you are adding only "1" for every non zero value, even
             // if op == af_add_t
             case b8: res = scan<af_notzero_t, char, uint>(in, dim); break;
@@ -204,6 +206,9 @@ af_err af_scan(af_array* out, const af_array in, const int dim, af_binary_op op,
             case u8:
                 res = scan_op<uchar, uint>(in, dim, op, inclusive_scan);
                 break;
+            case s8:
+                res = scan_op<schar, int>(in, dim, op, inclusive_scan);
+                break;
             case b8:
                 res = scan_op<char, uint>(in, dim, op, inclusive_scan);
                 break;
@@ -252,6 +257,7 @@ af_err af_scan_by_key(af_array* out, const af_array key, const af_array in,
                 break;
             case s16:
             case s32:
+            case s8:
                 res = scan_op<int, int>(key, in, dim, op, inclusive_scan);
                 break;
             case u64:

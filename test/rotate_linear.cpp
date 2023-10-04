@@ -39,7 +39,8 @@ class RotateLinear : public ::testing::Test {
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, double, cfloat, cdouble, int, intl, char, short>
+typedef ::testing::Types<float, double, cfloat, cdouble, int, intl, schar, char,
+                         short>
     TestTypes;
 
 // register the type list

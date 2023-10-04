@@ -30,6 +30,7 @@ using detail::Array;
 using detail::getScalar;
 using detail::intl;
 using detail::reduce_all;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -89,6 +90,7 @@ af_err af_corrcoef(double* realVal, double* imagVal, const af_array X,
             case u64: *realVal = corrcoef<uintl, double>(X, Y); break;
             case s16: *realVal = corrcoef<short, float>(X, Y); break;
             case u16: *realVal = corrcoef<ushort, float>(X, Y); break;
+            case s8: *realVal = corrcoef<schar, float>(X, Y); break;
             case u8: *realVal = corrcoef<uchar, float>(X, Y); break;
             case b8: *realVal = corrcoef<char, float>(X, Y); break;
             default: TYPE_ERROR(1, xType);

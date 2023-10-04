@@ -138,7 +138,7 @@ class Indexing1D : public ::testing::Test {
 };
 
 typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned,
-                         unsigned char, intl, uintl, short, ushort,
+                         signed char, unsigned char, intl, uintl, short, ushort,
                          half_float::half>
     AllTypes;
 TYPED_TEST_SUITE(Indexing1D, AllTypes);
@@ -710,8 +710,9 @@ class lookup : public ::testing::Test {
     virtual void SetUp() {}
 };
 
-typedef ::testing::Types<float, double, int, unsigned, unsigned char, short,
-                         ushort, intl, uintl, half_float::half>
+typedef ::testing::Types<float, double, int, unsigned, signed char,
+                         unsigned char, short, ushort, intl, uintl,
+                         half_float::half>
     ArrIdxTestTypes;
 TYPED_TEST_SUITE(lookup, ArrIdxTestTypes);
 

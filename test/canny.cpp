@@ -28,7 +28,7 @@ class CannyEdgeDetector : public ::testing::Test {
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, int, uint, short, ushort, uchar, double>
+typedef ::testing::Types<float, int, uint, short, ushort, schar, uchar, double>
     TestTypes;
 
 // register the type list

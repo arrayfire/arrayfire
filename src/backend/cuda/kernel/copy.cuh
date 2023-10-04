@@ -50,6 +50,18 @@ convertType<char, compute_t<common::half>>(char value) {
 }
 
 template<>
+__inline__ __device__ schar
+convertType<compute_t<common::half>, schar>(compute_t<common::half> value) {
+    return (schar)((short)value);
+}
+
+template<>
+__inline__ __device__ compute_t<common::half>
+convertType<schar, compute_t<common::half>>(schar value) {
+    return compute_t<common::half>(value);
+}
+
+template<>
 __inline__ __device__ uchar
 convertType<compute_t<common::half>, uchar>(compute_t<common::half> value) {
     return (uchar)((short)value);
@@ -90,6 +102,7 @@ OTHER_SPECIALIZATIONS(intl)
 OTHER_SPECIALIZATIONS(uintl)
 OTHER_SPECIALIZATIONS(short)
 OTHER_SPECIALIZATIONS(ushort)
+OTHER_SPECIALIZATIONS(schar)
 OTHER_SPECIALIZATIONS(uchar)
 OTHER_SPECIALIZATIONS(char)
 OTHER_SPECIALIZATIONS(common::half)

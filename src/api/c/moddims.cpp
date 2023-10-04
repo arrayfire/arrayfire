@@ -22,6 +22,7 @@ using arrayfire::common::half;
 using detail::cdouble;
 using detail::cfloat;
 using detail::intl;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -66,6 +67,7 @@ af_err af_moddims(af_array* out, const af_array in, const unsigned ndims,
             case b8: output = modDims<char>(in, newDims); break;
             case s32: output = modDims<int>(in, newDims); break;
             case u32: output = modDims<uint>(in, newDims); break;
+            case s8: output = modDims<schar>(in, newDims); break;
             case u8: output = modDims<uchar>(in, newDims); break;
             case s64: output = modDims<intl>(in, newDims); break;
             case u64: output = modDims<uintl>(in, newDims); break;
@@ -99,6 +101,7 @@ af_err af_flat(af_array* out, const af_array in) {
                 case b8: output = flat<char>(in); break;
                 case s32: output = flat<int>(in); break;
                 case u32: output = flat<uint>(in); break;
+                case s8: output = flat<schar>(in); break;
                 case u8: output = flat<uchar>(in); break;
                 case s64: output = flat<intl>(in); break;
                 case u64: output = flat<uintl>(in); break;

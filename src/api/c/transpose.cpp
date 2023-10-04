@@ -24,6 +24,7 @@ using detail::Array;
 using detail::cdouble;
 using detail::cfloat;
 using detail::intl;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -67,6 +68,7 @@ af_err af_transpose(af_array* out, af_array in, const bool conjugate) {
             case b8: output = trs<char>(in, conjugate); break;
             case s32: output = trs<int>(in, conjugate); break;
             case u32: output = trs<uint>(in, conjugate); break;
+            case s8: output = trs<schar>(in, conjugate); break;
             case u8: output = trs<uchar>(in, conjugate); break;
             case s64: output = trs<intl>(in, conjugate); break;
             case u64: output = trs<uintl>(in, conjugate); break;
@@ -107,6 +109,7 @@ af_err af_transpose_inplace(af_array in, const bool conjugate) {
             case b8: transpose_inplace<char>(in, conjugate); break;
             case s32: transpose_inplace<int>(in, conjugate); break;
             case u32: transpose_inplace<uint>(in, conjugate); break;
+            case s8: transpose_inplace<schar>(in, conjugate); break;
             case u8: transpose_inplace<uchar>(in, conjugate); break;
             case s64: transpose_inplace<intl>(in, conjugate); break;
             case u64: transpose_inplace<uintl>(in, conjugate); break;

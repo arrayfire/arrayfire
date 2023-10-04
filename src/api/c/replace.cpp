@@ -27,6 +27,7 @@ using arrayfire::common::half;
 using detail::cdouble;
 using detail::cfloat;
 using detail::intl;
+using detail::schar;
 using detail::select_scalar;
 using detail::uchar;
 using detail::uint;
@@ -74,6 +75,7 @@ af_err af_replace(af_array a, const af_array cond, const af_array b) {
             case u64: replace<uintl>(a, cond, b); break;
             case s16: replace<short>(a, cond, b); break;
             case u16: replace<ushort>(a, cond, b); break;
+            case s8: replace<schar>(a, cond, b); break;
             case u8: replace<uchar>(a, cond, b); break;
             case b8: replace<char>(a, cond, b); break;
             default: TYPE_ERROR(2, ainfo.getType());
@@ -116,6 +118,7 @@ af_err replaceScalar(af_array a, const af_array cond, const ScalarType b) {
             case u64: replace_scalar<uintl>(a, cond, b); break;
             case s16: replace_scalar<short>(a, cond, b); break;
             case u16: replace_scalar<ushort>(a, cond, b); break;
+            case s8: replace_scalar<schar>(a, cond, b); break;
             case u8: replace_scalar<uchar>(a, cond, b); break;
             case b8: replace_scalar<char>(a, cond, b); break;
             default: TYPE_ERROR(2, ainfo.getType());

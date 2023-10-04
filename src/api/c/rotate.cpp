@@ -19,6 +19,7 @@ using af::dim4;
 using detail::cdouble;
 using detail::cfloat;
 using detail::intl;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -76,6 +77,7 @@ af_err af_rotate(af_array *out, const af_array in, const float theta,
             case u64: output = rotate<uintl>(in, theta, odims, method); break;
             case s16: output = rotate<short>(in, theta, odims, method); break;
             case u16: output = rotate<ushort>(in, theta, odims, method); break;
+            case s8: output = rotate<schar>(in, theta, odims, method); break;
             case u8:
             case b8: output = rotate<uchar>(in, theta, odims, method); break;
             default: TYPE_ERROR(1, itype);
