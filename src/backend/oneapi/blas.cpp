@@ -97,9 +97,10 @@ bool isStrideMonotonic(const af::dim4 &dim) {
     return (dim[0] <= dim[1]) && (dim[1] <= dim[2]) && (dim[2] <= dim[3]);
 }
 
-template<typename T>
-void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
-          const Array<T> &lhs, const Array<T> &rhs, const T *beta) {
+template<typename Ti, typename To>
+void gemm(Array<To> &out, af_mat_prop optLhs, af_mat_prop optRhs,
+          const To *alpha, const Array<Ti> &lhs, const Array<Ti> &rhs,
+          const To *beta) {
     const auto lOpts = toBlasTranspose(optLhs);
     const auto rOpts = toBlasTranspose(optRhs);
 
@@ -120,25 +121,25 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
 
     if (oDims.ndims() <= 2) {  // if non-batched
         if (rhs.dims()[bColDim] == 1) {
-            if constexpr (std::is_same_v<T, arrayfire::common::half>) {
+            if constexpr (std::is_same_v<Ti, arrayfire::common::half>) {
                 // currently no half support for gemv, use gemm instead
-                gemmDispatch<T>(getQueue(), lOpts, rOpts, M, N, K, alpha, lhs,
-                                lStrides[1], rhs, rStrides[1], beta, out,
-                                oStrides[1]);
+                gemmDispatch<Ti>(getQueue(), lOpts, rOpts, M, N, K, alpha, lhs,
+                                 lStrides[1], rhs, rStrides[1], beta, out,
+                                 oStrides[1]);
             } else {
                 dim_t incr =
                     (optRhs == AF_MAT_NONE) ? rStrides[0] : rStrides[1];
-                gemvDispatch<T>(getQueue(), lOpts, rOpts, lDims[0], lDims[1],
-                                alpha, lhs, lStrides[1], rhs, incr, beta, out,
-                                oStrides[0]);
+                gemvDispatch<Ti>(getQueue(), lOpts, rOpts, lDims[0], lDims[1],
+                                 alpha, lhs, lStrides[1], rhs, incr, beta, out,
+                                 oStrides[0]);
             }
         } else {
-            gemmDispatch<T>(getQueue(), lOpts, rOpts, M, N, K, alpha, lhs,
-                            lStrides[1], rhs, rStrides[1], beta, out,
-                            oStrides[1]);
+            gemmDispatch<Ti>(getQueue(), lOpts, rOpts, M, N, K, alpha, lhs,
+                             lStrides[1], rhs, rStrides[1], beta, out,
+                             oStrides[1]);
         }
     } else {  // if batched
-        using Dt = arrayfire::oneapi::data_t<T>;
+        using Dt = arrayfire::oneapi::data_t<Ti>;
 
         int64_t batchSize = static_cast<int64_t>(oDims[2] * oDims[3]);
 
@@ -204,6 +205,14 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
         }
     }
     ONEAPI_DEBUG_FINISH(getQueue());
+}
+
+template<>
+void gemm<schar, float>(Array<float> &out, af_mat_prop optLhs,
+                        af_mat_prop optRhs, const float *alpha,
+                        const Array<schar> &lhs, const Array<schar> &rhs,
+                        const float *beta) {
+    TYPE_ERROR(3, af_dtype::s8);
 }
 
 template<typename T>

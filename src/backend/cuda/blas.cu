@@ -91,6 +91,17 @@ BLAS_FUNC(gemmBatched, double, D)
 BLAS_FUNC(gemmBatched, cdouble, Z)
 BLAS_FUNC(gemmBatched, __half, H)
 
+template<>
+gemm_func_def<schar> gemm_func<schar>() {
+    TYPE_ERROR(3, af_dtype::s8);
+    return gemm_func_def<schar>();
+}
+template<>
+gemmBatched_func_def<schar> gemmBatched_func<schar>() {
+    TYPE_ERROR(3, af_dtype::s8);
+    return gemmBatched_func_def<schar>();
+}
+
 BLAS_FUNC_DEF(trsm)
 BLAS_FUNC(trsm, float, S)
 BLAS_FUNC(trsm, cfloat, C)
@@ -161,20 +172,20 @@ cublasGemmAlgo_t selectGEMMAlgorithm<__half>() {
     return selectGEMMAlgorithm<common::half>();
 }
 
-template<typename T>
+template<typename Ti, typename To = Ti>
 cublasStatus_t gemmDispatch(BlasHandle handle, cublasOperation_t lOpts,
                             cublasOperation_t rOpts, int M, int N, int K,
-                            const T *alpha, const Array<T> &lhs, dim_t lStride,
-                            const Array<T> &rhs, dim_t rStride, const T *beta,
-                            Array<T> &out, dim_t oleading) {
+                            const To *alpha, const Array<Ti> &lhs, dim_t lStride,
+                            const Array<Ti> &rhs, dim_t rStride, const To *beta,
+                            Array<To> &out, dim_t oleading) {
     auto prop = getDeviceProp(getActiveDeviceId());
 #if __CUDACC_VER_MAJOR__ >= 10
     if (prop.major > 3 && __CUDACC_VER_MAJOR__ >= 10) {
         return cublasGemmEx(
-            blasHandle(), lOpts, rOpts, M, N, K, alpha, lhs.get(), getType<T>(),
-            lStride, rhs.get(), getType<T>(), rStride, beta, out.get(),
-            getType<T>(), out.strides()[1],
-            getComputeType<T>(),  // Compute type
+            blasHandle(), lOpts, rOpts, M, N, K, alpha, lhs.get(), getType<Ti>(),
+            lStride, rhs.get(), getType<Ti>(), rStride, beta, out.get(),
+            getType<To>(), out.strides()[1],
+            getComputeType<To>(),  // Compute type
 
             // NOTE: When using the CUBLAS_GEMM_DEFAULT_TENSOR_OP algorithm
             // for the cublasGemm*Ex functions, the performance of the
@@ -184,10 +195,10 @@ cublasStatus_t gemmDispatch(BlasHandle handle, cublasOperation_t lOpts,
             // this change. Does this imply that the TENSOR_OP function
             // performs the computation in fp16 bit even when the compute
             // type is CUDA_R_32F?
-            selectGEMMAlgorithm<T>());
+            selectGEMMAlgorithm<Ti>());
     } else {
 #endif
-        using Nt = typename common::kernel_type<T>::native;
+        using Nt = typename common::kernel_type<Ti>::native;
         return gemm_func<Nt>()(blasHandle(), lOpts, rOpts, M, N, K, (Nt *)alpha,
                                (Nt *)lhs.get(), lStride, (Nt *)rhs.get(),
                                rStride, (Nt *)beta, (Nt *)out.get(), oleading);
@@ -197,21 +208,21 @@ cublasStatus_t gemmDispatch(BlasHandle handle, cublasOperation_t lOpts,
 #endif
 }
 
-template<typename T>
+template<typename Ti, typename To = Ti>
 cublasStatus_t gemmBatchedDispatch(BlasHandle handle, cublasOperation_t lOpts,
                                    cublasOperation_t rOpts, int M, int N, int K,
-                                   const T *alpha, const T **lptrs,
-                                   int lStrides, const T **rptrs, int rStrides,
-                                   const T *beta, T **optrs, int oStrides,
+                                   const To *alpha, const Ti **lptrs,
+                                   int lStrides, const Ti **rptrs, int rStrides,
+                                   const To *beta, To **optrs, int oStrides,
                                    int batchSize) {
     auto prop = getDeviceProp(getActiveDeviceId());
 #if __CUDACC_VER_MAJOR__ >= 10
     if (prop.major > 3) {
         return cublasGemmBatchedEx(
             blasHandle(), lOpts, rOpts, M, N, K, alpha, (const void **)lptrs,
-            getType<T>(), lStrides, (const void **)rptrs, getType<T>(),
-            rStrides, beta, (void **)optrs, getType<T>(), oStrides, batchSize,
-            getComputeType<T>(),  // compute type
+            getType<Ti>(), lStrides, (const void **)rptrs, getType<Ti>(),
+            rStrides, beta, (void **)optrs, getType<Ti>(), oStrides, batchSize,
+            getComputeType<Ti>(),  // compute type
             // NOTE: When using the CUBLAS_GEMM_DEFAULT_TENSOR_OP algorithm
             // for the cublasGemm*Ex functions, the performance of the
             // fp32 numbers seem to increase dramatically. Their numerical
@@ -220,10 +231,10 @@ cublasStatus_t gemmBatchedDispatch(BlasHandle handle, cublasOperation_t lOpts,
             // this change. Does this imply that the TENSOR_OP function
             // performs the computation in fp16 bit even when the compute
             // type is CUDA_R_32F?
-            selectGEMMAlgorithm<T>());
+            selectGEMMAlgorithm<Ti>());
     } else {
 #endif
-        using Nt = typename common::kernel_type<T>::native;
+        using Nt = typename common::kernel_type<Ti>::native;
         return gemmBatched_func<Nt>()(
             blasHandle(), lOpts, rOpts, M, N, K, (const Nt *)alpha,
             (const Nt **)lptrs, lStrides, (const Nt **)rptrs, rStrides,
@@ -233,9 +244,9 @@ cublasStatus_t gemmBatchedDispatch(BlasHandle handle, cublasOperation_t lOpts,
 #endif
 }
 
-template<typename T>
-void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
-          const Array<T> &lhs, const Array<T> &rhs, const T *beta) {
+template<typename Ti, typename To>
+void gemm(Array<To> &out, af_mat_prop optLhs, af_mat_prop optRhs, const To *alpha,
+          const Array<Ti> &lhs, const Array<Ti> &rhs, const To *beta) {
     const cublasOperation_t lOpts = toCblasTranspose(optLhs);
     const cublasOperation_t rOpts = toCblasTranspose(optRhs);
 
@@ -255,14 +266,14 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
     dim4 oStrides = out.strides();
 
     if (oDims.ndims() <= 2) {
-        CUBLAS_CHECK(gemmDispatch<T>(blasHandle(), lOpts, rOpts, M, N, K, alpha,
-                                     lhs, lStrides[1], rhs, rStrides[1], beta,
-                                     out, oStrides[1]));
+        CUBLAS_CHECK((gemmDispatch<Ti, To>(blasHandle(), lOpts, rOpts, M, N, K, alpha,
+                                           lhs, lStrides[1], rhs, rStrides[1], beta,
+                                           out, oStrides[1])));
     } else {
         int batchSize = oDims[2] * oDims[3];
-        vector<const T *> lptrs(batchSize);
-        vector<const T *> rptrs(batchSize);
-        vector<T *> optrs(batchSize);
+        vector<const Ti *> lptrs(batchSize);
+        vector<const Ti *> rptrs(batchSize);
+        vector<To *> optrs(batchSize);
 
         bool is_l_d2_batched = oDims[2] == lDims[2];
         bool is_l_d3_batched = oDims[3] == lDims[3];
@@ -270,9 +281,9 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
         bool is_r_d2_batched = oDims[2] == rDims[2];
         bool is_r_d3_batched = oDims[3] == rDims[3];
 
-        const T *lptr = lhs.get();
-        const T *rptr = rhs.get();
-        T *optr       = out.get();
+        const Ti *lptr = lhs.get();
+        const Ti *rptr = rhs.get();
+        To *optr    = out.get();
 
         for (int n = 0; n < batchSize; n++) {
             int w    = n / oDims[2];
@@ -286,7 +297,7 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
             optrs[n] = optr + z * oStrides[2] + w * oStrides[3];
         }
 
-        size_t bytes = batchSize * sizeof(T **);
+        size_t bytes = batchSize * sizeof(Ti **);
         auto d_lptrs = memAlloc<uchar>(bytes);
         auto d_rptrs = memAlloc<uchar>(bytes);
         auto d_optrs = memAlloc<uchar>(bytes);
@@ -302,11 +313,11 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
         // afterwards
         CUDA_CHECK(cudaStreamSynchronize(getActiveStream()));
 
-        using Nt = typename common::kernel_type<T>::native;
+        using Nt = typename common::kernel_type<Ti>::native;
         CUBLAS_CHECK(gemmBatchedDispatch(
             blasHandle(), lOpts, rOpts, M, N, K, alpha,
-            (const T **)d_lptrs.get(), lStrides[1], (const T **)d_rptrs.get(),
-            rStrides[1], beta, (T **)d_optrs.get(), oStrides[1], batchSize));
+            (const Ti **)d_lptrs.get(), lStrides[1], (const Ti **)d_rptrs.get(),
+            rStrides[1], beta, (To **)d_optrs.get(), oStrides[1], batchSize));
     }
 }
 
@@ -340,17 +351,18 @@ void trsm(const Array<T> &lhs, Array<T> &rhs, af_mat_prop trans, bool is_upper,
         lhs.get(), lStrides[1], rhs.get(), rStrides[1]));
 }
 
-#define INSTANTIATE_GEMM(TYPE)                                               \
-    template void gemm<TYPE>(Array<TYPE> & out, af_mat_prop optLhs,          \
-                             af_mat_prop optRhs, const TYPE *alpha,          \
+#define INSTANTIATE_GEMM(TYPE, OUTTYPE)                                      \
+    template void gemm<TYPE>(Array<OUTTYPE> & out, af_mat_prop optLhs,       \
+                             af_mat_prop optRhs, const OUTTYPE *alpha,       \
                              const Array<TYPE> &lhs, const Array<TYPE> &rhs, \
-                             const TYPE *beta);
+                             const OUTTYPE *beta);
 
-INSTANTIATE_GEMM(float)
-INSTANTIATE_GEMM(cfloat)
-INSTANTIATE_GEMM(double)
-INSTANTIATE_GEMM(cdouble)
-INSTANTIATE_GEMM(half)
+INSTANTIATE_GEMM(float, float)
+INSTANTIATE_GEMM(cfloat, cfloat)
+INSTANTIATE_GEMM(double, double)
+INSTANTIATE_GEMM(cdouble, cdouble)
+INSTANTIATE_GEMM(half, half)
+INSTANTIATE_GEMM(schar, float)
 
 #define INSTANTIATE_DOT(TYPE)                                                  \
     template Array<TYPE> dot<TYPE>(const Array<TYPE> &lhs,                     \
