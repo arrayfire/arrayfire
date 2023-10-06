@@ -75,7 +75,7 @@ static af_err readImage(af_array* rImage, const uchar* pSrcLine,
             if (fo_color == 1) {
                 pDst0[indx] = static_cast<T>(*(src + (x * step)));
             } else if (fo_color >= 3) {
-                if (static_cast<af_dtype>(af::dtype_traits<T>::af_type) == u8) { // FIXME s8?
+                if (static_cast<af_dtype>(af::dtype_traits<T>::af_type) == u8) {
                     pDst0[indx] =
                         static_cast<float>(*(src + (x * step + FI_RGBA_RED)));
                     pDst1[indx] =
@@ -201,7 +201,7 @@ static af_err readImage(af_array* rImage, const uchar* pSrcLine,
             if (fo_color == 1) {
                 pDst[indx] = static_cast<T>(*(src + (x * step)));
             } else if (fo_color >= 3) {
-                if (static_cast<af_dtype>(af::dtype_traits<T>::af_type) == u8) { // FIXME s8?
+                if (static_cast<af_dtype>(af::dtype_traits<T>::af_type) == u8) {
                     r = *(src + (x * step + FI_RGBA_RED));
                     g = *(src + (x * step + FI_RGBA_GREEN));
                     b = *(src + (x * step + FI_RGBA_BLUE));
