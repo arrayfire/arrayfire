@@ -1358,10 +1358,17 @@ af_err conv_image(af_array *out, af_array in) {
 
     T *out_data = new T[nElems];
 
-    for (int i = 0; i < (int)nElems; i++) out_data[i] = (T)in_data[i];
+    af_dtype out_type = (af_dtype)af::dtype_traits<T>::af_type
+    for (int i = 0; i < (int)nElems; i++) {
+        if (out_type == s8) {
+            // shift to avoid overflow
+            out_data[i] = (T)(std::trunc(in_data[i]) - 128.f);
+        } else {
+            out_data[i] = (T)in_data[i];
+        }
+    }
 
-    af_create_array(&outArray, out_data, idims.ndims(), idims.get(),
-                    (af_dtype)af::dtype_traits<T>::af_type);
+    af_create_array(&outArray, out_data, idims.ndims(), idims.get(), out_type);
 
     std::swap(*out, outArray);
 
