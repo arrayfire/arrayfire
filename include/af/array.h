@@ -71,7 +71,7 @@ namespace af
             operator array() const;
             operator array();
 
-#define ASSIGN(OP)                                                  \
+#define ASSIGN_(OP)                                                 \
             array_proxy& operator OP(const array_proxy &a);         \
             array_proxy& operator OP(const array &a);               \
             array_proxy& operator OP(const double &a);              \
@@ -82,24 +82,31 @@ namespace af
             array_proxy& operator OP(const unsigned &a);            \
             array_proxy& operator OP(const bool &a);                \
             array_proxy& operator OP(const char &a);                \
-            array_proxy& operator OP(const signed char &a);         \
             array_proxy& operator OP(const unsigned char &a);       \
             array_proxy& operator OP(const long  &a);               \
             array_proxy& operator OP(const unsigned long &a);       \
             array_proxy& operator OP(const long long  &a);          \
             array_proxy& operator OP(const unsigned long long &a);
 
-            ASSIGN(=)
-            ASSIGN(+=)
-            ASSIGN(-=)
-            ASSIGN(*=)
-            ASSIGN(/=)
-#undef ASSIGN
-
 #if AF_API_VERSION >= 32
-#define ASSIGN(OP)                                                  \
+#define ASSIGN_32(OP)                                               \
             array_proxy& operator OP(const short &a);               \
             array_proxy& operator OP(const unsigned short &a);
+#else
+#define ASSIGN_32(OP)
+#endif
+
+#if AF_API_VERSION >= 310
+#define ASSIGN_310(OP)                                              \
+            array_proxy& operator OP(const signed char &a);
+#else
+#define ASSIGN_310(OP)
+#endif
+
+#define ASSIGN(OP)              \
+            ASSIGN_(OP)         \
+            ASSIGN_32(OP)       \
+            ASSIGN_310(OP)
 
             ASSIGN(=)
             ASSIGN(+=)
@@ -107,7 +114,9 @@ namespace af
             ASSIGN(*=)
             ASSIGN(/=)
 #undef ASSIGN
-#endif
+#undef ASSIGN_
+#undef ASSIGN_32
+#undef ASSIGN_310
 
             // af::array member functions. same behavior as those below
             af_array get();
@@ -948,7 +957,7 @@ namespace af
 
         /// \brief Casts the array into another data type
         ///
-        /// \note Consecitive casting operations may be may be optimized out if
+        /// \note Consecutive casting operations may be optimized out if
         /// the original type of the af::array is the same as the final type.
         /// For example if the original type is f64 which is then cast to f32
         /// and then back to f64, then the cast to f32 will be skipped and that
@@ -1000,24 +1009,31 @@ namespace af
         array& OP2(const unsigned &val);            /**< \copydoc OP2##(const array &) */ \
         array& OP2(const bool &val);                /**< \copydoc OP2##(const array &) */ \
         array& OP2(const char &val);                /**< \copydoc OP2##(const array &) */ \
-        array& OP2(const signed char &val);         /**< \copydoc OP2##(const array &) */ \
         array& OP2(const unsigned char &val);       /**< \copydoc OP2##(const array &) */ \
         array& OP2(const long  &val);               /**< \copydoc OP2##(const array &) */ \
         array& OP2(const unsigned long &val);       /**< \copydoc OP2##(const array &) */ \
         array& OP2(const long long  &val);          /**< \copydoc OP2##(const array &) */ \
         array& OP2(const unsigned long long &val);
 
-
 #if AF_API_VERSION >= 32
-#define ASSIGN(OP)                                                                        \
-        ASSIGN_(OP)                                                                       \
-          array& OP(const short  &val);              /**< \copydoc OP##(const array &) */ \
-          array& OP(const unsigned short &val);
-
+#define ASSIGN_32(OP)                                                                    \
+        array& OP(const short  &val);               /**< \copydoc OP##(const array &) */ \
+        array& OP(const unsigned short &val);
 #else
-#define ASSIGN(OP) ASSIGN_(OP)
+#define ASSIGN_32(OP)
 #endif
 
+#if AF_API_VERSION >= 310
+#define ASSIGN_310(OP)                                                                   \
+        array& OP(const signed char &val);          /**< \copydoc OP##(const array &) */
+#else
+#define ASSIGN_310(OP)
+#endif
+
+#define ASSIGN(OP)          \
+        ASSIGN_(OP)         \
+        ASSIGN_32(OP)       \
+        ASSIGN_310(OP)
 
         /// \ingroup array_mem_operator_eq
         /// @{
@@ -1083,6 +1099,8 @@ namespace af
 
 #undef ASSIGN
 #undef ASSIGN_
+#undef ASSIGN_32
+#undef ASSIGN_310
 
         ///
         /// \brief Negates the values of the array
@@ -1147,7 +1165,6 @@ namespace af
     AFAPI array OP (const int& lhs, const array& rhs);                /**< \copydoc OP##(const array&, const array&) */ \
     AFAPI array OP (const unsigned& lhs, const array& rhs);           /**< \copydoc OP##(const array&, const array&) */ \
     AFAPI array OP (const char& lhs, const array& rhs);               /**< \copydoc OP##(const array&, const array&) */ \
-    AFAPI array OP (const signed char& lhs, const array& rhs);        /**< \copydoc OP##(const array&, const array&) */ \
     AFAPI array OP (const unsigned char& lhs, const array& rhs);      /**< \copydoc OP##(const array&, const array&) */ \
     AFAPI array OP (const long& lhs, const array& rhs);               /**< \copydoc OP##(const array&, const array&) */ \
     AFAPI array OP (const unsigned long& lhs, const array& rhs);      /**< \copydoc OP##(const array&, const array&) */ \
@@ -1161,7 +1178,6 @@ namespace af
     AFAPI array OP (const array& lhs, const int& rhs);                /**< \copydoc OP##(const array&, const array&) */ \
     AFAPI array OP (const array& lhs, const unsigned& rhs);           /**< \copydoc OP##(const array&, const array&) */ \
     AFAPI array OP (const array& lhs, const char& rhs);               /**< \copydoc OP##(const array&, const array&) */ \
-    AFAPI array OP (const array& lhs, const signed char& rhs);        /**< \copydoc OP##(const array&, const array&) */ \
     AFAPI array OP (const array& lhs, const unsigned char& rhs);      /**< \copydoc OP##(const array&, const array&) */ \
     AFAPI array OP (const array& lhs, const long& rhs);               /**< \copydoc OP##(const array&, const array&) */ \
     AFAPI array OP (const array& lhs, const unsigned long& rhs);      /**< \copydoc OP##(const array&, const array&) */ \
@@ -1173,16 +1189,28 @@ namespace af
     AFAPI array OP (const array& lhs, const cdouble& rhs);
 
 #if AF_API_VERSION >= 32
-#define BIN_OP(OP)                                                                                                        \
-        BIN_OP_(OP)                                                                                                       \
+#define BIN_OP_32(OP)                                                                                                    \
         AFAPI array OP (const short& lhs, const array& rhs);           /**< \copydoc OP##(const array&, const array&) */ \
         AFAPI array OP (const unsigned short& lhs, const array& rhs);  /**< \copydoc OP##(const array&, const array&) */ \
         AFAPI array OP (const array& lhs, const short& rhs);           /**< \copydoc OP##(const array&, const array&) */ \
         AFAPI array OP (const array& lhs, const unsigned short& rhs);
 
 #else
-#define BIN_OP(OP) BIN_OP_(OP)
+#define BIN_OP_32(OP)
 #endif
+
+#if AF_API_VERSION >= 310
+#define BIN_OP_310(OP)                                                                                                  \
+    AFAPI array OP (const signed char& lhs, const array& rhs);        /**< \copydoc OP##(const array&, const array&) */ \
+    AFAPI array OP (const array& lhs, const signed char& rhs);        /**< \copydoc OP##(const array&, const array&) */
+#else
+#define BIN_OP_310(OP)
+#endif
+
+#define BIN_OP(OP)          \
+        BIN_OP_(OP)         \
+        BIN_OP_32(OP)       \
+        BIN_OP_310(OP)
 
     /// \ingroup arith_func_add
     /// @{
@@ -1377,6 +1405,8 @@ namespace af
 
 #undef BIN_OP
 #undef BIN_OP_
+#undef BIN_OP_32
+#undef BIN_OP_310
 
     /// \ingroup arith_func_bitand
     /// @{

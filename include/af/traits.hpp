@@ -176,6 +176,7 @@ struct dtype_traits<half> {
 };
 #endif
 
+#if AF_API_VERSION >= 310
 template<>
 struct dtype_traits<signed char> {
     enum {
@@ -185,6 +186,7 @@ struct dtype_traits<signed char> {
     typedef signed char base_type;
     static const char* getName() { return "schar"; }
 };
+#endif
 }
 
 #endif
