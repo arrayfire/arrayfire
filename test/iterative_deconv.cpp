@@ -40,6 +40,11 @@ void iterDeconvImageTest(string pTestFile, const unsigned iters, const float rf,
     SUPPORTED_TYPE_CHECK(T);
     IMAGEIO_ENABLED_CHECK();
 
+    if (is_same_type<T, schar>::value &&
+        algo == AF_ITERATIVE_DECONV_RICHARDSONLUCY) {
+        GTEST_SKIP() << "Incompatible with signed values";
+    }
+
     using af::dim4;
 
     vector<dim4> inDims;
