@@ -62,9 +62,9 @@ template<typename T>
 struct ccOutType {
     typedef typename cond_type<
         is_same_type<T, float>::value || is_same_type<T, int>::value ||
-            is_same_type<T, uint>::value || is_same_type<T, uchar>::value ||
-            is_same_type<T, short>::value || is_same_type<T, ushort>::value ||
-            is_same_type<T, char>::value,
+            is_same_type<T, uint>::value || is_same_type<T, schar>::value ||
+            is_same_type<T, uchar>::value || is_same_type<T, short>::value ||
+            is_same_type<T, ushort>::value || is_same_type<T, char>::value,
         float, typename elseType<T>::type>::type type;
 };
 
