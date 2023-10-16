@@ -1358,7 +1358,7 @@ af_err conv_image(af_array *out, af_array in) {
 
     T *out_data = new T[nElems];
 
-    af_dtype out_type = (af_dtype)af::dtype_traits<T>::af_type
+    af_dtype out_type = (af_dtype)af::dtype_traits<T>::af_type;
     for (int i = 0; i < (int)nElems; i++) {
         if (out_type == s8) {
             // shift to avoid overflow
