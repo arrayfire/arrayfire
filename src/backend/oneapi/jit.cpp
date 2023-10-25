@@ -478,8 +478,8 @@ void evalNodes(vector<Param<T>>& outputs, const vector<Node*>& output_nodes) {
     full_nodes.clear();
     for (Node_ptr& node : node_clones) { full_nodes.push_back(node.get()); }
 
-    const string funcName{getFuncName(output_nodes, full_nodes, full_ids,
-                                      is_linear, false, false, false,
+    const string funcName{getFuncName(output_nodes, output_ids, full_nodes,
+                                      full_ids, is_linear, false, false, false,
                                       outputs[0].info.dims[2] > 1)};
 
     getQueue().submit([&](sycl::handler& h) {
