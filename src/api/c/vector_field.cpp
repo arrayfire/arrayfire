@@ -33,6 +33,7 @@ using arrayfire::common::step_round;
 using detail::Array;
 using detail::copy_vector_field;
 using detail::createEmptyArray;
+using detail::createValueArray;
 using detail::forgeManager;
 using detail::reduce;
 using detail::transpose;
@@ -50,25 +51,29 @@ fg_chart setup_vector_field(fg_window window, const vector<af_array>& points,
     vector<Array<T>> pnts;
     vector<Array<T>> dirs;
 
-    for (unsigned i = 0; i < points.size(); ++i) {
-        pnts.push_back(getArray<T>(points[i]));
-        dirs.push_back(getArray<T>(directions[i]));
-    }
+    // 1D, 2D and 3D input arrays are allowed!!
+    // Dims of each input array is:
+    //      transpose_==true  --> [N,1|2|3,1,1]
+    //      transpose_==false --> [1|2|3,N,1,1]
+    // Multiple input arrays are allowed to provide X,Y,Z separately
+    Array<T> out_pnts = getArray<T>(points[0]);
+    Array<T> out_dirs = getArray<T>(directions[0]);
 
-    // Join for set up vector
-    dim4 odims(3, points.size());
-    Array<T> out_pnts = createEmptyArray<T>(odims);
-    Array<T> out_dirs = createEmptyArray<T>(odims);
-    detail::join(out_pnts, 1, pnts);
-    detail::join(out_dirs, 1, dirs);
-    Array<T> pIn = out_pnts;
-    Array<T> dIn = out_dirs;
-
-    // do transpose if required
-    if (transpose_) {
-        pIn = transpose<T>(pIn, false);
-        dIn = transpose<T>(dIn, false);
+    if (points.size() > 1) {
+        // Combine X-axis, Y-axis (and Z-axis) into 1 array
+        dim4 odims(getInfo(points[0]).dims());
+        odims.dims[transpose_ ? 1 : 0] = points.size();
+        out_pnts                       = createEmptyArray<T>(odims);
+        out_dirs                       = createEmptyArray<T>(odims);
+        for (unsigned i = 0; i < points.size(); ++i) {
+            pnts.push_back(getArray<T>(points[i]));
+            dirs.push_back(getArray<T>(directions[i]));
+        }
+        detail::join(out_pnts, transpose_ ? 1 : 0, pnts);
+        detail::join(out_dirs, transpose_ ? 1 : 0, dirs);
     }
+    Array<T> pIn = transpose_ ? transpose<T>(out_pnts, false) : out_pnts;
+    Array<T> dIn = transpose_ ? transpose<T>(out_dirs, false) : out_dirs;
 
     ForgeManager& fgMngr = forgeManager();
 

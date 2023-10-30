@@ -39,7 +39,17 @@ void join_append(T *out, const T *X, const af::dim4 &offset,
                 const dim_t xYZW = xZW + oy * xst[1];
                 const dim_t oYZW = oZW + (oy + offset[1]) * ost[1];
 
-                memcpy(out + oYZW + offset[0], X + xYZW, xdims[0] * sizeof(T));
+                if (ost[0] == 1 && xst[0] == 1) {
+                    memcpy(out + oYZW + offset[0], X + xYZW,
+                           xdims[0] * sizeof(T));
+                } else {
+                    out += oYZW + offset[0];
+                    X += xYZW;
+                    for (dim_t ox = 0; ox < xdims[0];
+                         ox++, out += ost[0], X += xst[0]) {
+                        *out = *X;
+                    }
+                }
             }
         }
     }
@@ -48,7 +58,7 @@ void join_append(T *out, const T *X, const af::dim4 &offset,
 template<typename T>
 void join(const int dim, Param<T> out, const std::vector<CParam<T>> inputs,
           int n_arrays) {
-    af::dim4 zero(0, 0, 0, 0);
+    const af::dim4 zero(0, 0, 0, 0);
     af::dim4 d = zero;
     join_append<T>(out.get(), inputs[0].get(), zero, inputs[0].dims(),
                    out.strides(), inputs[0].strides());

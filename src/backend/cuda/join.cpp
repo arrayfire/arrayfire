@@ -117,6 +117,11 @@ Array<T> join(const int jdim, const Array<T> &first, const Array<T> &second) {
 
 template<typename T>
 void join(Array<T> &out, const int jdim, const vector<Array<T>> &inputs) {
+    // out is an external defined array:
+    //  - with the only restriction that the dims have to be larger than the
+    //  joined inputs.
+    //  - no restrictions on the strides.
+    // The part of out, that is not overwritten by the join remains as is!!
     class eval {
        public:
         vector<Param<T>> outputs;
@@ -126,6 +131,7 @@ void join(Array<T> &out, const int jdim, const vector<Array<T>> &inputs) {
     };
     std::map<dim_t, eval> evals;
     const cudaStream_t activeStream{getActiveStream()};
+    const dim_t *ostrides{out.strides().dims};
     const size_t L2CacheSize{getL2CacheSize(getActiveDeviceId())};
 
     // topspeed is achieved when byte size(in+out) ~= L2CacheSize
@@ -148,19 +154,23 @@ void join(Array<T> &out, const int jdim, const vector<Array<T>> &inputs) {
     //              has to be called multiple times
 
     // Group all arrays according to size
-    dim_t outOffset{0};
+    dim_t odim{0}, outOffset{0};
+    const dim_t *odims{out.dims().dims};
     for (const Array<T> &iArray : inputs) {
         const dim_t *idims{iArray.dims().dims};
+        for (int i = 0; i < AF_MAX_DIMS; ++i)
+            ARG_ASSERT(1, odims[i] >= idims[i]);
         eval &e{evals[idims[jdim]]};
-        e.outputs.emplace_back(out.get() + outOffset, idims,
-                               out.strides().dims);
+        e.outputs.emplace_back(out.get() + outOffset, idims, ostrides);
         // Extend life of the returned node by saving the corresponding
         // shared_ptr
         e.nodePtrs.emplace_back(iArray.getNode());
         e.nodes.push_back(e.nodePtrs.back().get());
         e.ins.push_back(&iArray);
-        outOffset += idims[jdim] * out.strides().dims[jdim];
+        odim += idims[jdim];
+        outOffset = odim * ostrides[jdim];
     }
+    ARG_ASSERT(1, odims[jdim] >= odim);
 
     for (auto &eval : evals) {
         auto &s{eval.second};
@@ -173,7 +183,12 @@ void join(Array<T> &out, const int jdim, const vector<Array<T>> &inputs) {
             auto outputIt{begin(s.outputs)};
             for (const Array<T> *in : s.ins) {
                 if (in->isReady()) {
-                    if (1LL + jdim >= in->ndims() && in->isLinear()) {
+                    const dim_t *istrides{in->strides().dims};
+                    bool lin = in->isLinear() & (ostrides[0] == 1);
+                    for (int i{1}; i < in->ndims(); ++i) {
+                        lin &= (ostrides[i] == istrides[i]);
+                    }
+                    if (lin) {
                         CUDA_CHECK(cudaMemcpyAsync(outputIt->ptr, in->get(),
                                                    in->elements() * sizeof(T),
                                                    cudaMemcpyHostToDevice,
