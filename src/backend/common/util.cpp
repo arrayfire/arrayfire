@@ -125,7 +125,13 @@ void saveKernel(const string& funcName, const string& jit_ker,
     // Path to a folder
     const string ffp =
         string(jitKernelsOutput) + AF_PATH_SEPARATOR + funcName + ext;
+
+#if defined(OS_WIN)
+    FILE* f = fopen(ffp.c_str(), "w");
+#else
     FILE* f = fopen(ffp.c_str(), "we");
+#endif
+
     if (!f) {
         fprintf(stderr, "Cannot open file %s\n", ffp.c_str());
         return;
