@@ -437,7 +437,7 @@ af_err af_convolve2_gradient_nn(
         size_t padding_ndims  = padding.ndims();
         size_t dilation_ndims = dilation.ndims();
         ARG_ASSERT(3, stride_ndims > 0 && stride_ndims <= 2);
-        ARG_ASSERT(5, padding_ndims > 0 && padding_ndims <= 2);
+        ARG_ASSERT(5, padding_ndims >= 0 && padding_ndims <= 2);
         ARG_ASSERT(7, dilation_ndims > 0 && dilation_ndims <= 2);
 
         af_dtype type = oinfo.getType();
