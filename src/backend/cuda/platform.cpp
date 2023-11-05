@@ -49,6 +49,7 @@
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <type_traits>
 
 using std::call_once;
 using std::make_unique;
@@ -124,7 +125,7 @@ unique_handle<cudnnHandle_t> *nnManager(const int deviceId) {
     });
     if (error) {
         string error_msg = fmt::format("Error initializing cuDNN({}): {}.",
-                                       error, errorString(error));
+                                       static_cast<std::underlying_type<cudnnStatus_t>::type>(error), errorString(error));
         AF_ERROR(error_msg, AF_ERR_RUNTIME);
     }
     CUDNN_CHECK(getCudnnPlugin().cudnnSetStream(cudnnHandles[deviceId],
