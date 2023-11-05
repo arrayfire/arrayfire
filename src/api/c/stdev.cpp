@@ -38,6 +38,7 @@ using detail::mean;
 using detail::reduce;
 using detail::reduce_all;
 using detail::scalar;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -111,6 +112,7 @@ af_err af_stdev_all_v2(double* realVal, double* imagVal, const af_array in,
             case u16: *realVal = stdev<ushort, float>(in, bias); break;
             case s64: *realVal = stdev<intl, double>(in, bias); break;
             case u64: *realVal = stdev<uintl, double>(in, bias); break;
+            case s8: *realVal = stdev<schar, float>(in, bias); break;
             case u8: *realVal = stdev<uchar, float>(in, bias); break;
             case b8: *realVal = stdev<char, float>(in, bias); break;
             // TODO(umar): FIXME: sqrt(complex) is not present in cuda/opencl
@@ -152,6 +154,7 @@ af_err af_stdev_v2(af_array* out, const af_array in, const af_var_bias bias,
             case u16: output = stdev<ushort, float>(in, dim, bias); break;
             case s64: output = stdev<intl, double>(in, dim, bias); break;
             case u64: output = stdev<uintl, double>(in, dim, bias); break;
+            case s8: output = stdev<schar, float>(in, dim, bias); break;
             case u8: output = stdev<uchar, float>(in, dim, bias); break;
             case b8: output = stdev<char, float>(in, dim, bias); break;
             // TODO(umar): FIXME: sqrt(complex) is not present in cuda/opencl

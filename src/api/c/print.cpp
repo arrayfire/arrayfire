@@ -36,6 +36,7 @@ using arrayfire::common::SparseArray;
 using detail::cdouble;
 using detail::cfloat;
 using detail::intl;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -162,6 +163,7 @@ af_err af_print_array(af_array arr) {
                 case b8: print<char>(NULL, arr, 4); break;
                 case s32: print<int>(NULL, arr, 4); break;
                 case u32: print<unsigned>(NULL, arr, 4); break;
+                case s8: print<schar>(NULL, arr, 4); break;
                 case u8: print<uchar>(NULL, arr, 4); break;
                 case s64: print<intl>(NULL, arr, 4); break;
                 case u64: print<uintl>(NULL, arr, 4); break;
@@ -201,6 +203,7 @@ af_err af_print_array_gen(const char *exp, const af_array arr,
                 case b8: print<char>(exp, arr, precision); break;
                 case s32: print<int>(exp, arr, precision); break;
                 case u32: print<unsigned>(exp, arr, precision); break;
+                case s8: print<schar>(exp, arr, precision); break;
                 case u8: print<uchar>(exp, arr, precision); break;
                 case s64: print<intl>(exp, arr, precision); break;
                 case u64: print<uintl>(exp, arr, precision); break;
@@ -258,6 +261,9 @@ af_err af_array_to_string(char **output, const char *exp, const af_array arr,
                 case s32: print<int>(exp, arr, precision, ss, transpose); break;
                 case u32:
                     print<unsigned>(exp, arr, precision, ss, transpose);
+                    break;
+                case s8:
+                    print<schar>(exp, arr, precision, ss, transpose);
                     break;
                 case u8:
                     print<uchar>(exp, arr, precision, ss, transpose);

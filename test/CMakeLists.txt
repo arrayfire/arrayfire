@@ -100,7 +100,7 @@ else(${AF_USE_RELATIVE_TEST_DIR})
   af_dep_check_and_populate(${testdata_prefix}
     URI https://github.com/arrayfire/arrayfire-data.git
     #pinv large data set update change
-    REF 0144a599f913cc67c76c9227031b4100156abc25
+    REF f4a9bdd31b26fbbe67413020da2cdc94bc046d0f
   )
   set(TESTDATA_SOURCE_DIR "${${testdata_prefix}_SOURCE_DIR}")
 endif(${AF_USE_RELATIVE_TEST_DIR})

@@ -81,6 +81,9 @@ const static string DEFAULT_MACROS_STR(
                                            #else\n                     \
                                            #define half short\n          \
                                            #endif\n                      \
+                                           #ifndef schar\n              \
+                                           #define schar char\n         \
+                                           #endif\n                     \
                                            #ifndef M_PI\n               \
                                            #define M_PI 3.1415926535897932384626433832795028841971693993751058209749445923078164\n \
                                            #endif\n                     \

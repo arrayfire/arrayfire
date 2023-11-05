@@ -35,6 +35,7 @@ using detail::iota;
 using detail::padArrayBorders;
 using detail::range;
 using detail::scalar;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -58,6 +59,7 @@ af_err af_constant(af_array *result, const double value, const unsigned ndims,
             case b8: out = createHandleFromValue<char>(d, value); break;
             case s32: out = createHandleFromValue<int>(d, value); break;
             case u32: out = createHandleFromValue<uint>(d, value); break;
+            case s8: out = createHandleFromValue<schar>(d, value); break;
             case u8: out = createHandleFromValue<uchar>(d, value); break;
             case s64: out = createHandleFromValue<intl>(d, value); break;
             case u64: out = createHandleFromValue<uintl>(d, value); break;
@@ -159,6 +161,7 @@ af_err af_identity(af_array *out, const unsigned ndims, const dim_t *const dims,
             case c64: result = identity_<cdouble>(d); break;
             case s32: result = identity_<int>(d); break;
             case u32: result = identity_<uint>(d); break;
+            case s8: result = identity_<schar>(d); break;
             case u8: result = identity_<uchar>(d); break;
             case u64: result = identity_<uintl>(d); break;
             case s64: result = identity_<intl>(d); break;
@@ -202,6 +205,7 @@ af_err af_range(af_array *result, const unsigned ndims, const dim_t *const dims,
             case u64: out = range_<uintl>(d, seq_dim); break;
             case s16: out = range_<short>(d, seq_dim); break;
             case u16: out = range_<ushort>(d, seq_dim); break;
+            case s8: out = range_<schar>(d, seq_dim); break;
             case u8: out = range_<uchar>(d, seq_dim); break;
             case f16: out = range_<half>(d, seq_dim); break;
             default: TYPE_ERROR(4, type);
@@ -242,6 +246,7 @@ af_err af_iota(af_array *result, const unsigned ndims, const dim_t *const dims,
             case u64: out = iota_<uintl>(d, t); break;
             case s16: out = iota_<short>(d, t); break;
             case u16: out = iota_<ushort>(d, t); break;
+            case s8: out = iota_<schar>(d, t); break;
             case u8: out = iota_<uchar>(d, t); break;
             case f16: out = iota_<half>(d, t); break;
             default: TYPE_ERROR(4, type);
@@ -285,6 +290,7 @@ af_err af_diag_create(af_array *out, const af_array in, const int num) {
             case u64: result = diagCreate<uintl>(in, num); break;
             case s16: result = diagCreate<short>(in, num); break;
             case u16: result = diagCreate<ushort>(in, num); break;
+            case s8: result = diagCreate<schar>(in, num); break;
             case u8:
                 result = diagCreate<uchar>(in, num);
                 break;
@@ -324,6 +330,7 @@ af_err af_diag_extract(af_array *out, const af_array in, const int num) {
             case u64: result = diagExtract<uintl>(in, num); break;
             case s16: result = diagExtract<short>(in, num); break;
             case u16: result = diagExtract<ushort>(in, num); break;
+            case s8: result = diagExtract<schar>(in, num); break;
             case u8:
                 result = diagExtract<uchar>(in, num);
                 break;
@@ -366,6 +373,7 @@ af_err af_lower(af_array *out, const af_array in, bool is_unit_diag) {
             case u64: res = triangle<uintl>(in, false, is_unit_diag); break;
             case s16: res = triangle<short>(in, false, is_unit_diag); break;
             case u16: res = triangle<ushort>(in, false, is_unit_diag); break;
+            case s8: res = triangle<schar>(in, false, is_unit_diag); break;
             case u8: res = triangle<uchar>(in, false, is_unit_diag); break;
             case b8: res = triangle<char>(in, false, is_unit_diag); break;
             case f16: res = triangle<half>(in, false, is_unit_diag); break;
@@ -395,6 +403,7 @@ af_err af_upper(af_array *out, const af_array in, bool is_unit_diag) {
             case u64: res = triangle<uintl>(in, true, is_unit_diag); break;
             case s16: res = triangle<short>(in, true, is_unit_diag); break;
             case u16: res = triangle<ushort>(in, true, is_unit_diag); break;
+            case s8: res = triangle<schar>(in, true, is_unit_diag); break;
             case u8: res = triangle<uchar>(in, true, is_unit_diag); break;
             case b8: res = triangle<char>(in, true, is_unit_diag); break;
             case f16: res = triangle<half>(in, true, is_unit_diag); break;
@@ -449,6 +458,7 @@ af_err af_pad(af_array *out, const af_array in, const unsigned begin_ndims,
             case u64: res = pad<uintl>(in, lPad, uPad, pad_type); break;
             case s16: res = pad<short>(in, lPad, uPad, pad_type); break;
             case u16: res = pad<ushort>(in, lPad, uPad, pad_type); break;
+            case s8: res = pad<schar>(in, lPad, uPad, pad_type); break;
             case u8: res = pad<uchar>(in, lPad, uPad, pad_type); break;
             case b8: res = pad<char>(in, lPad, uPad, pad_type); break;
             case f16: res = pad<half>(in, lPad, uPad, pad_type); break;

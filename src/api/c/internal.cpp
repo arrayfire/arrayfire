@@ -25,6 +25,7 @@ using detail::cdouble;
 using detail::cfloat;
 using detail::createStridedArray;
 using detail::intl;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -120,6 +121,11 @@ af_err af_create_strided_array(af_array *arr, const void *data,
                     dims, strides, offset, static_cast<uchar *>(in_data),
                     isdev));
                 break;
+            case s8:
+                res = getHandle(createStridedArray<schar>(
+                    dims, strides, offset, static_cast<schar *>(in_data),
+                    isdev));
+                break;
             case f16:
                 res = getHandle(createStridedArray<half>(
                     dims, strides, offset, static_cast<half *>(in_data),
@@ -175,6 +181,7 @@ af_err af_get_raw_ptr(void **ptr, const af_array arr) {
             case s16: res = getRawPtr(getArray<short>(arr)); break;
             case b8: res = getRawPtr(getArray<char>(arr)); break;
             case u8: res = getRawPtr(getArray<uchar>(arr)); break;
+            case s8: res = getRawPtr(getArray<schar>(arr)); break;
             case f16: res = getRawPtr(getArray<half>(arr)); break;
             default: TYPE_ERROR(6, ty);
         }
@@ -212,6 +219,7 @@ af_err af_is_owner(bool *result, const af_array arr) {
             case s16: res = getArray<short>(arr).isOwner(); break;
             case b8: res = getArray<char>(arr).isOwner(); break;
             case u8: res = getArray<uchar>(arr).isOwner(); break;
+            case s8: res = getArray<schar>(arr).isOwner(); break;
             case f16: res = getArray<half>(arr).isOwner(); break;
             default: TYPE_ERROR(6, ty);
         }
@@ -241,6 +249,7 @@ af_err af_get_allocated_bytes(size_t *bytes, const af_array arr) {
             case s16: res = getArray<short>(arr).getAllocatedBytes(); break;
             case b8: res = getArray<char>(arr).getAllocatedBytes(); break;
             case u8: res = getArray<uchar>(arr).getAllocatedBytes(); break;
+            case s8: res = getArray<schar>(arr).getAllocatedBytes(); break;
             case f16: res = getArray<half>(arr).getAllocatedBytes(); break;
             default: TYPE_ERROR(6, ty);
         }

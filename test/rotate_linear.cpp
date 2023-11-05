@@ -39,7 +39,8 @@ class RotateLinear : public ::testing::Test {
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, double, cfloat, cdouble, int, intl, char, short>
+typedef ::testing::Types<float, double, cfloat, cdouble, int, intl, schar, char,
+                         short>
     TestTypes;
 
 // register the type list
@@ -52,6 +53,10 @@ void rotateTest(string pTestFile, const unsigned resultIdx, const float angle,
                 const bool crop, bool isSubRef = false,
                 const vector<af_seq>* seqv = NULL) {
     SUPPORTED_TYPE_CHECK(T);
+
+    if (is_same_type<T, schar>::value && (int)angle % 90 != 0) {
+        GTEST_SKIP() << "Incompatible test data for s8";
+    }
 
     vector<dim4> numDims;
     vector<vector<T>> in;

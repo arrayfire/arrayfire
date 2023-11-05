@@ -52,7 +52,7 @@ vectors, matrices, volumes, and
 
 It supports common [data types](\ref gettingstarted_datatypes), including
 single and double precision floating point values, complex numbers, booleans,
-and 32-bit signed and unsigned integers.
+and 8/16/32-bit signed and unsigned integers.
 
 #### Extending ArrayFire
 
