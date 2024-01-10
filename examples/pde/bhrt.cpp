@@ -25,8 +25,9 @@
     Raytracing in a Weekend Series, https://raytracing.github.io/
 
     Image being used for the background is Westerlund 2 from
-    NASA, ESA, the Hubble Heritage Team (STScI/AURA), A. Nota (ESA/STScI), and the Westerlund 2 Science Team
-    See http://www.spacetelescope.org/images/heic1509a/ for details.
+    NASA, ESA, the Hubble Heritage Team (STScI/AURA), A. Nota (ESA/STScI), and
+   the Westerlund 2 Science Team See
+   http://www.spacetelescope.org/images/heic1509a/ for details.
 
     The default scene is the rotating black hole using the Kerr metric set by
    the global variable 'scene' The parameters of the blackholes/wormholes may be
@@ -830,7 +831,8 @@ void raytracing(uint32_t width, uint32_t height) {
     af::array camera_lookat   = af::array(3, {0.0, 0.0, 0.0});
 
     // Set the background of the scene
-    auto bg_image   = af::loadimage(ASSETS_DIR "/examples/images/westerlund.jpg", true);
+    auto bg_image =
+        af::loadimage(ASSETS_DIR "/examples/images/westerlund.jpg", true);
     auto background = Background(bg_image);
 
     // Set the objects living in the scene
