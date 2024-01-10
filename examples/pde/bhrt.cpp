@@ -752,7 +752,7 @@ af::array generate_image(const af::array& initial_pos,
     auto pos = initial_pos;
     auto vel = initial_vel;
 
-    auto window = af::Window(width, height);
+    af::Window window{(int)width, (int)height, "Black Hole Raytracing"};
 
     af::array bg_col;
     af::array begin_pos, end_pos;
