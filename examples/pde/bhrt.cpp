@@ -60,10 +60,12 @@ static constexpr double b = 3.0;   // Wormhole drainhole parameter
  * @param total total number of jobs
  * @param start_info progress bar prior info
  */
-void status_bar(int current, int total, const std::string& start_info) {
-    auto precision        = std::cout.precision();
-    static auto prev_time = std::chrono::high_resolution_clock::now();
-    static auto prev      = current - 1;
+void status_bar(int64_t current, int64_t total, const std::string& start_info) {
+    auto precision         = std::cout.precision();
+    static auto prev_time  = std::chrono::high_resolution_clock::now();
+    static auto prev       = current - 1;
+    static auto prev2      = prev;
+    static auto prev2_time = prev_time;
 
     auto curr_time = std::chrono::high_resolution_clock::now();
 
@@ -77,7 +79,17 @@ void status_bar(int current, int total, const std::string& start_info) {
     }
     str += "]";
 
-    auto time = (total - current) * (curr_time - prev_time) / (current - prev);
+    auto time =
+        current != prev
+            ? (total - current) * (curr_time - prev_time) / (current - prev)
+            : (total - current) * (curr_time - prev2_time) / (current - prev2);
+
+    if (current != prev && prev != prev2) {
+        prev2      = prev;
+        prev2_time = prev_time;
+    }
+    prev      = current;
+    prev_time = curr_time;
 
     if (current != total) {
         using namespace std::chrono_literals;
@@ -215,10 +227,170 @@ af::array cart_to_sph_velocity(const af::array& vel, const af::array& pos) {
     af::array uz = vel(2, af::span);
 
     af::array ur = (ux * x + uy * y + uz * z) / r;
-    af::array up = (uy * af::cos(p) - ux * af::sin(p)) / r;
+    af::array up = (uy * af::cos(p) - ux * af::sin(p)) / (r * af::sin(o));
     af::array uo =
         (af::cos(o) * (ux * af::cos(p) + uy * af::sin(p)) - uz * af::sin(o)) /
         r;
+    af::array transformed_vel = af::join(0, ur, uo, up);
+
+    return transformed_vel;
+}
+
+/**
+ * @brief Transform the velocity vectors from cartesian to spherical coordinates
+ *
+ * @param vel
+ * @param pos
+ * @return af::array
+ */
+af::array sph_to_cart_velocity(const af::array& vel, const af::array& pos) {
+    if (vel.dims() != pos.dims())
+        throw make_error("Arrays must have the same dimensions");
+    else if (pos.dims()[0] != 3)
+        throw make_error("Arrays must have 3 principal coordintes");
+
+    af::array r = pos(0, af::span);
+    af::array o = pos(1, af::span);
+    af::array p = pos(2, af::span);
+
+    af::array ur = vel(0, af::span);
+    af::array uo = vel(1, af::span);
+    af::array up = vel(2, af::span);
+
+    af::array ux = (ur * af::sin(o) + uo * r * af::cos(o)) * af::cos(p) -
+                   up * r * af::sin(o) * af::sin(p);
+    af::array uy = (ur * af::sin(o) + uo * r * af::cos(o)) * af::sin(p) +
+                   up * r * af::sin(o) * af::cos(p);
+    af::array uz              = ur * af::cos(o) - uo * r * af::sin(o);
+    af::array transformed_vel = af::join(0, ux, uy, uz);
+
+    return transformed_vel;
+}
+
+/**
+ * @brief Transform the position vectors from cartesian to oblate coordinates
+ *
+ * @param vel
+ * @param pos
+ * @return af::array
+ */
+af::array cart_to_oblate_position(const af::array& pos) {
+    if (pos.dims()[0] != 3)
+        throw make_error("Arrays must have 3 principal coordintes");
+
+    af::array x = pos(0, af::span);
+    af::array y = pos(1, af::span);
+    af::array z = pos(2, af::span);
+    auto a      = J / M;
+    auto diff   = x * x + y * y + z * z - a * a;
+
+    af::array r =
+        af::sqrt((diff + af::sqrt(diff * diff + z * z * a * a * 4.0)) / 2.0);
+    af::array o = af::acos(z / r);
+    af::array p = af::atan2(y, x);
+
+    af::array transformed_pos = af::join(0, r, o, p);
+
+    return transformed_pos;
+}
+
+/**
+ * @brief Transform the position vectors from oblate to cartesian coordinates
+ *
+ * @param vel
+ * @param pos
+ * @return af::array
+ */
+af::array oblate_to_cart_position(const af::array& pos) {
+    if (pos.dims()[0] != 3)
+        throw make_error("Arrays must have 3 principal coordintes");
+
+    af::array r = pos(0, af::span);
+    af::array o = pos(1, af::span);
+    af::array p = pos(2, af::span);
+    auto a      = J / M;
+    auto R      = af::sqrt(r * r + a * a);
+
+    af::array x = R * af::sin(o) * af::cos(p);
+    af::array y = R * af::sin(o) * af::sin(p);
+    af::array z = r * af::cos(o);
+
+    af::array transformed_pos = af::join(0, x, y, z);
+
+    return transformed_pos;
+}
+
+/**
+ * @brief Transform the velocity vectors from oblate to cartesian coordinates
+ *
+ * @param vel
+ * @param pos
+ * @return af::array
+ */
+af::array oblate_to_cart_velocity(const af::array& vel, const af::array& pos) {
+    if (vel.dims() != pos.dims())
+        throw make_error("Arrays must have the same dimensions");
+    else if (pos.dims()[0] != 3)
+        throw make_error("Arrays must have 3 principal coordintes");
+
+    af::array r = pos(0, af::span);
+    af::array o = pos(1, af::span);
+    af::array p = pos(2, af::span);
+
+    af::array ur = vel(0, af::span);
+    af::array uo = vel(1, af::span);
+    af::array up = vel(2, af::span);
+
+    double a     = J / M;
+    af::array ra = af::sqrt(r * r + a * a);
+
+    af::array ux =
+        (ur * r * af::sin(o) / ra + uo * ra * af::cos(o)) * af::cos(p) -
+        up * r * af::sin(o) * af::sin(p);
+    af::array uy =
+        (ur * r * af::sin(o) / ra + uo * ra * af::cos(o)) * af::sin(p) +
+        up * r * af::sin(o) * af::cos(p);
+    af::array uz              = ur * af::cos(o) - uo * r * af::sin(o);
+    af::array transformed_vel = af::join(0, ux, uy, uz);
+
+    return transformed_vel;
+}
+
+/**
+ * @brief Transform the velocity vectors from cartesian to oblate coordinates
+ *
+ * @param vel
+ * @param pos
+ * @return af::array
+ */
+af::array cart_to_oblate_velocity(const af::array& vel, const af::array& pos) {
+    if (vel.dims() != pos.dims())
+        throw make_error("Arrays must have the same dimensions");
+    else if (pos.dims()[0] != 3)
+        throw make_error("Arrays must have 3 principal coordintes");
+
+    af::array x = pos(0, af::span);
+    af::array y = pos(1, af::span);
+    af::array z = pos(2, af::span);
+
+    auto a    = J / M;
+    auto diff = x * x + y * y + z * z - a * a;
+
+    af::array r =
+        af::sqrt((diff + af::sqrt(diff * diff + z * z * a * a * 4.0)) / 2.0);
+    af::array o = af::acos(z / r);
+    af::array p = af::atan2(y, x);
+
+    af::array ux = vel(0, af::span);
+    af::array uy = vel(1, af::span);
+    af::array uz = vel(2, af::span);
+
+    af::array ra = r * r + a * a;
+    af::array ur = ((ux * x + uy * y) * r + uz * ra * z / r) /
+                   (r * r + af::pow(a * af::cos(o), 2.0));
+    af::array up = (uy * x - ux * y) / (x * x + y * y);
+    af::array uo = ((ux * x + uy * y) / af::tan(o) - uz * z * af::tan(o)) /
+                   (r * r + af::pow(a * af::cos(o), 2.0));
     af::array transformed_vel = af::join(0, ur, uo, up);
 
     return transformed_vel;
@@ -230,7 +402,7 @@ af::array cart_to_sph_velocity(const af::array& vel, const af::array& pos) {
  * @param pos
  * @return af::array
  */
-af::array sph_to_cart_position3(const af::array& pos) {
+af::array sph_to_cart_position(const af::array& pos) {
     af::array r = pos(0, af::span);
     af::array o = pos(1, af::span);
     af::array p = pos(2, af::span);
@@ -390,8 +562,23 @@ af::array norm4(const af::array& pos, const af::array& vel) {
     return dot_product(pos, vel, vel);
 }
 
+af::array partials(const af::array& pos4, uint32_t index, double rel_diff,
+                   double abs_diff) {
+    double arr[4] = {0.0};
+    arr[index]    = 1.0;
+
+    auto pos_diff = pos4 * rel_diff + abs_diff;
+    auto h4       = pos_diff * af::array(af::dim4(4, 1), arr);
+    af::array h =
+        af::moddims(pos_diff(index, af::span), af::dim4(1, 1, pos4.dims()[1]));
+
+    return (-metric4(pos4 + h4 * 2.0) + metric4(pos4 + h4) * 8.0 -
+            metric4(pos4 - h4) * 8.0 + metric4(pos4 - h4 * 2.0)) /
+           (h * 12.0);
+}
+
 /**
- * @brief Computes the geodesics from the stablished metric, 4-vector positions
+ * @brief Computes the geodesics from the established metric, 4-vector positions
  * and velocities
  *
  * @param pos4
@@ -405,35 +592,15 @@ af::array geodesics(const af::array& pos4, const af::array& vel4) {
                               af::moddims(vel4, af::dim4(1, 4, N)));
     uu           = af::moddims(uu, af::dim4(1, 4, 4, N));
 
-    double diff = 0.001;
-
     af::array metric    = metric4(pos4);
     af::array invmetric = af::moddims(inv_metric(metric), af::dim4(4, 4, 1, N));
 
-    af::array pos_diff = pos4 * diff;
-
-    pos_diff = af::select(af::abs(pos_diff) > 1e-9, pos_diff, 1e-9);
-
     // Compute the partials of the metric with respect to coordinates indices
     af::array dt = af::constant(0, 4, 4, 1, N, f64);
-    af::array dr =
-        (metric4(pos4 +
-                 pos_diff * af::array({0.0, 1., 0.0, 0.0}, af::dim4(4, 1))) -
-         metric4(pos4 -
-                 pos_diff * af::array({0.0, 1., 0.0, 0.0}, af::dim4(4, 1)))) /
-        (af::moddims(pos_diff(1, af::span), af::dim4(1, 1, N)) * 2.0);
-    af::array dtheta =
-        (metric4(pos4 +
-                 pos_diff * af::array({0.0, 0.0, 1., 0.0}, af::dim4(4, 1))) -
-         metric4(pos4 -
-                 pos_diff * af::array({0.0, 0.0, 1., 0.0}, af::dim4(4, 1)))) /
-        (af::moddims(pos_diff(2, af::span), af::dim4(1, 1, N)) * 2.0);
-    af::array dphi =
-        (metric4(pos4 +
-                 pos_diff * af::array({0.0, 0.0, 0.0, 1.}, af::dim4(4, 1))) -
-         metric4(pos4 -
-                 pos_diff * af::array({0.0, 0.0, 0.0, 1.}, af::dim4(4, 1)))) /
-        (af::moddims(pos_diff(3, af::span), af::dim4(1, 1, N)) * 2.0);
+
+    auto dr     = partials(pos4, 1, 1e-6, 1e-12);
+    auto dtheta = partials(pos4, 2, 1e-6, 1e-12);
+    auto dphi   = partials(pos4, 3, 1e-6, 1e-12);
 
     dr     = af::moddims(dr, af::dim4(4, 4, 1, N));
     dtheta = af::moddims(dtheta, af::dim4(4, 4, 1, N));
@@ -526,13 +693,22 @@ struct Camera {
 
         // Compute the initial position from which the rays are launched
         af::array viewport_position = viewport_rays + camera_position;
-        af::array viewport_sph_pos  = cart_to_sph_position(viewport_position);
+        af::array viewport_sph_pos;
+        if (scene != Scene::ROTATE_BH)
+            viewport_sph_pos = cart_to_sph_position(viewport_position);
+        else
+            viewport_sph_pos = cart_to_oblate_position(viewport_position);
 
         // Normalize the ray directions
         viewport_rays = normalize3(viewport_rays);
 
         // Generate the position 4-vector
-        auto camera_sph_pos = cart_to_sph_position(camera_position);
+        af::array camera_sph_pos;
+        if (scene != Scene::ROTATE_BH)
+            camera_sph_pos = cart_to_sph_position(camera_position);
+        else
+            camera_sph_pos = cart_to_oblate_position(camera_position);
+
         af::array camera_pos4 =
             af::join(0, af::constant(0.0, 1, f64), camera_sph_pos);
         double camera_velocity =
@@ -546,7 +722,12 @@ struct Camera {
 
         // Generate the velocity 4-vector by setting the camera to be stationary
         // with respect to an observer at infinity
-        auto vv       = cart_to_sph_velocity(viewport_rays, viewport_position);
+        af::array vv;
+        if (scene != Scene::ROTATE_BH)
+            vv = cart_to_sph_velocity(viewport_rays, viewport_position);
+        else
+            vv = cart_to_oblate_velocity(viewport_rays, viewport_position);
+
         af::array vvr = vv(0, af::span);
         af::array vvo = vv(1, af::span);
         af::array vvp = vv(2, af::span);
@@ -646,9 +827,7 @@ struct AccretionDisk : public Object {
 
     af::array get_color(const af::array& ray_begin,
                         const af::array& ray_end) const override {
-        auto pair       = intersect(ray_begin, ray_end);
-        const auto& hit = pair.first;
-        const auto& pos = pair.second;
+        auto [hit, pos] = intersect(ray_begin, ray_end);
 
         af::array color =
             disk_color.T() *
@@ -674,14 +853,12 @@ struct Background {
 
     Background(const af::array& image_) { image = image_; }
 
-    af::array get_color(const af::array& ray_begin,
-                        const af::array& ray_end) const {
-        auto dir           = ray_end - ray_begin;
-        auto spherical_dir = cart_to_sph_position(dir);
+    af::array get_color(const af::array& ray_dir) const {
+        auto spherical_dir = cart_to_sph_position(ray_dir);
 
         auto img_height = image.dims()[0];
         auto img_width  = image.dims()[1];
-        auto count      = ray_begin.dims()[1];
+        auto count      = ray_dir.dims()[1];
 
         // Spherical mapping of the direction to a pixel of the image
         af::array o = spherical_dir(1, af::span);
@@ -739,52 +916,45 @@ af::array rearrange_image(const af::array& image, uint32_t width,
 af::array generate_image(const af::array& initial_pos,
                          const af::array& initial_vel,
                          const std::vector<std::unique_ptr<Object> >& objects,
-                         const Background& background, double time,
-                         uint32_t steps, uint32_t width, uint32_t height,
+                         const Background& background, uint32_t width,
+                         uint32_t height, double time, double tol,
                          uint32_t checks = 10) {
     uint32_t lines = initial_pos.dims()[1];
 
-    auto def_step = time / (double)steps;
+    auto def_step = 0.5 * pow(tol, 0.25);
     auto dt       = af::constant(def_step, 1, lines, f64);
+    auto t        = af::constant(0.0, 1, lines, f64);
+    auto index    = af::iota(lines);
+    auto selected = t < time;
 
     auto result = af::constant(0, lines, 3, f32);
 
     auto pos = initial_pos;
     auto vel = initial_vel;
 
-    af::Window window{(int)width, (int)height, "Black Hole Raytracing"};
+    auto window = af::Window((int)width, (int)height);
 
-    af::array bg_col;
+    af::array bg_col = af::constant(0.f, lines, 3);
     af::array begin_pos, end_pos;
+    af::array bh_nohit;
 
-    begin_pos = sph_to_cart_position3(pos(af::seq(1, 3), af::span));
+    if (scene != Scene::ROTATE_BH)
+        begin_pos = sph_to_cart_position(pos(af::seq(1, 3), af::span));
+    else
+        begin_pos = oblate_to_cart_position(pos(af::seq(1, 3), af::span));
+    end_pos = begin_pos;
 
-    for (uint32_t i = 0; i < steps; ++i) {
+    int i = 0;
+
+    while (t.dims()[1] != 0 && af::anyTrue<bool>(t < time) &&
+           af::anyTrue<bool>(dt != 0.0)) {
         // Displays the current progress and approximate time needed to finish
         // it
-        status_bar(i + 1, steps, "Progress:");
+        status_bar((lines - t.dims()[1]) * time +
+                       af::sum<double>(af::clamp(t, 0.0, time)),
+                   time * lines, "Progress:");
 
-        // Stop rays entering the event horizon
-        switch (scene) {
-            case Scene::ROTATE_BH: {
-                auto a = af::cos(pos(2, af::span)) * J / M;
-                dt     = af::select(
-                    pos(1, af::span) > 1.05 * (M + af::sqrt(M * M - a * a)), dt,
-                    0.0);
-
-                break;
-            }
-
-            case Scene::STATIC_BH: {
-                dt = af::select(pos(1, af::span) > 2.05 * M, dt, 0.0);
-
-                break;
-            }
-
-            default: break;
-        }
-
-        // RK4 method for second order differential equation
+        // RK34 method for second order differential equation
         auto dt2 = dt * dt;
         auto k1  = geodesics(pos, vel);
         auto k2  = geodesics(pos + vel * dt / 4.0 + k1 * dt2 / 32.0,
@@ -794,25 +964,99 @@ af::array generate_image(const af::array& initial_pos,
         auto k4  = geodesics(pos + vel * dt + (k1 - k2 + k3 * 2.0) * dt2 / 4.0,
                              vel + (k1 - k2 * 2.0 + 2.0 * k3) * dt);
 
-        pos += vel * dt + (k1 + k2 * 8.0 + k3 * 2.0 + k4) * dt2 / 24.0;
-        vel += (k1 + k3 * 4.0 + k4) * dt / 6.0;
+        auto diff4 = (k1 + k2 * 8.0 + k3 * 2.0 + k4) / 24.0;
+        auto diff3 = (k2 * 8.0 + k4) / 18.0;
+
+        auto err    = (af::max)(af::abs(diff4 - diff3), 0) * dt2;
+        auto maxerr = tol * (1.0 + (af::max)(af::abs(pos), 0));
+
+        auto rdt = af::constant(0, 1, dt.dims()[1], f64);
+        af::replace(rdt, err > maxerr, dt);
+
+        auto rdt2 = rdt * rdt;
+
+        pos += vel * rdt + (k1 + k2 * 8.0 + k3 * 2.0 + k4) * rdt2 / 24.0;
+        vel += (k1 + k3 * 4.0 + k4) * rdt / 6.0;
+        t += rdt;
+
+        auto q = af::clamp(0.8 * af::pow(maxerr / err, 0.25), 0.0, 5.0);
+
+        // Select the next time step
+        dt = af::select(q * dt < (time - t), q * dt, af::abs(time - t));
 
         // Update image
         if (i % checks == (checks - 1)) {
-            end_pos = sph_to_cart_position3(pos(af::seq(1, 3), af::span));
+            af::array ray_dir;
+            if (scene != Scene::ROTATE_BH) {
+                end_pos(af::span, index) =
+                    sph_to_cart_position(pos(af::seq(1, 3), af::span));
+                ray_dir = sph_to_cart_velocity(vel(af::seq(1, 3), af::span),
+                                               pos(af::seq(1, 3), af::span));
+            } else {
+                end_pos(af::span, index) =
+                    oblate_to_cart_position(pos(af::seq(1, 3), af::span));
+                ray_dir = oblate_to_cart_velocity(vel(af::seq(1, 3), af::span),
+                                                  pos(af::seq(1, 3), af::span));
+            }
+
+            af::array s_begin_pos = begin_pos(af::span, index);
+            af::array s_end_pos   = end_pos(af::span, index);
 
             // Check if light ray intersect an object
-            for (const auto& obj : objects)
-                result += obj->get_color(begin_pos, end_pos);
+            for (const auto& obj : objects) {
+                result(index, af::span) +=
+                    obj->get_color(s_begin_pos, s_end_pos);
+            }
 
             // Update background colors from rays
-            bg_col = background.get_color(begin_pos, end_pos);
+            bg_col(index, af::span) = background.get_color(ray_dir);
 
             // Display image
             window.image(rearrange_image(result + bg_col, width, height));
 
             begin_pos = end_pos;
         }
+
+        // Stop rays entering the event horizon
+        switch (scene) {
+            case Scene::ROTATE_BH: {
+                auto a = J / M;
+                bh_nohit =
+                    (pos(1, af::span) > 1.01 * (M + std::sqrt(M * M - a * a)));
+                selected = bh_nohit && (t < time);
+
+                break;
+            }
+
+            case Scene::STATIC_BH: {
+                bh_nohit = pos(1, af::span) > 2.0 * M * 1.01;
+                selected = bh_nohit && (t < time);
+
+                break;
+            }
+
+            case Scene::WORMHOLE: {
+                selected = (t < time);
+            }
+            default: break;
+        }
+
+        // Remove finished rays from computation
+        if (af::sum<float>(selected.as(f32)) / (float)index.dims()[0] < 0.75) {
+            if (scene == Scene::STATIC_BH || scene == Scene::ROTATE_BH)
+                bg_col(af::array(index(!bh_nohit)), af::span) = 0.f;
+
+            index = index(selected);
+            pos   = pos(af::span, selected);
+            vel   = vel(af::span, selected);
+            dt    = dt(af::span, selected);
+            t     = t(af::span, selected);
+
+            // Free finished rays memory
+            af::deviceGC();
+        }
+
+        ++i;
     }
 
     result += bg_col;
@@ -831,8 +1075,7 @@ void raytracing(uint32_t width, uint32_t height) {
     af::array camera_lookat   = af::array(3, {0.0, 0.0, 0.0});
 
     // Set the background of the scene
-    auto bg_image =
-        af::loadimage(ASSETS_DIR "/examples/images/westerlund.jpg", true);
+    auto bg_image   = af::loadimage("westerlund.jpg", true);
     auto background = Background(bg_image);
 
     // Set the objects living in the scene
@@ -845,23 +1088,29 @@ void raytracing(uint32_t width, uint32_t height) {
     // Generate rays from the camera
     auto camera = Camera(camera_position, camera_lookat, vfov, focal_length,
                          width, height);
-    auto pair   = camera.generate_viewport_4rays();
-    const auto& ray4_pos = pair.first;
-    const auto& ray4_vel = pair.second;
+    auto [ray4_pos, ray4_vel] = camera.generate_viewport_4rays();
 
+    auto begin = std::chrono::high_resolution_clock::now();
     // Generate raytraced image
-    auto image = generate_image(ray4_pos, ray4_vel, objects, background, 18,
-                                1000, width, height, 4);
+    auto image = generate_image(ray4_pos, ray4_vel, objects, background, width,
+                                height, 20, 1e-6, 1);
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    std::cout
+        << "\nSimulation took: "
+        << std::chrono::duration_cast<std::chrono::seconds>(end - begin).count()
+        << " s" << std::endl;
 
     // Save image
-    af::saveImage("result.jpg", image);
+    af::saveImage("result.png", image);
 }
 
 int main(int argc, char** argv) {
     int device = argc > 1 ? std::atoi(argv[1]) : 0;
 
-    int width  = argc > 2 ? std::atoi(argv[2]) : 100;
-    int height = argc > 3 ? std::atoi(argv[3]) : 100;
+    int width  = argc > 2 ? std::atoi(argv[2]) : 200;
+    int height = argc > 3 ? std::atoi(argv[3]) : 200;
 
     try {
         af::setDevice(device);
