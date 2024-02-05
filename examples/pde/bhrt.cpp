@@ -827,7 +827,10 @@ struct AccretionDisk : public Object {
 
     af::array get_color(const af::array& ray_begin,
                         const af::array& ray_end) const override {
-        auto [hit, pos] = intersect(ray_begin, ray_end);
+        auto pair = intersect(ray_begin, ray_end);
+
+        auto hit = pair.first;
+        auto pos = pair.second;
 
         af::array color =
             disk_color.T() *
@@ -932,7 +935,7 @@ af::array generate_image(const af::array& initial_pos,
     auto pos = initial_pos;
     auto vel = initial_vel;
 
-    auto window = af::Window((int)width, (int)height);
+    af::Window window{(int)width, (int)height, "Black Hole Raytracing"};
 
     af::array bg_col = af::constant(0.f, lines, 3);
     af::array begin_pos, end_pos;
@@ -1075,7 +1078,8 @@ void raytracing(uint32_t width, uint32_t height) {
     af::array camera_lookat   = af::array(3, {0.0, 0.0, 0.0});
 
     // Set the background of the scene
-    auto bg_image   = af::loadimage("westerlund.jpg", true);
+    auto bg_image =
+        af::loadimage(ASSETS_DIR "/examples/images/westerlund.jpg", true);
     auto background = Background(bg_image);
 
     // Set the objects living in the scene
@@ -1088,7 +1092,10 @@ void raytracing(uint32_t width, uint32_t height) {
     // Generate rays from the camera
     auto camera = Camera(camera_position, camera_lookat, vfov, focal_length,
                          width, height);
-    auto [ray4_pos, ray4_vel] = camera.generate_viewport_4rays();
+    auto pair   = camera.generate_viewport_4rays();
+
+    auto ray4_pos = pair.first;
+    auto ray4_vel = pair.second;
 
     auto begin = std::chrono::high_resolution_clock::now();
     // Generate raytraced image
