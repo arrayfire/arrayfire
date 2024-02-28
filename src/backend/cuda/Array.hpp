@@ -237,7 +237,7 @@ class Array {
 
     dim_t getOffset() const { return info.getOffset(); }
 
-    dim4 getDataDims() const { return data_dims; }
+    const dim4 &getDataDims() const { return data_dims; }
 
     void setDataDims(const dim4 &new_dims);
 
