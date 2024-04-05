@@ -31,6 +31,7 @@ using detail::imag;
 using detail::intl;
 using detail::mean;
 using detail::real;
+using detail::schar;
 using detail::uchar;
 using detail::uintl;
 using detail::ushort;
@@ -77,6 +78,7 @@ af_err af_mean(af_array *out, const af_array in, const dim_t dim) {
             case u64: output = mean<uintl, double>(in, dim); break;
             case s16: output = mean<short, float>(in, dim); break;
             case u16: output = mean<ushort, float>(in, dim); break;
+            case s8: output = mean<schar, float>(in, dim); break;
             case u8: output = mean<uchar, float>(in, dim); break;
             case b8: output = mean<char, float>(in, dim); break;
             case c32: output = mean<cfloat, cfloat>(in, dim); break;
@@ -127,6 +129,7 @@ af_err af_mean_weighted(af_array *out, const af_array in,
             case u32:
             case s16:
             case u16:
+            case s8:
             case u8:
             case b8: output = mean<float>(in, w, dim); break;
             case f64:
@@ -158,6 +161,7 @@ af_err af_mean_all(double *realVal, double *imagVal, const af_array in) {
             case u64: *realVal = mean<uintl, double>(in); break;
             case s16: *realVal = mean<short, float>(in); break;
             case u16: *realVal = mean<ushort, float>(in); break;
+            case s8: *realVal = mean<schar, float>(in); break;
             case u8: *realVal = mean<uchar, float>(in); break;
             case b8: *realVal = mean<char, float>(in); break;
             case f16:
@@ -200,6 +204,7 @@ af_err af_mean_all_weighted(double *realVal, double *imagVal, const af_array in,
             case u32:
             case s16:
             case u16:
+            case s8:
             case u8:
             case b8:
             case f16: *realVal = mean<float>(in, weights); break;

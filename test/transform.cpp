@@ -38,7 +38,7 @@ class TransformInt : public ::testing::Test {
 };
 
 typedef ::testing::Types<float, double> TestTypes;
-typedef ::testing::Types<int, intl, uint, uintl, short, ushort, uchar>
+typedef ::testing::Types<int, intl, uint, uintl, short, ushort, schar, uchar>
     TestTypesInt;
 
 TYPED_TEST_SUITE(Transform, TestTypes);

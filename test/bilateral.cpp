@@ -73,7 +73,8 @@ TEST(BilateralOnImage, Color) {
 template<typename T>
 class BilateralOnData : public ::testing::Test {};
 
-typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort>
+typedef ::testing::Types<float, double, int, uint, char, schar, uchar, short,
+                         ushort>
     DataTestTypes;
 
 // register the type list

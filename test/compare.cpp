@@ -23,8 +23,8 @@ using std::vector;
 template<typename T>
 class Compare : public ::testing::Test {};
 
-typedef ::testing::Types<float, double, uint, int, intl, uintl, uchar, short,
-                         ushort, half_float::half>
+typedef ::testing::Types<float, double, uint, int, intl, uintl, schar, uchar,
+                         short, ushort, half_float::half>
     TestTypes;
 TYPED_TEST_SUITE(Compare, TestTypes);
 

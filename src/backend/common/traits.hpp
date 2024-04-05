@@ -24,6 +24,7 @@ namespace {
 
 inline size_t dtypeSize(af::dtype type) {
     switch (type) {
+        case s8:
         case u8:
         case b8: return 1;
         case s16:
@@ -59,7 +60,7 @@ constexpr bool isRealFloating(af::dtype type) {
 
 constexpr bool isInteger(af::dtype type) {
     return (type == s32 || type == u32 || type == s64 || type == u64 ||
-            type == s16 || type == u16 || type == u8);
+            type == s16 || type == u16 || type == s8 || type == u8);
 }
 
 constexpr bool isBool(af::dtype type) { return (type == b8); }

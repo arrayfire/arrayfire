@@ -17,6 +17,7 @@
 using detail::cdouble;
 using detail::cfloat;
 using detail::intl;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -49,6 +50,7 @@ af_err af_shift(af_array *out, const af_array in, const int sdims[4]) {
             case u64: output = shift<uintl>(in, sdims); break;
             case s16: output = shift<short>(in, sdims); break;
             case u16: output = shift<ushort>(in, sdims); break;
+            case s8: output = shift<schar>(in, sdims); break;
             case u8: output = shift<uchar>(in, sdims); break;
             default: TYPE_ERROR(1, type);
         }

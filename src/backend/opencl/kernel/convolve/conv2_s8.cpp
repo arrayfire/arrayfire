@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2014, ArrayFire
+ * Copyright (c) 2023, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -7,14 +7,14 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <kernel/sort_by_key_impl.hpp>
-
-// SBK_TYPES:float double int uint intl uintl short ushort char schar uchar half
+#include <kernel/convolve/conv2_impl.hpp>
 
 namespace arrayfire {
-namespace oneapi {
+namespace opencl {
 namespace kernel {
-INSTANTIATE1(TYPE);
+
+INSTANTIATE(schar, float)
+
 }  // namespace kernel
-}  // namespace oneapi
+}  // namespace opencl
 }  // namespace arrayfire

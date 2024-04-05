@@ -108,8 +108,9 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Combine(
         ::testing::Values(index_test(
             string(TEST_DIR "/gen_index/s0_3s0_1s1_2a.test"), dim4(4, 2, 2))),
-        ::testing::Values(f32, f64, c32, c64, u64, s64, u16, s16, u8, b8, f16),
-        ::testing::Values(f32, f64, u64, s64, u16, s16, u8, f16)),
+        ::testing::Values(f32, f64, c32, c64, u64, s64, u16, s16, s8, u8, b8,
+                          f16),
+        ::testing::Values(f32, f64, u64, s64, u16, s16, s8, u8, f16)),
     testNameGenerator);
 
 TEST_P(IndexGeneralizedLegacy, SSSA) {

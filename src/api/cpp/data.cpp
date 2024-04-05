@@ -130,6 +130,7 @@ CONSTANT(float);
 CONSTANT(int);
 CONSTANT(unsigned);
 CONSTANT(char);
+CONSTANT(signed char);
 CONSTANT(unsigned char);
 CONSTANT(cfloat);
 CONSTANT(cdouble);

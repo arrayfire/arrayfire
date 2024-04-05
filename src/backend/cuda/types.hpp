@@ -35,6 +35,7 @@ namespace cuda {
 using cdouble = cuDoubleComplex;
 using cfloat  = cuFloatComplex;
 using intl    = long long;
+using schar   = signed char;
 using uchar   = unsigned char;
 using uint    = unsigned int;
 using uintl   = unsigned long long;
@@ -82,6 +83,10 @@ inline const char *shortname<char>(bool caps) {
     return caps ? "J" : "j";
 }
 template<>
+inline const char *shortname<schar>(bool caps) {
+    return caps ? "A" : "a"; // TODO
+}
+template<>
 inline const char *shortname<uchar>(bool caps) {
     return caps ? "V" : "v";
 }
@@ -120,6 +125,7 @@ SPECIALIZE(double)
 SPECIALIZE(cfloat)
 SPECIALIZE(cdouble)
 SPECIALIZE(char)
+SPECIALIZE(signed char)
 SPECIALIZE(unsigned char)
 SPECIALIZE(short)
 SPECIALIZE(unsigned short)

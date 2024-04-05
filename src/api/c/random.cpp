@@ -42,6 +42,7 @@ using detail::createEmptyArray;
 using detail::createHostDataArray;
 using detail::intl;
 using detail::normalDistribution;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -296,6 +297,7 @@ af_err af_random_uniform(af_array *out, const unsigned ndims,
             case u64: result = uniformDistribution_<uintl>(d, e); break;
             case s16: result = uniformDistribution_<short>(d, e); break;
             case u16: result = uniformDistribution_<ushort>(d, e); break;
+            case s8: result = uniformDistribution_<schar>(d, e); break;
             case u8: result = uniformDistribution_<uchar>(d, e); break;
             case b8: result = uniformDistribution_<char>(d, e); break;
             case f16: result = uniformDistribution_<half>(d, e); break;
@@ -362,6 +364,7 @@ af_err af_randu(af_array *out, const unsigned ndims, const dim_t *const dims,
             case u64: result = uniformDistribution_<uintl>(d, e); break;
             case s16: result = uniformDistribution_<short>(d, e); break;
             case u16: result = uniformDistribution_<ushort>(d, e); break;
+            case s8: result = uniformDistribution_<schar>(d, e); break;
             case u8: result = uniformDistribution_<uchar>(d, e); break;
             case b8: result = uniformDistribution_<char>(d, e); break;
             case f16: result = uniformDistribution_<half>(d, e); break;

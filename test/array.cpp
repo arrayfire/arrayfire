@@ -21,8 +21,8 @@ using std::vector;
 template<typename T>
 class Array : public ::testing::Test {};
 
-typedef ::testing::Types<float, double, cfloat, cdouble, char, unsigned char,
-                         int, uint, intl, uintl, short, ushort,
+typedef ::testing::Types<float, double, cfloat, cdouble, char, signed char,
+                         unsigned char, int, uint, intl, uintl, short, ushort,
                          half_float::half>
     TestTypes;
 
@@ -292,6 +292,17 @@ TYPED_TEST(Array, TypeAttributes) {
             EXPECT_FALSE(one.ishalf());
             break;
         case u16:
+            EXPECT_FALSE(one.isfloating());
+            EXPECT_FALSE(one.isdouble());
+            EXPECT_FALSE(one.issingle());
+            EXPECT_FALSE(one.isrealfloating());
+            EXPECT_TRUE(one.isinteger());
+            EXPECT_TRUE(one.isreal());
+            EXPECT_FALSE(one.iscomplex());
+            EXPECT_FALSE(one.isbool());
+            EXPECT_FALSE(one.ishalf());
+            break;
+        case s8:
             EXPECT_FALSE(one.isfloating());
             EXPECT_FALSE(one.isdouble());
             EXPECT_FALSE(one.issingle());

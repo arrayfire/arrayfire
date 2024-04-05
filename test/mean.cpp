@@ -40,7 +40,7 @@ class Mean : public ::testing::Test {
 // This list does not allow to cleanly add the af_half/half_float type : at the
 // moment half tested in some special unittests
 typedef ::testing::Types<cdouble, cfloat, float, double, int, uint, intl, uintl,
-                         char, uchar, short, ushort, half_float::half>
+                         char, schar, uchar, short, ushort, half_float::half>
     TestTypes;
 
 // register the type list
@@ -70,9 +70,9 @@ template<typename T>
 struct meanOutType {
     typedef typename cond_type<
         is_same_type<T, float>::value || is_same_type<T, int>::value ||
-            is_same_type<T, uint>::value || is_same_type<T, uchar>::value ||
-            is_same_type<T, short>::value || is_same_type<T, ushort>::value ||
-            is_same_type<T, char>::value,
+            is_same_type<T, uint>::value || is_same_type<T, schar>::value ||
+            is_same_type<T, uchar>::value || is_same_type<T, short>::value ||
+            is_same_type<T, ushort>::value || is_same_type<T, char>::value,
         float, typename elseType<T>::type>::type type;
 };
 
@@ -228,7 +228,7 @@ TEST(MeanAll, s32) { meanAllTest<int>(2, dim4(5, 5, 2, 2)); }
 
 TEST(MeanAll, u32) { meanAllTest<unsigned>(2, dim4(100, 1, 1, 1)); }
 
-TEST(MeanAll, s8) { meanAllTest<char>(2, dim4(5, 5, 2, 2)); }
+TEST(MeanAll, s8) { meanAllTest<schar>(2, dim4(5, 5, 2, 2)); }
 
 TEST(MeanAll, u8) { meanAllTest<uchar>(2, dim4(100, 1, 1, 1)); }
 

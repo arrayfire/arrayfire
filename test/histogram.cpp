@@ -33,7 +33,7 @@ class Histogram : public ::testing::Test {
 
 // create a list of types to be tested
 typedef ::testing::Types<half_float::half, float, double, int, uint, char,
-                         uchar, short, ushort, intl, uintl>
+                         schar, uchar, short, ushort, intl, uintl>
     TestTypes;
 
 // register the type list
