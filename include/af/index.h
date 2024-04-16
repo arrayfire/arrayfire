@@ -274,7 +274,7 @@ extern "C" {
     ///                     the sequences
     /// \param[in] lhs      is the input array
     /// \param[in] ndims    is the number of \ref af_index_t provided
-    /// \param[in] indices  is an af_array of \ref af_index_t objects
+    /// \param[in] indices  is a C array of \ref af_index_t objects
     /// \param[in] rhs      is the array whose values will be assigned to \p lhs
     ///
     /// \ingroup index_func_assign
