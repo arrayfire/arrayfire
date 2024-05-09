@@ -188,62 +188,77 @@ __kernel void )JIT";
     thread_local stringstream outOffsetStream;
     thread_local stringstream inOffsetsStream;
     thread_local stringstream opsStream;
-
-    int oid{0};
-    for (size_t i{0}; i < full_nodes.size(); i++) {
-        const auto& node{full_nodes[i]};
-        const auto& ids_curr{full_ids[i]};
-        // Generate input parameters, only needs current id
-        node->genParams(inParamStream, ids_curr.id, is_linear);
-        // Generate input offsets, only needs current id
-        node->genOffsets(inOffsetsStream, ids_curr.id, is_linear);
-        // Generate the core function body, needs children ids as well
-        node->genFuncs(opsStream, ids_curr);
-        for (auto outIt{begin(output_ids)}, endIt{end(output_ids)};
-             (outIt = find(outIt, endIt, ids_curr.id)) != endIt; ++outIt) {
-            // Generate also output parameters
-            outParamStream << "__global "
-                           << full_nodes[ids_curr.id]->getTypeStr() << " *out"
-                           << oid << ", int offset" << oid << ",\n";
-            // Apply output offset
-            outOffsetStream << "\nout" << oid << " += offset" << oid << ';';
-            // Generate code to write the output
-            opsStream << "out" << oid << "[idx] = val" << ids_curr.id << ";\n";
-            ++oid;
-        }
-    }
-
     thread_local stringstream kerStream;
-    kerStream << kernelVoid << funcName << "(\n"
-              << inParamStream.str() << outParamStream.str() << dimParams << ")"
-              << blockStart;
-    if (is_linear) {
-        kerStream << linearInit << inOffsetsStream.str()
-                  << outOffsetStream.str() << '\n';
-        if (loop0) kerStream << linearLoop0Start;
-        kerStream << "\n\n" << opsStream.str();
-        if (loop0) kerStream << linearLoop0End;
-        kerStream << linearEnd;
-    } else {
-        if (loop0) {
-            kerStream << stridedLoop0Init << outOffsetStream.str() << '\n'
-                      << stridedLoop0Start;
-        } else {
-            kerStream << stridedLoopNInit << outOffsetStream.str() << '\n';
-            if (loop3) kerStream << stridedLoop3Init;
-            if (loop1) kerStream << stridedLoop1Init << stridedLoop1Start;
-            if (loop3) kerStream << stridedLoop3Start;
-        }
-        kerStream << "\n\n" << inOffsetsStream.str() << opsStream.str();
-        if (loop3) kerStream << stridedLoop3End;
-        if (loop1) kerStream << stridedLoop1End;
-        if (loop0) kerStream << stridedLoop0End;
-        kerStream << stridedEnd;
-    }
-    kerStream << blockEnd;
-    const string ret{kerStream.str()};
 
-    // Prepare for next round, limit memory
+    string ret;
+    try {
+        int oid{0};
+        for (size_t i{0}; i < full_nodes.size(); i++) {
+            const auto& node{full_nodes[i]};
+            const auto& ids_curr{full_ids[i]};
+            // Generate input parameters, only needs current id
+            node->genParams(inParamStream, ids_curr.id, is_linear);
+            // Generate input offsets, only needs current id
+            node->genOffsets(inOffsetsStream, ids_curr.id, is_linear);
+            // Generate the core function body, needs children ids as well
+            node->genFuncs(opsStream, ids_curr);
+            for (size_t output_idx{0}; output_idx < output_ids.size();
+                 ++output_idx) {
+                if (output_ids[output_idx] == ids_curr.id) {
+                    outParamStream
+                        << "__global " << full_nodes[ids_curr.id]->getTypeStr()
+                        << " *out" << oid << ", int offset" << oid << ",\n";
+                    // Apply output offset
+                    outOffsetStream << "\nout" << oid << " += offset" << oid
+                                    << ';';
+                    // Generate code to write the output
+                    opsStream << "out" << output_idx << "[idx] = val"
+                              << ids_curr.id << ";\n";
+                    ++oid;
+                }
+            }
+        }
+
+        kerStream << kernelVoid << funcName << "(\n"
+                  << inParamStream.str() << outParamStream.str() << dimParams
+                  << ")" << blockStart;
+        if (is_linear) {
+            kerStream << linearInit << inOffsetsStream.str()
+                      << outOffsetStream.str() << '\n';
+            if (loop0) kerStream << linearLoop0Start;
+            kerStream << "\n\n" << opsStream.str();
+            if (loop0) kerStream << linearLoop0End;
+            kerStream << linearEnd;
+        } else {
+            if (loop0) {
+                kerStream << stridedLoop0Init << outOffsetStream.str() << '\n'
+                          << stridedLoop0Start;
+            } else {
+                kerStream << stridedLoopNInit << outOffsetStream.str() << '\n';
+                if (loop3) kerStream << stridedLoop3Init;
+                if (loop1) kerStream << stridedLoop1Init << stridedLoop1Start;
+                if (loop3) kerStream << stridedLoop3Start;
+            }
+            kerStream << "\n\n" << inOffsetsStream.str() << opsStream.str();
+            if (loop3) kerStream << stridedLoop3End;
+            if (loop1) kerStream << stridedLoop1End;
+            if (loop0) kerStream << stridedLoop0End;
+            kerStream << stridedEnd;
+        }
+        kerStream << blockEnd;
+        ret = kerStream.str();
+    } catch (...) {
+        // Prepare for next round
+        inParamStream.str("");
+        outParamStream.str("");
+        inOffsetsStream.str("");
+        outOffsetStream.str("");
+        opsStream.str("");
+        kerStream.str("");
+        throw;
+    }
+
+    // Prepare for next round
     inParamStream.str("");
     outParamStream.str("");
     inOffsetsStream.str("");
@@ -259,8 +274,9 @@ cl::Kernel getKernel(const vector<Node*>& output_nodes,
                      const vector<Node*>& full_nodes,
                      const vector<Node_ids>& full_ids, const bool is_linear,
                      const bool loop0, const bool loop1, const bool loop3) {
-    const string funcName{getFuncName(output_nodes, full_nodes, full_ids,
-                                      is_linear, loop0, loop1, false, loop3)};
+    const string funcName{getFuncName(output_nodes, output_ids, full_nodes,
+                                      full_ids, is_linear, loop0, loop1, false,
+                                      loop3)};
     // A forward lookup in module cache helps avoid recompiling the JIT
     // source generated from identical JIT-trees.
     const auto entry{
