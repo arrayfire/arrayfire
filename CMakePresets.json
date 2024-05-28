@@ -219,6 +219,43 @@
         }
     },
     {
+      "name": "msvc2022",
+      "hidden": true,
+      "description": "Base preset for Visual Studio 16 2022 generator.",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64"
+    },
+    {
+      "name": "msvc2022-cpu-mkl",
+      "description": "Build CPU Backend using Intel MKL with MSVC 2022 Generator",
+      "inherits": [ "msvc2022", "ninja-cpu-mkl-debug" ]
+    },
+    {
+      "name": "msvc2022-cuda",
+      "description": "Build CUDA Backend with MSVC 2022 Generator",
+      "inherits": [ "msvc2022", "ninja-cuda-debug" ]
+    },
+    {
+      "name": "msvc2022-opencl-mkl",
+      "description": "Build OpenCL Backend with MSVC 2022 Generator. Uses MKL for CPU fallback.",
+      "inherits": [ "msvc2022", "ninja-opencl-mkl-debug" ]
+    },
+    {
+      "name": "msvc2022-all-mkl",
+      "description": "Build all feasible Backends with MSVC 2022 Generator. Uses MKL for CPU fallback.",
+      "inherits": [ "msvc2022", "ninja-all-mkl-debug" ]
+    },
+    {
+      "name": "msvc2022-all-mkl-local-install",
+      "description": "Build all feasible Backends with MSVC 2022 Generator. Installs to specified path prefix.",
+      "inherits": [ "msvc2022", "ninja-all-mkl-local-install" ]
+    },
+    {
+      "name": "msvc2022-all-mkl-standalone-install",
+      "description": "Build all feasible Backends with MSVC 2022 Generator. Also packages dependencies while installing to specified path prefix.",
+      "inherits": [ "msvc2022", "ninja-all-mkl-standalone-install" ]
+    },
+    {
       "name": "msvc2019",
       "hidden": true,
       "description": "Base preset for Visual Studio 16 2019 generator.",
