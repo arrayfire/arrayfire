@@ -221,7 +221,7 @@
     {
       "name": "msvc2022",
       "hidden": true,
-      "description": "Base preset for Visual Studio 16 2022 generator.",
+      "description": "Base preset for Visual Studio 17 2022 generator.",
       "generator": "Visual Studio 17 2022",
       "architecture": "x64"
     },
