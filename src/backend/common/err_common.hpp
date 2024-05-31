@@ -17,6 +17,7 @@
 #include <common/defines.hpp>
 #include <af/defines.h>
 
+#include <cassert>
 #include <sstream>
 #include <stdexcept>
 #include <string>
