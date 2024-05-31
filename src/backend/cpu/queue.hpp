@@ -38,6 +38,42 @@ class queue_impl {
     }
 };
 
+class event_impl {
+   public:
+    event_impl() noexcept                              = default;
+    ~event_impl() noexcept                             = default;
+    explicit event_impl(const event_impl &other)       = default;
+    event_impl(event_impl &&other) noexcept            = default;
+    event_impl &operator=(event_impl &&other) noexcept = default;
+    event_impl &operator=(event_impl &other) noexcept  = default;
+
+    explicit event_impl(const int val) {}
+
+    event_impl &operator=(int val) noexcept { return *this; }
+
+    int create() {
+        AF_ERROR("Incorrectly configured", AF_ERR_INTERNAL);
+        return 0;
+    }
+
+    int mark(queue_impl &queue) {
+        AF_ERROR("Incorrectly configured", AF_ERR_INTERNAL);
+        return 0;
+    }
+
+    int wait(queue_impl &queue) const {
+        AF_ERROR("Incorrectly configured", AF_ERR_INTERNAL);
+        return 0;
+    }
+
+    int sync() const noexcept {
+        AF_ERROR("Incorrectly configured", AF_ERR_INTERNAL);
+        return 0;
+    }
+
+    operator bool() const noexcept { return false; }
+};
+
 #else
 
 #include <threads/async_queue.hpp>
