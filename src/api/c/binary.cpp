@@ -476,7 +476,7 @@ af_err af_atan2(af_array *out, const af_array lhs, const af_array rhs,
     try {
         const af_dtype type = implicit(lhs, rhs);
 
-        if (type != f32 && type != f64) {
+        if (type != f16 && type != f32 && type != f64) {
             AF_ERROR("Only floating point arrays are supported for atan2 ",
                      AF_ERR_NOT_SUPPORTED);
         }
@@ -491,6 +491,7 @@ af_err af_atan2(af_array *out, const af_array lhs, const af_array rhs,
 
         af_array res;
         switch (type) {
+            case f16: res = arithOp<half, af_atan2_t>(lhs, rhs, odims); break;
             case f32: res = arithOp<float, af_atan2_t>(lhs, rhs, odims); break;
             case f64: res = arithOp<double, af_atan2_t>(lhs, rhs, odims); break;
             default: TYPE_ERROR(0, type);
@@ -507,7 +508,7 @@ af_err af_hypot(af_array *out, const af_array lhs, const af_array rhs,
     try {
         const af_dtype type = implicit(lhs, rhs);
 
-        if (type != f32 && type != f64) {
+        if (type != f16 && type != f32 && type != f64) {
             AF_ERROR("Only floating point arrays are supported for hypot ",
                      AF_ERR_NOT_SUPPORTED);
         }
@@ -523,6 +524,7 @@ af_err af_hypot(af_array *out, const af_array lhs, const af_array rhs,
 
         af_array res;
         switch (type) {
+            case f16: res = arithOp<half, af_hypot_t>(lhs, rhs, odims); break;
             case f32: res = arithOp<float, af_hypot_t>(lhs, rhs, odims); break;
             case f64: res = arithOp<double, af_hypot_t>(lhs, rhs, odims); break;
             default: TYPE_ERROR(0, type);
