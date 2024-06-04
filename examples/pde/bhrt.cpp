@@ -49,9 +49,9 @@ enum class Scene { ROTATE_BH, STATIC_BH, WORMHOLE };
 static constexpr Scene scene = Scene::ROTATE_BH;
 
 // **** Simulation Constants ****
-static constexpr double M = 0.5;   // Black Hole Mass
-static constexpr double J = 0.24;  // Black Hole Rotation (J < M^2)
-static constexpr double b = 3.0;   // Wormhole drainhole parameter
+static constexpr double M = 0.5;    // Black Hole Mass
+static constexpr double J = 0.249;  // Black Hole Rotation (J < M^2)
+static constexpr double b = 3.0;    // Wormhole drainhole parameter
 
 /**
  * @brief Generates a string progress bar
@@ -789,14 +789,16 @@ struct AccretionDisk : public Object {
     af::array disk_color;
     af::array center;
     af::array normal;
-    double radius;
+    double inner_radius;
+    double outter_radius;
 
     AccretionDisk(const af::array& center, const af::array& normal,
-                  double radius)
+                  double inner_radius, double outter_radius)
         : disk_color(af::array(3, {209.f, 77.f, 0.f}))
         , center(center)
         , normal(normal)
-        , radius(radius) {
+        , inner_radius(inner_radius)
+        , outter_radius(outter_radius) {
         // disk_color = af::array(3, {254.f, 168.f, 29.f});
     }
 
@@ -818,7 +820,8 @@ struct AccretionDisk : public Object {
 
         // Determine if the intersection falls inside the disk radius and occurs
         // with the current ray segment
-        has_hit = af::moddims((dist < radius) && (t <= 1.0) && (t > 0.0),
+        has_hit = af::moddims((dist < outter_radius) && (t <= 1.0) &&
+                                  (t > 0.0) && (dist > inner_radius),
                               af::dim4(count));
         hit_pos = plane_intersect;
 
@@ -827,24 +830,17 @@ struct AccretionDisk : public Object {
 
     af::array get_color(const af::array& ray_begin,
                         const af::array& ray_end) const override {
-        auto pair = intersect(ray_begin, ray_end);
+        auto [hit, pos] = intersect(ray_begin, ray_end);
 
-        auto hit = pair.first;
-        auto pos = pair.second;
+        auto val = 1.f - (norm3(pos - center).T() - inner_radius) /
+                             (outter_radius - inner_radius);
 
         af::array color =
-            disk_color.T() *
-            af::exp(1.0f -
-                    1.0f / af::pow(1.0 - (norm3(pos - center).T() - 1) / radius,
-                                   2.0))
-                .as(f32);
-
-        color += af::randn(ray_begin.dims()[1]) * 5;
+            disk_color.T() * 1.5f * (val * val * (val * -2.f + 3.f)).as(f32);
 
         return af::select(af::tile(hit, af::dim4(1, 3)), color, 0.f);
     }
 };
-
 /**
  * @brief Background struct
  *
@@ -1073,9 +1069,14 @@ void raytracing(uint32_t width, uint32_t height) {
     double focal_length = 0.01;
 
     // Set the parameters of the camera
-    af::array global_vertical = af::array(3, {0.0, 0.0, 1.0});
-    af::array camera_position = af::array(3, {-7.0, 6.0, 2.0});
-    af::array camera_lookat   = af::array(3, {0.0, 0.0, 0.0});
+    af::array global_vertical            = af::array(3, {0.0, 0.0, 1.0});
+    af::array camera_position            = af::array(3, {-7.0, 6.0, 2.0});
+    af::array camera_lookat              = af::array(3, {0.0, 0.0, 0.0});
+    double accretion_inner_radius        = M * 3.0;
+    double accretion_outter_radius       = M * 8.0;
+    double simulation_tolerance          = 1e-6;
+    double max_simulation_time           = 12.;
+    uint32_t num_steps_per_collide_check = 1;
 
     // Set the background of the scene
     auto bg_image =
@@ -1087,7 +1088,7 @@ void raytracing(uint32_t width, uint32_t height) {
     if (scene != Scene::WORMHOLE)
         objects.push_back(std::make_unique<AccretionDisk>(
             af::array(3, {0.0, 0.0, 0.0}), af::array(3, {0.0, 0.0, 1.0}),
-            4.0 * M));
+            accretion_inner_radius, accretion_outter_radius));
 
     // Generate rays from the camera
     auto camera = Camera(camera_position, camera_lookat, vfov, focal_length,
@@ -1099,8 +1100,9 @@ void raytracing(uint32_t width, uint32_t height) {
 
     auto begin = std::chrono::high_resolution_clock::now();
     // Generate raytraced image
-    auto image = generate_image(ray4_pos, ray4_vel, objects, background, width,
-                                height, 20, 1e-6, 1);
+    auto image = generate_image(
+        ray4_pos, ray4_vel, objects, background, width, height,
+        max_simulation_time, simulation_tolerance, num_steps_per_collide_check);
 
     auto end = std::chrono::high_resolution_clock::now();
 
