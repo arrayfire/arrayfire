@@ -20,7 +20,7 @@ if(AF_TEST_WITH_MTX_FILES)
 endif()
 
 if(AF_WITH_EXTERNAL_PACKAGES_ONLY)
-    dependency_check(GTest_FOUND)
+  dependency_check(GTest_FOUND "Google Tests not found.")
 elseif(NOT TARGET GTest::gtest)
   af_dep_check_and_populate(${gtest_prefix}
     URI https://github.com/google/googletest.git
