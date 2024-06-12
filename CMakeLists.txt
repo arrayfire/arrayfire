@@ -41,6 +41,7 @@ set_policies(
            CMP0074
            CMP0077
            CMP0079)
+cmake_policy(SET CMP0146 OLD)
 arrayfire_set_cmake_default_variables()
 
 option(AF_WITH_EXTERNAL_PACKAGES_ONLY "Build ArrayFire with External packages only" OFF)
@@ -138,10 +139,10 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)
   if(DEFINED ENV{MKLROOT} AND NOT DEFINED MKL_ROOT)
     set(MKL_ROOT "$ENV{MKLROOT}")
   endif()
-  set(DPCPP_COMPILER ON)
+  set(SYCL_COMPILER ON)
   set(MKL_THREADING "tbb_thread")
   set(MKL_INTERFACE "ilp64")
-  find_package(MKL 2023.1)
+  find_package(MKL 2024.1)
 endif()
 
 af_multiple_option(NAME        AF_COMPUTE_LIBRARY
@@ -551,6 +552,7 @@ if(BUILD_WITH_MKL AND AF_INSTALL_STANDALONE)
     get_filename_component(mkl_shd ${MKL_Core_LINK_LIBRARY} REALPATH)
     get_filename_component(mkl_tly ${MKL_ThreadLayer_LINK_LIBRARY} REALPATH)
     install(FILES
+      ${mkl_sycl}
       ${mkl_rnt}
       ${mkl_shd}
       ${mkl_tly}
