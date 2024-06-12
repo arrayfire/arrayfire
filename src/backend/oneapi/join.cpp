@@ -94,15 +94,17 @@ Array<T> join(const int jdim, const Array<T> &first, const Array<T> &second) {
     if (first.isReady()) {
         if (1LL + jdim >= first.ndims() && first.isLinear()) {
             // first & out are linear
+            auto first_get = first.get();
+            auto out_get = out.get();
             getQueue().submit([&](sycl::handler &h) {
                 sycl::range sz(first.elements());
                 sycl::id src_offset(first.getOffset());
                 sycl::accessor offset_acc_src =
-                    first.get()->template get_access<sycl::access_mode::read>(
+                    first_get->template get_access<sycl::access_mode::read>(
                         h, sz, src_offset);
                 sycl::id dst_offset(0);
                 sycl::accessor offset_acc_dst =
-                    out.get()->template get_access<sycl::access_mode::write>(
+                    out_get->template get_access<sycl::access_mode::write>(
                         h, sz, dst_offset);
                 h.copy(offset_acc_src, offset_acc_dst);
             });
@@ -125,16 +127,18 @@ Array<T> join(const int jdim, const Array<T> &first, const Array<T> &second) {
     if (second.isReady()) {
         if (1LL + jdim >= second.ndims() && second.isLinear()) {
             // second & out are linear
+            auto second_get = second.get();
+            auto out_get = out.get();
             getQueue().submit([&](sycl::handler &h) {
                 sycl::range sz(second.elements());
                 sycl::id src_offset(second.getOffset());
                 sycl::accessor offset_acc_src =
-                    second.get()->template get_access<sycl::access_mode::read>(
+                    second_get->template get_access<sycl::access_mode::read>(
                         h, sz, src_offset);
                 sycl::id dst_offset(fdims.dims[jdim] *
                                     out.strides().dims[jdim]);
                 sycl::accessor offset_acc_dst =
-                    out.get()->template get_access<sycl::access_mode::write>(
+                    out_get->template get_access<sycl::access_mode::write>(
                         h, sz, dst_offset);
                 h.copy(offset_acc_src, offset_acc_dst);
             });
@@ -216,11 +220,12 @@ void join(Array<T> &out, const int jdim, const vector<Array<T>> &inputs) {
             for (const Array<T> *in : s.ins) {
                 if (in->isReady()) {
                     if (1LL + jdim >= in->ndims() && in->isLinear()) {
+                        auto in_get = in->get();
                         getQueue().submit([&](sycl::handler &h) {
                             sycl::range sz(in->elements());
                             sycl::id src_offset(in->getOffset());
                             sycl::accessor offset_acc_src =
-                                in->get()
+                                in_get
                                     ->template get_access<
                                         sycl::access_mode::read>(h, sz,
                                                                  src_offset);

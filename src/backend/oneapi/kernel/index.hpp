@@ -133,21 +133,22 @@ void index(Param<T> out, Param<T> in, IndexKernelParam& p,
     blocks[0] *= threads[0];
 
     sycl::nd_range<3> marange(blocks, threads);
-    getQueue().submit([&](sycl::handler& h) {
-        auto pp = p;
-        for (dim_t x = 0; x < 4; ++x) {
+    for (dim_t x = 0; x < 4; ++x) {
+        auto idxArrs_get = idxArrs[x].get();
+        getQueue().submit([&](sycl::handler& h) {
+            auto pp = p;
             pp.ptr[x] =
-                idxArrs[x].get()->get_access<sycl::access::mode::read>(h);
-        }
-
-        h.parallel_for(
-            marange,
-            indexKernel<T>(
-                out.data->template get_access<sycl::access::mode::write>(h),
-                out.info,
-                in.data->template get_access<sycl::access::mode::read>(h),
-                in.info, pp, blks_x, blks_y));
-    });
+                idxArrs_get->get_access<sycl::access::mode::read>(h);
+    
+            h.parallel_for(
+                marange,
+                indexKernel<T>(
+                    out.data->template get_access<sycl::access::mode::write>(h),
+                    out.info,
+                    in.data->template get_access<sycl::access::mode::read>(h),
+                    in.info, pp, blks_x, blks_y));
+        });
+    }
     ONEAPI_DEBUG_FINISH(getQueue());
 }
 
