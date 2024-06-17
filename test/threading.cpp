@@ -134,8 +134,10 @@ void morphTest(const array input, const array mask, const bool isDilation,
 
     array out;
 
-    for (unsigned i = 0; i < ITERATION_COUNT; ++i)
-        out = isDilation ? dilate(input, mask) : erode(input, mask);
+    try {
+        for (unsigned i = 0; i < ITERATION_COUNT; ++i)
+            out = isDilation ? dilate(input, mask) : erode(input, mask);
+    } catch FUNCTION_UNSUPPORTED
 
     ASSERT_IMAGES_NEAR(gold, out, 0.018f);
 }

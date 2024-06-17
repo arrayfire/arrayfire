@@ -69,8 +69,8 @@ void homographyTest(string pTestFile, const af_homography_type htype,
     ASSERT_SUCCESS(af_load_image(&trainArray_f32, inFiles[0].c_str(), false));
     ASSERT_SUCCESS(conv_image<T>(&trainArray, trainArray_f32));
 
-    ASSERT_SUCCESS(af_orb(&train_feat, &train_desc, trainArray, 20.0f, 2000,
-                          1.2f, 8, true));
+    ASSERT_SUCCESS_CHECK_SUPRT(af_orb(&train_feat, &train_desc, trainArray,
+                               20.0f, 2000, 1.2f, 8, true));
 
     ASSERT_SUCCESS(af_get_features_xpos(&train_feat_x, train_feat));
     ASSERT_SUCCESS(af_get_features_ypos(&train_feat_y, train_feat));
@@ -103,8 +103,8 @@ void homographyTest(string pTestFile, const af_homography_type htype,
         ASSERT_SUCCESS(af_resize(&queryArray, trainArray, test_d0, test_d1,
                                  AF_INTERP_BILINEAR));
 
-    ASSERT_SUCCESS(af_orb(&query_feat, &query_desc, queryArray, 20.0f, 2000,
-                          1.2f, 8, true));
+    ASSERT_SUCCESS_CHECK_SUPRT(af_orb(&query_feat, &query_desc, queryArray,
+                                      20.0f, 2000, 1.2f, 8, true));
 
     ASSERT_SUCCESS(
         af_hamming_matcher(&idx, &dist, train_desc, query_desc, 0, 1));
@@ -143,10 +143,10 @@ void homographyTest(string pTestFile, const af_homography_type htype,
     ASSERT_SUCCESS(af_index_gen(&query_feat_y_idx, query_feat_y, 1, &qindexs));
 
     int inliers = 0;
-    ASSERT_SUCCESS(af_homography(&H, &inliers, train_feat_x_idx,
-                                 train_feat_y_idx, query_feat_x_idx,
-                                 query_feat_y_idx, htype, 3.0f, 1000,
-                                 (af_dtype)dtype_traits<T>::af_type));
+    ASSERT_SUCCESS_CHECK_SUPRT(af_homography(&H, &inliers, train_feat_x_idx,
+                                             train_feat_y_idx, query_feat_x_idx,
+                                             query_feat_y_idx, htype, 3.0f, 1000,
+                                             (af_dtype)dtype_traits<T>::af_type));
 
     array HH(H);
 
@@ -239,8 +239,9 @@ TEST(Homography, CPP) {
 
     features feat_train, feat_query;
     array desc_train, desc_query;
-    orb(feat_train, desc_train, train_img, 20, 2000, 1.2, 8, true);
-    orb(feat_query, desc_query, query_img, 20, 2000, 1.2, 8, true);
+    try { orb(feat_train, desc_train, train_img, 20, 2000, 1.2, 8, true);
+          orb(feat_query, desc_query, query_img, 20, 2000, 1.2, 8, true);
+    } catch FUNCTION_UNSUPPORTED
 
     array idx, dist;
     hammingMatcher(idx, dist, desc_train, desc_query, 0, 1);
@@ -261,8 +262,9 @@ TEST(Homography, CPP) {
 
     array H;
     int inliers = 0;
-    homography(H, inliers, feat_train_x, feat_train_y, feat_query_x,
-               feat_query_y, AF_HOMOGRAPHY_RANSAC, 3.0f, 1000, f32);
+    try { homography(H, inliers, feat_train_x, feat_train_y, feat_query_x,
+                     feat_query_y, AF_HOMOGRAPHY_RANSAC, 3.0f, 1000, f32);
+    } catch FUNCTION_UNSUPPORTED
 
     float* gold_t = new float[8];
     for (int i = 0; i < 8; i++) gold_t[i] = 0.f;

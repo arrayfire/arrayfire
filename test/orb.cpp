@@ -153,7 +153,7 @@ void orbTest(string pTestFile) {
             af_load_image(&inArray_f32, inFiles[testId].c_str(), false));
         ASSERT_SUCCESS(conv_image<T>(&inArray, inArray_f32));
 
-        ASSERT_SUCCESS(
+        ASSERT_SUCCESS_CHECK_SUPRT(
             af_orb(&feat, &desc, inArray, 20.0f, 400, 1.2f, 8, true));
 
         dim_t n = 0;
@@ -261,7 +261,7 @@ TEST(ORB, CPP) {
 
     features feat;
     array desc;
-    orb(feat, desc, in, 20.0f, 400, 1.2f, 8, true);
+    try { orb(feat, desc, in, 20.0f, 400, 1.2f, 8, true); } catch FUNCTION_UNSUPPORTED
 
     float* outX           = new float[feat.getNumFeatures()];
     float* outY           = new float[feat.getNumFeatures()];

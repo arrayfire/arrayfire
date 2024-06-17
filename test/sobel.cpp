@@ -61,7 +61,7 @@ void testSobelDerivatives(string pTestFile) {
                                    dims.get(),
                                    (af_dtype)dtype_traits<Ti>::af_type));
 
-    ASSERT_SUCCESS(af_sobel_operator(&dxArray, &dyArray, inArray, 3));
+    ASSERT_SUCCESS_CHECK_SUPRT(af_sobel_operator(&dxArray, &dyArray, inArray, 3));
 
     vector<To> currDXGoldBar = tests[0];
     vector<To> currDYGoldBar = tests[1];

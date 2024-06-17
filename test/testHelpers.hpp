@@ -242,6 +242,10 @@ bool noHalfTests(af::dtype ty);
     if (noHalfTests((af_dtype)af::dtype_traits<type>::af_type))   \
     GTEST_SKIP() << "Device doesn't support Half"
 
+#define CHECK_SUPPORTED(af_stat) \
+    if (af_stat == AF_ERR_NOT_SUPPORTED) \
+        GTEST_SKIP() << "Function not supported on this device"
+
 #define LAPACK_ENABLED_CHECK() \
     if (!af::isLAPACKAvailable()) GTEST_SKIP() << "LAPACK Not Configured."
 
@@ -392,6 +396,21 @@ template<typename T>
 ///
 /// \param[in] CALL This is the arrayfire C function
 #define ASSERT_SUCCESS(CALL) ASSERT_EQ(AF_SUCCESS, CALL)
+
+/// First checks if the C-API arrayfire function is supported
+/// for the current backend then checks if it returns successfully
+///
+/// \param[in] CALL This is the arrayfire C function
+#define ASSERT_SUCCESS_CHECK_SUPRT(CALL) \
+    CHECK_SUPPORTED(CALL);               \
+    ASSERT_EQ(AF_SUCCESS, CALL)
+
+/// Catches function unsupported exception thrown by C++ API
+/// arrayfire function and skips test
+///
+/// \param[in]  CALL This is the arrayfire C++ function
+#define FUNCTION_UNSUPPORTED \
+    (af::exception &ex) {CHECK_SUPPORTED(ex.err()); throw ex;}
 
 /// Compares two af::array or af_arrays for their types, dims, and values
 /// (strict equality).

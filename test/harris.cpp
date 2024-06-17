@@ -84,7 +84,7 @@ void harrisTest(string pTestFile, float sigma, unsigned block_size) {
 
         ASSERT_SUCCESS(conv_image<T>(&inArray, inArray_f32));
 
-        ASSERT_SUCCESS(
+        ASSERT_SUCCESS_CHECK_SUPRT(
             af_harris(&out, inArray, 500, 1e5f, sigma, block_size, 0.04f));
 
         dim_t n = 0;
@@ -179,7 +179,9 @@ TEST(FloatHarris, CPP) {
 
     array in = loadImage(inFiles[0].c_str(), false);
 
-    features out = harris(in, 500, 1e5f, 0.0f, 3, 0.04f);
+    features out;
+    try { out = harris(in, 500, 1e5f, 0.0f, 3, 0.04f);
+    } catch FUNCTION_UNSUPPORTED
 
     vector<float> outX(gold[0].size());
     vector<float> outY(gold[1].size());

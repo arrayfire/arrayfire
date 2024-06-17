@@ -52,8 +52,8 @@ void cannyTest(string pTestFile) {
                                    sDims.get(),
                                    (af_dtype)dtype_traits<T>::af_type));
 
-    ASSERT_SUCCESS(af_canny(&outArray, sArray, AF_CANNY_THRESHOLD_MANUAL,
-                            0.4147f, 0.8454f, 3, true));
+    ASSERT_SUCCESS_CHECK_SUPRT(af_canny(&outArray, sArray, AF_CANNY_THRESHOLD_MANUAL,
+                                        0.4147f, 0.8454f, 3, true));
 
     vector<char> outData(sDims.elements());
 
@@ -128,9 +128,10 @@ void cannyImageOtsuTest(string pTestFile, bool isColor) {
         ASSERT_SUCCESS(
             af_load_image_native(&goldArray, outFiles[testId].c_str()));
 
-        ASSERT_SUCCESS(af_canny(&_outArray, inArray,
-                                AF_CANNY_THRESHOLD_AUTO_OTSU, 0.08, 0.32, 3,
-                                false));
+        ASSERT_SUCCESS_CHECK_SUPRT(af_canny(&_outArray, inArray,
+                                            AF_CANNY_THRESHOLD_AUTO_OTSU,
+                                            0.08, 0.32, 3, false));
+
         unsigned ndims = 0;
         dim_t dims[4];
 
@@ -247,8 +248,10 @@ void cannyImageOtsuBatchTest(string pTestFile, const dim_t targetBatchCount) {
         array readImg  = loadImage(inFiles[testId].c_str(), false).as(type);
         array inputIm  = tile(readImg, 1, 1, targetBatchCount);
 
-        array outIm =
-            canny(inputIm, AF_CANNY_THRESHOLD_AUTO_OTSU, 0.08, 0.32, 3, false);
+        array outIm;
+        try { outIm =
+              canny(inputIm, AF_CANNY_THRESHOLD_AUTO_OTSU, 0.08, 0.32, 3, false);
+        } catch FUNCTION_UNSUPPORTED
         outIm *= 255.0;
 
         ASSERT_IMAGES_NEAR(goldIm, outIm.as(u8), 1.0e-3);

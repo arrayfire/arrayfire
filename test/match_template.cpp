@@ -64,7 +64,7 @@ void matchTemplateTest(string pTestFile, af_match_type pMatchType) {
                                    tDims.get(),
                                    (af_dtype)dtype_traits<T>::af_type));
 
-    ASSERT_SUCCESS(af_match_template(&outArray, sArray, tArray, pMatchType));
+    ASSERT_SUCCESS_CHECK_SUPRT(af_match_template(&outArray, sArray, tArray, pMatchType));
 
     vector<outType> outData(sDims.elements());
 

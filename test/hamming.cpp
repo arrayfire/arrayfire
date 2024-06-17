@@ -70,7 +70,7 @@ void hammingMatcherTest(string pTestFile, int feat_dim) {
                                    tDims.get(),
                                    (af_dtype)dtype_traits<T>::af_type));
 
-    ASSERT_SUCCESS(af_hamming_matcher(&idx, &dist, query, train, feat_dim, 1));
+    ASSERT_SUCCESS_CHECK_SUPRT(af_hamming_matcher(&idx, &dist, query, train, feat_dim, 1));
 
     vector<uint> goldIdx  = tests[0];
     vector<uint> goldDist = tests[1];
@@ -134,7 +134,7 @@ TEST(HammingMatcher, CPP) {
     array train(tDims, &(in[1].front()));
 
     array idx, dist;
-    hammingMatcher(idx, dist, query, train, 0, 1);
+    try { hammingMatcher(idx, dist, query, train, 0, 1); } catch FUNCTION_UNSUPPORTED
 
     vector<uint> goldIdx  = tests[0];
     vector<uint> goldDist = tests[1];
@@ -172,7 +172,7 @@ TEST(HammingMatcher64bit, CPP) {
     array train(tDims, &(in[1].front()));
 
     array idx, dist;
-    hammingMatcher(idx, dist, query, train, 0, 1);
+    try { hammingMatcher(idx, dist, query, train, 0, 1); } catch FUNCTION_UNSUPPORTED
 
     vector<unsigned long long> goldIdx  = tests[0];
     vector<unsigned long long> goldDist = tests[1];

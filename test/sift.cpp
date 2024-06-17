@@ -162,9 +162,9 @@ void siftTest(string pTestFile, unsigned nLayers, float contrastThr,
             af_load_image(&inArray_f32, inFiles[testId].c_str(), false));
         ASSERT_SUCCESS(conv_image<T>(&inArray, inArray_f32));
 
-        ASSERT_SUCCESS(af_sift(&feat, &desc, inArray, nLayers, contrastThr,
-                               edgeThr, initSigma, doubleInput, 1.f / 256.f,
-                               0.05f));
+        ASSERT_SUCCESS_CHECK_SUPRT(af_sift(&feat, &desc, inArray, nLayers,
+                                           contrastThr, edgeThr, initSigma,
+                                           doubleInput, 1.f / 256.f, 0.05f));
 
         dim_t n = 0;
         af_array x, y, score, orientation, size;
@@ -287,7 +287,8 @@ TEST(SIFT, CPP) {
 
     features feat;
     array desc;
-    sift(feat, desc, in, 3, 0.04f, 10.0f, 1.6f, true, 1.f / 256.f, 0.05f);
+    try { sift(feat, desc, in, 3, 0.04f, 10.0f, 1.6f, true, 1.f / 256.f, 0.05f);
+    } catch FUNCTION_UNSUPPORTED
 
     float* outX           = new float[feat.getNumFeatures()];
     float* outY           = new float[feat.getNumFeatures()];

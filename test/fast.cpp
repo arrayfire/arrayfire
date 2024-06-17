@@ -92,7 +92,7 @@ void fastTest(string pTestFile, bool nonmax) {
 
         ASSERT_SUCCESS(conv_image<T>(&inArray, inArray_f32));
 
-        ASSERT_SUCCESS(af_fast(&out, inArray, 20.0f, 9, nonmax, 0.05f, 3));
+        ASSERT_SUCCESS_CHECK_SUPRT(af_fast(&out, inArray, 20.0f, 9, nonmax, 0.05f, 3));
 
         dim_t n = 0;
         af_array x, y, score, orientation, size;
@@ -192,7 +192,8 @@ TEST(FloatFAST, CPP) {
 
     array in = loadImage(inFiles[0].c_str(), false);
 
-    features out = fast(in, 20.0f, 9, true, 0.05f, 3);
+    features out;
+    try { out = fast(in, 20.0f, 9, true, 0.05f, 3); } catch FUNCTION_UNSUPPORTED
 
     float *outX           = new float[gold[0].size()];
     float *outY           = new float[gold[1].size()];
