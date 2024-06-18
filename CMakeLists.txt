@@ -285,6 +285,9 @@ else()
     target_compile_options(spdlog
       PRIVATE
         $<$<BOOL:${has_cxx_fp_model}>:-fp-model precise>)
+    install(TARGETS spdlog
+      COMPONENT common_backend_dependencies
+      DESTINATION ${AF_INSTALL_BIN_DIR})
     set_target_properties(af_spdlog
       PROPERTIES
         INTERFACE_LINK_LIBRARIES "spdlog")
