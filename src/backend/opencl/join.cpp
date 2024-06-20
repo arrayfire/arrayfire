@@ -157,9 +157,12 @@ void join(Array<T> &out, const int jdim, const vector<Array<T>> &inputs) {
     //              will be called twice
 
     // Group all arrays according to size
-    dim_t outOffset{0};
+    dim_t odim{0}, outOffset{0};
+    const dim_t *odims{out.dims().dims};
     for (const Array<T> &iArray : inputs) {
         const dim_t *idims{iArray.dims().dims};
+        for (int i = 0; i < AF_MAX_DIMS; ++i)
+            ARG_ASSERT(1, odims[i] >= idims[i]);
         eval &e{evals[idims[jdim]]};
         const Param output{
             out.get(),
@@ -172,8 +175,10 @@ void join(Array<T> &out, const int jdim, const vector<Array<T>> &inputs) {
         e.nodePtrs.emplace_back(iArray.getNode());
         e.nodes.push_back(e.nodePtrs.back().get());
         e.ins.push_back(&iArray);
-        outOffset += idims[jdim] * ostrides[jdim];
+        odim += idims[jdim];
+        outOffset = odim * ostrides[jdim];
     }
+    ARG_ASSERT(1, odims[jdim] >= odim);
 
     for (auto &eval : evals) {
         auto &s{eval.second};
@@ -186,7 +191,12 @@ void join(Array<T> &out, const int jdim, const vector<Array<T>> &inputs) {
             auto outputIt{begin(s.outputs)};
             for (const Array<T> *in : s.ins) {
                 if (in->isReady()) {
-                    if (1LL + jdim >= in->ndims() && in->isLinear()) {
+                    const dim_t *istrides{in->strides().dims};
+                    bool lin = in->isLinear() & (ostrides[0] == 1);
+                    for (int i{1}; i < in->ndims(); ++i) {
+                        lin &= (ostrides[i] == istrides[i]);
+                    }
+                    if (lin) {
                         getQueue().enqueueCopyBuffer(
                             *in->get(), *outputIt->data,
                             in->getOffset() * sizeof(T),

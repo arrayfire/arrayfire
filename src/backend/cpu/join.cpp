@@ -47,6 +47,14 @@ Array<T> join(const int dim, const Array<T> &first, const Array<T> &second) {
 template<typename T>
 void join(Array<T> &out, const int dim, const std::vector<Array<T>> &inputs) {
     const dim_t n_arrays = inputs.size();
+    // check if out can accomodate the full join
+    dim4 jdims(out.dims());
+    for (auto &iArray : inputs) {
+        const dim4 &idims(iArray.dims());
+        for (int i = 0; i < AF_MAX_DIMS; ++i)
+            ARG_ASSERT(1, jdims.dims[i] >= idims.dims[i]);
+        jdims.dims[dim] -= idims.dims[dim];
+    }
 
     std::vector<Array<T> *> input_ptrs(inputs.size());
     std::transform(
