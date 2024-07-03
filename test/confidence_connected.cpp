@@ -103,7 +103,7 @@ void testImage(const std::string pTestFile, const size_t numSeeds,
         params.iterations = iter;
         params.replace    = 255.0;
 
-        apiWrapper(&outArray, inArray, seedxArr, seedyArr, params);
+        ASSERT_NO_FATAL_FAILURE(apiWrapper(&outArray, inArray, seedxArr, seedyArr, params));
 
         ASSERT_ARRAYS_EQ(outArray, goldArray);
 
@@ -147,7 +147,7 @@ void testData(CCCTestParams params) {
                                    (af_dtype)af::dtype_traits<T>::af_type));
 
     af_array outArray = 0;
-    apiWrapper(&outArray, inArray, seedxArr, seedyArr, params);
+    ASSERT_NO_FATAL_FAILURE(apiWrapper(&outArray, inArray, seedxArr, seedyArr, params));
 
     ASSERT_VEC_ARRAY_EQ(tests[0], dims, outArray);
 
