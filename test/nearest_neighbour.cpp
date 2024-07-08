@@ -88,7 +88,7 @@ void nearestNeighbourTest(string pTestFile, int feat_dim,
                                    tDims.get(),
                                    (af_dtype)dtype_traits<T>::af_type));
 
-    ASSERT_SUCCESS_CHECK_SUPRT(
+    ASSERT_SUCCESS(
         af_nearest_neighbour(&idx, &dist, query, train, feat_dim, 1, type));
 
     vector<uint> goldIdx  = tests[0];

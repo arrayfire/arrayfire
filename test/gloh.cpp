@@ -161,7 +161,7 @@ void glohTest(string pTestFile) {
             af_load_image(&inArray_f32, inFiles[testId].c_str(), false));
         ASSERT_SUCCESS(conv_image<T>(&inArray, inArray_f32));
 
-        ASSERT_SUCCESS_CHECK_SUPRT(af_gloh(&feat, &desc, inArray, 3,
+        ASSERT_SUCCESS(af_gloh(&feat, &desc, inArray, 3,
                                            0.04f, 10.0f, 1.6f,
                                            true, 1.f / 256.f, 0.05f));
 

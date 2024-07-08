@@ -162,7 +162,7 @@ void siftTest(string pTestFile, unsigned nLayers, float contrastThr,
             af_load_image(&inArray_f32, inFiles[testId].c_str(), false));
         ASSERT_SUCCESS(conv_image<T>(&inArray, inArray_f32));
 
-        ASSERT_SUCCESS_CHECK_SUPRT(af_sift(&feat, &desc, inArray, nLayers,
+        ASSERT_SUCCESS(af_sift(&feat, &desc, inArray, nLayers,
                                            contrastThr, edgeThr, initSigma,
                                            doubleInput, 1.f / 256.f, 0.05f));
 

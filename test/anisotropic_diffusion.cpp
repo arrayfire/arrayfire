@@ -97,11 +97,11 @@ void imageTest(string pTestFile, const float dt, const float K,
         ASSERT_SUCCESS(af_get_elements(&nElems, goldArray));
 
         if (isCurvatureDiffusion) {
-            ASSERT_SUCCESS_CHECK_SUPRT(af_anisotropic_diffusion(&_outArray, inArray, dt, K,
+            ASSERT_SUCCESS(af_anisotropic_diffusion(&_outArray, inArray, dt, K,
                                                                 iters, fluxKind,
                                                                 AF_DIFFUSION_MCDE));
         } else {
-            ASSERT_SUCCESS_CHECK_SUPRT(af_anisotropic_diffusion(&_outArray, inArray, dt, K,
+            ASSERT_SUCCESS(af_anisotropic_diffusion(&_outArray, inArray, dt, K,
                                                                 iters, fluxKind,
                                                                 AF_DIFFUSION_GRAD));
         }

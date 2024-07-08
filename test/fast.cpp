@@ -92,7 +92,7 @@ void fastTest(string pTestFile, bool nonmax) {
 
         ASSERT_SUCCESS(conv_image<T>(&inArray, inArray_f32));
 
-        ASSERT_SUCCESS_CHECK_SUPRT(af_fast(&out, inArray, 20.0f, 9, nonmax, 0.05f, 3));
+        ASSERT_SUCCESS(af_fast(&out, inArray, 20.0f, 9, nonmax, 0.05f, 3));
 
         dim_t n = 0;
         af_array x, y, score, orientation, size;

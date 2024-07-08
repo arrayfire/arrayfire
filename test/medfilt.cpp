@@ -61,7 +61,7 @@ void medfiltTest(string pTestFile, dim_t w_len, dim_t w_wid,
                                    dims.get(),
                                    (af_dtype)dtype_traits<T>::af_type));
 
-    ASSERT_SUCCESS_CHECK_SUPRT(af_medfilt2(&outArray, inArray, w_len, w_wid, pad));
+    ASSERT_SUCCESS(af_medfilt2(&outArray, inArray, w_len, w_wid, pad));
 
     vector<T> outData(dims.elements());
 
@@ -121,7 +121,7 @@ void medfilt1_Test(string pTestFile, dim_t w_wid, af_border_type pad) {
                                    dims.get(),
                                    (af_dtype)dtype_traits<T>::af_type));
 
-    ASSERT_SUCCESS_CHECK_SUPRT(af_medfilt1(&outArray, inArray, w_wid, pad));
+    ASSERT_SUCCESS(af_medfilt1(&outArray, inArray, w_wid, pad));
 
     vector<T> outData(dims.elements());
 
@@ -192,7 +192,7 @@ void medfiltImageTest(string pTestFile, dim_t w_len, dim_t w_wid) {
             af_load_image(&goldArray, outFiles[testId].c_str(), isColor));
         ASSERT_SUCCESS(af_get_elements(&nElems, goldArray));
 
-        ASSERT_SUCCESS_CHECK_SUPRT(
+        ASSERT_SUCCESS(
             af_medfilt2(&outArray, inArray, w_len, w_wid, AF_PAD_ZERO));
 
         ASSERT_IMAGES_NEAR(goldArray, outArray, 0.018f);
@@ -219,7 +219,7 @@ void medfiltInputTest(void) {
                                    dims.get(),
                                    (af_dtype)dtype_traits<T>::af_type));
 
-    ASSERT_SUCCESS_CHECK_SUPRT(af_medfilt2(&outArray, inArray, 1, 1, AF_PAD_ZERO));
+    ASSERT_SUCCESS(af_medfilt2(&outArray, inArray, 1, 1, AF_PAD_ZERO));
 
     bool medfilt1;
     ASSERT_SUCCESS(af_is_vector(&medfilt1, outArray));

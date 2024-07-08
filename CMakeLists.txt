@@ -108,6 +108,7 @@ option(AF_WITH_SPDLOG_HEADER_ONLY "Build ArrayFire with header only version of s
 option(AF_WITH_FMT_HEADER_ONLY "Build ArrayFire with header only version of fmt" OFF)
 option(AF_WITH_FAST_MATH "Use lower precision but high performance numeric optimizations" OFF)
 option(AF_CTEST_SEPARATED "Run tests separately when called from ctest(increases test times)" OFF)
+option(AF_SKIP_UNSUPPORTED_TESTS "Skip tests where functions are unsupported by the backend instead of failing" OFF)
 
 if(AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
   option(AF_WITH_PRUNE_STATIC_CUDA_NUMERIC_LIBS "Prune CUDA static libraries to reduce binary size.(WARNING: May break some libs on older CUDA toolkits for some compute arch)" OFF)

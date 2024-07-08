@@ -259,6 +259,11 @@ function(make_test)
         MTX_TEST_DIR="${ArrayFire_BINARY_DIR}/extern/matrixmarket/"
         )
     endif()
+    if(AF_SKIP_UNSUPPORTED_TESTS)
+      target_compile_definitions(${target}
+        PRIVATE
+          SKIP_UNSUPPORTED_TESTS)
+    endif()
     if(WIN32)
       target_compile_definitions(${target}
         PRIVATE

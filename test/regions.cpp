@@ -70,7 +70,7 @@ void regionsTest(string pTestFile, af_connectivity connectivity,
                                        (af_dtype)dtype_traits<char>::af_type));
     }
 
-    ASSERT_SUCCESS_CHECK_SUPRT(af_regions(&outArray, inArray, connectivity,
+    ASSERT_SUCCESS(af_regions(&outArray, inArray, connectivity,
                                (af_dtype)dtype_traits<T>::af_type));
 
     // Get result

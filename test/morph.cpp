@@ -62,15 +62,15 @@ void morphTest(string pTestFile) {
     af_err af_stat;
     if (isDilation) {
         if (isVolume) {
-            ASSERT_SUCCESS_CHECK_SUPRT(af_dilate3(&outArray, inArray, maskArray));
+            ASSERT_SUCCESS(af_dilate3(&outArray, inArray, maskArray));
         } else {
-            ASSERT_SUCCESS_CHECK_SUPRT(af_dilate(&outArray, inArray, maskArray));
+            ASSERT_SUCCESS(af_dilate(&outArray, inArray, maskArray));
         }
     } else {
         if (isVolume) {
-            ASSERT_SUCCESS_CHECK_SUPRT(af_erode3(&outArray, inArray, maskArray));
+            ASSERT_SUCCESS(af_erode3(&outArray, inArray, maskArray));
         } else {
-            ASSERT_SUCCESS_CHECK_SUPRT(af_erode(&outArray, inArray, maskArray));
+            ASSERT_SUCCESS(af_erode(&outArray, inArray, maskArray));
         }
     }
 
@@ -188,13 +188,13 @@ void morphImageTest(string pTestFile, dim_t seLen) {
         } catch FUNCTION_UNSUPPORTED
 
 #if defined(AF_CPU)
-        ASSERT_SUCCESS_CHECK_SUPRT(error_code);
+        ASSERT_SUCCESS(error_code);
         ASSERT_IMAGES_NEAR(goldArray, outArray, 0.018f);
 #else
         if (targetType != b8 && seLen > 19) {
             ASSERT_EQ(error_code, AF_ERR_NOT_SUPPORTED);
         } else {
-            ASSERT_SUCCESS_CHECK_SUPRT(error_code);
+            ASSERT_SUCCESS(error_code);
             ASSERT_IMAGES_NEAR(goldArray, outArray, 0.018f);
         }
 #endif

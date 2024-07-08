@@ -70,7 +70,7 @@ void hammingMatcherTest(string pTestFile, int feat_dim) {
                                    tDims.get(),
                                    (af_dtype)dtype_traits<T>::af_type));
 
-    ASSERT_SUCCESS_CHECK_SUPRT(af_hamming_matcher(&idx, &dist, query, train, feat_dim, 1));
+    ASSERT_SUCCESS(af_hamming_matcher(&idx, &dist, query, train, feat_dim, 1));
 
     vector<uint> goldIdx  = tests[0];
     vector<uint> goldDist = tests[1];

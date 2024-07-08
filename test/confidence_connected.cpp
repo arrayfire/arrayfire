@@ -41,17 +41,6 @@ struct CCCTestParams {
     double replace;
 };
 
-void apiWrapper(af_array *out, const af_array in, const af_array seedx,
-                const af_array seedy, const CCCTestParams params) {
-    ASSERT_SUCCESS(af_confidence_cc(out, in, seedx, seedy, params.radius,
-                                    params.multiplier, params.iterations,
-                                    params.replace));
-
-    int device = 0;
-    ASSERT_SUCCESS(af_get_device(&device));
-    ASSERT_SUCCESS(af_sync(device));
-}
-
 template<typename T>
 void testImage(const std::string pTestFile, const size_t numSeeds,
                const unsigned *seedx, const unsigned *seedy,
@@ -103,7 +92,12 @@ void testImage(const std::string pTestFile, const size_t numSeeds,
         params.iterations = iter;
         params.replace    = 255.0;
 
-        ASSERT_NO_FATAL_FAILURE(apiWrapper(&outArray, inArray, seedxArr, seedyArr, params));
+        ASSERT_SUCCESS(af_confidence_cc(&outArray, inArray, seedxArr, seedyArr, params.radius,
+                                        params.multiplier, params.iterations,
+                                        params.replace));
+        int device = 0;
+        ASSERT_SUCCESS(af_get_device(&device));
+        ASSERT_SUCCESS(af_sync(device));
 
         ASSERT_ARRAYS_EQ(outArray, goldArray);
 
@@ -147,7 +141,12 @@ void testData(CCCTestParams params) {
                                    (af_dtype)af::dtype_traits<T>::af_type));
 
     af_array outArray = 0;
-    ASSERT_NO_FATAL_FAILURE(apiWrapper(&outArray, inArray, seedxArr, seedyArr, params));
+    ASSERT_SUCCESS(af_confidence_cc(&outArray, inArray, seedxArr, seedyArr, params.radius,
+                                    params.multiplier, params.iterations,
+                                    params.replace));
+    int device = 0;
+    ASSERT_SUCCESS(af_get_device(&device));
+    ASSERT_SUCCESS(af_sync(device));
 
     ASSERT_VEC_ARRAY_EQ(tests[0], dims, outArray);
 

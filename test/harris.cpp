@@ -84,7 +84,7 @@ void harrisTest(string pTestFile, float sigma, unsigned block_size) {
 
         ASSERT_SUCCESS(conv_image<T>(&inArray, inArray_f32));
 
-        ASSERT_SUCCESS_CHECK_SUPRT(
+        ASSERT_SUCCESS(
             af_harris(&out, inArray, 500, 1e5f, sigma, block_size, 0.04f));
 
         dim_t n = 0;
