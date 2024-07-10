@@ -41,7 +41,9 @@ set_policies(
            CMP0074
            CMP0077
            CMP0079)
-cmake_policy(SET CMP0146 OLD)
+if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.27")
+  cmake_policy(SET CMP0146 OLD)
+endif()
 arrayfire_set_cmake_default_variables()
 
 option(AF_WITH_EXTERNAL_PACKAGES_ONLY "Build ArrayFire with External packages only" OFF)
