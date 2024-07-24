@@ -70,6 +70,21 @@ class BufferNode : public TNode<T> {
         m_strides[3]     = new_strides[3];
     }
 
+    void calc(dim_t x, dim_t y, dim_t z, dim_t w, int lim) final {
+        using Tc = compute_t<T>;
+
+        dim_t l_off = 0;
+        l_off += (w < m_dims[3]) * w * m_strides[3];
+        l_off += (z < m_dims[2]) * z * m_strides[2];
+        l_off += (y < m_dims[1]) * y * m_strides[1];
+        T *in_ptr   = m_ptr + l_off;
+        Tc *out_ptr = this->m_val.data();
+        for (int i = 0; i < lim; i++) {
+            out_ptr[i] =
+                static_cast<Tc>(in_ptr[((x + i) < m_dims[0]) ? (x + i) : 0]);
+        }
+    }
+
     void calc(int x, int y, int z, int w, int lim) final {
         using Tc = compute_t<T>;
 
@@ -82,6 +97,16 @@ class BufferNode : public TNode<T> {
         for (int i = 0; i < lim; i++) {
             out_ptr[i] =
                 static_cast<Tc>(in_ptr[((x + i) < m_dims[0]) ? (x + i) : 0]);
+        }
+    }
+
+    void calc(dim_t idx, int lim) final {
+        using Tc = compute_t<T>;
+
+        T *in_ptr   = m_ptr + idx;
+        Tc *out_ptr = this->m_val.data();
+        for (int i = 0; i < lim; i++) {
+            out_ptr[i] = static_cast<Tc>(in_ptr[i]);
         }
     }
 

@@ -36,6 +36,7 @@
 #include <cstring>
 #include <type_traits>
 #include <utility>
+#include <climits>
 
 using af::dim4;
 using arrayfire::common::half;
@@ -179,6 +180,7 @@ void evalMultiple(vector<Array<T> *> array_ptrs) {
         return;
     }
 
+    bool long_index = false;
     for (Array<T> *array : array_ptrs) {
         if (array->isReady()) { continue; }
 
@@ -190,11 +192,14 @@ void evalMultiple(vector<Array<T> *> array_ptrs) {
         params.emplace_back(array->getData().get(), array->dims(),
                             array->strides());
         nodes.push_back(array->node);
+        if (array->dims().elements() >= INT_MAX - jit::VECTOR_LENGTH)
+            long_index = true;
     }
 
     if (params.empty()) return;
 
-    getQueue().enqueue(cpu::kernel::evalMultiple<T>, params, nodes);
+    if (long_index) getQueue().enqueue(cpu::kernel::evalMultiple<T, dim_t>, params, nodes);
+    else getQueue().enqueue(cpu::kernel::evalMultiple<T, int>, params, nodes);
 
     for (Array<T> *array : outputs) { array->node.reset(); }
 }

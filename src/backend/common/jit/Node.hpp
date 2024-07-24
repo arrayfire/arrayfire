@@ -189,11 +189,23 @@ class Node {
         UNUSED(is_linear);
     }
 
+    virtual void calc(dim_t x, dim_t y, dim_t z, dim_t w, int lim) {
+        UNUSED(x);
+        UNUSED(y);
+        UNUSED(z);
+        UNUSED(w);
+    }
+
     virtual void calc(int x, int y, int z, int w, int lim) {
         UNUSED(x);
         UNUSED(y);
         UNUSED(z);
         UNUSED(w);
+    }
+
+    virtual void calc(dim_t idx, int lim) {
+        UNUSED(idx);
+        UNUSED(lim);
     }
 
     virtual void calc(int idx, int lim) {

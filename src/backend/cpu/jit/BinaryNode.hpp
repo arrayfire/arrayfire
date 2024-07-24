@@ -40,11 +40,28 @@ class BinaryNode : public TNode<compute_t<To>> {
 
     af_op_t getOp() const noexcept final { return op; }
 
+    void calc(dim_t x, dim_t y, dim_t z, dim_t w, int lim) final {
+        UNUSED(x);
+        UNUSED(y);
+        UNUSED(z);
+        UNUSED(w);
+        auto lhs = static_cast<TNode<compute_t<Ti>> *>(m_children[0].get());
+        auto rhs = static_cast<TNode<compute_t<Ti>> *>(m_children[1].get());
+        m_op.eval(this->m_val, lhs->m_val, rhs->m_val, lim);
+    }
+
     void calc(int x, int y, int z, int w, int lim) final {
         UNUSED(x);
         UNUSED(y);
         UNUSED(z);
         UNUSED(w);
+        auto lhs = static_cast<TNode<compute_t<Ti>> *>(m_children[0].get());
+        auto rhs = static_cast<TNode<compute_t<Ti>> *>(m_children[1].get());
+        m_op.eval(this->m_val, lhs->m_val, rhs->m_val, lim);
+    }
+
+    void calc(dim_t idx, int lim) final {
+        UNUSED(idx);
         auto lhs = static_cast<TNode<compute_t<Ti>> *>(m_children[0].get());
         auto rhs = static_cast<TNode<compute_t<Ti>> *>(m_children[1].get());
         m_op.eval(this->m_val, lhs->m_val, rhs->m_val, lim);

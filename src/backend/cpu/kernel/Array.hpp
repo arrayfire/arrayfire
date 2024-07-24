@@ -122,7 +122,7 @@ std::vector<TNode<T> *> getClonedOutputNodes(
     return cloned_output_nodes;
 }
 
-template<typename T>
+template<typename T, typename Tidx>
 void evalMultiple(std::vector<Param<T>> arrays,
                   std::vector<common::Node_ptr> output_nodes_) {
     using arrayfire::common::ModdimNode;
@@ -157,11 +157,11 @@ void evalMultiple(std::vector<Param<T>> arrays,
     int num_nodes        = node_clones.size();
     int num_output_nodes = cloned_output_nodes.size();
     if (is_linear) {
-        int num = arrays[0].dims().elements();
-        int cnum =
+        Tidx num = arrays[0].dims().elements();
+        Tidx cnum =
             jit::VECTOR_LENGTH * std::ceil(double(num) / jit::VECTOR_LENGTH);
-        for (int i = 0; i < cnum; i += jit::VECTOR_LENGTH) {
-            int lim = std::min(jit::VECTOR_LENGTH, num - i);
+        for (Tidx i = 0; i < cnum; i += jit::VECTOR_LENGTH) {
+            int lim = std::min(static_cast<Tidx>(jit::VECTOR_LENGTH), num - i);
             for (int n = 0; n < num_nodes; n++) {
                 node_clones[n]->calc(i, lim);
             }
@@ -172,20 +172,20 @@ void evalMultiple(std::vector<Param<T>> arrays,
             }
         }
     } else {
-        for (int w = 0; w < (int)odims[3]; w++) {
+        for (Tidx w = 0; w < (Tidx)odims[3]; w++) {
             dim_t offw = w * ostrs[3];
 
-            for (int z = 0; z < (int)odims[2]; z++) {
+            for (Tidx z = 0; z < (Tidx)odims[2]; z++) {
                 dim_t offz = z * ostrs[2] + offw;
 
-                for (int y = 0; y < (int)odims[1]; y++) {
+                for (Tidx y = 0; y < (Tidx)odims[1]; y++) {
                     dim_t offy = y * ostrs[1] + offz;
 
-                    int dim0  = odims[0];
-                    int cdim0 = jit::VECTOR_LENGTH *
+                    Tidx dim0  = odims[0];
+                    Tidx cdim0 = jit::VECTOR_LENGTH *
                                 std::ceil(double(dim0) / jit::VECTOR_LENGTH);
-                    for (int x = 0; x < (int)cdim0; x += jit::VECTOR_LENGTH) {
-                        int lim  = std::min(jit::VECTOR_LENGTH, dim0 - x);
+                    for (Tidx x = 0; x < (Tidx)cdim0; x += jit::VECTOR_LENGTH) {
+                        int lim  = std::min(static_cast<Tidx>(jit::VECTOR_LENGTH), dim0 - x);
                         dim_t id = x + offy;
 
                         for (int n = 0; n < num_nodes; n++) {
