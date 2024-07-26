@@ -34,6 +34,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <climits>
 
 using arrayfire::common::findModule;
 using arrayfire::common::getEnvVar;
@@ -70,7 +71,7 @@ static string getKernelString(const string& funcName,
                               const vector<int>& output_ids,
                               const bool is_linear, const bool loop0,
                               const bool loop1, const bool loop2,
-                              const bool loop3) {
+                              const bool loop3, const bool long_index) {
     const std::string includeFileStr(jit_cuh, jit_cuh_len);
 
     const std::string paramTStr = R"JIT(
@@ -99,11 +100,18 @@ struct Param {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     const int idxEnd = outref.dims[0];
     if (idx < idxEnd) {)JIT";
+    static const char* linearInit_long = R"JIT(
+    long idx = blockIdx.x * blockDim.x + threadIdx.x;
+    const long idxEnd = outref.dims[0];
+    if (idx < idxEnd) {)JIT";
     static const char* linearEnd  = R"JIT(
     })JIT";
 
     static const char* linearLoop0Start = R"JIT(
         const int idxID0Inc = gridDim.x*blockDim.x;
+        do {)JIT";
+    static const char* linearLoop0Start_long = R"JIT(
+        const long idxID0Inc = gridDim.x*blockDim.x;
         do {)JIT";
     static const char* linearLoop0End   = R"JIT(
             idx += idxID0Inc;
@@ -154,9 +162,22 @@ struct Param {
 #define id3 0
         const int ostrides0 = outref.strides[0];
         int idx = ostrides0*id0;)JIT";
+    static const char* stridedLoop0Init_long  = R"JIT(
+    long id0 = blockIdx.x * blockDim.x + threadIdx.x;
+    const long id0End = outref.dims[0];
+    if (id0 < id0End) {
+#define id1 0
+#define id2 0
+#define id3 0
+        const long ostrides0 = outref.strides[0];
+        long idx = ostrides0*id0;)JIT";
     static const char* stridedLoop0Start = R"JIT(
         const int id0Inc = gridDim.x*blockDim.x;
         const int idxID0Inc = ostrides0*id0Inc;
+        do {)JIT";
+    static const char* stridedLoop0Start_long = R"JIT(
+        const long id0Inc = gridDim.x*blockDim.x;
+        const long idxID0Inc = ostrides0*id0Inc;
         do {)JIT";
     static const char* stridedLoop0End   = R"JIT(
             id0 += id0Inc;
@@ -174,6 +195,16 @@ struct Param {
 #define id3 0
         const int ostrides1 = outref.strides[1];
         int idx = (int)outref.strides[0]*id0 + ostrides1*id1 + (int)outref.strides[2]*id2;)JIT";
+    static const char* stridedLoopNInit_long = R"JIT(
+    long id0 = blockIdx.x * blockDim.x + threadIdx.x;
+    long id1 = blockIdx.y * blockDim.y + threadIdx.y;
+    const long id0End = outref.dims[0];
+    const long id1End = outref.dims[1];
+    if ((id0 < id0End) & (id1 < id1End)) {
+        long id2 = blockIdx.z * blockDim.z + threadIdx.z;
+#define id3 0
+        const long ostrides1 = outref.strides[1];
+        long idx = (long)outref.strides[0]*id0 + ostrides1*id1 + (long)outref.strides[2]*id2;)JIT";
     static const char* stridedEnd       = R"JIT(
     })JIT";
 
@@ -182,8 +213,16 @@ struct Param {
         int id3 = 0;
         const int id3End = outref.dims[3];
         const int idxID3Inc = outref.strides[3];)JIT";
+    static const char* stridedLoop3Init_long  = R"JIT(
+#undef id3
+        long id3 = 0;
+        const long id3End = outref.dims[3];
+        const long idxID3Inc = outref.strides[3];)JIT";
     static const char* stridedLoop3Start = R"JIT(
                     const int idxBaseID3 = idx;
+                    do {)JIT";
+    static const char* stridedLoop3Start_long = R"JIT(
+                    const long idxBaseID3 = idx;
                     do {)JIT";
     // Looping over outside dim3 means that all dimensions are present,
     // so the internal id3 can be used directly
@@ -199,9 +238,17 @@ struct Param {
         const int id2End = outref.dims[2];
         const int id2Inc = gridDim.z*blockDim.z;
         const int idxID2Inc = (int)outref.strides[2]*id2Inc;)JIT";
+    static const char* stridedLoop2Init_long  = R"JIT(
+        const long id2End = outref.dims[2];
+        const long id2Inc = gridDim.z*blockDim.z;
+        const long idxID2Inc = (int)outref.strides[2]*id2Inc;)JIT";
     static const char* stridedLoop2Start = R"JIT(
                 const int idxBaseID2 = idx;
                 const int baseID2 = id2;
+                do {)JIT";
+    static const char* stridedLoop2Start_long = R"JIT(
+                const long idxBaseID2 = idx;
+                const long baseID2 = id2;
                 do {)JIT";
     static const char* stridedLoop2End   = R"JIT(
                     id2 += id2Inc;
@@ -216,6 +263,9 @@ struct Param {
     static const char* stridedLoop1Init  = R"JIT(
         const int id1Inc = gridDim.y*blockDim.y;
         const int idxID1Inc = ostrides1*id1Inc;)JIT";
+    static const char* stridedLoop1Init_long  = R"JIT(
+        const long id1Inc = gridDim.y*blockDim.y;
+        const long idxID1Inc = ostrides1*id1Inc;)JIT";
     static const char* stridedLoop1Start = R"JIT(
             do {)JIT";
     static const char* stridedLoop1End   = R"JIT(
@@ -268,21 +318,23 @@ struct Param {
                   << inParamStream.str() << outParamStream.str() << dimParams
                   << ')' << blockStart << outrefStream.str();
         if (is_linear) {
-            kerStream << linearInit;
-            if (loop0) kerStream << linearLoop0Start;
+            kerStream << (long_index ? linearInit_long : linearInit);
+            if (loop0) kerStream << (long_index ? linearLoop0Start_long : linearLoop0Start);
             kerStream << "\n\n" << inOffsetsStream.str() << opsStream.str();
             if (loop0) kerStream << linearLoop0End;
             kerStream << linearEnd;
         } else {
             if (loop0) {
-                kerStream << stridedLoop0Init << stridedLoop0Start;
+                kerStream << (long_index ? stridedLoop0Init_long : stridedLoop0Init)
+		          << (long_index ? stridedLoop0Start_long : stridedLoop0Start);
             } else {
-                kerStream << stridedLoopNInit;
-                if (loop3) kerStream << stridedLoop3Init;
-                if (loop2) kerStream << stridedLoop2Init;
-                if (loop1) kerStream << stridedLoop1Init << stridedLoop1Start;
-                if (loop2) kerStream << stridedLoop2Start;
-                if (loop3) kerStream << stridedLoop3Start;
+                kerStream << (long_index ? stridedLoopNInit_long : stridedLoopNInit);
+                if (loop3) kerStream << (long_index ? stridedLoop3Init_long : stridedLoop3Init);
+                if (loop2) kerStream << (long_index ? stridedLoop2Init_long : stridedLoop2Init);
+                if (loop1) kerStream << (long_index ? stridedLoop1Init_long : stridedLoop1Init)
+			             << stridedLoop1Start;
+                if (loop2) kerStream << (long_index ? stridedLoop2Start_long : stridedLoop2Start);
+                if (loop3) kerStream << (long_index ? stridedLoop3Start_long : stridedLoop3Start);
             }
             kerStream << "\n\n" << inOffsetsStream.str() << opsStream.str();
             if (loop3) kerStream << stridedLoop3End;
@@ -321,7 +373,7 @@ static CUfunction getKernel(const vector<Node*>& output_nodes,
                             const vector<Node_ids>& full_ids,
                             const bool is_linear, const bool loop0,
                             const bool loop1, const bool loop2,
-                            const bool loop3) {
+                            const bool loop3, const bool long_index) {
     const string funcName{getFuncName(output_nodes, full_nodes, full_ids,
                                       is_linear, loop0, loop1, loop2, loop3)};
     // A forward lookup in module cache helps avoid recompiling
@@ -332,7 +384,7 @@ static CUfunction getKernel(const vector<Node*>& output_nodes,
     if (!entry) {
         const string jitKer{getKernelString(funcName, full_nodes, full_ids,
                                             output_ids, is_linear, loop0, loop1,
-                                            loop2, loop3)};
+                                            loop2, loop3, long_index)};
         saveKernel(funcName, jitKer, ".cu");
 
         const common::Source jit_src{jitKer.c_str(), jitKer.size(),
@@ -493,8 +545,10 @@ void evalNodes(vector<Param<T>>& outputs, const vector<Node*>& output_nodes) {
         const dim3 threads{th.genThreads()};
         const dim3 blocks{th.genBlocks(threads, nrInputs, nrOutputs, totalSize,
                                        outputSizeofType)};
+	long tot_dim = threads.x*threads.y*threads.z*blocks.x*blocks.y*blocks.z;
+	bool long_index = tot_dim >= INT_MAX;
         auto ker = getKernel(output_nodes, output_ids, full_nodes, full_ids,
-                             is_linear, th.loop0, th.loop1, th.loop2, th.loop3);
+                             is_linear, th.loop0, th.loop1, th.loop2, th.loop3, long_index);
 
         vector<void*> args;
         for (const Node* node : full_nodes) {

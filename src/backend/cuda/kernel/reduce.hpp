@@ -259,7 +259,7 @@ __global__ static void reduce_first_kernel(Param<To> out, CParam<Ti> in,
     if (tidx == 0) optr[blockIdx_x] = data_t<To>(out_val);
 }
 
-template<typename Ti, typename To, af_op_t op, uint DIMX>
+template<typename Ti, typename To, typename Tidx, typename Tidxu, af_op_t op, uint DIMX>
 __global__ static void reduce_all_kernel(Param<To> out,
                                          Param<unsigned> retirementCount,
                                          Param<To> tmp, CParam<Ti> in,
@@ -270,14 +270,14 @@ __global__ static void reduce_all_kernel(Param<To> out,
     const uint tidy = threadIdx.y;
     const uint tid  = tidy * DIMX + tidx;
 
-    const uint zid        = blockIdx.x / blocks_x;
-    const uint blockIdx_x = blockIdx.x - (blocks_x)*zid;
-    const uint xid        = blockIdx_x * blockDim.x * repeat + tidx;
+    const Tidxu zid        = blockIdx.x / blocks_x;
+    const Tidxu blockIdx_x = blockIdx.x - (blocks_x)*zid;
+    const Tidxu xid        = blockIdx_x * blockDim.x * repeat + tidx;
 
-    const uint wid = (blockIdx.y + blockIdx.z * gridDim.y) / blocks_y;
-    const uint blockIdx_y =
+    const Tidxu wid = (blockIdx.y + blockIdx.z * gridDim.y) / blocks_y;
+    const Tidxu blockIdx_y =
         (blockIdx.y + blockIdx.z * gridDim.y) - (blocks_y)*wid;
-    const uint yid = blockIdx_y * blockDim.y + tidy;
+    const Tidxu yid = blockIdx_y * blockDim.y + tidy;
 
     common::Binary<compute_t<To>, op> reduce;
     common::Transform<Ti, compute_t<To>, op> transform;
@@ -291,10 +291,10 @@ __global__ static void reduce_all_kernel(Param<To> out,
 
     bool cond = yid < in.dims[1] && zid < in.dims[2] && wid < in.dims[3];
 
-    int lim = min((int)(xid + repeat * DIMX), in.dims[0]);
+    Tidx lim = min((xid + repeat * DIMX), (Tidx) in.dims[0]);
 
     compute_t<To> out_val = common::Binary<compute_t<To>, op>::init();
-    for (int id = xid; cond && id < lim; id += DIMX) {
+    for (Tidx id = xid; cond && id < lim; id += DIMX) {
         compute_t<To> in_val = transform(iptr[id]);
         if (change_nan)
             in_val =
@@ -323,8 +323,8 @@ __global__ static void reduce_all_kernel(Param<To> out,
         out_val = WarpReduce(temp_storage[0]).Reduce(out_val, reduce);
     }
 
-    const unsigned total_blocks = (gridDim.x * gridDim.y * gridDim.z);
-    const int uubidx            = (gridDim.x * gridDim.y) * blockIdx.z +
+    const Tidxu total_blocks = (gridDim.x * gridDim.y * gridDim.z);
+    const Tidx uubidx            = (gridDim.x * gridDim.y) * blockIdx.z +
                        (gridDim.x * blockIdx.y) + blockIdx.x;
     if (cond && tid == 0) {
         if (total_blocks != 1) {
@@ -344,14 +344,14 @@ __global__ static void reduce_all_kernel(Param<To> out,
 
         // Thread 0 takes a ticket
         if (tid == 0) {
-            unsigned int ticket = atomicInc(retirementCount.ptr, total_blocks);
+            Tidxu ticket = atomicInc(retirementCount.ptr, total_blocks);
             // If the ticket ID == number of blocks, we are the last block
             amLast = (ticket == (total_blocks - 1));
         }
         __syncthreads();  // for amlast
 
         if (amLast) {
-            int i   = tid;
+            Tidx i   = tid;
             out_val = common::Binary<compute_t<To>, op>::init();
 
             while (i < total_blocks) {
@@ -381,7 +381,7 @@ __global__ static void reduce_all_kernel(Param<To> out,
     }
 }
 
-template<typename Ti, typename To, af_op_t op>
+template<typename Ti, typename To, typename Tidx, typename Tidxu, af_op_t op>
 void reduce_all_launcher(Param<To> out, CParam<Ti> in, const uint blocks_x,
                          const uint blocks_y, const uint threads_x,
                          bool change_nan, double nanval) {
@@ -404,22 +404,22 @@ void reduce_all_launcher(Param<To> out, CParam<Ti> in, const uint blocks_x,
 
     switch (threads_x) {
         case 32:
-            CUDA_LAUNCH((reduce_all_kernel<Ti, To, op, 32>), blocks, threads,
+            CUDA_LAUNCH((reduce_all_kernel<Ti, To, Tidx, Tidxu, op, 32>), blocks, threads,
                         out, retirementCount, tmp, in, blocks_x, blocks_y,
                         repeat, change_nan, scalar<To>(nanval));
             break;
         case 64:
-            CUDA_LAUNCH((reduce_all_kernel<Ti, To, op, 64>), blocks, threads,
+            CUDA_LAUNCH((reduce_all_kernel<Ti, To, Tidx, Tidxu, op, 64>), blocks, threads,
                         out, retirementCount, tmp, in, blocks_x, blocks_y,
                         repeat, change_nan, scalar<To>(nanval));
             break;
         case 128:
-            CUDA_LAUNCH((reduce_all_kernel<Ti, To, op, 128>), blocks, threads,
+            CUDA_LAUNCH((reduce_all_kernel<Ti, To, Tidx, Tidxu, op, 128>), blocks, threads,
                         out, retirementCount, tmp, in, blocks_x, blocks_y,
                         repeat, change_nan, scalar<To>(nanval));
             break;
         case 256:
-            CUDA_LAUNCH((reduce_all_kernel<Ti, To, op, 256>), blocks, threads,
+            CUDA_LAUNCH((reduce_all_kernel<Ti, To, Tidx, Tidxu, op, 256>), blocks, threads,
                         out, retirementCount, tmp, in, blocks_x, blocks_y,
                         repeat, change_nan, scalar<To>(nanval));
             break;
@@ -515,7 +515,7 @@ void reduce(Param<To> out, CParam<Ti> in, int dim, bool change_nan,
 }
 template<typename Ti, typename To, af_op_t op>
 void reduce_all(Param<To> out, CParam<Ti> in, bool change_nan, double nanval) {
-    int in_elements = in.dims[0] * in.dims[1] * in.dims[2] * in.dims[3];
+    auto in_elements = in.dims[0] * in.dims[1] * in.dims[2] * in.dims[3];
     bool is_linear  = (in.strides[0] == 1);
     for (int k = 1; k < 4; k++) {
         is_linear &= (in.strides[k] == (in.strides[k - 1] * in.dims[k - 1]));
@@ -529,8 +529,8 @@ void reduce_all(Param<To> out, CParam<Ti> in, bool change_nan, double nanval) {
         }
     }
 
-    uint threads_x = nextpow2(std::max(32u, (uint)in.dims[0]));
-    threads_x      = std::min(threads_x, THREADS_PER_BLOCK);
+    uint threads_x = in.dims[0] > THREADS_PER_BLOCK ? THREADS_PER_BLOCK :
+	                                              nextpow2(std::max(32u, (uint)in.dims[0]));
     uint threads_y = THREADS_PER_BLOCK / threads_x;
 
     // TODO: perf REPEAT, consider removing or runtime eval
@@ -538,8 +538,13 @@ void reduce_all(Param<To> out, CParam<Ti> in, bool change_nan, double nanval) {
     uint blocks_x = divup(in.dims[0], threads_x * REPEAT);
     uint blocks_y = divup(in.dims[1], threads_y);
 
-    reduce_all_launcher<Ti, To, op>(out, in, blocks_x, blocks_y, threads_x,
-                                    change_nan, nanval);
+    long tot_dims = in.dims[0]*in.dims[1]*in.dims[2]*in.dims[3];
+    if(tot_dims > INT_MAX)
+    	reduce_all_launcher<Ti, To, long, unsigned long, op>(out, in, blocks_x, blocks_y, threads_x,
+                                                             change_nan, nanval);
+    else
+    	reduce_all_launcher<Ti, To, int, uint, op>(out, in, blocks_x, blocks_y, threads_x,
+                                                   change_nan, nanval);
 }
 
 }  // namespace kernel
