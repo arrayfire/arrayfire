@@ -135,8 +135,8 @@ void naive_bayes_demo(bool console, int perc) {
     if (!console) {
         test_images = test_images.T();
         test_labels = test_labels.T();
-        // FIXME: Crashing in mnist_common.h::classify
-        // display_results<false>(test_images, res_labels, test_labels , 20);
+
+        display_results<false>(test_images, res_labels, test_labels, 20);
     }
 }
 
