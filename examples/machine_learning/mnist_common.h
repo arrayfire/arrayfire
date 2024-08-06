@@ -145,7 +145,7 @@ static void display_results(const af::array &test_images,
             (test_images(span, span, i) > 0.1f).as(u8).host<unsigned char>();
         for (int j = 0; j < 28; j++) {
             for (int k = 0; k < 28; k++) {
-                std::cout << (img[j * 28 + k] ? "\u2588" : " ") << " ";
+                std::cout << (img[k * 28 + j] ? "\u2588" : " ") << " ";
             }
             std::cout << std::endl;
         }
