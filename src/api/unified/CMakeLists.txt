@@ -82,8 +82,8 @@ target_include_directories(af
 target_include_directories(af
   SYSTEM PRIVATE
     $<TARGET_PROPERTY:afcommon_interface,INTERFACE_INCLUDE_DIRECTORIES>
-    $<$<BOOL:${OpenCL_FOUND}>: $<TARGET_PROPERTY:OpenCL::OpenCL,INTERFACE_INCLUDE_DIRECTORIES>>
-    $<$<BOOL:${CUDA_FOUND}>:  ${CUDA_INCLUDE_DIRS}>
+    $<$<BOOL:${OpenCL_FOUND}>:$<TARGET_PROPERTY:OpenCL::OpenCL,INTERFACE_INCLUDE_DIRECTORIES>>
+    $<$<BOOL:${CUDA_FOUND}>:${CUDA_INCLUDE_DIRS}>
   )
 
 target_link_libraries(af
