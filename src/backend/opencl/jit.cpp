@@ -33,6 +33,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <climits>
 
 using arrayfire::common::findModule;
 using arrayfire::common::getFuncName;
@@ -65,7 +66,8 @@ using jit::BufferNode;
 string getKernelString(const string& funcName, const vector<Node*>& full_nodes,
                        const vector<Node_ids>& full_ids,
                        const vector<int>& output_ids, const bool is_linear,
-                       const bool loop0, const bool loop1, const bool loop3) {
+                       const bool loop0, const bool loop1, const bool loop3,
+		       const bool long_index) {
     // Common OpenCL code
     // This part of the code does not change with the kernel.
 
@@ -80,11 +82,19 @@ __kernel void )JIT";
    const int idxEnd = oInfo.dims[0];
    if (idx < idxEnd) {
 )JIT";
+    static const char* linearInit_long = R"JIT(
+   long idx = get_global_id(0);
+   const long idxEnd = oInfo.dims[0];
+   if (idx < idxEnd) {
+)JIT";
     static const char* linearEnd  = R"JIT(
    })JIT";
 
     static const char* linearLoop0Start = R"JIT(
         const int idxID0Inc = get_global_size(0);
+        do {)JIT";
+    static const char* linearLoop0Start_long = R"JIT(
+        const long idxID0Inc = get_global_size(0);
         do {)JIT";
     static const char* linearLoop0End   = R"JIT(
             idx += idxID0Inc;
@@ -131,9 +141,22 @@ __kernel void )JIT";
 #define id3 0
         const int ostrides0 = oInfo.strides[0];
         int idx = ostrides0*id0;)JIT";
+    static const char* stridedLoop0Init_long  = R"JIT(
+    long id0 = get_global_id(0);
+    const long id0End = oInfo.dims[0];
+    if (id0 < id0End) {
+#define id1 0
+#define id2 0
+#define id3 0
+        const long ostrides0 = oInfo.strides[0];
+        long idx = ostrides0*id0;)JIT";
     static const char* stridedLoop0Start = R"JIT(
         const int id0Inc = get_global_size(0);
         const int idxID0Inc = ostrides0*id0Inc;
+        do {)JIT";
+    static const char* stridedLoop0Start_long = R"JIT(
+        const long id0Inc = get_global_size(0);
+        const long idxID0Inc = ostrides0*id0Inc;
         do {)JIT";
     static const char* stridedLoop0End   = R"JIT(
             id0 += id0Inc;
@@ -152,6 +175,16 @@ __kernel void )JIT";
 #define id3 0
         const int ostrides1 = oInfo.strides[1];
         int idx = (int)oInfo.strides[0]*id0 + ostrides1*id1 + (int)oInfo.strides[2]*id2;)JIT";
+    static const char* stridedLoopNInit_long = R"JIT(
+    long id0 = get_global_id(0);
+    long id1 = get_global_id(1);
+    const long id0End = oInfo.dims[0];
+    const long id1End = oInfo.dims[1];
+    if ((id0 < id0End) & (id1 < id1End)) {
+        const long id2 = get_global_id(2);
+#define id3 0
+        const long ostrides1 = oInfo.strides[1];
+        long idx = (long)oInfo.strides[0]*id0 + ostrides1*id1 + (long)oInfo.strides[2]*id2;)JIT";
     static const char* stridedEnd       = R"JIT(
     })JIT";
 
@@ -160,8 +193,16 @@ __kernel void )JIT";
         int id3 = 0;
         const int id3End = oInfo.dims[3];
         const int idxID3Inc = oInfo.strides[3];)JIT";
+    static const char* stridedLoop3Init_long  = R"JIT(
+#undef id3
+        long id3 = 0;
+        const long id3End = oInfo.dims[3];
+        const long idxID3Inc = oInfo.strides[3];)JIT";
     static const char* stridedLoop3Start = R"JIT(
                 const int idxBaseID3 = idx;
+                do {)JIT";
+    static const char* stridedLoop3Start_long = R"JIT(
+                const long idxBaseID3 = idx;
                 do {)JIT";
     static const char* stridedLoop3End   = R"JIT(
                     ++id3;
@@ -174,6 +215,9 @@ __kernel void )JIT";
     static const char* stridedLoop1Init  = R"JIT(
         const int id1Inc = get_global_size(1);
         const int idxID1Inc = id1Inc * ostrides1;)JIT";
+    static const char* stridedLoop1Init_long  = R"JIT(
+        const long id1Inc = get_global_size(1);
+        const long idxID1Inc = id1Inc * ostrides1;)JIT";
     static const char* stridedLoop1Start = R"JIT(
         do {)JIT";
     static const char* stridedLoop1End   = R"JIT(
@@ -202,9 +246,15 @@ __kernel void )JIT";
         for (auto outIt{begin(output_ids)}, endIt{end(output_ids)};
              (outIt = find(outIt, endIt, ids_curr.id)) != endIt; ++outIt) {
             // Generate also output parameters
-            outParamStream << "__global "
-                           << full_nodes[ids_curr.id]->getTypeStr() << " *out"
-                           << oid << ", int offset" << oid << ",\n";
+	    if(long_index) {
+            	outParamStream << "__global "
+                	       << full_nodes[ids_curr.id]->getTypeStr() << " *out"
+                               << oid << ", long offset" << oid << ",\n";
+	    } else {
+            	outParamStream << "__global "
+                	       << full_nodes[ids_curr.id]->getTypeStr() << " *out"
+                               << oid << ", int offset" << oid << ",\n";
+	    }
             // Apply output offset
             outOffsetStream << "\nout" << oid << " += offset" << oid << ';';
             // Generate code to write the output
@@ -218,21 +268,24 @@ __kernel void )JIT";
               << inParamStream.str() << outParamStream.str() << dimParams << ")"
               << blockStart;
     if (is_linear) {
-        kerStream << linearInit << inOffsetsStream.str()
+        kerStream << (long_index ? linearInit_long : linearInit) << inOffsetsStream.str()
                   << outOffsetStream.str() << '\n';
-        if (loop0) kerStream << linearLoop0Start;
+        if (loop0) kerStream << (long_index ? linearLoop0Start_long : linearLoop0Start);
         kerStream << "\n\n" << opsStream.str();
         if (loop0) kerStream << linearLoop0End;
         kerStream << linearEnd;
     } else {
         if (loop0) {
-            kerStream << stridedLoop0Init << outOffsetStream.str() << '\n'
-                      << stridedLoop0Start;
+            kerStream << (long_index ? stridedLoop0Init_long : stridedLoop0Init)
+		      << outOffsetStream.str() << '\n'
+		      << (long_index ? stridedLoop0Start_long : stridedLoop0Start);
         } else {
-            kerStream << stridedLoopNInit << outOffsetStream.str() << '\n';
-            if (loop3) kerStream << stridedLoop3Init;
-            if (loop1) kerStream << stridedLoop1Init << stridedLoop1Start;
-            if (loop3) kerStream << stridedLoop3Start;
+            kerStream << (long_index ? stridedLoopNInit_long : stridedLoopNInit)
+		      << outOffsetStream.str() << '\n';
+            if (loop3) kerStream << (long_index ? stridedLoop3Init_long : stridedLoop3Init);
+            if (loop1) kerStream << (long_index ? stridedLoop1Init_long : stridedLoop1Init)
+		                 << stridedLoop1Start;
+            if (loop3) kerStream << (long_index ? stridedLoop3Start_long : stridedLoop3Start);
         }
         kerStream << "\n\n" << inOffsetsStream.str() << opsStream.str();
         if (loop3) kerStream << stridedLoop3End;
@@ -258,7 +311,8 @@ cl::Kernel getKernel(const vector<Node*>& output_nodes,
                      const vector<int>& output_ids,
                      const vector<Node*>& full_nodes,
                      const vector<Node_ids>& full_ids, const bool is_linear,
-                     const bool loop0, const bool loop1, const bool loop3) {
+                     const bool loop0, const bool loop1, const bool loop3,
+		     const bool long_index) {
     const string funcName{getFuncName(output_nodes, full_nodes, full_ids,
                                       is_linear, loop0, loop1, false, loop3)};
     // A forward lookup in module cache helps avoid recompiling the JIT
@@ -269,7 +323,7 @@ cl::Kernel getKernel(const vector<Node*>& output_nodes,
     if (!entry) {
         const string jitKer{getKernelString(funcName, full_nodes, full_ids,
                                             output_ids, is_linear, loop0, loop1,
-                                            loop3)};
+                                            loop3, long_index)};
         saveKernel(funcName, jitKer, ".cl");
 
         const common::Source jitKer_cl_src{
@@ -430,8 +484,10 @@ void evalNodes(vector<Param>& outputs, const vector<Node*>& output_nodes) {
 
     threadsMgt<dim_t> th(outDims, ndims, nrInputs, nrOutputs, totalSize,
                          outputSizeofType);
+    long tot_dim = outDims[0]*outDims[1]*outDims[2];
+    bool long_index = tot_dim >= INT_MAX;
     auto ker = getKernel(output_nodes, output_ids, full_nodes, full_ids,
-                         is_linear, th.loop0, th.loop1, th.loop3);
+                         is_linear, th.loop0, th.loop1, th.loop3, long_index);
     const cl::NDRange local{th.genLocal(ker)};
     const cl::NDRange global{th.genGlobal(local)};
 
@@ -447,7 +503,8 @@ void evalNodes(vector<Param>& outputs, const vector<Node*>& output_nodes) {
     // Set output parameters
     for (const auto& output : outputs) {
         ker.setArg(nargs++, *(output.data));
-        ker.setArg(nargs++, static_cast<int>(output.info.offset));
+	if(long_index) ker.setArg(nargs++, static_cast<long>(output.info.offset));
+	else ker.setArg(nargs++, static_cast<int>(output.info.offset));
     }
 
     // Set dimensions

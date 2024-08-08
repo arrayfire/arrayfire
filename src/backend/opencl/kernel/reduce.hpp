@@ -21,6 +21,7 @@
 #include <kernel/names.hpp>
 #include <kernel_headers/ops.hpp>
 #include <kernel_headers/reduce_all.hpp>
+#include <kernel_headers/reduce_all_long.hpp>
 #include <kernel_headers/reduce_dim.hpp>
 #include <kernel_headers/reduce_first.hpp>
 #include <math.hpp>
@@ -113,7 +114,7 @@ void reduceDim(Param out, Param in, int change_nan, double nanval, int dim) {
 template<typename Ti, typename To, af_op_t op>
 void reduceAllLauncher(Param out, Param in, const uint groups_x,
                        const uint groups_y, const uint threads_x,
-                       int change_nan, double nanval) {
+                       int change_nan, double nanval, bool long_index) {
     ToNumStr<To> toNumStr;
     std::array<TemplateArg, 4> targs = {
         TemplateTypename<Ti>(),
@@ -132,8 +133,14 @@ void reduceAllLauncher(Param out, Param in, const uint groups_x,
         DefineKeyValue(CPLX, iscplx<Ti>()),
         getTypeBuildDefinition<Ti, To>()};
 
-    auto reduceAll = common::getKernel(
-        "reduce_all_kernel", {{ops_cl_src, reduce_all_cl_src}}, targs, options);
+    arrayfire::opencl::Kernel reduceAll;
+    if(long_index) {
+        reduceAll = common::getKernel(
+            "reduce_all_kernel", {{ops_cl_src, reduce_all_long_cl_src}}, targs, options);
+    } else {
+        reduceAll = common::getKernel(
+            "reduce_all_kernel", {{ops_cl_src, reduce_all_cl_src}}, targs, options);
+    }
 
     cl::NDRange local(threads_x, THREADS_PER_GROUP / threads_x);
     cl::NDRange global(groups_x * in.info.dims[2] * local[0],
@@ -240,7 +247,7 @@ void reduce(Param out, Param in, int dim, int change_nan, double nanval) {
 
 template<typename Ti, typename To, af_op_t op>
 void reduceAll(Param out, Param in, int change_nan, double nanval) {
-    int in_elements =
+    auto in_elements =
         in.info.dims[0] * in.info.dims[1] * in.info.dims[2] * in.info.dims[3];
 
     bool is_linear = (in.info.strides[0] == 1);
@@ -257,14 +264,17 @@ void reduceAll(Param out, Param in, int change_nan, double nanval) {
         }
     }
 
-    uint threads_x = nextpow2(std::max(32u, (uint)in.info.dims[0]));
-    threads_x      = std::min(threads_x, THREADS_PER_GROUP);
+    uint threads_x = in.info.dims[0] > THREADS_PER_GROUP ? THREADS_PER_GROUP :
+	    	     std::min(nextpow2(std::max(32u, (uint)in.info.dims[0])), THREADS_PER_GROUP);
     uint threads_y = THREADS_PER_GROUP / threads_x;
 
+    long tot_dims = in.info.dims[0]*in.info.dims[1]*in.info.dims[2]*in.info.dims[3];
+    bool long_index = tot_dims > INT_MAX;
     uint groups_x = divup(in.info.dims[0], threads_x * REPEAT);
     uint groups_y = divup(in.info.dims[1], threads_y);
+
     reduceAllLauncher<Ti, To, op>(out, in, groups_x, groups_y, threads_x,
-                                  change_nan, nanval);
+                                  change_nan, nanval, long_index);
 }
 
 }  // namespace kernel

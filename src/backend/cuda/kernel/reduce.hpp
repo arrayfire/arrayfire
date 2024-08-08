@@ -530,7 +530,7 @@ void reduce_all(Param<To> out, CParam<Ti> in, bool change_nan, double nanval) {
     }
 
     uint threads_x = in.dims[0] > THREADS_PER_BLOCK ? THREADS_PER_BLOCK :
-	                                              nextpow2(std::max(32u, (uint)in.dims[0]));
+	             std::min(nextpow2(std::max(32u, (uint)in.dims[0])), THREADS_PER_BLOCK);
     uint threads_y = THREADS_PER_BLOCK / threads_x;
 
     // TODO: perf REPEAT, consider removing or runtime eval

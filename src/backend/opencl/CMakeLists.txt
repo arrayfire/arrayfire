@@ -86,6 +86,7 @@ set(kernel_src
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/random_engine_write.cl
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/range.cl
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/reduce_all.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/reduce_all_long.cl
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/reduce_blocks_by_key_dim.cl
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/reduce_blocks_by_key_first.cl
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/reduce_by_key_boundary.cl
