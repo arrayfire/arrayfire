@@ -39,7 +39,7 @@ void coo2dense(Param out, const Param values, const Param rowIdx,
     };
     std::vector<std::string> compileOpts = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
-        DefineKeyValue(resp, REPEAT),
+        DefineKeyValue(reps, REPEAT),
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
