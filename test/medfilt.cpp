@@ -351,7 +351,8 @@ TEST(MedianFilter, CPP) {
 
     dim4 dims = numDims[0];
     array input(dims, &(in[0].front()));
-    array output = medfilt(input, w_len, w_wid, AF_PAD_SYM);
+    array output;
+    try { output = medfilt(input, w_len, w_wid, AF_PAD_SYM); } catch FUNCTION_UNSUPPORTED
 
     vector<float> outData(dims.elements());
     output.host((void*)outData.data());
@@ -377,7 +378,8 @@ TEST(MedianFilter1d, CPP) {
 
     dim4 dims = numDims[0];
     array input(dims, &(in[0].front()));
-    array output = medfilt1(input, w_wid, AF_PAD_SYM);
+    array output;
+    try { output = medfilt1(input, w_wid, AF_PAD_SYM); } catch FUNCTION_UNSUPPORTED
 
     vector<float> outData(dims.elements());
     output.host((void*)outData.data());
@@ -406,7 +408,8 @@ TEST(MedianFilter, Docs) {
     //    2.0000        6.0000       10.0000       14.0000
     //    3.0000        7.0000       11.0000       15.0000
     //    4.0000        8.0000       12.0000       16.0000
-    array b = medfilt(a, 3, 3, AF_PAD_ZERO);
+    array b;
+    try { b = medfilt(a, 3, 3, AF_PAD_ZERO); } catch FUNCTION_UNSUPPORTED
     // af_print(b);
     // b=  0.0000        2.0000        6.0000        0.0000
     //    2.0000        6.0000       10.0000       10.0000
@@ -435,10 +438,13 @@ TEST(MedianFilter, GFOR) {
     array A   = iota(dims);
     array B   = constant(0, dims);
 
-    gfor(seq ii, 3) { B(span, span, ii) = medfilt(A(span, span, ii)); }
+    try {
+        gfor(seq ii, 3) { B(span, span, ii) = medfilt(A(span, span, ii)); }
+    } catch FUNCTION_UNSUPPORTED
 
     for (int ii = 0; ii < 3; ii++) {
-        array c_ii = medfilt(A(span, span, ii));
+        array c_ii;
+        try { c_ii = medfilt(A(span, span, ii)); } catch FUNCTION_UNSUPPORTED
         array b_ii = B(span, span, ii);
         ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
     }
@@ -449,10 +455,13 @@ TEST(MedianFilter1d, GFOR) {
     array A   = iota(dims);
     array B   = constant(0, dims);
 
-    gfor(seq ii, 3) { B(span, ii) = medfilt1(A(span, ii)); }
+    try {
+        gfor(seq ii, 3) { B(span, ii) = medfilt1(A(span, ii)); }
+    } catch FUNCTION_UNSUPPORTED
 
     for (int ii = 0; ii < 3; ii++) {
-        array c_ii = medfilt1(A(span, ii));
+        array c_ii;
+        try { c_ii = medfilt1(A(span, ii)); } catch FUNCTION_UNSUPPORTED
         array b_ii = B(span, ii);
         ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
     }

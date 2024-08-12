@@ -500,10 +500,11 @@ template<typename T>
 void writeHostDataArray(Array<T> &arr, const T *const data,
                         const size_t bytes) {
     if (!arr.isOwner()) { arr = copyArray<T>(arr); }
+    auto arr_get = arr.get();
     getQueue()
         .submit([&](sycl::handler &h) {
             auto host_acc =
-                arr.get()->template get_access<sycl::access_mode::write>(
+                arr_get->template get_access<sycl::access_mode::write>(
                     h, sycl::range(bytes / sizeof(T)), arr.getOffset());
             h.copy(data, host_acc);
         })
@@ -517,10 +518,11 @@ void writeDeviceDataArray(Array<T> &arr, const void *const data,
 
     sycl::buffer<T> *dataptr =
         static_cast<sycl::buffer<T> *>(const_cast<void *>(data));
+    auto arr_get = arr.get();
     getQueue().submit([&](sycl::handler &h) {
         auto src_acc = dataptr->template get_access<sycl::access_mode::read>(
             h, sycl::range(bytes / sizeof(T)));
-        auto dst_acc = arr.get()->template get_access<sycl::access_mode::write>(
+        auto dst_acc = arr_get->template get_access<sycl::access_mode::write>(
             h, sycl::range(bytes / sizeof(T)), arr.getOffset());
         h.copy(src_acc, dst_acc);
     });

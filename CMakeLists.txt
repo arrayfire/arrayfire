@@ -108,6 +108,7 @@ option(AF_WITH_SPDLOG_HEADER_ONLY "Build ArrayFire with header only version of s
 option(AF_WITH_FMT_HEADER_ONLY "Build ArrayFire with header only version of fmt" OFF)
 option(AF_WITH_FAST_MATH "Use lower precision but high performance numeric optimizations" OFF)
 option(AF_CTEST_SEPARATED "Run tests separately when called from ctest(increases test times)" OFF)
+option(AF_SKIP_UNSUPPORTED_TESTS "Skip tests where functions are unsupported by the backend instead of failing" OFF)
 
 if(AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
   option(AF_WITH_PRUNE_STATIC_CUDA_NUMERIC_LIBS "Prune CUDA static libraries to reduce binary size.(WARNING: May break some libs on older CUDA toolkits for some compute arch)" OFF)
@@ -139,7 +140,7 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)
   if(DEFINED ENV{MKLROOT} AND NOT DEFINED MKL_ROOT)
     set(MKL_ROOT "$ENV{MKLROOT}")
   endif()
-  set(DPCPP_COMPILER ON)
+  set(SYCL_COMPILER ON)
   set(MKL_THREADING "tbb_thread")
   set(MKL_INTERFACE "ilp64")
   find_package(MKL 2024.1)
@@ -552,6 +553,7 @@ if(BUILD_WITH_MKL AND AF_INSTALL_STANDALONE)
     get_filename_component(mkl_shd ${MKL_Core_LINK_LIBRARY} REALPATH)
     get_filename_component(mkl_tly ${MKL_ThreadLayer_LINK_LIBRARY} REALPATH)
     install(FILES
+      ${mkl_sycl}
       ${mkl_rnt}
       ${mkl_shd}
       ${mkl_tly}

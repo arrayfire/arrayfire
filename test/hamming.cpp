@@ -134,7 +134,7 @@ TEST(HammingMatcher, CPP) {
     array train(tDims, &(in[1].front()));
 
     array idx, dist;
-    hammingMatcher(idx, dist, query, train, 0, 1);
+    try { hammingMatcher(idx, dist, query, train, 0, 1); } catch FUNCTION_UNSUPPORTED
 
     vector<uint> goldIdx  = tests[0];
     vector<uint> goldDist = tests[1];
@@ -172,7 +172,7 @@ TEST(HammingMatcher64bit, CPP) {
     array train(tDims, &(in[1].front()));
 
     array idx, dist;
-    hammingMatcher(idx, dist, query, train, 0, 1);
+    try { hammingMatcher(idx, dist, query, train, 0, 1); } catch FUNCTION_UNSUPPORTED
 
     vector<unsigned long long> goldIdx  = tests[0];
     vector<unsigned long long> goldDist = tests[1];

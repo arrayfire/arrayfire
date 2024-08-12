@@ -118,7 +118,9 @@ void scanByKeyTest(dim4 dims, int scanDim, vector<int> nodeLengths,
 
     array afkey(dims, key.data());
     array afin(dims, in.data());
-    array afout = scanByKey(afkey, afin, scanDim, op, inclusive_scan);
+    array afout;
+    try { afout = scanByKey(afkey, afin, scanDim, op, inclusive_scan);
+    } catch FUNCTION_UNSUPPORTED
     vector<To> out(afout.elements());
     afout.host(out.data());
 
@@ -232,7 +234,9 @@ TEST(ScanByKey, FixOverflowWrite) {
 
     float prior = valsAF(0).scalar<float>();
 
-    array result = af::scanByKey(keysAF, someVals, 0, AF_BINARY_ADD, true);
+    array result;
+    try { result = af::scanByKey(keysAF, someVals, 0, AF_BINARY_ADD, true);
+    } catch FUNCTION_UNSUPPORTED
 
     ASSERT_EQ(prior, valsAF(0).scalar<float>());
 }

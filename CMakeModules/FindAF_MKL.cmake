@@ -321,6 +321,14 @@ endfunction()
 find_mkl_library(NAME Core LIBRARY_NAME mkl_core SEARCH_STATIC)
 find_mkl_library(NAME RT LIBRARY_NAME mkl_rt)
 
+if(AF_BUILD_ONEAPI)
+    find_mkl_library(NAME Sycl LIBRARY_NAME sycl DLL_ONLY)
+	find_mkl_library(NAME SyclLapack LIBRARY_NAME sycl_lapack DLL_ONLY)
+	find_mkl_library(NAME SyclDft LIBRARY_NAME sycl_dft DLL_ONLY)
+	find_mkl_library(NAME SyclBlas LIBRARY_NAME sycl_blas DLL_ONLY)
+	find_mkl_library(NAME SyclSparse LIBRARY_NAME sycl_sparse DLL_ONLY)
+endif()
+
 # MKL can link against Intel OpenMP, GNU OpenMP, TBB, and Sequential
 if(MKL_THREAD_LAYER STREQUAL "Intel OpenMP")
   find_mkl_library(NAME ThreadLayer LIBRARY_NAME mkl_intel_thread SEARCH_STATIC)
