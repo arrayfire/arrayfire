@@ -10,7 +10,7 @@
 // http://www.whatmannerofburgeristhis.com/blog/opencl-vs-cuda-gpu-memory-fences/
 
 kernel void reduce_all_kernel(global To *oData, KParam oInfo,
-                              global int* retirementCount, global To *tmp, KParam tmpInfo,
+                              global unsigned* retirementCount, global To *tmp, KParam tmpInfo,
                               const global Ti *iData, KParam iInfo,
                               uint groups_x, uint groups_y, uint repeat,
                               int change_nan, To nanval) {
@@ -99,7 +99,7 @@ kernel void reduce_all_kernel(global To *oData, KParam oInfo,
 
         // Thread 0 takes a ticket
         if (tid == 0) {
-            long ticket = atomic_inc(retirementCount);
+            unsigned ticket = atomic_inc(retirementCount);
             // If the ticket ID == number of blocks, we are the last block
             amLast = (ticket == (total_blocks - 1));
         }

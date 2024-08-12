@@ -83,7 +83,7 @@ __kernel void )JIT";
    if (idx < idxEnd) {
 )JIT";
     static const char* linearInit_long = R"JIT(
-   long idx = get_global_id(0);
+   long idx = get_group_id(0) * get_local_size(0) + get_local_id(0);
    const long idxEnd = oInfo.dims[0];
    if (idx < idxEnd) {
 )JIT";
@@ -94,7 +94,7 @@ __kernel void )JIT";
         const int idxID0Inc = get_global_size(0);
         do {)JIT";
     static const char* linearLoop0Start_long = R"JIT(
-        const long idxID0Inc = get_global_size(0);
+        const long idxID0Inc = get_group_size(0) * get_local_size(0);
         do {)JIT";
     static const char* linearLoop0End   = R"JIT(
             idx += idxID0Inc;
@@ -142,7 +142,7 @@ __kernel void )JIT";
         const int ostrides0 = oInfo.strides[0];
         int idx = ostrides0*id0;)JIT";
     static const char* stridedLoop0Init_long  = R"JIT(
-    long id0 = get_global_id(0);
+    long id0 = get_group_id(0) * get_local_size(0) + get_local_id(0);
     const long id0End = oInfo.dims[0];
     if (id0 < id0End) {
 #define id1 0
@@ -155,7 +155,7 @@ __kernel void )JIT";
         const int idxID0Inc = ostrides0*id0Inc;
         do {)JIT";
     static const char* stridedLoop0Start_long = R"JIT(
-        const long id0Inc = get_global_size(0);
+        const long id0Inc = get_group_size(0) * get_local_size(0);
         const long idxID0Inc = ostrides0*id0Inc;
         do {)JIT";
     static const char* stridedLoop0End   = R"JIT(
@@ -176,12 +176,12 @@ __kernel void )JIT";
         const int ostrides1 = oInfo.strides[1];
         int idx = (int)oInfo.strides[0]*id0 + ostrides1*id1 + (int)oInfo.strides[2]*id2;)JIT";
     static const char* stridedLoopNInit_long = R"JIT(
-    long id0 = get_global_id(0);
-    long id1 = get_global_id(1);
+    long id0 = get_group_id(0) * get_local_size(0) + get_local_id(0);
+    long id1 = get_group_id(1) * get_local_size(1) + get_local_id(1);
     const long id0End = oInfo.dims[0];
     const long id1End = oInfo.dims[1];
     if ((id0 < id0End) & (id1 < id1End)) {
-        const long id2 = get_global_id(2);
+        const long id2 = get_group_id(2) * get_local_size(2) + get_local_id(2);
 #define id3 0
         const long ostrides1 = oInfo.strides[1];
         long idx = (long)oInfo.strides[0]*id0 + ostrides1*id1 + (long)oInfo.strides[2]*id2;)JIT";
@@ -216,7 +216,7 @@ __kernel void )JIT";
         const int id1Inc = get_global_size(1);
         const int idxID1Inc = id1Inc * ostrides1;)JIT";
     static const char* stridedLoop1Init_long  = R"JIT(
-        const long id1Inc = get_global_size(1);
+        const long id1Inc = get_group_size(1) * get_local_size(1);
         const long idxID1Inc = id1Inc * ostrides1;)JIT";
     static const char* stridedLoop1Start = R"JIT(
         do {)JIT";
