@@ -17,15 +17,13 @@ namespace cuda {
 template<typename T>
 __global__ void coo2Dense(Param<T> output, CParam<T> values, CParam<int> rowIdx,
                           CParam<int> colIdx) {
-    int id = blockIdx.x * blockDim.x * reps + threadIdx.x;
-    if (id >= values.dims[0]) return;
+    for (int i = threadIdx.x; i < reps * blockDim.x; i += blockDim.x) {
+        int id = i + blockIdx.x * blockDim.x * reps;
+        if (id >= values.dims[0]) return;
 
-    for (int i = threadIdx.x; i <= reps * blockDim.x; i += blockDim.x) {
-        if (i >= values.dims[0]) return;
-
-        T v   = values.ptr[i];
-        int r = rowIdx.ptr[i];
-        int c = colIdx.ptr[i];
+        T v   = values.ptr[id];
+        int r = rowIdx.ptr[id];
+        int c = colIdx.ptr[id];
 
         int offset = r + c * output.strides[1];
 

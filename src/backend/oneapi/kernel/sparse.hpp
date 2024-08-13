@@ -47,19 +47,16 @@ class coo2DenseCreateKernel {
     void operator()(sycl::nd_item<2> it) const {
         sycl::group g = it.get_group();
 
-        const int id = g.get_group_id(0) * g.get_local_range(0) * REPEAT +
-                       it.get_local_id(0);
-
-        if (id >= values_.dims[0]) return;
-
         const int dimSize = g.get_local_range(0);
 
         for (int i = it.get_local_id(0); i < REPEAT * dimSize; i += dimSize) {
-            if (i >= values_.dims[0]) return;
+            const int id =
+                g.get_group_id(0) * g.get_local_range(0) * REPEAT + i;
+            if (id >= values_.dims[0]) return;
 
-            T v   = vPtr_[i];
-            int r = rPtr_[i];
-            int c = cPtr_[i];
+            T v   = vPtr_[id];
+            int r = rPtr_[id];
+            int c = cPtr_[id];
 
             int offset = r + c * output_.strides[1];
 
@@ -83,7 +80,7 @@ void coo2dense(Param<T> out, const Param<T> values, const Param<int> rowIdx,
                const Param<int> colIdx) {
     auto local  = sycl::range(THREADS_PER_BLOCK, 1);
     auto global = sycl::range(
-        divup(out.info.dims[0], local[0] * REPEAT) * THREADS_PER_BLOCK, 1);
+        divup(values.info.dims[0], local[0] * REPEAT) * THREADS_PER_BLOCK, 1);
 
     getQueue().submit([&](auto &h) {
         sycl::accessor d_rowIdx{*rowIdx.data, h, sycl::read_only};
