@@ -38,7 +38,7 @@ using global_atomic_ref =
     sycl::atomic_ref<T, sycl::memory_order::relaxed, sycl::memory_scope::system,
                      sycl::access::address_space::global_space>;
 
-template<typename Ti, typename To, af_op_t op>
+template<typename Ti, typename To, typename Tid, typename Tidu, af_op_t op>
 class reduceAllKernelSMEM {
    public:
     reduceAllKernelSMEM(write_accessor<To> out, KParam oInfo,
@@ -67,16 +67,16 @@ class reduceAllKernelSMEM {
 
     void operator()(sycl::nd_item<2> it) const {
         sycl::group g   = it.get_group();
-        const uint lidx = it.get_local_id(0);
-        const uint lidy = it.get_local_id(1);
-        const uint lid  = lidy * DIMX_ + lidx;
+        const Tidu lidx = it.get_local_id(0);
+        const Tidu lidy = it.get_local_id(1);
+        const Tidu lid  = lidy * DIMX_ + lidx;
 
-        const uint zid       = g.get_group_id(0) / groups_x_;
-        const uint wid       = g.get_group_id(1) / groups_y_;
-        const uint groupId_x = g.get_group_id(0) - (groups_x_)*zid;
-        const uint groupId_y = g.get_group_id(1) - (groups_y_)*wid;
-        const uint xid = groupId_x * g.get_local_range(0) * repeat_ + lidx;
-        const uint yid = groupId_y * g.get_local_range(1) + lidy;
+        const Tidu zid       = g.get_group_id(0) / groups_x_;
+        const Tidu wid       = g.get_group_id(1) / groups_y_;
+        const Tidu groupId_x = g.get_group_id(0) - (groups_x_)*zid;
+        const Tidu groupId_y = g.get_group_id(1) - (groups_y_)*wid;
+        const Tidu xid = groupId_x * g.get_local_range(0) * repeat_ + lidx;
+        const Tidu yid = groupId_y * g.get_local_range(1) + lidy;
 
         common::Binary<compute_t<To>, op> reduce;
         common::Transform<Ti, compute_t<To>, op> transform;
@@ -89,10 +89,10 @@ class reduceAllKernelSMEM {
                     (wid < iInfo_.dims[3]);
 
         dim_t last = (xid + repeat_ * DIMX_);
-        int lim    = min(last, iInfo_.dims[0]);
+        Tid lim    = min(last, iInfo_.dims[0]);
 
         compute_t<To> out_val = common::Binary<compute_t<To>, op>::init();
-        for (int id = xid; cond && id < lim; id += DIMX_) {
+        for (Tid id = xid; cond && id < lim; id += DIMX_) {
             compute_t<To> in_val = transform(iptr[id]);
             if (change_nan_)
                 in_val = !IS_NAN(in_val) ? in_val
@@ -137,7 +137,7 @@ class reduceAllKernelSMEM {
 
         const unsigned total_blocks =
             (g.get_group_range(0) * g.get_group_range(1));
-        const int uubidx =
+        const Tid uubidx =
             (g.get_group_range(0) * g.get_group_id(1)) + g.get_group_id(0);
         if (cond && lid == 0) {
             if (total_blocks != 1) {
@@ -161,7 +161,7 @@ class reduceAllKernelSMEM {
             group_barrier(g);
 
             if (amLast_[0]) {
-                int i   = lid;
+                Tid i   = lid;
                 out_val = common::Binary<compute_t<To>, op>::init();
 
                 while (i < total_blocks) {
@@ -236,7 +236,7 @@ template<typename Ti, typename To, af_op_t op>
 void reduce_all_launcher_default(Param<To> out, Param<Ti> in,
                                  const uint groups_x, const uint groups_y,
                                  const uint threads_x, bool change_nan,
-                                 double nanval) {
+                                 double nanval, bool long_index) {
     sycl::range<2> local(threads_x, creduce::THREADS_PER_BLOCK / threads_x);
     sycl::range<2> global(groups_x * in.info.dims[2] * local[0],
                           groups_y * in.info.dims[3] * local[1]);
@@ -265,12 +265,21 @@ void reduce_all_launcher_default(Param<To> out, Param<Ti> in,
         auto shrdMem = sycl::local_accessor<compute_t<To>, 1>(
             creduce::THREADS_PER_BLOCK, h);
         auto amLast = sycl::local_accessor<bool, 1>(1, h);
-        h.parallel_for(
-            sycl::nd_range<2>(global, local),
-            reduceAllKernelSMEM<Ti, To, op>(
-                out_acc, out.info, retCount_acc, tmp_acc, (KParam)tmp, in_acc,
-                in.info, threads_x, groups_x, groups_y, repeat, change_nan,
-                scalar<To>(nanval), shrdMem, amLast));
+        if(long_index) {
+    	    h.parallel_for(
+                sycl::nd_range<2>(global, local),
+                reduceAllKernelSMEM<Ti, To, long, unsigned long, op>(
+                    out_acc, out.info, retCount_acc, tmp_acc, (KParam)tmp, in_acc,
+                    in.info, threads_x, groups_x, groups_y, repeat, change_nan,
+                    scalar<To>(nanval), shrdMem, amLast));
+	} else {
+            h.parallel_for(
+                sycl::nd_range<2>(global, local),
+                reduceAllKernelSMEM<Ti, To, int, uint, op>(
+                    out_acc, out.info, retCount_acc, tmp_acc, (KParam)tmp, in_acc,
+                    in.info, threads_x, groups_x, groups_y, repeat, change_nan,
+                    scalar<To>(nanval), shrdMem, amLast));
+	}
     });
     ONEAPI_DEBUG_FINISH(getQueue());
 }

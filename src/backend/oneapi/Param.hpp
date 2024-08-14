@@ -91,8 +91,8 @@ struct AParam {
 
 // AF_DEPRECATED("Use Array<T>")
 template<typename T>
-Param<T> makeParam(sycl::buffer<T>& mem, int off, const int dims[4],
-                   const int strides[4]);
+Param<T> makeParam(sycl::buffer<T>& mem, dim_t off, const dim_t dims[4],
+                   const dim_t strides[4]);
 
 namespace opencl {
 

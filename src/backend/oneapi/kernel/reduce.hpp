@@ -81,7 +81,7 @@ void reduce(Param<To> out, Param<Ti> in, int dim, bool change_nan,
 
 template<typename Ti, typename To, af_op_t op>
 void reduce_all(Param<To> out, Param<Ti> in, bool change_nan, double nanval) {
-    int in_elements =
+    auto in_elements =
         in.info.dims[0] * in.info.dims[1] * in.info.dims[2] * in.info.dims[3];
     bool is_linear = (in.info.strides[0] == 1);
     for (int k = 1; k < 4; k++) {
@@ -97,8 +97,10 @@ void reduce_all(Param<To> out, Param<Ti> in, bool change_nan, double nanval) {
         }
     }
 
-    uint threads_x = nextpow2(std::max(32u, (uint)in.info.dims[0]));
-    threads_x      = std::min(threads_x, creduce::THREADS_PER_BLOCK);
+    long tot_dims = in.info.dims[0]*in.info.dims[1]*in.info.dims[2]*in.info.dims[3];
+    bool long_index = tot_dims > INT_MAX;
+    uint threads_x = in.info.dims[0] > creduce::THREADS_PER_BLOCK ? creduce::THREADS_PER_BLOCK :
+	             std::min(nextpow2(std::max(32u, (uint)in.info.dims[0])), creduce::THREADS_PER_BLOCK);
     uint threads_y = creduce::THREADS_PER_BLOCK / threads_x;
 
     // TODO: perf REPEAT, consider removing or runtime eval
@@ -107,7 +109,7 @@ void reduce_all(Param<To> out, Param<Ti> in, bool change_nan, double nanval) {
     uint blocks_y = divup(in.info.dims[1], threads_y);
 
     reduce_all_launcher_default<Ti, To, op>(out, in, blocks_x, blocks_y,
-                                            threads_x, change_nan, nanval);
+                                            threads_x, change_nan, nanval, long_index);
 }
 
 }  // namespace kernel

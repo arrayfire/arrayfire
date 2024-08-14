@@ -83,10 +83,10 @@ void magmablas_transpose(magma_int_t m, magma_int_t n, cl_mem dA,
     /* Quick return */
     if ((m == 0) || (n == 0)) { return; }
 
-    int idims[]    = {m, n, 1, 1};
-    int odims[]    = {n, m, 1, 1};
-    int istrides[] = {1, ldda, ldda * n, ldda * n};
-    int ostrides[] = {1, lddat, lddat * m, lddat * m};
+    dim_t idims[]    = {m, n, 1, 1};
+    dim_t odims[]    = {n, m, 1, 1};
+    dim_t istrides[] = {1, ldda, ldda * n, ldda * n};
+    dim_t ostrides[] = {1, lddat, lddat * m, lddat * m};
 
     Buffer dATBuf(dAT, true);
     Buffer dABuf(dA, true);

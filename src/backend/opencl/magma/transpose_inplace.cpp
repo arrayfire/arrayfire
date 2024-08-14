@@ -76,8 +76,8 @@ void magmablas_transpose_inplace(magma_int_t n, cl_mem dA, size_t dA_offset,
 
     if (n == 0) { return; }
 
-    int dims[]    = {n, n, 1, 1};
-    int strides[] = {1, ldda, ldda * n, ldda * n};
+    dim_t dims[]    = {n, n, 1, 1};
+    dim_t strides[] = {1, ldda, ldda * n, ldda * n};
 
     Buffer dABuf(dA, true);
 

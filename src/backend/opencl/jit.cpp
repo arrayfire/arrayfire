@@ -484,7 +484,7 @@ void evalNodes(vector<Param>& outputs, const vector<Node*>& output_nodes) {
 
     threadsMgt<dim_t> th(outDims, ndims, nrInputs, nrOutputs, totalSize,
                          outputSizeofType);
-    long tot_dim = outDims[0]*outDims[1]*outDims[2];
+    long tot_dim = outDims[0]*outDims[1]*outDims[2]*outDims[3];
     bool long_index = tot_dim >= INT_MAX;
     auto ker = getKernel(output_nodes, output_ids, full_nodes, full_ids,
                          is_linear, th.loop0, th.loop1, th.loop3, long_index);

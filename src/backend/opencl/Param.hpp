@@ -33,7 +33,7 @@ struct Param {
 };
 
 // AF_DEPRECATED("Use Array<T>")
-Param makeParam(cl::Buffer& mem, int off, const int dims[4],
-                const int strides[4]);
+Param makeParam(cl::Buffer& mem, dim_t off, const dim_t dims[4],
+                const dim_t strides[4]);
 }  // namespace opencl
 }  // namespace arrayfire
