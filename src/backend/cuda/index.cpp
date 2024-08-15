@@ -44,6 +44,7 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[]) {
         p.isSeq[i] = idxrs[i].isSeq;
         p.offs[i]  = iOffs[i];
         p.strds[i] = iStrds[i];
+        p.steps[i] = idxrs[i].isSeq ? idxrs[i].idx.seq.step : 0;
     }
 
     std::vector<Array<uint>> idxArrs(4, createEmptyArray<uint>(dim4()));

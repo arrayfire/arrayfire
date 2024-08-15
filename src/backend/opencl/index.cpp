@@ -42,6 +42,7 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[]) {
         p.isSeq[i] = idxrs[i].isSeq ? 1 : 0;
         p.offs[i]  = iOffs[i];
         p.strds[i] = iStrds[i];
+        p.steps[i] = idxrs[i].isSeq ? idxrs[i].idx.seq.step : 0;
     }
 
     cl::Buffer* bPtrs[4];
