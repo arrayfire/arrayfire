@@ -35,7 +35,16 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[]) {
     // create seq vector to retrieve output
     // dimensions, offsets & offsets
     for (unsigned x = 0; x < isSeq.size(); ++x) {
-        if (idxrs[x].isSeq) { seqs[x] = idxrs[x].idx.seq; }
+        if (idxrs[x].isSeq) {
+            af_seq seq = idxrs[x].idx.seq;
+            // Handle af_span as a sequence that covers the complete axis
+            if (seq.begin == af_span.begin && seq.end == af_span.end &&
+                seq.step == af_span.step) {
+                seqs[x] = af_seq{0, (double)(in.dims()[x] - 1), 1};
+            } else {
+                seqs[x] = seq;
+            }
+        }
         isSeq[x] = idxrs[x].isSeq;
     }
 
