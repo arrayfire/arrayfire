@@ -15,6 +15,7 @@
 #include <af/defines.h>
 
 #include <algorithm>
+#include <climits>
 #include <limits>
 #include <numeric>
 
