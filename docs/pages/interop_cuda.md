@@ -80,8 +80,7 @@ int main() {
 
     // 5. Determine ArrayFire's CUDA stream
     int af_id = af::getDevice();
-    int cuda_id = afcu::getNativeId(af_id);
-    cudaStream_t af_cuda_stream = afcu::getStream(cuda_id);
+    cudaStream_t af_cuda_stream = afcu::getStream(af_id);
 
     // 6. Set arguments and run your kernel in ArrayFire's stream
     //    Here launch with 1 block of 10 threads
