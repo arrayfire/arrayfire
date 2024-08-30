@@ -18,6 +18,7 @@
 #endif  //__CUDACC__
 
 #include <algorithm>
+#include <climits>
 #include <limits>
 
 #endif  //__CUDACC_RTC__
