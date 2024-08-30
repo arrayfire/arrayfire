@@ -67,6 +67,16 @@ struct mqr_func_def_t {
                                               int, T *, int, int *);
 };
 
+template<typename T>
+struct mqr_buf_func_def_t {
+    using mqr_buf_func_def = cusolverStatus_t (*)(cusolverDnHandle_t,
+                                                  cublasSideMode_t,
+                                                  cublasOperation_t, int, int, int,
+                                                  const T *, int, const T *, T *,
+                                                  int, int *);
+};
+
+
 #define QR_FUNC_DEF(FUNC)                                         \
     template<typename T>                                          \
     typename FUNC##_func_def_t<T>::FUNC##_func_def FUNC##_func(); \
@@ -94,15 +104,25 @@ QR_FUNC(geqrf, double, D)
 QR_FUNC(geqrf, cfloat, C)
 QR_FUNC(geqrf, cdouble, Z)
 
-#define MQR_FUNC_DEF(FUNC) \
-    template<typename T>   \
-    typename FUNC##_func_def_t<T>::FUNC##_func_def FUNC##_func();
+#define MQR_FUNC_DEF(FUNC)                                        \
+    template<typename T>                                          \
+    typename FUNC##_func_def_t<T>::FUNC##_func_def FUNC##_func(); \
+                                                                  \
+    template<typename T>                                          \
+    typename FUNC##_buf_func_def_t<T>::FUNC##_buf_func_def FUNC##_buf_func();
 
 #define MQR_FUNC(FUNC, TYPE, PREFIX)                                        \
     template<>                                                              \
     typename FUNC##_func_def_t<TYPE>::FUNC##_func_def FUNC##_func<TYPE>() { \
         return (FUNC##_func_def_t<TYPE>::FUNC##_func_def) &                 \
                cusolverDn##PREFIX;                                          \
+    }                                                                       \
+                                                                            \
+    template<>                                                              \
+    typename FUNC##_buf_func_def_t<TYPE>::FUNC##_buf_func_def               \
+        FUNC##_buf_func<TYPE>() {                                           \
+        return (FUNC##_buf_func_def_t<TYPE>::FUNC##_buf_func_def) &         \
+               cusolverDn##PREFIX##_bufferSize;                             \
     }
 
 MQR_FUNC_DEF(mqr)
@@ -142,6 +162,13 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in) {
     int mn = max(M, N);
     dim4 qdims(M, mn);
     q = identity<T>(qdims);
+
+    CUSOLVER_CHECK(mqr_buf_func<T>()(
+        solverDnHandle(), CUBLAS_SIDE_LEFT, CUBLAS_OP_N, q.dims()[0],
+	q.dims()[1], min(M, N), in_copy.get(), in_copy.strides()[1], t.get(),
+        q.get(), q.strides()[1], &lwork));
+
+    workspace = memAlloc<T>(lwork);
 
     CUSOLVER_CHECK(mqr_func<T>()(
         solverDnHandle(), CUBLAS_SIDE_LEFT, CUBLAS_OP_N, q.dims()[0],

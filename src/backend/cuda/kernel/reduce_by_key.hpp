@@ -25,8 +25,6 @@
 
 using std::unique_ptr;
 
-const static unsigned int FULL_MASK = 0xFFFFFFFF;
-
 namespace arrayfire {
 namespace cuda {
 namespace kernel {
@@ -68,9 +66,9 @@ __global__ void test_needs_reduction(int *needs_another_reduction,
 
     if (tid < n) { k = keys_in.ptr[tid]; }
 
-    int update_key = (k == shfl_down_sync(FULL_MASK, k, 1)) &&
+    int update_key = (k == shfl_down_sync(k, 1)) &&
                      (tid < (n - 1)) && ((threadIdx.x % 32) < 31);
-    int remaining_updates = any_sync(FULL_MASK, update_key);
+    int remaining_updates = any_sync(update_key);
 
     __syncthreads();
 
@@ -83,7 +81,7 @@ __global__ void test_needs_reduction(int *needs_another_reduction,
          && (threadIdx.x < (blockDim.x - 1))  // not last thread in block
          // next value valid and equal
          && ((tid + 1) < n) && (k == keys_in.ptr[tid + 1]));
-    remaining_updates = any_sync(FULL_MASK, update_key);
+    remaining_updates = any_sync(update_key);
 
     // TODO: single per warp? change to assignment rather than atomicOr
     if (remaining_updates) atomicOr(needs_another_reduction, remaining_updates);
@@ -243,7 +241,7 @@ __global__ static void reduce_blocks_by_key(int *reduced_block_sizes,
         v = common::Binary<compute_t<To>, op>::init();
     }
 
-    compute_t<Tk> eq_check = (k != shfl_up_sync(FULL_MASK, k, 1));
+    compute_t<Tk> eq_check = (k != shfl_up_sync(k, 1));
     // mark threads containing unique keys
     char unique_flag = (eq_check || (laneid == 0)) && (tidx < n);
 
@@ -251,42 +249,33 @@ __global__ static void reduce_blocks_by_key(int *reduced_block_sizes,
     char unique_id = unique_flag;
 #pragma unroll
     for (int offset = 1; offset < 32; offset <<= 1) {
-        char y = shfl_up_sync(FULL_MASK, unique_id, offset);
+        char y = shfl_up_sync(unique_id, offset);
         if (laneid >= offset) unique_id += y;
     }
 
     //
     // Reduce each warp by key
-    char all_eq = (k == shfl_down_sync(FULL_MASK, k, 1));
-    if (all_sync(FULL_MASK,
-                 all_eq)) {  // check special case of single key per warp
-        v = reduce(v, shfl_down_sync(FULL_MASK, v, 1));
-        v = reduce(v, shfl_down_sync(FULL_MASK, v, 2));
-        v = reduce(v, shfl_down_sync(FULL_MASK, v, 4));
-        v = reduce(v, shfl_down_sync(FULL_MASK, v, 8));
-        v = reduce(v, shfl_down_sync(FULL_MASK, v, 16));
+    char all_eq = (k == shfl_down_sync(k, 1));
+    if (all_sync(all_eq)) {  // check special case of single key per warp
+        v = reduce(v, shfl_down_sync(v, 1));
+        v = reduce(v, shfl_down_sync(v, 2));
+        v = reduce(v, shfl_down_sync(v, 4));
+        v = reduce(v, shfl_down_sync(v, 8));
+        v = reduce(v, shfl_down_sync(v, 16));
     } else {
         compute_t<To> init = common::Binary<compute_t<To>, op>::init();
         int eq_check, update_key;
-        unsigned shflmask;
 #pragma unroll
         for (int delta = 1; delta < 32; delta <<= 1) {
             eq_check =
-                (unique_id == shfl_down_sync(FULL_MASK, unique_id, delta));
+                (unique_id == shfl_down_sync(unique_id, delta));
 
             // checks if this thread should perform a reduction
             update_key =
                 eq_check && (laneid < (32 - delta)) && ((tidx + delta) < n);
 
-            // obtains mask of all threads that should be reduced
-            shflmask = ballot_sync(FULL_MASK, update_key);
-
-            // shifts mask to include source threads that should participate in
-            // _shfl
-            shflmask |= (shflmask << delta);
-
             // shfls data from neighboring threads
-            compute_t<To> uval = shfl_down_sync(shflmask, v, delta);
+            compute_t<To> uval = shfl_down_sync(v, delta);
 
             // update if thread requires it
             v = reduce(v, (update_key ? uval : init));
@@ -479,7 +468,7 @@ __global__ static void reduce_blocks_dim_by_key(
         v = init;
     }
 
-    Tk eq_check = (k != shfl_up_sync(FULL_MASK, k, 1));
+    Tk eq_check = (k != shfl_up_sync(k, 1));
     // mark threads containing unique keys
     char unique_flag = (eq_check || (laneid == 0)) && (tidx < n);
 
@@ -487,42 +476,33 @@ __global__ static void reduce_blocks_dim_by_key(
     char unique_id = unique_flag;
 #pragma unroll
     for (int offset = 1; offset < 32; offset <<= 1) {
-        char y = shfl_up_sync(FULL_MASK, unique_id, offset);
+        char y = shfl_up_sync(unique_id, offset);
         if (laneid >= offset) unique_id += y;
     }
 
     //
     // Reduce each warp by key
-    char all_eq = (k == shfl_down_sync(FULL_MASK, k, 1));
-    if (all_sync(FULL_MASK,
-                 all_eq)) {  // check special case of single key per warp
-        v = reduce(v, shfl_down_sync(FULL_MASK, v, 1));
-        v = reduce(v, shfl_down_sync(FULL_MASK, v, 2));
-        v = reduce(v, shfl_down_sync(FULL_MASK, v, 4));
-        v = reduce(v, shfl_down_sync(FULL_MASK, v, 8));
-        v = reduce(v, shfl_down_sync(FULL_MASK, v, 16));
+    char all_eq = (k == shfl_down_sync(k, 1));
+    if (all_sync(all_eq)) {  // check special case of single key per warp
+        v = reduce(v, shfl_down_sync(v, 1));
+        v = reduce(v, shfl_down_sync(v, 2));
+        v = reduce(v, shfl_down_sync(v, 4));
+        v = reduce(v, shfl_down_sync(v, 8));
+        v = reduce(v, shfl_down_sync(v, 16));
     } else {
         compute_t<To> init = common::Binary<compute_t<To>, op>::init();
         int eq_check, update_key;
-        unsigned shflmask;
 #pragma unroll
         for (int delta = 1; delta < 32; delta <<= 1) {
             eq_check =
-                (unique_id == shfl_down_sync(FULL_MASK, unique_id, delta));
+                (unique_id == shfl_down_sync(unique_id, delta));
 
             // checks if this thread should perform a reduction
             update_key =
                 eq_check && (laneid < (32 - delta)) && ((tidx + delta) < n);
 
-            // obtains mask of all threads that should be reduced
-            shflmask = ballot_sync(FULL_MASK, update_key);
-
-            // shifts mask to include source threads that should participate in
-            // _shfl
-            shflmask |= (shflmask << delta);
-
             // shfls data from neighboring threads
-            compute_t<To> uval = shfl_down_sync(shflmask, v, delta);
+            compute_t<To> uval = shfl_down_sync(v, delta);
 
             // update if thread requires it
             v = reduce(v, (update_key ? uval : init));

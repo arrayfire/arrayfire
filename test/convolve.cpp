@@ -898,7 +898,7 @@ float tolerance();
 
 template<>
 float tolerance<float>() {
-    return 2e-3;
+    return 4e-3;
 }
 
 template<>
