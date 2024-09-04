@@ -389,6 +389,14 @@ static array::array_proxy gen_indexing(const array &ref, const index &s0,
     inds[1] = s1.get();
     inds[2] = s2.get();
     inds[3] = s3.get();
+    
+    for(int i; i < AF_MAX_DIMS; ++i) {
+        if(!inds[i].isSeq) {
+            af_array arr = 0;
+            af_retain_array(&arr, inds[i].idx.arr);
+	    inds[i].idx.arr = arr;
+        }
+    }
 
     return array::array_proxy(const_cast<array &>(ref), inds, linear);
 }
