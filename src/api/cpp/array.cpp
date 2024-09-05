@@ -164,6 +164,9 @@ struct array::array_proxy::array_proxy_impl {
     void delete_on_destruction(bool val) { delete_on_destruction_ = val; }
 
     ~array_proxy_impl() {
+        for(int i = 0; i < AF_MAX_DIMS; ++i) {
+            if(!indices_[i].isSeq) af_release_array(indices_[i].idx.arr);
+        }
         if (delete_on_destruction_) { delete parent_; }
     }
 
