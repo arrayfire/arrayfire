@@ -380,9 +380,9 @@ INSTANTIATE(sparse)
 
 #undef INSTANTIATE
 
-static array::array_proxy gen_indexing(const array &ref, const index &s0,
-                                       const index &s1, const index &s2,
-                                       const index &s3, bool linear = false) {
+array::array_proxy gen_indexing(const array &ref, const index &s0,
+                                const index &s1, const index &s2,
+                                const index &s3, bool linear = false) {
     ref.eval();
     af_index_t inds[AF_MAX_DIMS];
     inds[0] = s0.get();
@@ -393,7 +393,7 @@ static array::array_proxy gen_indexing(const array &ref, const index &s0,
     for(int i; i < AF_MAX_DIMS; ++i) {
         if(!inds[i].isSeq) {
             af_array arr = 0;
-            af_retain_array(&arr, inds[i].idx.arr);
+            AF_THROW(af_retain_array(&arr, inds[i].idx.arr));
 	    inds[i].idx.arr = arr;
         }
     }
