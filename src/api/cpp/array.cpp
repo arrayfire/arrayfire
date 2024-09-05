@@ -393,8 +393,13 @@ array::array_proxy gen_indexing(const array &ref, const index &s0,
     for(int i; i < AF_MAX_DIMS; ++i) {
         if(!inds[i].isSeq) {
             af_array arr = 0;
-            AF_THROW(af_retain_array(&arr, inds[i].idx.arr));
+            auto retain_err = af_retain_array(&arr, inds[i].idx.arr);
 	    inds[i].idx.arr = arr;
+	    if(retain_err) {
+                char *retain_err_msg = NULL;
+                af_get_last_error(&retain_err_msg, NULL);
+	        AF_THROW_ERR(retain_err_msg, retain_err);
+	    }
         }
     }
 
