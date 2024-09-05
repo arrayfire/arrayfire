@@ -24,6 +24,7 @@ using af::seq;
 using af::setDevice;
 using af::sin;
 using af::sort;
+using af::span;
 
 template<typename T>
 class ArrayDeathTest : public ::testing::Test {};
@@ -54,6 +55,10 @@ void deathTest() {
 
     array vals, inds;
     sort(vals, inds, A);
+
+    array cond = constant(1, 3, b8);
+    auto X = A(span, cond);
+    array Y = X;
 
     _exit(0);
 }
