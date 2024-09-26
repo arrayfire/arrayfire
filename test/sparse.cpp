@@ -112,6 +112,7 @@ TEST(Sparse, ISSUE_1745) {
 
 TEST(Sparse, ISSUE_1918) {
     array reference(2,2);
+    reference(0, span) = 0;
     reference(1, span) = 2;
     array output;
     float value[] = { 1, 1, 2, 2 };
