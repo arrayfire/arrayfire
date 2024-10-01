@@ -17,7 +17,7 @@
 using namespace af;
 
 array distance(array data, array means) {
-    int n = data.dims(0);   // Number of features
+    int n = data.dims(0);   // Number of data points
     int k = means.dims(1);  // Number of means
 
     array data2  = tile(data, 1, k, 1);
@@ -60,8 +60,8 @@ array new_means(array data, array clusters, int k) {
 // means: output, vector of means
 void kmeans(array &means, array &clusters, const array in, int k,
             int iter = 100) {
-    unsigned n = in.dims(0);  // Num features
-    unsigned d = in.dims(2);  // feature length
+    unsigned n = in.dims(0);  // Num of data points
+    unsigned d = in.dims(2);  // Num of features (will only be 1 in spider image example)
 
     // reshape input
     array data = in * 0;
