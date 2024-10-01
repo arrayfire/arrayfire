@@ -80,7 +80,7 @@ namespace af
     /// \param[in] lo lower limit; can be an array or a scalar
     /// \param[in] hi upper limit; can be an array or a scalar
     /// \return       clamped array
-    /// 
+    ///
     /// \ingroup arith_func_clamp
     AFAPI array clamp(const array &in, const array &lo, const array &hi);
 #endif
@@ -107,7 +107,7 @@ namespace af
     /// \param[in] lhs numerator; can be an array or a scalar
     /// \param[in] rhs denominator; can be an array or a scalar
     /// \return        remainder
-    /// 
+    ///
     /// \ingroup arith_func_rem
     AFAPI array rem    (const array &lhs, const array &rhs);
 
@@ -124,7 +124,7 @@ namespace af
     /// \param[in] lhs dividend; can be an array or a scalar
     /// \param[in] rhs divisor; can be an array or a scalar
     /// \return        modulus
-    /// 
+    ///
     /// \ingroup arith_func_mod
     AFAPI array mod    (const array &lhs, const array &rhs);
 
@@ -148,7 +148,7 @@ namespace af
     ///
     /// \param[in] in input array, typically complex
     /// \return       phase angle (in radians)
-    /// 
+    ///
     /// \ingroup arith_func_arg
     AFAPI array arg    (const array &in);
 
@@ -156,7 +156,7 @@ namespace af
     ///
     /// \param[in] in input array
     /// \return       array containing 1's for negative values; 0's otherwise
-    /// 
+    ///
     /// \ingroup arith_func_sign
     AFAPI array sign  (const array &in);
 
@@ -172,7 +172,7 @@ namespace af
     ///
     /// \param[in] in input array
     /// \return       nearest integer not greater in magnitude than `in`
-    /// 
+    ///
     /// \ingroup arith_func_trunc
     AFAPI array trunc  (const array &in);
 
@@ -330,7 +330,7 @@ namespace af
     /// \param[in] in input array
     /// \return       complex array
     AFAPI array complex(const array& in);
- 
+
     /// C++ Interface to create a complex array from two real arrays.
     ///
     /// \param[in] real_ input array to be assigned as the real component of
@@ -412,7 +412,6 @@ namespace af
     /// \ingroup arith_func_root
     AFAPI array root    (const double nth_root, const array &value);
 
-
     /// \ingroup arith_func_pow
     /// @{
     /// C++ Interface to raise a base to a power (or exponent).
@@ -435,7 +434,6 @@ namespace af
     ///
     /// \param[in] in power
     /// \return       2 raised to the power
-    ///
     AFAPI array pow2    (const array &in);
     /// @}
 
@@ -443,7 +441,7 @@ namespace af
     /// C++ Interface to evaluate the logistical sigmoid function.
     ///
     /// Computes \f$\frac{1}{1+e^{-x}}\f$.
-    /// 
+    ///
     /// \param[in] in input
     /// \return       sigmoid
     ///
@@ -463,7 +461,7 @@ namespace af
     /// `exp(in) - 1`.
     ///
     /// This function is useful when `in` is small.
-    /// 
+    ///
     /// \param[in] in exponent
     /// \return       exponential minus 1
     ///
@@ -496,9 +494,9 @@ namespace af
 
     /// C++ Interface to evaluate the natural logarithm of 1 + input,
     /// `ln(1+in)`.
-    /// 
+    ///
     /// This function is useful when `in` is small.
-    /// 
+    ///
     /// \param[in] in input
     /// \return natural logarithm of `1 + input`
     ///
