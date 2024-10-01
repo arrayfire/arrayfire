@@ -49,7 +49,8 @@ void coo2dense(Param out, const Param values, const Param rowIdx,
     cl::NDRange local(THREADS_PER_GROUP, 1, 1);
 
     cl::NDRange global(
-        divup(out.info.dims[0], local[0] * REPEAT) * THREADS_PER_GROUP, 1, 1);
+        divup(values.info.dims[0], local[0] * REPEAT) * THREADS_PER_GROUP, 1,
+        1);
 
     coo2dense(cl::EnqueueArgs(getQueue(), global, local), *out.data, out.info,
               *values.data, values.info, *rowIdx.data, rowIdx.info,

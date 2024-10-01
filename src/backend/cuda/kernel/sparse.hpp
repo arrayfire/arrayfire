@@ -30,7 +30,7 @@ void coo2dense(Param<T> output, CParam<T> values, CParam<int> rowIdx,
 
     dim3 threads(256, 1, 1);
 
-    dim3 blocks(divup(output.dims[0], threads.x * reps), 1, 1);
+    dim3 blocks(divup(values.dims[0], threads.x * reps), 1, 1);
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
