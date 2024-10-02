@@ -28,6 +28,10 @@ if(ArrayFire_CPU_FOUND)
   # SVD example
   add_executable(svd_cpu svd.cpp)
   target_link_libraries(svd_cpu ArrayFire::afcpu)
+
+  # GMRES example
+  add_executable(gmres_cpu gmres.cpp)
+  target_link_libraries(gmres_cpu ArrayFire::afcpu)
 endif()
 
 if(ArrayFire_CUDA_FOUND)
@@ -42,6 +46,10 @@ if(ArrayFire_CUDA_FOUND)
 
   add_executable(svd_cuda svd.cpp)
   target_link_libraries(svd_cuda ArrayFire::afcuda)
+
+  add_executable(gmres_cuda gmres.cpp)
+  target_link_libraries(gmres_cuda ArrayFire::afcuda)
+
 endif()
 
 if(ArrayFire_OpenCL_FOUND)
@@ -56,6 +64,10 @@ if(ArrayFire_OpenCL_FOUND)
 
   add_executable(svd_opencl svd.cpp)
   target_link_libraries(svd_opencl ArrayFire::afopencl)
+
+  add_executable(gmres_opencl gmres.cpp)
+  target_link_libraries(gmres_opencl ArrayFire::afopencl)
+
 endif()
 
 if(ArrayFire_oneAPI_FOUND)
@@ -70,4 +82,7 @@ if(ArrayFire_oneAPI_FOUND)
 
   add_executable(svd_oneapi svd.cpp)
   target_link_libraries(svd_oneapi ArrayFire::afoneapi)
+
+  add_executable(gmres_oneapi gmres.cpp)
+  target_link_libraries(gmres_oneapi ArrayFire::afoneapi)
 endif()
