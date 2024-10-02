@@ -50,6 +50,36 @@ inline bool iscplx<cdouble>() {
 }
 
 template<typename T>
+static bool isdbl() {
+    return false;
+}
+
+template<>
+inline bool isdbl<double>() {
+    return true;
+}
+
+template<>
+inline bool isdbl<cdouble>() {
+    return true;
+}
+
+template<typename T>
+static bool islong() {
+    return false;
+}
+
+template<>
+inline bool islong<long>() {
+    return true;
+}
+
+template<>
+inline bool islong<unsigned long>() {
+    return true;
+}
+
+template<typename T>
 inline std::string scalar_to_option(const T &val) {
     using namespace arrayfire::common;
     using std::to_string;
