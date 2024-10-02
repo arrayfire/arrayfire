@@ -36,10 +36,14 @@ using std::vector;
 template<typename T>
 class Reduce : public ::testing::Test {};
 
+template<typename T>
+class ReduceByKey : public ::testing::Test {};
+
 typedef ::testing::Types<float, double, cfloat, cdouble, uint, int, intl, uintl,
                          uchar, short, ushort>
     TestTypes;
 TYPED_TEST_SUITE(Reduce, TestTypes);
+TYPED_TEST_SUITE(ReduceByKey, TestTypes);
 
 typedef af_err (*reduceFunc)(af_array *, const af_array, const int);
 
@@ -152,6 +156,16 @@ struct promote_type<short, af_product> {
 template<>
 struct promote_type<ushort, af_product> {
     typedef uint type;
+};
+
+// float16 is promoted to float32 for sum and product
+template<>
+struct promote_type<half_float::half, af_sum> {
+    typedef float type;
+};
+template<>
+struct promote_type<half_float::half, af_product> {
+    typedef float type;
 };
 
 #define REDUCE_TESTS(FN)                                                       \
@@ -598,12 +612,16 @@ TEST_P(ReduceByKeyP, SumDim2) {
     ASSERT_ARRAYS_NEAR(valsReducedGold, valsReduced, 1e-5);
 }
 
-TEST(ReduceByKey, MultiBlockReduceSingleval) {
+TYPED_TEST(ReduceByKey, MultiBlockReduceSingleval) {
+    SUPPORTED_TYPE_CHECK(TypeParam);
     array keys = constant(0, 1024 * 1024, s32);
-    array vals = constant(1, 1024 * 1024, f32);
+    array vals = constant(1, 1024 * 1024,
+            (af_dtype)af::dtype_traits<TypeParam>::af_type);
 
     array keyResGold      = constant(0, 1);
-    array valsReducedGold = constant(1024 * 1024, 1, f32);
+    using promoted_t = typename promote_type<TypeParam, af_sum>::type;
+    array valsReducedGold = constant(1024 * 1024, 1,
+            (af_dtype)af::dtype_traits<promoted_t>::af_type);
 
     array keyRes, valsReduced;
     sumByKey(keyRes, valsReduced, keys, vals);
@@ -701,10 +719,11 @@ TEST(ReduceByKey, MultiBlockReduceByKeyRandom500) {
     reduce_by_key_test(string(TEST_DIR "/reduce/test_random500_by_key.test"));
 }
 
-TEST(ReduceByKey, productReduceByKey) {
-    const static int testSz      = 8;
-    const int testKeys[testSz]   = {0, 2, 2, 9, 5, 5, 5, 8};
-    const float testVals[testSz] = {0, 7, 1, 6, 2, 5, 3, 4};
+TYPED_TEST(ReduceByKey, productReduceByKey) {
+    SUPPORTED_TYPE_CHECK(TypeParam);
+    const static int testSz          = 8;
+    const int testKeys[testSz]       = {0, 2, 2, 9, 5, 5, 5, 8};
+    const TypeParam testVals[testSz] = {0, 7, 1, 6, 2, 5, 3, 4};
 
     array keys(testSz, testKeys);
     array vals(testSz, testVals);
@@ -713,15 +732,17 @@ TEST(ReduceByKey, productReduceByKey) {
     productByKey(reduced_keys, reduced_vals, keys, vals, 0, 1);
 
     const int goldSz = 5;
-    const vector<float> gold_reduce{0, 7, 6, 30, 4};
+    using promoted_t = typename promote_type<TypeParam, af_product>::type;
+    const vector<promoted_t> gold_reduce{0, 7, 6, 30, 4};
 
     ASSERT_VEC_ARRAY_EQ(gold_reduce, goldSz, reduced_vals);
 }
 
-TEST(ReduceByKey, minReduceByKey) {
-    const static int testSz      = 8;
-    const int testKeys[testSz]   = {0, 2, 2, 9, 5, 5, 5, 8};
-    const float testVals[testSz] = {0, 7, 1, 6, 2, 5, 3, 4};
+TYPED_TEST(ReduceByKey, minReduceByKey) {
+    SUPPORTED_TYPE_CHECK(TypeParam);
+    const static int testSz          = 8;
+    const int testKeys[testSz]       = {0, 2, 2, 9, 5, 5, 5, 8};
+    const TypeParam testVals[testSz] = {0, 7, 1, 6, 2, 5, 3, 4};
 
     array keys(testSz, testKeys);
     array vals(testSz, testVals);
@@ -730,14 +751,15 @@ TEST(ReduceByKey, minReduceByKey) {
     minByKey(reduced_keys, reduced_vals, keys, vals);
 
     const int goldSz = 5;
-    const vector<float> gold_reduce{0, 1, 6, 2, 4};
+    const vector<TypeParam> gold_reduce{0, 1, 6, 2, 4};
     ASSERT_VEC_ARRAY_EQ(gold_reduce, goldSz, reduced_vals);
 }
 
-TEST(ReduceByKey, maxReduceByKey) {
-    const static int testSz      = 8;
-    const int testKeys[testSz]   = {0, 2, 2, 9, 5, 5, 5, 8};
-    const float testVals[testSz] = {0, 7, 1, 6, 2, 5, 3, 4};
+TYPED_TEST(ReduceByKey, maxReduceByKey) {
+    SUPPORTED_TYPE_CHECK(TypeParam);
+    const static int testSz          = 8;
+    const int testKeys[testSz]       = {0, 2, 2, 9, 5, 5, 5, 8};
+    const TypeParam testVals[testSz] = {0, 7, 1, 6, 2, 5, 3, 4};
 
     array keys(testSz, testKeys);
     array vals(testSz, testVals);
@@ -746,14 +768,15 @@ TEST(ReduceByKey, maxReduceByKey) {
     maxByKey(reduced_keys, reduced_vals, keys, vals);
 
     const int goldSz = 5;
-    const vector<float> gold_reduce{0, 7, 6, 5, 4};
+    const vector<TypeParam> gold_reduce{0, 7, 6, 5, 4};
     ASSERT_VEC_ARRAY_EQ(gold_reduce, goldSz, reduced_vals);
 }
 
-TEST(ReduceByKey, allTrueReduceByKey) {
-    const static int testSz      = 8;
-    const int testKeys[testSz]   = {0, 2, 2, 9, 5, 5, 5, 8};
-    const float testVals[testSz] = {0, 1, 1, 1, 0, 1, 1, 1};
+TYPED_TEST(ReduceByKey, allTrueReduceByKey) {
+    SUPPORTED_TYPE_CHECK(TypeParam);
+    const static int testSz          = 8;
+    const int testKeys[testSz]       = {0, 2, 2, 9, 5, 5, 5, 8};
+    const TypeParam testVals[testSz] = {0, 1, 1, 1, 0, 1, 1, 1};
 
     array keys(testSz, testKeys);
     array vals(testSz, testVals);
@@ -766,10 +789,11 @@ TEST(ReduceByKey, allTrueReduceByKey) {
     ASSERT_VEC_ARRAY_EQ(gold_reduce, goldSz, reduced_vals);
 }
 
-TEST(ReduceByKey, anyTrueReduceByKey) {
-    const static int testSz      = 8;
-    const int testKeys[testSz]   = {0, 2, 2, 9, 5, 5, 8, 8};
-    const float testVals[testSz] = {0, 1, 1, 1, 0, 1, 0, 0};
+TYPED_TEST(ReduceByKey, anyTrueReduceByKey) {
+    SUPPORTED_TYPE_CHECK(TypeParam);
+    const static int testSz          = 8;
+    const int testKeys[testSz]       = {0, 2, 2, 9, 5, 5, 8, 8};
+    const TypeParam testVals[testSz] = {0, 1, 1, 1, 0, 1, 0, 0};
 
     array keys(testSz, testKeys);
     array vals(testSz, testVals);
@@ -783,10 +807,11 @@ TEST(ReduceByKey, anyTrueReduceByKey) {
     ASSERT_VEC_ARRAY_EQ(gold_reduce, goldSz, reduced_vals);
 }
 
-TEST(ReduceByKey, countReduceByKey) {
-    const static int testSz      = 8;
-    const int testKeys[testSz]   = {0, 2, 2, 9, 5, 5, 5, 5};
-    const float testVals[testSz] = {0, 1, 1, 1, 0, 1, 1, 1};
+TYPED_TEST(ReduceByKey, countReduceByKey) {
+    SUPPORTED_TYPE_CHECK(TypeParam);
+    const static int testSz          = 8;
+    const int testKeys[testSz]       = {0, 2, 2, 9, 5, 5, 5, 5};
+    const TypeParam testVals[testSz] = {0, 1, 1, 1, 0, 1, 1, 1};
 
     array keys(testSz, testKeys);
     array vals(testSz, testVals);
@@ -799,11 +824,18 @@ TEST(ReduceByKey, countReduceByKey) {
     ASSERT_VEC_ARRAY_EQ(gold_reduce, goldSz, reduced_vals);
 }
 
-TEST(ReduceByKey, ReduceByKeyNans) {
+TYPED_TEST(ReduceByKey, ReduceByKeyNans) {
+    if (!IsFloatingPoint<TypeParam>::value) {
+        SUCCEED() << "Not a floating point type.";
+        return;
+    }
+
     SKIP_IF_FAST_MATH_ENABLED();
-    const static int testSz      = 8;
-    const int testKeys[testSz]   = {0, 2, 2, 9, 5, 5, 5, 8};
-    const float testVals[testSz] = {0, 7, NAN, 6, 2, 5, 3, 4};
+    SUPPORTED_TYPE_CHECK(TypeParam);
+    const static int testSz          = 8;
+    const int testKeys[testSz]       = {0, 2, 2, 9, 5, 5, 5, 8};
+    const TypeParam nan = std::numeric_limits<TypeParam>::quiet_NaN();
+    const TypeParam testVals[testSz] = {0, 7, nan, 6, 2, 5, 3, 4};
 
     array keys(testSz, testKeys);
     array vals(testSz, testVals);
@@ -812,14 +844,16 @@ TEST(ReduceByKey, ReduceByKeyNans) {
     productByKey(reduced_keys, reduced_vals, keys, vals, 0, 1);
 
     const int goldSz = 5;
-    const vector<float> gold_reduce{0, 7, 6, 30, 4};
+    using promoted_t = typename promote_type<TypeParam, af_product>::type;
+    const vector<promoted_t> gold_reduce{0, 7, 6, 30, 4};
     ASSERT_VEC_ARRAY_EQ(gold_reduce, goldSz, reduced_vals);
 }
 
-TEST(ReduceByKey, nDim0ReduceByKey) {
-    const static int testSz      = 8;
-    const int testKeys[testSz]   = {0, 2, 2, 9, 5, 5, 5, 8};
-    const float testVals[testSz] = {0, 7, 1, 6, 2, 5, 3, 4};
+TYPED_TEST(ReduceByKey, nDim0ReduceByKey) {
+    SUPPORTED_TYPE_CHECK(TypeParam);
+    const static int testSz          = 8;
+    const int testKeys[testSz]       = {0, 2, 2, 9, 5, 5, 5, 8};
+    const TypeParam testVals[testSz] = {0, 7, 1, 6, 2, 5, 3, 4};
 
     array keys(testSz, testKeys);
     array vals(testSz, testVals);
@@ -833,20 +867,22 @@ TEST(ReduceByKey, nDim0ReduceByKey) {
     sumByKey(reduced_keys, reduced_vals, keys, vals, dim, nanval);
 
     const dim4 goldSz(5, 2, 2, 2);
-    const vector<float> gold_reduce{0, 8, 6, 10, 4, 0, 8, 6, 10, 4,
+    using promoted_t = typename promote_type<TypeParam, af_sum>::type;
+    const vector<promoted_t> gold_reduce{0, 8, 6, 10, 4, 0, 8, 6, 10, 4,
 
-                                    0, 8, 6, 10, 4, 0, 8, 6, 10, 4,
+                                         0, 8, 6, 10, 4, 0, 8, 6, 10, 4,
 
-                                    0, 8, 6, 10, 4, 0, 8, 6, 10, 4,
+                                         0, 8, 6, 10, 4, 0, 8, 6, 10, 4,
 
-                                    0, 8, 6, 10, 4, 0, 8, 6, 10, 4};
+                                         0, 8, 6, 10, 4, 0, 8, 6, 10, 4};
     ASSERT_VEC_ARRAY_EQ(gold_reduce, goldSz, reduced_vals);
 }
 
-TEST(ReduceByKey, nDim1ReduceByKey) {
-    const static int testSz      = 8;
-    const int testKeys[testSz]   = {0, 2, 2, 9, 5, 5, 5, 8};
-    const float testVals[testSz] = {0, 7, 1, 6, 2, 5, 3, 4};
+TYPED_TEST(ReduceByKey, nDim1ReduceByKey) {
+    SUPPORTED_TYPE_CHECK(TypeParam);
+    const static int testSz          = 8;
+    const int testKeys[testSz]       = {0, 2, 2, 9, 5, 5, 5, 8};
+    const TypeParam testVals[testSz] = {0, 7, 1, 6, 2, 5, 3, 4};
 
     array keys(testSz, testKeys);
     array vals(testSz, testVals);
@@ -861,8 +897,9 @@ TEST(ReduceByKey, nDim1ReduceByKey) {
     sumByKey(reduced_keys, reduced_vals, keys, vals, dim, nanval);
 
     const int goldSz                = 5;
-    const float gold_reduce[goldSz] = {0, 8, 6, 10, 4};
-    vector<float> hreduce(reduced_vals.elements());
+    using promoted_t = typename promote_type<TypeParam, af_sum>::type;
+    const promoted_t gold_reduce[goldSz] = {0, 8, 6, 10, 4};
+    vector<promoted_t> hreduce(reduced_vals.elements());
     reduced_vals.host(hreduce.data());
 
     for (int i = 0; i < goldSz * ntile; i++) {
@@ -870,10 +907,11 @@ TEST(ReduceByKey, nDim1ReduceByKey) {
     }
 }
 
-TEST(ReduceByKey, nDim2ReduceByKey) {
-    const static int testSz      = 8;
-    const int testKeys[testSz]   = {0, 2, 2, 9, 5, 5, 5, 8};
-    const float testVals[testSz] = {0, 7, 1, 6, 2, 5, 3, 4};
+TYPED_TEST(ReduceByKey, nDim2ReduceByKey) {
+    SUPPORTED_TYPE_CHECK(TypeParam);
+    const static int testSz          = 8;
+    const int testKeys[testSz]       = {0, 2, 2, 9, 5, 5, 5, 8};
+    const TypeParam testVals[testSz] = {0, 7, 1, 6, 2, 5, 3, 4};
 
     array keys(testSz, testKeys);
     array vals(testSz, testVals);
@@ -888,8 +926,9 @@ TEST(ReduceByKey, nDim2ReduceByKey) {
     sumByKey(reduced_keys, reduced_vals, keys, vals, dim, nanval);
 
     const int goldSz                = 5;
-    const float gold_reduce[goldSz] = {0, 8, 6, 10, 4};
-    vector<float> h_a(reduced_vals.elements());
+    using promoted_t = typename promote_type<TypeParam, af_sum>::type;
+    const promoted_t gold_reduce[goldSz] = {0, 8, 6, 10, 4};
+    vector<promoted_t> h_a(reduced_vals.elements());
     reduced_vals.host(h_a.data());
 
     for (int i = 0; i < goldSz * ntile; i++) {
@@ -897,10 +936,11 @@ TEST(ReduceByKey, nDim2ReduceByKey) {
     }
 }
 
-TEST(ReduceByKey, nDim3ReduceByKey) {
-    const static int testSz      = 8;
-    const int testKeys[testSz]   = {0, 2, 2, 9, 5, 5, 5, 8};
-    const float testVals[testSz] = {0, 7, 1, 6, 2, 5, 3, 4};
+TYPED_TEST(ReduceByKey, nDim3ReduceByKey) {
+    SUPPORTED_TYPE_CHECK(TypeParam);
+    const static int testSz          = 8;
+    const int testKeys[testSz]       = {0, 2, 2, 9, 5, 5, 5, 8};
+    const TypeParam testVals[testSz] = {0, 7, 1, 6, 2, 5, 3, 4};
 
     array keys(testSz, testKeys);
     array vals(testSz, testVals);
@@ -915,8 +955,9 @@ TEST(ReduceByKey, nDim3ReduceByKey) {
     sumByKey(reduced_keys, reduced_vals, keys, vals, dim, nanval);
 
     const int goldSz                = 5;
-    const float gold_reduce[goldSz] = {0, 8, 6, 10, 4};
-    vector<float> h_a(reduced_vals.elements());
+    using promoted_t = typename promote_type<TypeParam, af_sum>::type;
+    const promoted_t gold_reduce[goldSz] = {0, 8, 6, 10, 4};
+    vector<promoted_t> h_a(reduced_vals.elements());
     reduced_vals.host(h_a.data());
 
     for (int i = 0; i < goldSz * ntile; i++) {
