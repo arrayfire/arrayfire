@@ -1,12 +1,16 @@
-# Copyright (c) 2021, ArrayFire
-# All rights reserved.
+#Copyright(c) 2021, ArrayFire
+#All rights reserved.
 #
-# This file is distributed under 3-clause BSD license.
-# The complete license agreement can be obtained at:
-# http://arrayfire.com/licenses/BSD-3-Clause
+#This file is distributed under 3 - clause BSD license.
+#The complete license agreement can be obtained at:
+#http: // arrayfire.com/licenses/BSD-3-Clause
 
-if(AF_BUILD_ONEAPI)
-  cmake_minimum_required(VERSION 3.20)
+if (AF_BUILD_ONEAPI)
+  if (WIN32)
+    cmake_minimum_required(VERSION 3.25)
+  else()
+    cmake_minimum_required(VERSION 3.20)
+  endif()
 else()
   cmake_minimum_required(VERSION 3.16.3)
 endif()
@@ -14,7 +18,8 @@ include(CheckLanguage)
 
 include(CMakeModules/AF_vcpkg_options.cmake)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
+set(CMAKE_MODULE_PATH ${
+      CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 project(ArrayFire VERSION 3.9.0 LANGUAGES C CXX)
 
 include(AFconfigure_deps_vars)
@@ -29,10 +34,10 @@ include(CheckCXXCompilerFlag)
 include(CheckSymbolExists)
 include(SplitDebugInfo)
 
-# Use the function generate_product_version on Windows
-# to attach version info in dll file attributes.
-# Make sure to pass appropriate arguments for each backend
-# to generate the correct resource file
+#Use the function generate_product_version on Windows
+#to attach version info in dll file attributes.
+#Make sure to pass appropriate arguments for each backend
+#to generate the correct resource file
 include(generate_product_version)
 
 set_policies(
@@ -80,7 +85,7 @@ find_package(GTest)
 find_package(CLBlast QUIET)
 find_package(Boost 1.70 ${AF_REQUIRED})
 
-# CLFFT used in ArrayFire requires a specific fork
+#CLFFT used in ArrayFire requires a specific fork
 #find_package(clFFT QUIET)
 
 include(boost_package)
@@ -132,9 +137,9 @@ else()
 endif()
 
 if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)
-  # VCPKG overrides the find_package command and the PATH parameter is currently
-  # broken with the current version of VCPKG so we are setting the MKL_ROOT
-  # directory to the MKLROOT environment variable.
+#VCPKG overrides the find_package command and the PATH parameter is currently
+#broken with the current version of VCPKG so we are setting the MKL_ROOT
+#directory to the MKLROOT environment variable.
   if(DEFINED ENV{MKLROOT} AND NOT DEFINED MKL_ROOT)
     set(MKL_ROOT "$ENV{MKLROOT}")
   endif()
@@ -166,7 +171,8 @@ option(AF_INSTALL_STANDALONE "Build installers that include all dependencies" OF
 cmake_dependent_option(AF_WITH_RELATIVE_TEST_DIR "Use relative paths for the test data directory(For continious integration(CI) purposes only)" OFF
   "BUILD_TESTING" OFF)
 
-cmake_dependent_option(AF_WITH_IMAGEIO "Build ArrayFire with Image IO support" ${FreeImage_FOUND}
+cmake_dependent_option(AF_WITH_IMAGEIO "Build ArrayFire with Image IO support" ${
+      FreeImage_FOUND}
                        "FreeImage_FOUND" OFF)
 cmake_dependent_option(AF_BUILD_FRAMEWORK "Build an ArrayFire framework for Apple platforms.(Experimental)" OFF
                        "APPLE" OFF)
@@ -199,15 +205,18 @@ af_deprecate(USE_RELATIVE_TEST_DIR AF_WITH_RELATIVE_TEST_DIR)
 af_deprecate(USE_FREEIMAGE_STATIC  AF_WITH_STATIC_FREEIMAGE)
 af_deprecate(USE_CPUID             AF_WITH_CPUID)
 if(DEFINED USE_CPU_MKL OR DEFINED USE_OPENCL_MKL)
-  # Cannot use af_deprecated as it expects the new and old variables to store values of
-  # same type. In this case, USE_*_MKL variables are BOOLs and AF_COMPUTE_LIBRARY is a STRING
+#Cannot use af_deprecated as it expects the new and old variables to store     \
+    values of
+#same type.In this case,                                                       \
+    USE_ *_MKL variables are BOOLs and AF_COMPUTE_LIBRARY is a STRING
   message(DEPRECATION
     "Variables USE_CPU_MKL/USE_OPENCL_MKL are deprecated. Use AF_COMPUTE_LIBRARY instead.")
   message(WARNING
     "USE_CPU_MKL/USE_OPENCL_MKL defined. These values take precendence over the value of
     AF_COMPUTE_LIBRARY until they are removed to preserve existing build behavior.")
-  # Until USE_CPU_MKL and USE_OPENCL_MKL are removed, if they are defined, they take
-  # precendence and cmake will check and report error if Intel-MKL is not found
+#Until USE_CPU_MKL and USE_OPENCL_MKL are removed, if they are defined,        \
+    they take
+#precendence and cmake will check and report error if Intel - MKL is not found
   if(USE_CPU_MKL OR USE_OPENCL_MKL)
     get_property(doc CACHE AF_COMPUTE_LIBRARY PROPERTY HELPSTRING)
     set(AF_COMPUTE_LIBRARY "Intel-MKL" CACHE STRING "${doc}" FORCE)
@@ -223,14 +232,15 @@ endif()
 find_package(BLAS)
 find_package(LAPACK)
 
-# IF: the old USE_CPU_MKL/USE_OPENCL_MKL flags are present,
-# THEN Irrespective of AF_COMPUTE_LIBRARY value, continue with MKL to preserve old
-#      behavior. Once the deprecated USE_CPU_MKL/USE_OPENCL_MKL are removed in later
-#      versions AF_COMPUTE_LIBRARY will take over total control of selecting CPU
-#      compute backend.
+#IF : the old USE_CPU_MKL / USE_OPENCL_MKL flags are present,
+#THEN Irrespective of AF_COMPUTE_LIBRARY value,                                \
+    continue with MKL to preserve old
+#behavior.Once the deprecated USE_CPU_MKL / USE_OPENCL_MKL are removed in later
+#versions AF_COMPUTE_LIBRARY will take over total control of selecting CPU
+#compute backend.
 #
-# Note that the default value of AF_COMPUTE_LIBRARY is Intel-MKL.
-# Also, cmake doesn't have short-circuit of OR/AND conditions in if
+#Note that the default value of AF_COMPUTE_LIBRARY is Intel - MKL.
+#Also, cmake doesn't have short-circuit of OR/AND conditions in if
 if(${AF_BUILD_CPU} OR ${AF_BUILD_OPENCL})
   if("${AF_COMPUTE_LIBRARY}" STREQUAL "Intel-MKL"
       OR "${AF_COMPUTE_LIBRARY}" STREQUAL "MKL")
@@ -330,7 +340,7 @@ af_dep_check_and_populate(${assets_prefix}
 )
 set(ASSETS_DIR ${${assets_prefix}_SOURCE_DIR})
 
-# when crosscompiling use the bin2cpp file from the native bin directory
+#when crosscompiling use the bin2cpp file from the native bin directory
 if(CMAKE_CROSSCOMPILING)
   set(NATIVE_BIN_DIR "NATIVE_BIN_DIR-NOTFOUND"
     CACHE FILEPATH "Path to the Native build directory.")
@@ -367,7 +377,7 @@ endif()
 
 if(NOT LAPACK_FOUND)
     if(APPLE)
-        # UNSET THE VARIABLES FROM LAPACKE
+#UNSET THE VARIABLES FROM LAPACKE
         unset(LAPACKE_LIB CACHE)
         unset(LAPACK_LIB CACHE)
         unset(LAPACKE_INCLUDES CACHE)
@@ -414,11 +424,11 @@ set_target_properties(${built_backends} PROPERTIES
 
 if(AF_INSTALL_STANDALONE)
 
-  # This flag enables the use of RUNPATH instead of RPATH which is the
-  # preferred method to set the runtime lookup. Only doind this for
-  # standalone builds because we include all libraries with the installers
-  # and they are included in the same directory so the RUNPATH is set to
-  # $ORIGIN. This avoid setting the linker path in ld.so.conf.d
+#This flag enables the use of RUNPATH instead of RPATH which is the
+#preferred method to set the runtime lookup.Only doind this for
+#standalone builds because we include all libraries with the installers
+#and they are included in the same directory so the RUNPATH is set to
+#$ORIGIN.This avoid setting the linker path in ld.so.conf.d
   check_cxx_compiler_flag("-Wl,--enable-new-dtags" HAS_RUNPATH_FLAG)
   if(HAS_RUNPATH_FLAG)
     set_target_properties(${built_backends} PROPERTIES
@@ -427,10 +437,10 @@ if(AF_INSTALL_STANDALONE)
   endif()
 endif()
 
-# On some distributions the linker will not add a library to the ELF header if
-# the symbols are not needed when the library was first parsed by the linker.
-# This causes undefined references issues when linking with libraries which have
-# circular dependencies.
+#On some distributions the linker will not add a library to the ELF header if
+#the symbols are not needed when the library was first parsed by the linker.
+#This causes undefined references issues when linking with libraries which have
+#circular dependencies.
 if(UNIX AND NOT APPLE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU")
   set_target_properties(${built_backends} PROPERTIES
                         LINK_FLAGS "-Wl,--no-as-needed")
@@ -455,9 +465,9 @@ if(AF_BUILD_FRAMEWORK)
       FRAMEWORK TRUE
       FRAMEWORK_VERSION A
       MACOSX_FRAMEWORK_IDENTIFIER com.arrayfire.arrayfireFramework
-      #MACOSX_FRAMEWORK_INFO_PLIST Info.plist
-      #PUBLIC_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/include/arrayfire.h;${af_headers}"
-      #XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "iPhone Developer"
+#MACOSX_FRAMEWORK_INFO_PLIST Info.plist
+#PUBLIC_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/include/arrayfire.h;${af_headers}"
+#XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "iPhone Developer"
     )
 endif()
 
@@ -476,11 +486,11 @@ install(FILES ${ArrayFire_BINARY_DIR}/include/af/version.h
         DESTINATION "${AF_INSTALL_INC_DIR}/af/"
         COMPONENT headers)
 
-# install the examples irrespective of the AF_BUILD_EXAMPLES value
-# only the examples source files are installed, so the installation of these
-# source files does not depend on AF_BUILD_EXAMPLES
-# when AF_BUILD_EXAMPLES is OFF, the examples source is installed without
-# building the example executables
+#install the examples irrespective of the AF_BUILD_EXAMPLES value
+#only the examples source files are installed, so the installation of these
+#source files does not depend on AF_BUILD_EXAMPLES
+#when AF_BUILD_EXAMPLES is OFF, the examples source is installed without
+#building the example executables
 install(DIRECTORY examples/ #NOTE The slash at the end is important
     DESTINATION ${AF_INSTALL_EXAMPLE_DIR}
     COMPONENT examples)
@@ -514,8 +524,8 @@ write_basic_package_version_file(
   COMPATIBILITY SameMajorVersion
 )
 
-# This config file will be installed so we need to set the install_destination
-# path relitive to the install path
+#This config file will be installed so we need to set the install_destination
+#path relitive to the install path
 set(INCLUDE_DIRS include)
 set(CMAKE_DIR ${AF_INSTALL_CMAKE_DIR})
 configure_package_config_file(
@@ -562,18 +572,18 @@ if(BUILD_WITH_MKL AND AF_INSTALL_STANDALONE)
       $<TARGET_FILE:MKL::ThreadLayer>
       ${MKL_RUNTIME_KERNEL_LIBRARIES}
 
-      # This variable is used to add tbb.so.2 library because the main lib
-      # is a linker script and not a symlink so it cant be resolved using
-      # get_filename_component
+#This variable is used to add tbb.so .2 library because the main lib
+#is a linker script and not a symlink so it cant be resolved using
+#get_filename_component
       ${AF_ADDITIONAL_MKL_LIBRARIES}
       DESTINATION ${AF_INSTALL_LIB_DIR}
       COMPONENT mkl_dependencies)
   endif()
 endif()
 
-# This file will be used to create the config file for the build directory.
-# These config files will be used by the examples to find the ArrayFire
-# libraries
+#This file will be used to create the config file for the build directory.
+#These config files will be used by the examples to find the ArrayFire
+#libraries
 set(INCLUDE_DIRS "${ArrayFire_SOURCE_DIR}/include" "${ArrayFire_BINARY_DIR}/include")
 set(CMAKE_DIR "${ArrayFire_BINARY_DIR}/cmake")
 configure_package_config_file(
@@ -584,14 +594,15 @@ configure_package_config_file(
   INSTALL_PREFIX "${ArrayFire_BINARY_DIR}"
   )
 
-# Registers the current build directory with the user's cmake config. This will
-# create a file at $HOME/.cmake/packages/ArrayFire which will point to this source
-# build directory.
-# TODO(umar): Disable for now. Causing issues with builds on windows.
+#Registers the current build directory with the user's cmake config. This will
+#create a file at $HOME /.cmake / packages /                                   \
+    ArrayFire which will point to this source
+#build directory.
+#TODO(umar) : Disable for now.Causing issues with builds on windows.
 #export(PACKAGE ArrayFire)
 
-# Unset the visibility to avoid setting policy commands for older versions of
-# CMake for examples and tests.
+#Unset the visibility to avoid setting policy commands for older versions of
+#CMake for examples and tests.
 unset(CMAKE_CXX_VISIBILITY_PRESET)
 
 configure_file(
@@ -600,7 +611,7 @@ configure_file(
 
 include(CTest)
 
-# Handle depricated BUILD_TEST variable if found.
+#Handle depricated BUILD_TEST variable if found.
 if(BUILD_TEST)
   set(BUILD_TESTING ${BUILD_TEST})
 endif()
@@ -612,9 +623,9 @@ conditional_directory(AF_BUILD_DOCS docs)
 
 include(CPackConfig)
 
-# VCPKG variables that aren't necessarily important
-# for ArrayFire Development. They are marked hidden.
-# If VCPKG is not used, marking them is not harmful
+#VCPKG variables that aren't necessarily important
+#for ArrayFire Development.They are marked hidden.
+#If VCPKG is not used, marking them is not harmful
 mark_as_advanced(
   AF_BUILD_FRAMEWORK
   AF_CACHE_KERNELS_TO_DISK
