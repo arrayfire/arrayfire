@@ -22,7 +22,7 @@ Input Type          | Output Type
 --------------------|---------------------
 f32, f64, c32, c64  | same as input
 s32, s64, u32, u64  | same as input
-s16                 | s32
+s16, s8             | s32
 u16, u8, b8         | u32
 
 \copydoc batch_detail_algo
@@ -54,7 +54,7 @@ Input Type          | Output Type
 --------------------|---------------------
 f32, f64, c32, c64  | same as input
 s32, s64, u32, u64  | same as input
-s16                 | s32
+s16, s8             | s32
 u16, u8, b8         | u32
 f16                 | f32
 
@@ -76,7 +76,7 @@ Input Type          | Output Type
 --------------------|---------------------
 f32, f64, c32, c64  | same as input
 s32, u32, s64, u64  | same as input
-s16                 | s32
+s16, s8             | s32
 u16, u8, b8         | u32
 
 \copydoc batch_detail_algo
@@ -108,7 +108,7 @@ Input Type          | Output Type
 --------------------|---------------------
 f32, f64, c32, c64  | same as input
 s32, u32, s64, u64  | same as input
-s16                 | s32
+s16, s8             | s32
 u16, u8, b8         | u32
 f16                 | f32
 
@@ -340,7 +340,7 @@ Input Type          | Output Type
 --------------------|---------------------
 f32, f64, c32, c64  | same as input
 s32, s64, u32, u64  | same as input
-s16                 | s32
+s16, s8             | s32
 u16, u8, b8         | u32
 
 \copydoc batch_detail_algo

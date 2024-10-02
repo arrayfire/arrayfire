@@ -192,6 +192,14 @@ inline __device__ uintl maxval<uintl>() {
     return 1ULL << (8 * sizeof(uintl) - 1);
 }
 template<>
+inline __device__ schar maxval<schar>() {
+    return 0x7f;
+}
+template<>
+inline __device__ schar minval<schar>() {
+    return 0x80;
+}
+template<>
 inline __device__ char maxval<char>() {
     return 0x7f;
 }

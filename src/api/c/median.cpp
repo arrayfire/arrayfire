@@ -23,6 +23,7 @@
 using af::dim4;
 using detail::Array;
 using detail::division;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::ushort;
@@ -169,6 +170,7 @@ af_err af_median_all(double* realVal, double* imagVal,  // NOLINT
             case u32: *realVal = median<uint>(in); break;
             case s16: *realVal = median<short>(in); break;
             case u16: *realVal = median<ushort>(in); break;
+            case s8: *realVal = median<schar>(in); break;
             case u8: *realVal = median<uchar>(in); break;
             default: TYPE_ERROR(1, type);
         }
@@ -193,6 +195,7 @@ af_err af_median(af_array* out, const af_array in, const dim_t dim) {
             case u32: output = median<uint>(in, dim); break;
             case s16: output = median<short>(in, dim); break;
             case u16: output = median<ushort>(in, dim); break;
+            case s8: output = median<schar>(in, dim); break;
             case u8: output = median<uchar>(in, dim); break;
             default: TYPE_ERROR(1, type);
         }

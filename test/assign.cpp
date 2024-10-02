@@ -94,8 +94,8 @@ class ArrayAssign : public ::testing::Test {
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, cdouble, cfloat, double, int, uint, char, uchar,
-                         intl, uintl, short, ushort, half_float::half>
+typedef ::testing::Types<float, cdouble, cfloat, double, int, uint, char, schar,
+                         uchar, intl, uintl, short, ushort, half_float::half>
     TestTypes;
 
 // register the type list

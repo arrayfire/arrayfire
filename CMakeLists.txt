@@ -15,7 +15,7 @@ include(CheckLanguage)
 include(CMakeModules/AF_vcpkg_options.cmake)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
-project(ArrayFire VERSION 3.9.0 LANGUAGES C CXX)
+project(ArrayFire VERSION 3.10.0 LANGUAGES C CXX)
 
 include(AFconfigure_deps_vars)
 include(AFBuildConfigurations)

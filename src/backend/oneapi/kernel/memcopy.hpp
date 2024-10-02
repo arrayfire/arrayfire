@@ -165,6 +165,19 @@ convertType<char, compute_t<arrayfire::common::half>>(char value) {
 }
 
 template<>
+signed char inline convertType<compute_t<arrayfire::common::half>, signed char>(
+    compute_t<arrayfire::common::half> value) {
+    return (signed char)((short)value);
+}
+
+template<>
+inline compute_t<arrayfire::common::half>
+convertType<signed char, compute_t<arrayfire::common::half>>(
+    signed char value) {
+    return compute_t<arrayfire::common::half>(value);
+}
+
+template<>
 unsigned char inline convertType<compute_t<arrayfire::common::half>,
                                  unsigned char>(
     compute_t<arrayfire::common::half> value) {
@@ -197,6 +210,7 @@ OTHER_SPECIALIZATIONS(intl)
 OTHER_SPECIALIZATIONS(uintl)
 OTHER_SPECIALIZATIONS(short)
 OTHER_SPECIALIZATIONS(ushort)
+OTHER_SPECIALIZATIONS(schar)
 OTHER_SPECIALIZATIONS(uchar)
 OTHER_SPECIALIZATIONS(char)
 OTHER_SPECIALIZATIONS(arrayfire::common::half)

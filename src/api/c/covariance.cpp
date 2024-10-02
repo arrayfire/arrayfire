@@ -31,6 +31,7 @@ using detail::intl;
 using detail::mean;
 using detail::reduce;
 using detail::scalar;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -97,6 +98,7 @@ af_err af_cov_v2(af_array* out, const af_array X, const af_array Y,
             case u64: output = cov<uintl, double>(X, Y, bias); break;
             case s16: output = cov<short, float>(X, Y, bias); break;
             case u16: output = cov<ushort, float>(X, Y, bias); break;
+            case s8: output = cov<schar, float>(X, Y, bias); break;
             case u8: output = cov<uchar, float>(X, Y, bias); break;
             default: TYPE_ERROR(1, xType);
         }

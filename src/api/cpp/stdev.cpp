@@ -60,6 +60,7 @@ INSTANTIATE_STDEV(unsigned long long);
 INSTANTIATE_STDEV(short);
 INSTANTIATE_STDEV(unsigned short);
 INSTANTIATE_STDEV(char);
+INSTANTIATE_STDEV(signed char);
 INSTANTIATE_STDEV(unsigned char);
 
 #undef INSTANTIATE_STDEV

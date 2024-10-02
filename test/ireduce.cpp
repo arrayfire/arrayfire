@@ -103,6 +103,7 @@ MINMAXOP(min, double)
 MINMAXOP(min, int)
 MINMAXOP(min, uint)
 MINMAXOP(min, char)
+MINMAXOP(min, schar)
 MINMAXOP(min, uchar)
 
 MINMAXOP(max, float)
@@ -110,6 +111,7 @@ MINMAXOP(max, double)
 MINMAXOP(max, int)
 MINMAXOP(max, uint)
 MINMAXOP(max, char)
+MINMAXOP(max, schar)
 MINMAXOP(max, uchar)
 
 TEST(IndexedReduce, MaxIndexedSmall) {

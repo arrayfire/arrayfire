@@ -35,7 +35,8 @@ class MedianFilter1d : public ::testing::Test {
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort>
+typedef ::testing::Types<float, double, int, uint, char, schar, uchar, short,
+                         ushort>
     TestTypes;
 
 // register the type list

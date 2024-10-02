@@ -33,6 +33,7 @@ using detail::cdouble;
 using detail::cfloat;
 using detail::convolve;
 using detail::intl;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -196,6 +197,10 @@ af_err convolve(af_array *out, const af_array signal, const af_array filter,
                 output = convolve<uchar, float>(signal, filter, convBT, rank,
                                                 expand);
                 break;
+            case s8:
+                output = convolve<schar, float>(signal, filter, convBT, rank,
+                                                expand);
+                break;
             case b8:
                 output =
                     convolve<char, float>(signal, filter, convBT, rank, expand);
@@ -309,6 +314,10 @@ af_err af_convolve2_sep(af_array *out, const af_array col_filter,
                 break;
             case u8:
                 output = convolve2<uchar, float>(signal, col_filter, row_filter,
+                                                 expand);
+                break;
+            case s8:
+                output = convolve2<schar, float>(signal, col_filter, row_filter,
                                                  expand);
                 break;
             case b8:

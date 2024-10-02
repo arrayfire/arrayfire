@@ -33,6 +33,7 @@ struct TemplateTypename {
         operator std::string() const noexcept { return #NAME; } \
     }
 
+SPECIALIZE(signed char, detail::schar);
 SPECIALIZE(unsigned char, detail::uchar);
 SPECIALIZE(unsigned int, detail::uint);
 SPECIALIZE(unsigned short, detail::ushort);

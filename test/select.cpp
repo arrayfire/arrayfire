@@ -42,7 +42,7 @@ template<typename T>
 class Select : public ::testing::Test {};
 
 typedef ::testing::Types<float, double, cfloat, cdouble, uint, int, intl, uintl,
-                         uchar, char, short, ushort, half_float::half>
+                         schar, uchar, char, short, ushort, half_float::half>
     TestTypes;
 TYPED_TEST_SUITE(Select, TestTypes);
 

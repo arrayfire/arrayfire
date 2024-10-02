@@ -19,6 +19,7 @@ using af::dim4;
 using detail::cdouble;
 using detail::cfloat;
 using detail::intl;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -75,6 +76,7 @@ void af_wrap_common(af_array* out, const af_array in, const dim_t ox,
         case u64: wrap<uintl  >(out, in, wx, wy, sx, sy, px, py, is_column);  break;
         case s16: wrap<short  >(out, in, wx, wy, sx, sy, px, py, is_column);  break;
         case u16: wrap<ushort >(out, in, wx, wy, sx, sy, px, py, is_column);  break;
+        case s8:  wrap<schar  >(out, in, wx, wy, sx, sy, px, py, is_column);  break;
         case u8:  wrap<uchar  >(out, in, wx, wy, sx, sy, px, py, is_column);  break;
         case b8:  wrap<char   >(out, in, wx, wy, sx, sy, px, py, is_column);  break;
         default:  TYPE_ERROR(1, in_type);

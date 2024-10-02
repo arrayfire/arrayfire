@@ -15,6 +15,7 @@
 #include <af/image.h>
 
 using detail::intl;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -72,6 +73,10 @@ af_err af_histogram(af_array *out, const af_array in, const unsigned nbins,
                 break;
             case u64:
                 output = histogram<uintl>(in, nbins, minval, maxval,
+                                          info.isLinear());
+                break;
+            case s8:
+                output = histogram<schar>(in, nbins, minval, maxval,
                                           info.isLinear());
                 break;
             case u8:
