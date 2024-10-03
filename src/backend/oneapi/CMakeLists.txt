@@ -359,7 +359,7 @@ target_link_libraries(afoneapi
     $<$<PLATFORM_ID:Linux>:-fvisibility-inlines-hidden>
     $<$<PLATFORM_ID:Linux>:-fno-sycl-rdc>
     -fsycl-max-parallel-link-jobs=${NumberOfThreads}
-    MKL::MKL_DPCPP
+    MKL::MKL_SYCL
   )
   set_sycl_language(afcommon_interface
     oneapi_sort_by_key

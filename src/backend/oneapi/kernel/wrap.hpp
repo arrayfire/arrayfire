@@ -140,7 +140,7 @@ void wrap(Param<T> out, const Param<T> in, const dim_t wx, const dim_t wy,
     dim_t groups_y = divup(out.info.dims[1], local[1]);
 
     auto global = sycl::range{groups_x * local[0] * out.info.dims[2],
-                              groups_y * local[1]};
+                              groups_y * local[1] * out.info.dims[3]};
 
     auto Q = getQueue();
     Q.submit([&](sycl::handler &h) {
