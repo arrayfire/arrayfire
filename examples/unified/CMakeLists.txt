@@ -10,7 +10,7 @@ project(ArrayFire-Example-Unified
   VERSION 3.5.0
   LANGUAGES CXX)
 
-find_package(ArrayFire)
+find_package(ArrayFire REQUIRED)
 
 if(ArrayFire_Unified_FOUND)
   # Simple unified backend example

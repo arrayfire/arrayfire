@@ -10,7 +10,7 @@ project(ArrayFire-Example-Financial
   VERSION 3.5.0
   LANGUAGES CXX)
 
-find_package(ArrayFire)
+find_package(ArrayFire REQUIRED)
 
 if(ArrayFire_CPU_FOUND)
   # Black-Scholes Options
