@@ -13,7 +13,7 @@
 #include "../common/idxio.h"
 
 bool compare(const std::pair<float, int> l, const std::pair<float, int> r) {
-    return l.first >= r.first;
+    return l.first > r.first;
 }
 
 typedef std::pair<float, int> sort_type;
