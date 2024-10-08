@@ -1,0 +1,28 @@
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+
+name: ci_cuda_linux
+
+jobs:
+    build_cuda:
+        name: CUDA
+        runs-on: ubuntu-24.04
+        env:
+          NINJA_VER: 1.12.1
+          CMAKE_VER: 3.30.2
+          CUDA_VER: 12.6.2
+          CUDA_DRIVER: 560.35.03
+        strategy:
+            fail-fast: false
+            matrix:
+                blas_backend: OpenBLAS
+                os: ubuntu-24.04
+                compiler: gcc
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@master
