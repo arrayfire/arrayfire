@@ -158,8 +158,13 @@ static af_array lookup(const af_array& in, const af_array& idx,
 af_err af_lookup(af_array* out, const af_array in, const af_array indices,
                  const unsigned dim) {
     try {
+        ARG_ASSERT(0, out != nullptr);
+        if (in == nullptr || indices == nullptr) {
+            af_release_array(*out);
+            *out = nullptr;
+            return AF_SUCCESS;
+        }
         const ArrayInfo& idxInfo = getInfo(indices);
-
         if (idxInfo.ndims() == 0) {
             *out = retain(indices);
             return AF_SUCCESS;
@@ -174,7 +179,13 @@ af_err af_lookup(af_array* out, const af_array in, const af_array indices,
         ARG_ASSERT(2, (idxType != c64));
         ARG_ASSERT(2, (idxType != b8));
 
-        af_array output = 0;
+        // Try to release ASAP in the hope that the data buffer, if any, will be
+        // reused iso of allocating a new parallel buffer
+        if (*out != in && *out != indices) {
+            af_release_array(*out);
+            *out = nullptr;
+        }
+        af_array output = nullptr;
 
         switch (idxType) {
             case f32: output = lookup<float>(in, indices, dim); break;
@@ -189,7 +200,9 @@ af_err af_lookup(af_array* out, const af_array in, const af_array indices,
             case f16: output = lookup<half>(in, indices, dim); break;
             default: TYPE_ERROR(1, idxType);
         }
-        std::swap(*out, output);
+        // In case we did not succeed in releasing *out up-front
+        af_release_array(*out);
+        *out = output;
     }
     CATCHALL;
     return AF_SUCCESS;
