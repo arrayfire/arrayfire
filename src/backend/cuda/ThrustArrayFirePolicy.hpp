@@ -37,7 +37,11 @@ inline void return_temporary_buffer(ThrustArrayFirePolicy, Pointer p) {
 }  // namespace cuda
 }  // namespace arrayfire
 
+#if defined(_WIN32)
+THRUST_NAMESPACE_BEGIN
+#else
 namespace thrust {
+#endif
 namespace cuda_cub {
 template<>
 __DH__ inline cudaStream_t get_stream<arrayfire::cuda::ThrustArrayFirePolicy>(
@@ -47,17 +51,22 @@ __DH__ inline cudaStream_t get_stream<arrayfire::cuda::ThrustArrayFirePolicy>(
 #else
     return arrayfire::cuda::getActiveStream();
 #endif
-}
 
-__DH__
-inline cudaError_t synchronize_stream(
-    const arrayfire::cuda::ThrustArrayFirePolicy &) {
+#if defined(_WIN32)
+    THRUST_NAMESPACE_END
+#else
+}
+#endif
+
+    __DH__
+    inline cudaError_t synchronize_stream(
+        const arrayfire::cuda::ThrustArrayFirePolicy &) {
 #if defined(__CUDA_ARCH__)
-    return cudaSuccess;
+        return cudaSuccess;
 #else
     return cudaStreamSynchronize(arrayfire::cuda::getActiveStream());
 #endif
-}
+    }
 
 }  // namespace cuda_cub
-}  // namespace thrust
+}  // namespace cuda_cub
