@@ -94,7 +94,12 @@ static void print(const char *exp, af_array arr, const int precision,
         return;
     }
 
-    vector<T> data(info.elements());
+    vector<T> data;
+    try {
+        data.resize(info.elements());
+    } catch(std::bad_alloc const&) {
+        AF_ERROR("Unable to allocate memory", AF_ERR_NO_MEM);
+    }
 
     af_array arrT;
     if (transpose) {
