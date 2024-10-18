@@ -1,0 +1,76 @@
+on:
+  workflow_dispatch:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+
+name: ci_cuda_win
+
+jobs:
+    build_cuda:
+        name: CUDA
+        runs-on: windows-2022
+        env:
+          VCPKG_HASH: c82f74667287d3dc386bce81e44964370c91a289 #2024.09.30
+          VCPKG_DEFAULT_TRIPLET: x64-windows
+        steps:
+            - name: Install CUDA
+              uses: Jimver/cuda-toolkit@v0.2.18
+              id: cuda-toolkit
+              with:
+                cuda: '12.6.2'
+
+            - name: Checkout Repository
+              uses: actions/checkout@master
+
+            - name: VCPKG Cache
+              id: vcpkg-cache
+              uses: actions/cache@v4
+              with:
+                path: ~/vcpkg
+                key: vcpkg-deps-${{ env.VCPKG_HASH }}
+
+            - name: Install VCPKG Dependencies
+              if: steps.vcpkg-cache.outputs.cache-hit != 'true'
+              run: |
+                pushd .
+                cd ~
+                git clone --quiet --recursive https://github.com/microsoft/vcpkg.git
+                cd vcpkg
+                git checkout $env:VCPKG_HASH
+                .\bootstrap-vcpkg.bat
+                popd
+                ls ~/vcpkg
+                mkdir build && cd build
+                $buildname = "$buildname-cuda"
+                cmake .. -G "Visual Studio 17 2022" -A x64 `
+                      -DVCPKG_ROOT:PATH=~/vcpkg `
+                      -DAF_BUILD_CUDA:BOOL=ON -DAF_BUILD_OPENCL:BOOL=OFF `
+                      -DAF_BUILD_UNIFIED:BOOL=OFF -DAF_BUILD_FORGE:BOOL=ON `
+                      -DCUDA_ARCHITECTURE_BUILD_TARGETS=8.6 `
+                      -DBUILDNAME:STRING="$buildname" `
+                      -DAF_COMPUTE_LIBRARY:STRING="FFTW/LAPACK/BLAS"
+                ls ~/vcpkg
+
+            - name: CMake Configure
+              run: |
+                  $buildname = "$buildname-cuda"
+                  if((Test-Path build) -eq 0) {
+                      mkdir build
+                  }
+                  cd build && set VCPKG_ROOT=
+                  cmake .. -G "Visual Studio 17 2022" -A x64 `
+                      -DVCPKG_ROOT:PATH=~/vcpkg `
+                      -DAF_BUILD_CUDA:BOOL=ON -DAF_BUILD_OPENCL:BOOL=OFF `
+                      -DAF_BUILD_UNIFIED:BOOL=OFF -DAF_BUILD_FORGE:BOOL=ON `
+                      -DAF_BUILD_EXAMPLES:BOOL=ON -DBUILDNAME:STRING="$buildname" `
+                      -DCUDA_architecture_build_targets:STRING="8.6" `
+                      -DAF_COMPUTE_LIBRARY:STRING="FFTW/LAPACK/BLAS"
+
+            - name: Build
+              run: |
+                  cd build
+                  cmake --build . -j 2
