@@ -1,0 +1,91 @@
+on:
+  workflow_dispatch:
+  #push:
+  #  branches:
+  #  - master
+  #pull_request:
+  #  branches:
+  #  - master
+
+name: ci_cuda_linux
+
+jobs:
+    build_cuda:
+        name: CUDA
+        runs-on: ubuntu-24.04
+        env:
+          NINJA_VER: 1.12.1
+          CMAKE_VER: 3.30.2
+        strategy:
+            fail-fast: false
+        steps:
+            - name: Install CUDA
+              uses: Jimver/cuda-toolkit@v0.2.18
+              id: cuda-toolkit
+              with:
+                cuda: '12.6.2'
+
+            - name: Checkout Repository
+              uses: actions/checkout@master
+
+            - name: Download Ninja
+              env:
+                  OS_NAME: ubuntu-24.04
+              run: |
+                  wget --quiet "https://github.com/ninja-build/ninja/releases/download/v${NINJA_VER}/ninja-linux.zip"
+                  unzip ./ninja-linux.zip
+                  chmod +x ninja
+                  ${GITHUB_WORKSPACE}/ninja --version
+
+            - name: Download CMake 3.16.3 for Linux
+              env:
+                  OS_NAME: ubuntu-24.04
+                  CC: gcc
+              run: |
+                  cmake_url=$(echo "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VER}/cmake-${CMAKE_VER}-Linux-x86_64.tar.gz")
+                  wget --quiet "${cmake_url}"
+                  tar -xf ./cmake-${CMAKE_VER}-Linux-x86_64.tar.gz
+                  cmake_install_dir=$(echo "cmake-${CMAKE_VER}-x86_64")
+                  mv cmake-${CMAKE_VER}-linux-x86_64 ${cmake_install_dir}
+                  cmake_dir=$(echo "${cmake_install_dir}/bin")
+                  echo "CMAKE_PROGRAM=$(pwd)/${cmake_dir}/cmake" >> $GITHUB_ENV
+                  echo "CXX=g++" >> $GITHUB_ENV
+
+            - name: Install Common Dependencies for Ubuntu
+              run: |
+                  sudo apt-get -qq update
+                  sudo apt-get install -y libboost1.83-dev \
+                                          libfreeimage-dev \
+                                          libglfw3-dev \
+                                          libfftw3-dev \
+                                          liblapacke-dev \
+                                          libfreetype-dev \
+                                          libfontconfig1-dev
+
+            - name: Install OpenBLAS for Ubuntu
+              run: sudo apt-get install -y libopenblas-dev
+
+            - name: CMake Configure
+              env:
+                  BLAS_BACKEND: OpenBLAS
+                  CC: gcc
+                  OS_NAME: ubuntu-24.04
+              run: |
+                  backend="FFTW/LAPACK/BLAS"
+                  buildname="$buildname-cpu-$BLAS_BACKEND"
+                  mkdir build && cd build
+                  ${CMAKE_PROGRAM} -G Ninja \
+                      -DCMAKE_MAKE_PROGRAM:FILEPATH=${GITHUB_WORKSPACE}/ninja \
+                      -DAF_BUILD_CUDA:BOOL=ON -DAF_BUILD_OPENCL:BOOL=OFF \
+                      -DAF_BUILD_UNIFIED:BOOL=OFF -DAF_BUILD_EXAMPLES:BOOL=ON \
+                      -DAF_BUILD_FORGE:BOOL=ON \
+                      -DCUDA_architecture_build_targets:STRING="8.6"\
+                      -DAF_COMPUTE_LIBRARY:STRING=${backend} \
+                      -DBUILDNAME:STRING=${buildname} ..
+
+            - name: Build
+              env:
+                  CC: gcc
+              run: |
+                  cd ${GITHUB_WORKSPACE}/build
+                  ${GITHUB_WORKSPACE}/ninja -j 2
