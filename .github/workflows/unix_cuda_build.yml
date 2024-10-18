@@ -1,11 +1,10 @@
 on:
-  workflow_dispatch:
-  #push:
-  #  branches:
-  #  - master
-  #pull_request:
-  #  branches:
-  #  - master
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
 
 name: ci_cuda_linux
 
