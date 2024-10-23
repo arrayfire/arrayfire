@@ -1,9 +1,9 @@
-# Copyright (c) 2017, ArrayFire
-# All rights reserved.
+#Copyright(c) 2017, ArrayFire
+#All rights reserved.
 #
-# This file is distributed under 3-clause BSD license.
-# The complete license agreement can be obtained at:
-# http://arrayfire.com/licenses/BSD-3-Clause
+#This file is distributed under 3 - clause BSD license.
+#The complete license agreement can be obtained at:
+#http:  // arrayfire.com/licenses/BSD-3-Clause
 
 file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key/sort_by_key_impl.cpp" FILESTRINGS)
 
@@ -21,9 +21,13 @@ foreach(SBK_TYPE ${SBK_TYPES})
         "${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key_impl.hpp"
     )
 
-  set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key/sort_by_key_impl.cpp"
-    PROPERTIES
-      LANGUAGE SYCL)
+  if (WIN32)
+    target_link_libraries(oneapi_sort_by_key_${SBK_TYPE} PRIVATE oneDPL)
+  else()
+    set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key/sort_by_key_impl.cpp"
+      PROPERTIES
+        LANGUAGE SYCL)
+  endif()
   set_target_properties(oneapi_sort_by_key_${SBK_TYPE}
     PROPERTIES
       COMPILE_DEFINITIONS "TYPE=${SBK_TYPE};AFDLL;$<TARGET_PROPERTY:Boost::boost,INTERFACE_COMPILE_DEFINITIONS>"
@@ -34,6 +38,7 @@ foreach(SBK_TYPE ${SBK_TYPES})
 
   arrayfire_set_default_cxx_flags(oneapi_sort_by_key_${SBK_TYPE})
 
+  target_link_libraries(oneapi_sort_by_key_${SBK_TYPE} PRIVATE oneDPL)
   target_include_directories(oneapi_sort_by_key_${SBK_TYPE}
     PUBLIC
       .
@@ -54,7 +59,8 @@ foreach(SBK_TYPE ${SBK_TYPES})
   target_include_directories(oneapi_sort_by_key_${SBK_TYPE}
     SYSTEM PRIVATE
       ${span-lite_SOURCE_DIR}/include
-      $<TARGET_PROPERTY:Boost::boost,INTERFACE_INCLUDE_DIRECTORIES>)
+      $<TARGET_PROPERTY:Boost::boost,INTERFACE_INCLUDE_DIRECTORIES>
+      ${SYCL_INCLUDE_DIR}/sycl)
 
   set_target_properties(oneapi_sort_by_key_${SBK_TYPE} PROPERTIES POSITION_INDEPENDENT_CODE ON)
   target_sources(oneapi_sort_by_key
