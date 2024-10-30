@@ -51,22 +51,21 @@ __DH__ inline cudaStream_t get_stream<arrayfire::cuda::ThrustArrayFirePolicy>(
 #else
     return arrayfire::cuda::getActiveStream();
 #endif
-
-#if defined(_WIN32)
-    THRUST_NAMESPACE_END
-#else
 }
-#endif
 
-    __DH__
-    inline cudaError_t synchronize_stream(
-        const arrayfire::cuda::ThrustArrayFirePolicy &) {
+__DH__
+inline cudaError_t synchronize_stream(
+    const arrayfire::cuda::ThrustArrayFirePolicy &) {
 #if defined(__CUDA_ARCH__)
-        return cudaSuccess;
+    return cudaSuccess;
 #else
     return cudaStreamSynchronize(arrayfire::cuda::getActiveStream());
 #endif
-    }
+}
 
 }  // namespace cuda_cub
-}  // namespace cuda_cub
+#if defined(_WIN32)
+THRUST_NAMESPACE_END
+#else
+}  // namespace thrust
+#endif
