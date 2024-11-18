@@ -249,13 +249,17 @@ void reduce_all_launcher_default(Param<To> out, Param<Ti> in,
             "Too many blocks requested (typeof(retirementCount) == unsigned)",
             AF_ERR_RUNTIME);
     }
-    Array<To> tmp = createEmptyArray<To>(tmp_elements);
 
+    Array<To> tmp = createEmptyArray<To>(tmp_elements);
+    auto tmp_get = tmp.get();
+    
     Array<unsigned> retirementCount = createValueArray<unsigned>(1, 0);
+    auto ret_get = retirementCount.get();
+
     getQueue().submit([&](sycl::handler &h) {
         write_accessor<To> out_acc{*out.data, h};
-        auto retCount_acc = retirementCount.get()->get_access(h);
-        auto tmp_acc      = tmp.get()->get_access(h);
+        auto retCount_acc = ret_get->get_access(h);
+        auto tmp_acc      = tmp_get->get_access(h);
         read_accessor<Ti> in_acc{*in.data, h};
 
         auto shrdMem = sycl::local_accessor<compute_t<To>, 1>(

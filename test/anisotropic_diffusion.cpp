@@ -98,12 +98,12 @@ void imageTest(string pTestFile, const float dt, const float K,
 
         if (isCurvatureDiffusion) {
             ASSERT_SUCCESS(af_anisotropic_diffusion(&_outArray, inArray, dt, K,
-                                                    iters, fluxKind,
-                                                    AF_DIFFUSION_MCDE));
+                                                                iters, fluxKind,
+                                                                AF_DIFFUSION_MCDE));
         } else {
             ASSERT_SUCCESS(af_anisotropic_diffusion(&_outArray, inArray, dt, K,
-                                                    iters, fluxKind,
-                                                    AF_DIFFUSION_GRAD));
+                                                                iters, fluxKind,
+                                                                AF_DIFFUSION_GRAD));
         }
 
         double maxima, minima, imag;
