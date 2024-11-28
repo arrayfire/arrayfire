@@ -67,7 +67,7 @@ std::string genPlanHashStr(int rank, ::oneapi::mkl::dft::precision precision,
 
     if (istrides != nullptr) {
         for (int r = 0; r < rank + 1; ++r) {
-            sprintf(key_str_temp, "%ld:", istrides[r]);
+            sprintf(key_str_temp, "%lld:", istrides[r]);
             key_string.append(std::string(key_str_temp));
         }
         sprintf(key_str_temp, "%d:", ibatch);
@@ -76,7 +76,7 @@ std::string genPlanHashStr(int rank, ::oneapi::mkl::dft::precision precision,
 
     if (ostrides != nullptr) {
         for (int r = 0; r < rank + 1; ++r) {
-            sprintf(key_str_temp, "%ld:", ostrides[r]);
+            sprintf(key_str_temp, "%lld:", ostrides[r]);
             key_string.append(std::string(key_str_temp));
         }
         sprintf(key_str_temp, "%d:", obatch);
