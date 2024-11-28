@@ -19,6 +19,7 @@ using af::dtype_traits;
 using af::identity;
 using af::randu;
 using af::span;
+using af::seq;
 
 #define SPARSE_TESTS(T, eps)                                                \
     TEST(Sparse, T##Square) { sparseTester<T>(1000, 1000, 100, 5, eps); }   \
@@ -107,6 +108,26 @@ TEST(Sparse, ISSUE_1745) {
     ASSERT_EQ(AF_ERR_ARG, af_create_sparse_array(
                               &A_sparse, A.dims(0), A.dims(1), data.get(),
                               row_idx.get(), col_idx.get(), AF_STORAGE_CSR));
+}
+
+TEST(Sparse, ISSUE_1918) {
+    array reference(2,2);
+    reference(0, span) = 0;
+    reference(1, span) = 2;
+    array output;
+    float value[] = { 1, 1, 2, 2 };
+    int index[] = { -1, 1, 2 };
+    int row[] = { 0, 2, 2, 0, 0, 2 };
+    int col[] = { 0, 1, 0, 1 };
+    array values(4, 1, value, afHost);
+    array rows(6, 1, row, afHost);
+    array cols(4, 1, col, afHost);
+    array S;
+  
+    S = sparse(2, 2, values(seq(2, 3)), rows(seq(3, 5)), cols(seq(2, 3)));
+    output = dense(S);
+
+    ASSERT_ARRAYS_EQ(reference, output);
 }
 
 TEST(Sparse, ISSUE_2134_COO) {
