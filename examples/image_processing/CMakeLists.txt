@@ -10,7 +10,7 @@ project(ArrayFire-Example-Image-Processing
   VERSION 3.5.0
   LANGUAGES CXX)
 
-find_package(ArrayFire)
+find_package(ArrayFire REQUIRED)
 
 add_definitions("-DASSETS_DIR=\"${ASSETS_DIR}\"")
 
