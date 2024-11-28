@@ -28,6 +28,7 @@ using arrayfire::common::half;
 using detail::cdouble;
 using detail::cfloat;
 using detail::intl;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -54,6 +55,7 @@ static af_array cast(const af_array in, const af_dtype type) {
             case c64: return getHandle(castArray<cdouble>(in));
             case s32: return getHandle(castArray<int>(in));
             case u32: return getHandle(castArray<uint>(in));
+            case s8: return getHandle(castArray<schar>(in));
             case u8: return getHandle(castArray<uchar>(in));
             case b8: return getHandle(castArray<char>(in));
             case s64: return getHandle(castArray<intl>(in));

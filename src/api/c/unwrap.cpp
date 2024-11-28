@@ -20,6 +20,7 @@ using detail::Array;
 using detail::cdouble;
 using detail::cfloat;
 using detail::intl;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -80,6 +81,9 @@ af_err af_unwrap(af_array* out, const af_array in, const dim_t wx,
                 break;
             case u16:
                 output = unwrap<ushort>(in, wx, wy, sx, sy, px, py, is_column);
+                break;
+            case s8:
+                output = unwrap<schar>(in, wx, wy, sx, sy, px, py, is_column);
                 break;
             case u8:
                 output = unwrap<uchar>(in, wx, wy, sx, sy, px, py, is_column);

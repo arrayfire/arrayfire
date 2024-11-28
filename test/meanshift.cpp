@@ -28,8 +28,8 @@ class Meanshift : public ::testing::Test {
     virtual void SetUp() {}
 };
 
-typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort,
-                         intl, uintl>
+typedef ::testing::Types<float, double, int, uint, char, schar, uchar, short,
+                         ushort, intl, uintl>
     TestTypes;
 
 TYPED_TEST_SUITE(Meanshift, TestTypes);

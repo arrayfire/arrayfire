@@ -26,6 +26,7 @@ using detail::Array;
 using detail::cdouble;
 using detail::cfloat;
 using detail::intl;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -60,6 +61,7 @@ af_err af_tile(af_array *out, const af_array in, const af::dim4 &tileDims) {
             case u64: output = tile<uintl>(in, tileDims); break;
             case s16: output = tile<short>(in, tileDims); break;
             case u16: output = tile<ushort>(in, tileDims); break;
+            case s8: output = tile<schar>(in, tileDims); break;
             case u8: output = tile<uchar>(in, tileDims); break;
             case f16: output = tile<half>(in, tileDims); break;
             default: TYPE_ERROR(1, type);

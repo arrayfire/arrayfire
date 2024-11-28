@@ -44,7 +44,7 @@ class Reorder : public ::testing::Test {
 
 // create a list of types to be tested
 typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned int,
-                         char, unsigned char, short, ushort>
+                         char, signed char, unsigned char, short, ushort>
     TestTypes;
 
 // register the type list

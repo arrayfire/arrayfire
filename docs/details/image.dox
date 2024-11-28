@@ -1007,6 +1007,7 @@ Iterative deconvolution function excepts \ref af::array of the following types o
     - \ref f32
     - \ref s16
     - \ref u16
+    - \ref s8
     - \ref u8
 
 \note The type of output \ref af::array from deconvolution will be double if
@@ -1044,6 +1045,7 @@ Inverse deconvolution function excepts \ref af::array of the following types onl
     - \ref f32
     - \ref s16
     - \ref u16
+    - \ref s8
     - \ref u8
 
 \note The type of output \ref af::array from deconvolution will be double

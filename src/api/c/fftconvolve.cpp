@@ -35,6 +35,7 @@ using detail::createSubArray;
 using detail::fftconvolve;
 using detail::intl;
 using detail::real;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -210,6 +211,10 @@ af_err fft_convolve(af_array *out, const af_array signal, const af_array filter,
             case u8:
                 output =
                     fftconvolve<uchar>(signal, filter, expand, convBT, baseDim);
+                break;
+            case s8:
+                output =
+                    fftconvolve<schar>(signal, filter, expand, convBT, baseDim);
                 break;
             case b8:
                 output =

@@ -47,6 +47,7 @@ using detail::init;
 using detail::intl;
 using detail::isDoubleSupported;
 using detail::isHalfSupported;
+using detail::schar;
 using detail::setDevice;
 using detail::uchar;
 using detail::uint;
@@ -290,6 +291,7 @@ af_err af_eval(af_array arr) {
                 case c64: eval<cdouble>(arr); break;
                 case s32: eval<int>(arr); break;
                 case u32: eval<uint>(arr); break;
+                case s8: eval<schar>(arr); break;
                 case u8: eval<uchar>(arr); break;
                 case b8: eval<char>(arr); break;
                 case s64: eval<intl>(arr); break;
@@ -344,6 +346,7 @@ af_err af_eval_multiple(int num, af_array* arrays) {
             case c64: evalMultiple<cdouble>(num, arrays); break;
             case s32: evalMultiple<int>(num, arrays); break;
             case u32: evalMultiple<uint>(num, arrays); break;
+            case s8: evalMultiple<schar>(num, arrays); break;
             case u8: evalMultiple<uchar>(num, arrays); break;
             case b8: evalMultiple<char>(num, arrays); break;
             case s64: evalMultiple<intl>(num, arrays); break;

@@ -627,6 +627,7 @@ template void evalNodes<cdouble>(Param<cdouble>& out, Node* node);
 template void evalNodes<int>(Param<int>& out, Node* node);
 template void evalNodes<uint>(Param<uint>& out, Node* node);
 template void evalNodes<char>(Param<char>& out, Node* node);
+template void evalNodes<schar>(Param<schar>& out, Node* node);
 template void evalNodes<uchar>(Param<uchar>& out, Node* node);
 template void evalNodes<intl>(Param<intl>& out, Node* node);
 template void evalNodes<uintl>(Param<uintl>& out, Node* node);
@@ -648,6 +649,8 @@ template void evalNodes<uint>(vector<Param<uint>>& out,
                               const vector<Node*>& node);
 template void evalNodes<char>(vector<Param<char>>& out,
                               const vector<Node*>& node);
+template void evalNodes<schar>(vector<Param<schar>>& out,
+                               const vector<Node*>& node);
 template void evalNodes<uchar>(vector<Param<uchar>>& out,
                                const vector<Node*>& node);
 template void evalNodes<intl>(vector<Param<intl>>& out,

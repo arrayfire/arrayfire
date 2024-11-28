@@ -20,6 +20,7 @@ size_t size_of(af_dtype type) {
             case f64: return sizeof(double);
             case s32: return sizeof(int);
             case u32: return sizeof(unsigned);
+            case s8: return sizeof(signed char);
             case u8: return sizeof(unsigned char);
             case b8: return sizeof(unsigned char);
             case c32: return sizeof(float) * 2;

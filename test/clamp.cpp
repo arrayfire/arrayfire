@@ -125,6 +125,7 @@ INSTANTIATE_TEST_SUITE_P(
                       clamp_params(dim4(10), f16, f16, f16, f16),
                       clamp_params(dim4(10), s32, f32, f32, f32),
                       clamp_params(dim4(10), u32, f32, f32, f32),
+                      clamp_params(dim4(10), s8,  f32, f32, f32),
                       clamp_params(dim4(10), u8,  f32, f32, f32),
                       clamp_params(dim4(10), b8,  f32, f32, f32),
                       clamp_params(dim4(10), s64, f32, f32, f32),

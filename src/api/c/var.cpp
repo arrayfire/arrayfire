@@ -43,6 +43,7 @@ using detail::real;
 using detail::reduce;
 using detail::reduce_all;
 using detail::scalar;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -225,6 +226,9 @@ af_err af_var_v2(af_array* out, const af_array in, const af_var_bias bias,
             case u64:
                 output = var_<uintl, double>(in, no_weights, bias, dim);
                 break;
+            case s8:
+                output = var_<schar, float>(in, no_weights, bias, dim);
+                break;
             case u8:
                 output = var_<uchar, float>(in, no_weights, bias, dim);
                 break;
@@ -298,6 +302,10 @@ af_err af_var_weighted(af_array* out, const af_array in, const af_array weights,
                 output = var_<uintl, double>(in, weights,
                                              AF_VARIANCE_POPULATION, dim);
                 break;
+            case s8:
+                output = var_<schar, float>(in, weights, AF_VARIANCE_POPULATION,
+                                            dim);
+                break;
             case u8:
                 output = var_<uchar, float>(in, weights, AF_VARIANCE_POPULATION,
                                             dim);
@@ -347,6 +355,7 @@ af_err af_var_all_v2(double* realVal, double* imagVal, const af_array in,
             case u16: *realVal = varAll<ushort, float>(in, bias); break;
             case s64: *realVal = varAll<intl, double>(in, bias); break;
             case u64: *realVal = varAll<uintl, double>(in, bias); break;
+            case s8: *realVal = varAll<schar, float>(in, bias); break;
             case u8: *realVal = varAll<uchar, float>(in, bias); break;
             case b8: *realVal = varAll<char, float>(in, bias); break;
             case f16: *realVal = varAll<half, float>(in, bias); break;
@@ -390,6 +399,7 @@ af_err af_var_all_weighted(double* realVal, double* imagVal, const af_array in,
             case u16: *realVal = varAll<ushort, float>(in, weights); break;
             case s64: *realVal = varAll<intl, double>(in, weights); break;
             case u64: *realVal = varAll<uintl, double>(in, weights); break;
+            case s8: *realVal = varAll<schar, float>(in, weights); break;
             case u8: *realVal = varAll<uchar, float>(in, weights); break;
             case b8: *realVal = varAll<char, float>(in, weights); break;
             case f16: *realVal = varAll<half, float>(in, weights); break;
@@ -452,6 +462,10 @@ af_err af_meanvar(af_array* mean, af_array* var, const af_array in,
             case u64:
                 tie(*mean, *var) =
                     meanvar<uintl, double>(in, weights, bias, dim);
+                break;
+            case s8:
+                tie(*mean, *var) =
+                    meanvar<schar, float>(in, weights, bias, dim);
                 break;
             case u8:
                 tie(*mean, *var) =

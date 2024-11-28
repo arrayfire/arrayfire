@@ -103,6 +103,7 @@ const char* getName(af_dtype type) {
         case u64: return "unsigned long long";
         case s64: return "long long";
         case u8: return "unsigned char";
+        case s8: return "signed char";
         case b8: return "bool";
         default: return "unknown type";
     }
@@ -275,6 +276,7 @@ template string toString<int>(int);
 template string toString<unsigned short>(unsigned short);
 template string toString<short>(short);
 template string toString<unsigned char>(unsigned char);
+template string toString<signed char>(signed char);
 template string toString<char>(char);
 template string toString<long>(long);
 template string toString<long long>(long long);

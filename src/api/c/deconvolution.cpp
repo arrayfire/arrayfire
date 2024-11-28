@@ -43,6 +43,7 @@ using detail::createValueArray;
 using detail::logicOp;
 using detail::padArrayBorders;
 using detail::scalar;
+using detail::schar;
 using detail::select_scalar;
 using detail::shift;
 using detail::uchar;
@@ -226,6 +227,7 @@ af_err af_iterative_deconv(af_array* out, const af_array in, const af_array ker,
             case u16:
                 res = iterDeconv<ushort>(in, ker, iters, rfac, algo);
                 break;
+            case s8: res = iterDeconv<schar>(in, ker, iters, rfac, algo); break;
             case u8: res = iterDeconv<uchar>(in, ker, iters, rfac, algo); break;
             default: TYPE_ERROR(1, inputType);
         }
@@ -323,6 +325,7 @@ af_err af_inverse_deconv(af_array* out, const af_array in, const af_array psf,
             case f32: res = invDeconv<float>(in, psf, gamma, algo); break;
             case s16: res = invDeconv<short>(in, psf, gamma, algo); break;
             case u16: res = invDeconv<ushort>(in, psf, gamma, algo); break;
+            case s8: res = invDeconv<schar>(in, psf, gamma, algo); break;
             case u8: res = invDeconv<uchar>(in, psf, gamma, algo); break;
             default: TYPE_ERROR(1, inputType);
         }
