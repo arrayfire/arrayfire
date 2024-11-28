@@ -68,19 +68,21 @@ fg_chart setup_histogram(fg_window const window, const af_array in,
         T freqMax =
             getScalar<T>(detail::reduce_all<af_max_t, T, T>(histogramInput));
 
+	// For histogram, xMin and xMax should always be the first
+	// and last bin respectively and should not be rounded
         if (xMin == 0 && xMax == 0 && yMin == 0 && yMax == 0) {
             // No previous limits. Set without checking
-            xMin = static_cast<float>(step_round(minval, false));
-            xMax = static_cast<float>(step_round(maxval, true));
+            xMin = static_cast<float>(minval);
+            xMax = static_cast<float>(maxval);
             yMax = static_cast<float>(step_round(freqMax, true));
             // For histogram, always set yMin to 0.
             yMin = 0;
         } else {
             if (xMin > minval) {
-                xMin = static_cast<float>(step_round(minval, false));
+                xMin = static_cast<float>(minval);
             }
             if (xMax < maxval) {
-                xMax = static_cast<float>(step_round(maxval, true));
+                xMax = static_cast<float>(maxval);
             }
             if (yMax < freqMax) {
                 yMax = static_cast<float>(step_round(freqMax, true));
