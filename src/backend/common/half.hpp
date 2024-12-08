@@ -245,9 +245,12 @@ AF_CONSTEXPR __DH__ native_half_t int2half_impl(T value) noexcept {
 /// \return binary representation of half-precision value
 template<std::float_round_style R = std::round_to_nearest>
 __DH__ native_half_t float2half_impl(float value) noexcept {
-    uint32_t bits = 0;  // = *reinterpret_cast<uint32*>(&value);
-                        // //violating strict aliasing!
-    std::memcpy(&bits, &value, sizeof(float));
+    union {
+        float FLOAT;
+        uint32_t UINT32;
+    } conv        = {value};
+    uint32_t bits = conv.UINT32;
+
     constexpr uint16_t base_table[512] = {
         0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
         0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
@@ -367,7 +370,12 @@ __DH__ native_half_t float2half_impl(float value) noexcept {
           (((bits >> 23) <= 358) & ((bits >> 23) != 256))) &
          (hbits < 0xFC00) & (hbits >> 15)) -
         ((hbits == 0x7C00) & ((bits >> 23) != 255));
-    return hbits;
+
+    union {
+        uint16_t UINT16;
+        native_half_t HALF;
+    } conv2 = {hbits};
+    return conv2.HALF;
 }
 
 /// Convert IEEE double-precision to half-precision.
@@ -379,9 +387,12 @@ __DH__ native_half_t float2half_impl(float value) noexcept {
 /// \return binary representation of half-precision value
 template<std::float_round_style R>
 __DH__ native_half_t float2half_impl(double value) {
-    uint64_t bits{0};  // = *reinterpret_cast<uint64*>(&value);		//violating
-                       // strict aliasing!
-    std::memcpy(&bits, &value, sizeof(double));
+    union {
+        double DOUBLE;
+        uint64_t UINT64;
+    } conv        = {value};
+    uint64_t bits = conv.UINT64;
+
     uint32_t hi = bits >> 32, lo = bits & 0xFFFFFFFF;
     uint16_t hbits = (hi >> 16) & 0x8000;
     hi &= 0x7FFFFFFF;
@@ -420,7 +431,12 @@ __DH__ native_half_t float2half_impl(double value) {
         ~(hbits >> 15) & (s | g);
     else AF_IF_CONSTEXPR(R == std::round_toward_neg_infinity) hbits +=
         (hbits >> 15) & (g | s);
-    return hbits;
+
+    union {
+        uint16_t UINT16;
+        native_half_t HALF;
+    } conv2 = {hbits};
+    return conv2.HALF;
 }
 
 __DH__ inline float half2float_impl(native_half_t value) noexcept {
@@ -872,7 +888,9 @@ AF_CONSTEXPR T half2int(native_half_t value) {
     else AF_IF_CONSTEXPR(std::is_same<T, int>::value) {
         return __half2int_rn(value);
     }
-    else { return __half2uint_rn(value); }
+    else {
+        return __half2uint_rn(value);
+    }
 #elif defined(AF_ONEAPI)
     return static_cast<T>(value);
 #else
