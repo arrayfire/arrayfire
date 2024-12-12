@@ -32,8 +32,8 @@ void susan_responses(T* out, const T* in, const unsigned idim0,
                           {{DefineValue(BLOCK_X), DefineValue(BLOCK_Y)}});
 
     dim3 threads(BLOCK_X, BLOCK_Y);
-    dim3 blocks(divup(idim0 - edge * 2, BLOCK_X),
-                divup(idim1 - edge * 2, BLOCK_Y));
+    dim3 blocks(divup(idim1 - edge * 2, BLOCK_X),
+                divup(idim0 - edge * 2, BLOCK_Y));
     const size_t SMEM_SIZE =
         (BLOCK_X + 2 * radius) * (BLOCK_Y + 2 * radius) * sizeof(T);
 
@@ -52,8 +52,8 @@ void nonMaximal(float* x_out, float* y_out, float* resp_out, unsigned* count,
                           TemplateArgs(TemplateTypename<T>()));
 
     dim3 threads(BLOCK_X, BLOCK_Y);
-    dim3 blocks(divup(idim0 - edge * 2, BLOCK_X),
-                divup(idim1 - edge * 2, BLOCK_Y));
+    dim3 blocks(divup(idim1 - edge * 2, BLOCK_X),
+                divup(idim0 - edge * 2, BLOCK_Y));
 
     auto d_corners_found = memAlloc<unsigned>(1);
     CUDA_CHECK(cudaMemsetAsync(d_corners_found.get(), 0, sizeof(unsigned),
