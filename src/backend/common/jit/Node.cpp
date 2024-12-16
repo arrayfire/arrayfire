@@ -42,6 +42,7 @@ int Node::getNodesMap(Node_map_t &node_map, vector<Node *> &full_nodes,
 }
 
 std::string getFuncName(const vector<Node *> &output_nodes,
+                        const vector<int> &output_ids,
                         const vector<Node *> &full_nodes,
                         const vector<Node_ids> &full_ids, const bool is_linear,
                         const bool loop0, const bool loop1, const bool loop2,
@@ -57,6 +58,11 @@ std::string getFuncName(const vector<Node *> &output_nodes,
     for (const auto &node : output_nodes) {
         funcName += '_';
         funcName += node->getNameStr();
+    }
+
+    for (const int id : output_ids) {
+        funcName += '-';
+        funcName += std::to_string(id);
     }
 
     for (int i = 0; i < static_cast<int>(full_nodes.size()); i++) {
