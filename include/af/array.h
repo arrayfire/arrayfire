@@ -655,6 +655,7 @@ namespace af
 
         /**
            Perform deep copy from host/device pointer to an existing array
+           \note Unlike all other assignment operations, this does NOT result in a copy on write.
         */
         template<typename T> void write(const T *ptr, const size_t bytes, af::source src = afHost);
 
