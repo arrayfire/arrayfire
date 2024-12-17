@@ -7,6 +7,10 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#if IS_DBL || IS_LONG
+#pragma OPENCL EXTENSION cl_khr_int64_base_atomics : enable
+#endif
+
 #if IS_CPLX
 T __cmul(T lhs, T rhs) {
     T out;
@@ -35,100 +39,70 @@ T __ccmul(T lhs, T rhs) {
 #define CMUL(a, b) (a) * (b)
 #endif
 
-int binary_search(global const int *ptr, int len, int val) {
-    int start = 0;
-    int end   = len;
-    while (end > start) {
-        int mid = start + (end - start) / 2;
-        if (val < ptr[mid]) {
-            end = mid;
-        } else if (val > ptr[mid]) {
-            start = mid + 1;
-        } else {
-            return mid;
-        }
-    }
-    return start;
+#if IS_DBL || IS_LONG
+#define U ulong
+#define ATOMIC_FN atom_cmpxchg
+#else
+#define U unsigned
+#define ATOMIC_FN atomic_cmpxchg
+#endif
+
+#if IS_CPLX
+inline void atomicAdd(volatile __global T *ptr, T val) {
+    union {
+        U u[2];
+        T t;
+    } next, expected, current;
+    current.t = *ptr;
+
+    do {
+        expected.t.x = current.t.x;
+        next.t.x = expected.t.x + val.x;
+        current.u[0] = ATOMIC_FN((volatile __global U *) ptr, expected.u[0], next.u[0]);
+    } while(current.u[0] != expected.u[0]);
+    do {
+        expected.t.y = current.t.y;
+        next.t.y = expected.t.y + val.y;
+        current.u[1] = ATOMIC_FN(((volatile __global U *) ptr) + 1, expected.u[1], next.u[1]);
+    } while(current.u[1] != expected.u[1]);
+}
+#else
+inline void atomicAdd(volatile __global T *ptr, T val) {
+    union {
+        U u;
+        T t;
+    } next, expected, current;
+    current.t = *ptr;
+
+    do {
+        expected.t = current.t;
+        next.t = expected.t + val;
+        current.u = ATOMIC_FN((volatile __global U *) ptr, expected.u, next.u);
+    } while(current.u != expected.u);
+}
+#endif
+
+kernel void cscmv_beta(global T *output, const int M, const T beta) {
+    for(unsigned j = get_global_id(0); j < M; j += THREADS * get_num_groups(0))
+        output[j] *= beta;
 }
 
-// Each thread performs Matrix Vector multiplications for ROWS_PER_GROUP rows
-// and (K / THREAD) columns. This generates a local output buffer of size
-// ROWS_PER_THREAD for each thread. The outputs from each thread are added up to
-// generate the final result.
-kernel void cscmv_block(
-    global T *output, __global const T *values,
-    global const int *colidx,  // rowidx from csr is colidx in csc
-    global const int *rowidx,  // colidx from csr is rowidx in csc
-    const int M,                 // K from csr is M in csc
+kernel void cscmv_atomic(
+    global T *output, __global T *values,
+    global int *colidx,  // rowidx from csr is colidx in csc
+    global int *rowidx,  // colidx from csr is rowidx in csc
     const int K,                 // M from csr is K in csc
-    global const T *rhs, const KParam rinfo, const T alpha, const T beta) {
-    int lid = get_local_id(0);
+    global const T *rhs, const KParam rinfo, const T alpha) {
 
-    // Get the row offset for the current group in the uncompressed matrix
-    int rowOff = get_group_id(0) * ROWS_PER_GROUP;
-    int rowLim = min(ROWS_PER_GROUP, M - rowOff);
     rhs += rinfo.offset;
 
-    T l_outvals[ROWS_PER_GROUP];
-    for (int i = 0; i < rowLim; i++) { l_outvals[i] = 0; }
-
-    for (int colId = lid; colId < K; colId += THREADS) {
-        int rowStart     = colidx[colId];
-        int rowEnd       = colidx[colId + 1];
-        int nonZeroCount = rowEnd - rowStart;
-
-        // Find the location of the next non zero element after rowOff
-        int rowPos = binary_search(rowidx + rowStart, nonZeroCount, rowOff);
-        T rhsval   = rhs[colId];
-
-        // Traversing through nonzero elements in the current chunk
-        for (int id = rowPos + rowStart; id < rowEnd; id++) {
-            int rowId = rowidx[id];
-
-            // Exit if moving past current chunk
-            if (rowId >= rowOff + ROWS_PER_GROUP) break;
-
-            l_outvals[rowId - rowOff] += CMUL(values[id], rhsval);
-        }
-    }
-
-    // s_outvals is used for reduction
-    local T s_outvals[THREADS];
-
-    // s_output is used to store the final output into local memory
-    local T s_output[ROWS_PER_GROUP];
-
-    // For each row of output, copy registers to local memory, add results,
-    // write to output.
-    for (int i = 0; i < rowLim; i++) {
-        // Copying to local memory
-        s_outvals[lid] = l_outvals[i];
-        barrier(CLK_LOCAL_MEM_FENCE);
-
-        // Adding the results through reduction
-        for (int n = THREADS / 2; n > 0; n /= 2) {
-            if (lid < n) s_outvals[lid] += s_outvals[lid + n];
-            barrier(CLK_LOCAL_MEM_FENCE);
-        }
-
-        // Store to another local buffer so it can be written in a coalesced
-        // manner later
-        if (lid == 0) { s_output[i] = s_outvals[0]; }
-    }
-    barrier(CLK_LOCAL_MEM_FENCE);
-
-    // For each row in output, write output in coalesced manner
-    for (int i = lid; i < ROWS_PER_GROUP; i += THREADS) {
-        T outval = s_output[i];
-
+    for(unsigned j = get_group_id(0); j < K; j += get_num_groups(0)) {
+        for(unsigned i = get_local_id(0) + colidx[j]; i < colidx[j + 1]; i += THREADS) {
+            T outval = CMUL(values[i], rhs[j]);
 #if USE_ALPHA
-        outval = MUL(alpha, outval);
+            outval = MUL(alpha, outval);
 #endif
-
-#if USE_BETA
-        output[rowOff + i] = outval + MUL(beta, output[j * M + rowOff + i]);
-#else
-        output[rowOff + i] = outval;
-#endif
+            atomicAdd(output + rowidx[i], outval);
+        }
     }
 }
