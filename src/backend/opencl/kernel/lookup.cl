@@ -31,7 +31,7 @@ kernel void lookupND(global in_t *out, KParam oInfo, global const in_t *in,
     int gx = get_local_size(0) * (get_group_id(0) - gz * nBBS0) + lx;
     int gy = get_local_size(1) * (get_group_id(1) - gw * nBBS1) + ly;
 
-    global const idx_t *idxPtr = indices;
+    global const idx_t *idxPtr = indices + idxInfo.offset;
 
     int i = iInfo.strides[0] *
             (DIM == 0 ? trimIndex((int)idxPtr[gx], iInfo.dims[0]) : gx);
