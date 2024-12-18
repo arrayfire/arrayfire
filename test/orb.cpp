@@ -261,7 +261,7 @@ TEST(ORB, CPP) {
 
     features feat;
     array desc;
-    orb(feat, desc, in, 20.0f, 400, 1.2f, 8, true);
+    try { orb(feat, desc, in, 20.0f, 400, 1.2f, 8, true); } catch FUNCTION_UNSUPPORTED
 
     float* outX           = new float[feat.getNumFeatures()];
     float* outY           = new float[feat.getNumFeatures()];

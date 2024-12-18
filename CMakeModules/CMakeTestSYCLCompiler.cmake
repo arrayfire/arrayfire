@@ -66,8 +66,13 @@ if(NOT CMAKE_SYCL_COMPILER_WORKS)
 endif()
 
 # Try to identify the compiler features
-include(CMakeDetermineCompileFeatures)
-CMAKE_DETERMINE_COMPILE_FEATURES(SYCL)
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.30.0)
+    include(CMakeDetermineCompilerSupport)
+    CMAKE_DETERMINE_COMPILER_SUPPORT(CXX)
+else()
+    include(CMakeDetermineCompileFeatures)
+    CMAKE_DETERMINE_COMPILE_FEATURES(CXX)
+endif()
 
 set(CMAKE_TRY_COMPILE_CONFIGURATION "")
 # Re-configure to save learned information.
