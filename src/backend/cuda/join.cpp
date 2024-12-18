@@ -14,7 +14,9 @@
 #include <kernel/memcopy.hpp>
 
 #include <algorithm>
+#include <cassert>
 #include <map>
+#include <numeric>
 #include <stdexcept>
 #include <vector>
 
@@ -29,9 +31,14 @@ namespace cuda {
 
 template<typename T>
 Array<T> join(const int jdim, const Array<T> &first, const Array<T> &second) {
-    // All dimensions except join dimension must be equal
     const dim4 &fdims{first.dims()};
     const dim4 &sdims{second.dims()};
+    // All dimensions except join dimension must be equal
+    assert((jdim == 0 ? true : fdims.dims[0] == sdims.dims[0]) &&
+           (jdim == 1 ? true : fdims.dims[1] == sdims.dims[1]) &&
+           (jdim == 2 ? true : fdims.dims[2] == sdims.dims[2]) &&
+           (jdim == 3 ? true : fdims.dims[3] == sdims.dims[3]));
+
     // Compute output dims
     dim4 odims(fdims);
     odims.dims[jdim] += sdims.dims[jdim];
@@ -117,6 +124,42 @@ Array<T> join(const int jdim, const Array<T> &first, const Array<T> &second) {
 
 template<typename T>
 void join(Array<T> &out, const int jdim, const vector<Array<T>> &inputs) {
+    const dim_t n_arrays = inputs.size();
+    if (n_arrays == 0) return;
+
+    // avoid buffer overflow
+    const dim4 &odims{out.dims()};
+    const dim4 &fdims{inputs[0].dims()};
+    // All dimensions of inputs needs to be equal except for the join
+    // dimension
+    assert(std::all_of(inputs.begin(), inputs.end(),
+                       [jdim, &fdims](const Array<T> &in) {
+                           bool eq{true};
+                           for (int i = 0; i < 4; ++i) {
+                               if (i != jdim) {
+                                   eq &= fdims.dims[i] == in.dims().dims[i];
+                               };
+                           };
+                           return eq;
+                       }));
+    // All dimensions of out needs to cover all input dimensions
+    assert(
+        (odims.dims[0] >= fdims.dims[0]) && (odims.dims[1] >= fdims.dims[1]) &&
+        (odims.dims[2] >= fdims.dims[2]) && (odims.dims[3] >= fdims.dims[3]));
+    // The join dimension of out needs to be larger than the
+    // sum of all input join dimensions
+    assert(odims.dims[jdim] >=
+           std::accumulate(inputs.begin(), inputs.end(), 0,
+                           [jdim](dim_t dim, const Array<T> &in) {
+                               return dim += in.dims().dims[jdim];
+                           }));
+    assert(out.strides().dims[0] == 1);
+
+    // out is an external defined array:
+    //  - with the only restriction that the dims have to be larger than the
+    //  joined inputs.
+    //  - no restrictions on the strides.
+    // The part of out, that is not overwritten by the join remains as is!!
     class eval {
        public:
         vector<Param<T>> outputs;
@@ -126,6 +169,7 @@ void join(Array<T> &out, const int jdim, const vector<Array<T>> &inputs) {
     };
     std::map<dim_t, eval> evals;
     const cudaStream_t activeStream{getActiveStream()};
+    const dim4 &ostrides{out.strides()};
     const size_t L2CacheSize{getL2CacheSize(getActiveDeviceId())};
 
     // topspeed is achieved when byte size(in+out) ~= L2CacheSize
@@ -148,18 +192,19 @@ void join(Array<T> &out, const int jdim, const vector<Array<T>> &inputs) {
     //              has to be called multiple times
 
     // Group all arrays according to size
-    dim_t outOffset{0};
+    dim_t odim{0}, outOffset{0};
     for (const Array<T> &iArray : inputs) {
-        const dim_t *idims{iArray.dims().dims};
-        eval &e{evals[idims[jdim]]};
-        e.outputs.emplace_back(out.get() + outOffset, idims,
-                               out.strides().dims);
+        const dim4 &idims{iArray.dims()};
+        eval &e{evals[idims.dims[jdim]]};
+        e.outputs.emplace_back(out.get() + outOffset, idims.dims,
+                               ostrides.dims);
         // Extend life of the returned node by saving the corresponding
         // shared_ptr
         e.nodePtrs.emplace_back(iArray.getNode());
         e.nodes.push_back(e.nodePtrs.back().get());
         e.ins.push_back(&iArray);
-        outOffset += idims[jdim] * out.strides().dims[jdim];
+        odim += idims.dims[jdim];
+        outOffset = odim * ostrides.dims[jdim];
     }
 
     for (auto &eval : evals) {
@@ -173,7 +218,12 @@ void join(Array<T> &out, const int jdim, const vector<Array<T>> &inputs) {
             auto outputIt{begin(s.outputs)};
             for (const Array<T> *in : s.ins) {
                 if (in->isReady()) {
-                    if (1LL + jdim >= in->ndims() && in->isLinear()) {
+                    const dim4 &istrides{in->strides()};
+                    bool lin = in->isLinear() & (ostrides.dims[0] == 1);
+                    for (int i{1}; i < in->ndims(); ++i) {
+                        lin &= (ostrides.dims[i] == istrides.dims[i]);
+                    }
+                    if (lin) {
                         CUDA_CHECK(cudaMemcpyAsync(outputIt->ptr, in->get(),
                                                    in->elements() * sizeof(T),
                                                    cudaMemcpyHostToDevice,
