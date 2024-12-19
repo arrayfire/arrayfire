@@ -92,8 +92,8 @@ int ArgumentError::getArgIndex() const noexcept { return argIndex; }
 
 SupportError::SupportError(const char *const func, const char *const file,
                            const int line, const char *const back,
-                           stacktrace st)
-    : AfError(func, file, line, "Unsupported Error", AF_ERR_NOT_SUPPORTED,
+                           const char *const message, stacktrace st)
+    : AfError(func, file, line, message, AF_ERR_NOT_SUPPORTED,
               std::move(st))
     , backend(back) {}
 
