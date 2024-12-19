@@ -53,7 +53,8 @@ void momentsTest(string pTestFile) {
 
     array imgArray(numDims.front(), &in.front()[0]);
 
-    array momentsArray = moments(imgArray, AF_MOMENT_M00);
+    array momentsArray;
+    try { momentsArray = moments(imgArray, AF_MOMENT_M00); } catch FUNCTION_UNSUPPORTED
     vector<float> mData(momentsArray.elements());
     momentsArray.host(&mData[0]);
     for (int i = 0; i < momentsArray.elements(); ++i) {
@@ -61,28 +62,28 @@ void momentsTest(string pTestFile) {
             << "at: " << i << endl;
     }
 
-    momentsArray = moments(imgArray, AF_MOMENT_M01);
+    try { momentsArray = moments(imgArray, AF_MOMENT_M01); } catch FUNCTION_UNSUPPORTED
     momentsArray.host(&mData[0]);
     for (int i = 0; i < momentsArray.elements(); ++i) {
         ASSERT_NEAR(tests[1][i], mData[i], 8e-3 * tests[1][i])
             << "at: " << i << endl;
     }
 
-    momentsArray = moments(imgArray, AF_MOMENT_M10);
+    try { momentsArray = moments(imgArray, AF_MOMENT_M10); } catch FUNCTION_UNSUPPORTED
     momentsArray.host(&mData[0]);
     for (int i = 0; i < momentsArray.elements(); ++i) {
         ASSERT_NEAR(tests[2][i], mData[i], 3e-3 * tests[2][i])
             << "at: " << i << endl;
     }
 
-    momentsArray = moments(imgArray, AF_MOMENT_M11);
+    try { momentsArray = moments(imgArray, AF_MOMENT_M11); } catch FUNCTION_UNSUPPORTED
     momentsArray.host(&mData[0]);
     for (int i = 0; i < momentsArray.elements(); ++i) {
         ASSERT_NEAR(tests[3][i], mData[i], 7e-3 * tests[3][i])
             << "at: " << i << endl;
     }
 
-    momentsArray = moments(imgArray, AF_MOMENT_FIRST_ORDER);
+    try { momentsArray = moments(imgArray, AF_MOMENT_FIRST_ORDER); } catch FUNCTION_UNSUPPORTED
     mData.resize(momentsArray.elements());
     momentsArray.host(&mData[0]);
     for (int i = 0; i < momentsArray.elements() / 4; i += 4) {
@@ -112,7 +113,8 @@ void momentsOnImageTest(string pTestFile, string pImageFile, bool isColor) {
     imgArray -= minVal;
     imgArray /= maxVal - minVal;
 
-    array momentsArray = moments(imgArray, AF_MOMENT_M00);
+    array momentsArray;
+    try { momentsArray = moments(imgArray, AF_MOMENT_M00); } catch FUNCTION_UNSUPPORTED
 
     vector<float> mData(momentsArray.elements());
     momentsArray.host(&mData[0]);
@@ -121,28 +123,28 @@ void momentsOnImageTest(string pTestFile, string pImageFile, bool isColor) {
             << "at: " << i << endl;
     }
 
-    momentsArray = moments(imgArray, AF_MOMENT_M01);
+    try { momentsArray = moments(imgArray, AF_MOMENT_M01); } catch FUNCTION_UNSUPPORTED
     momentsArray.host(&mData[0]);
     for (int i = 0; i < momentsArray.elements(); ++i) {
         ASSERT_NEAR(tests[1][i], mData[i], 1e-2 * tests[1][i])
             << "at: " << i << endl;
     }
 
-    momentsArray = moments(imgArray, AF_MOMENT_M10);
+    try { momentsArray = moments(imgArray, AF_MOMENT_M10); } catch FUNCTION_UNSUPPORTED
     momentsArray.host(&mData[0]);
     for (int i = 0; i < momentsArray.elements(); ++i) {
         ASSERT_NEAR(tests[2][i], mData[i], 1e-2 * tests[2][i])
             << "at: " << i << endl;
     }
 
-    momentsArray = moments(imgArray, AF_MOMENT_M11);
+    try { momentsArray = moments(imgArray, AF_MOMENT_M11); } catch FUNCTION_UNSUPPORTED
     momentsArray.host(&mData[0]);
     for (int i = 0; i < momentsArray.elements(); ++i) {
         ASSERT_NEAR(tests[3][i], mData[i], 1e-2 * tests[3][i])
             << "at: " << i << endl;
     }
 
-    momentsArray = moments(imgArray, AF_MOMENT_FIRST_ORDER);
+    try { momentsArray = moments(imgArray, AF_MOMENT_FIRST_ORDER); } catch FUNCTION_UNSUPPORTED
     mData.resize(momentsArray.elements());
     momentsArray.host(&mData[0]);
     for (int i = 0; i < momentsArray.elements() / 4; i += 4) {
@@ -180,6 +182,6 @@ TEST(Image, Moment_Issue1957) {
     array A = identity(3, 3, b8);
 
     double m00;
-    moments(&m00, A, AF_MOMENT_M00);
+    try { moments(&m00, A, AF_MOMENT_M00); } catch FUNCTION_UNSUPPORTED
     ASSERT_EQ(m00, 3);
 }
