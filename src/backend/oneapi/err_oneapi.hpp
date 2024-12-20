@@ -13,8 +13,8 @@
 
 #define ONEAPI_NOT_SUPPORTED(message)                                       \
     do {                                                                    \
-        throw SupportError(__AF_FUNC__, __AF_FILENAME__, __LINE__, message, \
-                           boost::stacktrace::stacktrace());                \
+        throw SupportError(__AF_FUNC__, __AF_FILENAME__, __LINE__, "oneAPI",\
+                           message, boost::stacktrace::stacktrace());       \
     } while (0)
 
 #define CL_CHECK(call)                                                      \

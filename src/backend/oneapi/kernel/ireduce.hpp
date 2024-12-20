@@ -258,7 +258,7 @@ void ireduce_dim_launcher(Param<T> out, Param<uint> oloc, Param<T> in,
             case 4:
                 h.parallel_for(
                     sycl::nd_range<2>(global, local),
-                    ireduceDimKernelSMEM<T, op, dim, is_first, 8>(
+                    ireduceDimKernelSMEM<T, op, dim, is_first, 4>(
                         out_acc, out.info, oloc_acc, oloc.info, in_acc, in.info,
                         iloc_acc, iloc.info, groups_dim[0], groups_dim[1],
                         groups_dim[dim], rlenValid, rlen_acc, rlen.info,
@@ -267,7 +267,7 @@ void ireduce_dim_launcher(Param<T> out, Param<uint> oloc, Param<T> in,
             case 2:
                 h.parallel_for(
                     sycl::nd_range<2>(global, local),
-                    ireduceDimKernelSMEM<T, op, dim, is_first, 8>(
+                    ireduceDimKernelSMEM<T, op, dim, is_first, 2>(
                         out_acc, out.info, oloc_acc, oloc.info, in_acc, in.info,
                         iloc_acc, iloc.info, groups_dim[0], groups_dim[1],
                         groups_dim[dim], rlenValid, rlen_acc, rlen.info,
@@ -276,7 +276,7 @@ void ireduce_dim_launcher(Param<T> out, Param<uint> oloc, Param<T> in,
             case 1:
                 h.parallel_for(
                     sycl::nd_range<2>(global, local),
-                    ireduceDimKernelSMEM<T, op, dim, is_first, 8>(
+                    ireduceDimKernelSMEM<T, op, dim, is_first, 1>(
                         out_acc, out.info, oloc_acc, oloc.info, in_acc, in.info,
                         iloc_acc, iloc.info, groups_dim[0], groups_dim[1],
                         groups_dim[dim], rlenValid, rlen_acc, rlen.info,

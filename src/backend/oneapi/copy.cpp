@@ -216,10 +216,11 @@ template<typename T>
 T getScalar(const Array<T> &in) {
     T retVal{};
 
+    auto in_get = in.get();
     getQueue()
         .submit([&](sycl::handler &h) {
             auto acc_in =
-                in.get()->template get_access<sycl::access::mode::read>(
+                in_get->template get_access<sycl::access::mode::read>(
                     h, sycl::range{1},
                     sycl::id{static_cast<uintl>(in.getOffset())});
             h.copy(acc_in, &retVal);

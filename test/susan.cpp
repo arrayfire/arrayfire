@@ -82,7 +82,8 @@ void susanTest(string pTestFile, float t, float g) {
 
         array in = loadImage(inFiles[testId].c_str(), false);
 
-        features out = susan(in, 3, t, g, 0.05f, 3);
+        features out;
+        ASSERT_SUCCESS_CPP(out = susan(in, 3, t, g, 0.05f, 3));
 
         vector<float> outX(gold[0].size());
         vector<float> outY(gold[1].size());

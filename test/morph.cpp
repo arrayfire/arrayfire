@@ -59,16 +59,19 @@ void morphTest(string pTestFile) {
                                    maskDims.ndims(), maskDims.get(),
                                    (af_dtype)dtype_traits<inType>::af_type));
 
+    af_err af_stat;
     if (isDilation) {
-        if (isVolume)
+        if (isVolume) {
             ASSERT_SUCCESS(af_dilate3(&outArray, inArray, maskArray));
-        else
+        } else {
             ASSERT_SUCCESS(af_dilate(&outArray, inArray, maskArray));
+        }
     } else {
-        if (isVolume)
+        if (isVolume) {
             ASSERT_SUCCESS(af_erode3(&outArray, inArray, maskArray));
-        else
+        } else {
             ASSERT_SUCCESS(af_erode(&outArray, inArray, maskArray));
+        }
     }
 
     for (size_t testIter = 0; testIter < tests.size(); ++testIter) {
@@ -177,19 +180,19 @@ void morphImageTest(string pTestFile, dim_t seLen) {
 
         af_err error_code = AF_SUCCESS;
         if (isDilation) {
-            error_code = af_dilate(&outArray, inArray, maskArray);
+            ASSERT_SUCCESS_CPP(error_code = af_dilate(&outArray, inArray, maskArray));
         } else {
-            error_code = af_erode(&outArray, inArray, maskArray);
+            ASSERT_SUCCESS_CPP(error_code = af_erode(&outArray, inArray, maskArray));
         }
 
 #if defined(AF_CPU)
         ASSERT_SUCCESS(error_code);
         ASSERT_IMAGES_NEAR(goldArray, outArray, 0.018f);
 #else
-        ASSERT_EQ(error_code,
-                  (targetType != b8 && seLen > 19 ? AF_ERR_NOT_SUPPORTED
-                                                  : AF_SUCCESS));
-        if (!(targetType != b8 && seLen > 19)) {
+        if (targetType != b8 && seLen > 19) {
+            ASSERT_EQ(error_code, AF_ERR_NOT_SUPPORTED);
+        } else {
+            ASSERT_SUCCESS(error_code);
             ASSERT_IMAGES_NEAR(goldArray, outArray, 0.018f);
         }
 #endif
@@ -412,9 +415,9 @@ void cppMorphImageTest(string pTestFile) {
         array output;
 
         if (isDilation)
-            output = dilate(img, mask);
+            ASSERT_SUCCESS_CPP(output = dilate(img, mask));
         else
-            output = erode(img, mask);
+            ASSERT_SUCCESS_CPP(output = erode(img, mask));
 
         vector<T> outData(nElems);
         output.host((void*)outData.data());
@@ -441,13 +444,14 @@ TEST(Morph, GFOR) {
     array B    = constant(0, dims);
     array mask = randu(3, 3) > 0.3;
 
-    gfor(seq ii, 3) { B(span, span, ii) = erode(A(span, span, ii), mask); }
-
     for (int ii = 0; ii < 3; ii++) {
-        array c_ii = erode(A(span, span, ii), mask);
+        array c_ii;
+        ASSERT_SUCCESS_CPP(c_ii = erode(A(span, span, ii), mask));
         array b_ii = B(span, span, ii);
         ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
     }
+
+    gfor(seq ii, 3) { B(span, span, ii) = erode(A(span, span, ii), mask); }
 }
 
 TEST(Morph, EdgeIssue1564) {
@@ -466,12 +470,14 @@ TEST(Morph, EdgeIssue1564) {
     array input(10, 10, inputData);
     int maskData[3 * 3] = {1, 1, 1, 1, 0, 1, 1, 1, 1};
     array mask(3, 3, maskData);
-    array dilated = dilate(input.as(b8), mask.as(b8));
+    
+    array dilated;
+    ASSERT_SUCCESS_CPP(dilated = dilate(input.as(b8), mask.as(b8)));
 
     size_t nElems = dilated.elements();
     vector<char> outData(nElems);
     dilated.host((void*)outData.data());
-
+    
     for (size_t i = 0; i < nElems; ++i) {
         ASSERT_EQ((int)outData[i], goldData[i]);
     }
