@@ -240,9 +240,8 @@ TEST(Homography, CPP) {
 
     features feat_train, feat_query;
     array desc_train, desc_query;
-    try { orb(feat_train, desc_train, train_img, 20, 2000, 1.2, 8, true);
-          orb(feat_query, desc_query, query_img, 20, 2000, 1.2, 8, true);
-    } catch FUNCTION_UNSUPPORTED
+    ASSERT_SUCCESS_CPP(orb(feat_train, desc_train, train_img, 20, 2000, 1.2, 8, true));
+    ASSERT_SUCCESS_CPP(orb(feat_query, desc_query, query_img, 20, 2000, 1.2, 8, true));
 
     array idx, dist;
     hammingMatcher(idx, dist, desc_train, desc_query, 0, 1);
@@ -263,9 +262,8 @@ TEST(Homography, CPP) {
 
     array H;
     int inliers = 0;
-    try { homography(H, inliers, feat_train_x, feat_train_y, feat_query_x,
-                     feat_query_y, AF_HOMOGRAPHY_RANSAC, 3.0f, 1000, f32);
-    } catch FUNCTION_UNSUPPORTED
+    ASSERT_SUCCESS_CPP(homography(H, inliers, feat_train_x, feat_train_y, feat_query_x,
+                                  feat_query_y, AF_HOMOGRAPHY_RANSAC, 3.0f, 1000, f32));
 
     float* gold_t = new float[8];
     for (int i = 0; i < 8; i++) gold_t[i] = 0.f;

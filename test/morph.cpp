@@ -179,13 +179,11 @@ void morphImageTest(string pTestFile, dim_t seLen) {
         ASSERT_SUCCESS(af_get_elements(&nElems, goldArray));
 
         af_err error_code = AF_SUCCESS;
-        try {
-            if (isDilation) {
-                error_code = af_dilate(&outArray, inArray, maskArray);
-            } else {
-                error_code = af_erode(&outArray, inArray, maskArray);
-            }
-        } catch FUNCTION_UNSUPPORTED
+        if (isDilation) {
+            ASSERT_SUCCESS_CPP(error_code = af_dilate(&outArray, inArray, maskArray));
+        } else {
+            ASSERT_SUCCESS_CPP(error_code = af_erode(&outArray, inArray, maskArray));
+        }
 
 #if defined(AF_CPU)
         ASSERT_SUCCESS(error_code);
@@ -416,12 +414,10 @@ void cppMorphImageTest(string pTestFile) {
         dim_t nElems = gold.elements();
         array output;
 
-        try {
-            if (isDilation)
-                output = dilate(img, mask);
-            else
-                output = erode(img, mask);
-        } catch FUNCTION_UNSUPPORTED
+        if (isDilation)
+            ASSERT_SUCCESS_CPP(output = dilate(img, mask));
+        else
+            ASSERT_SUCCESS_CPP(output = erode(img, mask));
 
         vector<T> outData(nElems);
         output.host((void*)outData.data());
@@ -448,15 +444,14 @@ TEST(Morph, GFOR) {
     array B    = constant(0, dims);
     array mask = randu(3, 3) > 0.3;
 
-    try {
-        gfor(seq ii, 3) { B(span, span, ii) = erode(A(span, span, ii), mask); }
-    
-        for (int ii = 0; ii < 3; ii++) {
-            array c_ii = erode(A(span, span, ii), mask);
-            array b_ii = B(span, span, ii);
-            ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
-        }
-    } catch FUNCTION_UNSUPPORTED
+    for (int ii = 0; ii < 3; ii++) {
+        array c_ii;
+        ASSERT_SUCCESS_CPP(c_ii = erode(A(span, span, ii), mask));
+        array b_ii = B(span, span, ii);
+        ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
+    }
+
+    gfor(seq ii, 3) { B(span, span, ii) = erode(A(span, span, ii), mask); }
 }
 
 TEST(Morph, EdgeIssue1564) {
@@ -475,17 +470,17 @@ TEST(Morph, EdgeIssue1564) {
     array input(10, 10, inputData);
     int maskData[3 * 3] = {1, 1, 1, 1, 0, 1, 1, 1, 1};
     array mask(3, 3, maskData);
-    try {
-        array dilated = dilate(input.as(b8), mask.as(b8));
-
-        size_t nElems = dilated.elements();
-        vector<char> outData(nElems);
-        dilated.host((void*)outData.data());
     
-        for (size_t i = 0; i < nElems; ++i) {
-            ASSERT_EQ((int)outData[i], goldData[i]);
-        }
-    } catch FUNCTION_UNSUPPORTED
+    array dilated;
+    ASSERT_SUCCESS_CPP(dilated = dilate(input.as(b8), mask.as(b8)));
+
+    size_t nElems = dilated.elements();
+    vector<char> outData(nElems);
+    dilated.host((void*)outData.data());
+    
+    for (size_t i = 0; i < nElems; ++i) {
+        ASSERT_EQ((int)outData[i], goldData[i]);
+    }
 }
 
 TEST(Morph, UnsupportedKernel2D) {

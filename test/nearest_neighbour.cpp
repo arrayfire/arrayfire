@@ -185,7 +185,7 @@ TEST(NearestNeighbourSSD, CPP) {
     array train(tDims, &(in[1].front()));
 
     array idx, dist;
-    try { nearestNeighbour(idx, dist, query, train, 0, 1, AF_SSD); } catch FUNCTION_UNSUPPORTED
+    ASSERT_SUCCESS_CPP(nearestNeighbour(idx, dist, query, train, 0, 1, AF_SSD));
 
     vector<uint> goldIdx  = tests[0];
     vector<uint> goldDist = tests[1];
@@ -221,7 +221,7 @@ TEST(NearestNeighbourSAD, CPP) {
     array train(tDims, &(in[1].front()));
 
     array idx, dist;
-    try { nearestNeighbour(idx, dist, query, train, 1, 1, AF_SAD); } catch FUNCTION_UNSUPPORTED
+    ASSERT_SUCCESS_CPP(nearestNeighbour(idx, dist, query, train, 1, 1, AF_SAD));
 
     vector<uint> goldIdx  = tests[0];
     vector<uint> goldDist = tests[1];
@@ -255,7 +255,7 @@ TEST(NearestNeighbourSSD, small) {
     array q(nfeat, nquery, query);
     array indices;
     array distances;
-    try { nearestNeighbour(indices, distances, q, t, 0, 1, AF_SSD); } catch FUNCTION_UNSUPPORTED
+    ASSERT_SUCCESS_CPP(nearestNeighbour(indices, distances, q, t, 0, 1, AF_SSD));
 
     float expectedDistances[nquery] = {
         (5 - 0) * (5 - 0) + (5 - 0) * (5 - 0),
@@ -284,7 +284,7 @@ TEST(KNearestNeighbourSSD, small) {
     array indices;
     array actualDistances;
     const int k = 2;
-    try { nearestNeighbour(indices, actualDistances, q, t, 0, k, AF_SSD); } catch FUNCTION_UNSUPPORTED
+    ASSERT_SUCCESS_CPP(nearestNeighbour(indices, actualDistances, q, t, 0, k, AF_SSD));
 
     vector<float> expectedDistances{
         (5.f - 5.f) * (5.f - 5.f) + (5.f - 5.f) * (5.f - 5.f),
@@ -444,8 +444,7 @@ TEST_P(NearestNeighborsTest, SingleQTests) {
 
     array indices, distances;
 
-    try { nearestNeighbour(indices, distances, query, train, feat_dim, k, AF_SSD);
-    } catch FUNCTION_UNSUPPORTED
+    ASSERT_SUCCESS_CPP(nearestNeighbour(indices, distances, query, train, feat_dim, k, AF_SSD));
 
     array indices_gold(params.idims_, params.indices_.data());
     array distances_gold(params.ddims_, params.dists_.data());
@@ -465,8 +464,7 @@ TEST_P(KNearestNeighborsTest, SingleQTests) {
 
     array indices, distances;
 
-    try { nearestNeighbour(indices, distances, query, train, feat_dim, k, AF_SSD);
-    } catch FUNCTION_UNSUPPORTED
+    ASSERT_SUCCESS_CPP(nearestNeighbour(indices, distances, query, train, feat_dim, k, AF_SSD));
 
     array indices_gold(params.idims_, params.indices_.data());
     array distances_gold(params.ddims_, params.dists_.data());
@@ -517,7 +515,7 @@ TEST(NearestNeighbour, DocSnippet1) {
 
     array idx;
     array dist;
-    try { nearestNeighbour(idx, dist, query, pts, 0, 3); } catch FUNCTION_UNSUPPORTED
+    ASSERT_SUCCESS_CPP(nearestNeighbour(idx, dist, query, pts, 0, 3));
     // idx
     //  0.
     //  1.
@@ -555,7 +553,7 @@ TEST(NearestNeighbour, DocSnippet2) {
 
     array idx;
     array dist;
-    try { nearestNeighbour(idx, dist, query, pts, 0, 3); } catch FUNCTION_UNSUPPORTED
+    ASSERT_SUCCESS_CPP(nearestNeighbour(idx, dist, query, pts, 0, 3));
     // idx
     //  1     3
     //  0     5

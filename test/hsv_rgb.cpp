@@ -48,7 +48,7 @@ TEST(hsv2rgb, CPP) {
     dim4 dims = numDims[0];
     array input(dims, &(in[0].front()));
     array output;
-    try { output = hsv2rgb(input); } catch FUNCTION_UNSUPPORTED
+    ASSERT_SUCCESS_CPP(output = hsv2rgb(input));
 
     vector<float> currGoldBar = tests[0];
     ASSERT_VEC_ARRAY_NEAR(currGoldBar, dims, output, 1.0e-3);
@@ -65,7 +65,7 @@ TEST(rgb2hsv, CPP) {
     dim4 dims = numDims[0];
     array input(dims, &(in[0].front()));
     array output;
-    try { output = rgb2hsv(input); } catch FUNCTION_UNSUPPORTED
+    ASSERT_SUCCESS_CPP(output = rgb2hsv(input));
 
     vector<float> currGoldBar = tests[0];
     ASSERT_VEC_ARRAY_NEAR(currGoldBar, dims, output, 1.0e-3);
@@ -86,8 +86,8 @@ TEST(rgb2hsv, MaxDim) {
     unsigned int ntile    = (largeDim + dims[1] - 1) / dims[1];
     input                 = tile(input, 1, ntile);
     array output;
-    try { output          = rgb2hsv(input); } catch FUNCTION_UNSUPPORTED
-    dim4 outDims          = output.dims();
+    ASSERT_SUCCESS_CPP(output = rgb2hsv(input));
+    dim4 outDims = output.dims();
 
     float *outData = new float[outDims.elements()];
     output.host((void *)outData);
@@ -125,8 +125,8 @@ TEST(hsv2rgb, MaxDim) {
     unsigned int ntile    = (largeDim + dims[1] - 1) / dims[1];
     input                 = tile(input, 1, ntile);
     array output;
-    try { output          = hsv2rgb(input); } catch FUNCTION_UNSUPPORTED
-    dim4 outDims          = output.dims();
+    ASSERT_SUCCESS_CPP(output = hsv2rgb(input));
+    dim4 outDims = output.dims();
 
     float *outData = new float[outDims.elements()];
     output.host((void *)outData);

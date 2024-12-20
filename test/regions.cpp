@@ -118,7 +118,7 @@ TEST(Regions, CPP) {
     dim4 idims = numDims[0];
     array input(idims, (float*)&(in[0].front()));
     array output;
-    try { output = regions(input.as(b8)); } catch FUNCTION_UNSUPPORTED
+    ASSERT_SUCCESS_CPP(output = regions(input.as(b8)));
 
     // Get result
     float* outData = new float[idims.elements()];
@@ -166,7 +166,7 @@ TEST(Regions, Docs_8) {
 
     // Compute the label matrix using 8-way connectivity
     array out;
-    try { out = regions(in.as(b8), AF_CONNECTIVITY_8); } catch FUNCTION_UNSUPPORTED
+    ASSERT_SUCCESS_CPP(out = regions(in.as(b8), AF_CONNECTIVITY_8));
     // af_print(out);
     // 0   0   0   0   4   0   5   0
     // 0   0   0   0   0   0   5   5
@@ -217,7 +217,7 @@ TEST(Regions, Docs_4) {
     // 0  1  0  0  0  1  0  0
     // Compute the label matrix using 4-way connectivity
     array out;
-    try { out = regions(in.as(b8), AF_CONNECTIVITY_4); } catch FUNCTION_UNSUPPORTED
+    ASSERT_SUCCESS_CPP(out = regions(in.as(b8), AF_CONNECTIVITY_4));
     // af_print(out.T());
     // out
     // 0  0  0  0  7  0 11  0
@@ -246,7 +246,7 @@ TEST(Regions, WholeImageComponent) {
 
     array in  = array(dim, dim, input.data());
     array out;
-    try { out = regions(in, AF_CONNECTIVITY_4); } catch FUNCTION_UNSUPPORTED
+    ASSERT_SUCCESS_CPP(out = regions(in, AF_CONNECTIVITY_4));
 
     vector<float> output(sz);
     out.host((void*)output.data());
@@ -263,7 +263,7 @@ TEST(Regions, NoComponentImage) {
 
     array in  = array(dim, dim, input.data());
     array out;
-    try { out = regions(in, AF_CONNECTIVITY_4); } catch FUNCTION_UNSUPPORTED
+    ASSERT_SUCCESS_CPP(out = regions(in, AF_CONNECTIVITY_4));
 
     vector<float> output(sz);
     out.host((void*)output.data());

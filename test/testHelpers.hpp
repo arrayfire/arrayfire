@@ -412,11 +412,11 @@ template<typename T>
 ///
 /// \param[in]  CALL This is the arrayfire C++ function
 #ifdef SKIP_UNSUPPORTED_TESTS
-#define FUNCTION_UNSUPPORTED \
-    (af::exception &ex) {CHECK_SUPPORTED(ex.err()); throw ex;}
+#define ASSERT_SUCCESS_CPP(CALL)                           \
+    ASSERT_NO_THROW({try {CALL;} catch (af::exception &ex) \
+    {CHECK_SUPPORTED(ex.err()); throw ex;}})
 #else
-#define FUNCTION_UNSUPPORTED \
-    (af::exception &ex) {throw ex;}
+#define ASSERT_SUCCESS_CPP(CALL) ASSERT_NO_THROW(CALL)
 #endif
 
 /// Compares two af::array or af_arrays for their types, dims, and values
