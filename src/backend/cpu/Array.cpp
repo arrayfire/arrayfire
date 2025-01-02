@@ -276,10 +276,23 @@ Array<T> createSubArray(const Array<T> &parent, const vector<af_seq> &index,
                         bool copy) {
     parent.eval();
 
-    dim4 dDims          = parent.getDataDims();
-    dim4 parent_strides = parent.strides();
+    const dim4 &dDims          = parent.getDataDims();
+    const dim4 &parent_strides = parent.strides();
 
-    if (parent.isLinear() == false) {
+    // (sub)Arrays remain linear when the strides corresponds to dataStrides
+    bool parent_isLinear = (parent_strides[0] == 1);
+    for (dim_t i = parent.ndims() - 1; i > 0; i--) {
+        parent_isLinear &=
+            parent_strides[i] == dDims[i - 1] * parent_strides[i - 1];
+    }
+
+    if (!parent_isLinear) {
+        if (!copy) {
+            // Linearizing parent through copy, is in conflict with the request
+            // of remaining inLine.
+            AF_ERROR("createSubArray inLine is impossible on non-Linear arrays",
+                     AF_ERR_INVALID_ARRAY);
+        }
         const Array<T> parentCopy = copyArray(parent);
         return createSubArray(parentCopy, index, copy);
     }
