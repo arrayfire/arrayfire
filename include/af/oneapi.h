@@ -9,132 +9,122 @@
 
 #pragma once
 
+#ifdef AF_ONEAPI
+#include <sycl/sycl.hpp>
+#else
+
+#endif
+
 #include <af/defines.h>
+#include <af/traits.hpp>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #if AF_API_VERSION >= 39
-typedef enum
-{
-    //TODO: update? are these relevant in sycl
-    AF_ONEAPI_PLATFORM_AMD     = 0,
-    AF_ONEAPI_PLATFORM_APPLE   = 1,
-    AF_ONEAPI_PLATFORM_INTEL   = 2,
-    AF_ONEAPI_PLATFORM_NVIDIA  = 3,
-    AF_ONEAPI_PLATFORM_BEIGNET = 4,
-    AF_ONEAPI_PLATFORM_POCL    = 5,
-    AF_ONEAPI_PLATFORM_UNKNOWN = -1
-} af_oneapi_platform;
-#endif
+// users will need to cast return types to expected
+// sycl:: datatypes when using sycl with the C-api
+typedef void *af_sycl_context;
+typedef void *af_sycl_queue;
+typedef void *af_sycl_device;
+typedef void *af_sycl_device_type;
+typedef void *af_sycl_platform;
 
-#if 0
 /**
-    \ingroup opencl_mat
+    \ingroup oneapi_matj
     @{
 */
 /**
-  Get a handle to ArrayFire's OpenCL context
+  Get a handle to ArrayFire's sycl context
 
   \param[out] ctx the current context being used by ArrayFire
-  \param[in] retain if true calls clRetainContext prior to returning the context
+              will need to be cast to sycl::context*
   \returns \ref af_err error code
 
-  \note Set \p retain to true if this value will be passed to a cl::Context constructor
+  \note Set \p retain to true if this value will be passed to a sycl::context
+  constructor
 */
-AFAPI af_err afcl_get_context(cl_context *ctx, const bool retain);
+AFAPI af_err afoneapi_get_context(af_sycl_context ctx);
 
 /**
-  Get a handle to ArrayFire's OpenCL command queue
+  Get a handle to ArrayFire's sycl queue
 
-  \param[out] queue the current command queue being used by ArrayFire
-  \param[in] retain if true calls clRetainCommandQueue prior to returning the context
+  \param[out] queue the current command queue being used by ArrayFire,
+              will need to be cast to sycl::queue*
   \returns \ref af_err error code
-
-  \note Set \p retain to true if this value will be passed to a cl::CommandQueue constructor
 */
-AFAPI af_err afcl_get_queue(cl_command_queue *queue, const bool retain);
+AFAPI af_err afoneapi_get_queue(af_sycl_queue queue);
 
 /**
-   Get the device ID for ArrayFire's current active device
+   Get a handle to the native device for ArrayFire's current active device
 
-   \param[out] id the cl_device_id of the current device
+   \param[out] dev the sycl::device corresponding to the current device
+               will need to be cast to sycl::device*
    \returns \ref af_err error code
 */
-AFAPI af_err afcl_get_device_id(cl_device_id *id);
+AFAPI af_err afoneapi_get_device(af_sycl_device dev);
 
-#if AF_API_VERSION >= 39
+/*
+    Get a handle to the device_type of the current active device
+    \param[out] devtype the sycl::info::device_type corresponding to the current
+   device will need to be cast to sycl::info::device_type* \returns \ref af_err
+   error code
+*/
+AFAPI af_err afoneapi_get_device_type(af_sycl_device_type devtype);
+
 /**
-   Set ArrayFire's active device based on \p id of type cl_device_id
+   Get a handle to the platform of the current active device
+    \param[out] plat the platform corresponding to the current device
+                will need to be cast to sycl::platform*
+        \returns \ref af_err error code
+*/
+AFAPI af_err afoneapi_get_platform(af_sycl_platform plat);
 
-   \param[in] id the cl_device_id of the device to be set as active device
+/**
+   Set ArrayFire's active device to \p dev. If device does not currently
+   exist within the current available devices it will be added to the
+   device manager
+
+   \param[in] dev the device to be set as active device
+              sycl::device* will need to be cast to void*
    \returns \ref af_err error code
 */
-AFAPI af_err afcl_set_device_id(cl_device_id id);
-#endif
+AFAPI af_err afoneapi_set_device(af_sycl_device dev);
 
-#if AF_API_VERSION >= 39
 /**
-   Push user provided device control constructs into the ArrayFire device manager pool
+   Push user provided device control constructs into the ArrayFire device
+   manager pool This function will infer the sycl::device and sycl::context
+   corresponding to the provided sycl::queue
 
-   This function should be used only when the user would like ArrayFire to use an
-   user generated OpenCL context and related objects for ArrayFire operations.
+   This function should be used only when the user would like ArrayFire to use
+   an user generated sycl context and related objects for ArrayFire operations.
 
-   \param[in] dev is the OpenCL device for which user provided context will be used by ArrayFire
-   \param[in] ctx is the user provided OpenCL cl_context to be used by ArrayFire
-   \param[in] que is the user provided OpenCL cl_command_queue to be used by ArrayFire. If this
-                  parameter is NULL, then we create a command queue for the user using the OpenCL
-                  context they provided us.
-
-   \note ArrayFire does not take control of releasing the objects passed to it. The user needs to release them appropriately.
+   \param[in] que is the user provided sycl queue to be used by ArrayFire
+              sycl::queue* will need to be cast to void*
 */
-AFAPI af_err afcl_add_device_context(cl_device_id dev, cl_context ctx, cl_command_queue que);
-#endif
+AFAPI af_err afoneapi_add_queue(af_sycl_queue que);
 
-#if AF_API_VERSION >= 39
 /**
-   Set active device using cl_context and cl_device_id
+   Remove the user provided device control constructs from the ArrayFire device
+   manager pool
 
-   \param[in] dev is the OpenCL device id that is to be set as Active device inside ArrayFire
-   \param[in] ctx is the OpenCL cl_context being used by ArrayFire
+   This function should be used only when the user would like ArrayFire to
+   remove an already pushed user generated sycl context and related objects.
+
+   \param[in] dev is the sycl device that has to be popped
+              sycl::device* will need to be cast to void*
+
+   \note ArrayFire does not take control of releasing the objects passed to it.
+   The user needs to release them appropriately.
 */
-AFAPI af_err afcl_set_device_context(cl_device_id dev, cl_context ctx);
-#endif
+AFAPI af_err afoneapi_delete_device(af_sycl_device dev);
 
-#if AF_API_VERSION >= 39
-/**
-   Remove the user provided device control constructs from the ArrayFire device manager pool
-
-   This function should be used only when the user would like ArrayFire to remove an already
-   pushed user generated OpenCL context and related objects.
-
-   \param[in] dev is the OpenCL device id that has to be popped
-   \param[in] ctx is the cl_context object to be removed from ArrayFire pool
-
-   \note ArrayFire does not take control of releasing the objects passed to it. The user needs to release them appropriately.
-*/
-AFAPI af_err afcl_delete_device_context(cl_device_id dev, cl_context ctx);
-#endif
-
-#if AF_API_VERSION >= 39
- Ge
-  t the type of the current device
-*/
-AFAPI af_err afcl_get_device_type(afcl_device_type *res);
-#endif
-
-#if AF_API_VERSION >= 39
-/**
-   Get the platform of the current device
-*/
-AFAPI af_err afcl_get_platform(afcl_platform *res);
 #endif
 
 /**
   @}
 */
-#endif //if 0 comment
 
 #ifdef __cplusplus
 }
@@ -143,287 +133,221 @@ AFAPI af_err afcl_get_platform(afcl_platform *res);
 #ifdef __cplusplus
 
 #include <af/array.h>
+#include <af/device.h>
 #include <af/dim4.hpp>
 #include <af/exception.h>
-#include <af/device.h>
 #include <stdio.h>
 
-namespace afoneapi
-{
-
-#if 0
- /**
-     \addtogroup opencl_mat
-     @{
- */
-
- /**
- Get a handle to ArrayFire's OpenCL context
-
- \param[in] retain if true calls clRetainContext prior to returning the context
- \returns the current context being used by ArrayFire
-
- \note Set \p retain to true if this value will be passed to a cl::Context constructor
- */
- static inline cl_context getContext(bool retain = false)
- {
-     cl_context ctx;
-     af_err err = afcl_get_context(&ctx, retain);
-     if (err != AF_SUCCESS) throw af::exception("Failed to get OpenCL context from arrayfire");
-     return ctx;
- }
-
- /**
- Get a handle to ArrayFire's OpenCL command queue
-
- \param[in] retain if true calls clRetainCommandQueue prior to returning the context
- \returns the current command queue being used by ArrayFire
-
- \note Set \p retain to true if this value will be passed to a cl::CommandQueue constructor
- */
- static inline cl_command_queue getQueue(bool retain = false)
- {
-     cl_command_queue queue;
-     af_err err = afcl_get_queue(&queue, retain);
-     if (err != AF_SUCCESS) throw af::exception("Failed to get OpenCL command queue from arrayfire");
-     return queue;
- }
-
- /**
-    Get the device ID for ArrayFire's current active device
-    \returns the cl_device_id of the current device
- */
- static inline cl_device_id getDeviceId()
- {
-     cl_device_id id;
-     af_err err = afcl_get_device_id(&id);
-     if (err != AF_SUCCESS) throw af::exception("Failed to get OpenCL device ID");
-
-     return id;
- }
-
-#if AF_API_VERSION >= 39
- /**
-   Set ArrayFire's active device based on \p id of type cl_device_id
-
-   \param[in] id the cl_device_id of the device to be set as active device
- */
- static inline void setDeviceId(cl_device_id id)
- {
-     af_err err = afcl_set_device_id(id);
-     if (err != AF_SUCCESS) throw af::exception("Failed to set OpenCL device as active device");
- }
-#endif
+namespace afoneapi {
 
 #if AF_API_VERSION >= 39
 /**
-   Push user provided device control constructs into the ArrayFire device manager pool
-
-   This function should be used only when the user would like ArrayFire to use an
-   user generated OpenCL context and related objects for ArrayFire operations.
-
-   \param[in] dev is the OpenCL device for which user provided context will be used by ArrayFire
-   \param[in] ctx is the user provided OpenCL cl_context to be used by ArrayFire
-   \param[in] que is the user provided OpenCL cl_command_queue to be used by ArrayFire. If this
-                  parameter is NULL, then we create a command queue for the user using the OpenCL
-                  context they provided us.
-
-   \note ArrayFire does not take control of releasing the objects passed to it. The user needs to release them appropriately.
+    \addtogroup oneapi_mat
+    @{
 */
-static inline void addDevice(cl_device_id dev, cl_context ctx, cl_command_queue que)
-{
-    af_err err = afcl_add_device_context(dev, ctx, que);
-    if (err!=AF_SUCCESS) throw af::exception("Failed to push user provided device/context to ArrayFire pool");
-}
-#endif
 
-#if AF_API_VERSION >= 39
 /**
-   Set active device using cl_context and cl_device_id
+Get a handle to ArrayFire's sycl context
 
-   \param[in] dev is the OpenCL device id that is to be set as Active device inside ArrayFire
-   \param[in] ctx is the OpenCL cl_context being used by ArrayFire
+\param[in] retain if true calls clRetainContext prior to returning the context
+\returns the current sycl::context being used by ArrayFire
+
 */
-static inline void setDevice(cl_device_id dev, cl_context ctx)
-{
-    af_err err = afcl_set_device_context(dev, ctx);
-    if (err!=AF_SUCCESS) throw af::exception("Failed to set device based on cl_device_id & cl_context");
+static inline sycl::context getContext() {
+  sycl::context ctx;
+  af_err err = afoneapi_get_context((void *)&ctx);
+  if (err != AF_SUCCESS)
+    throw af::exception("Failed to get sycl context from arrayfire");
+  return ctx;
 }
-#endif
 
-#if AF_API_VERSION >= 39
 /**
-   Remove the user provided device control constructs from the ArrayFire device manager pool
+Get a handle to ArrayFire's sycl command queue
 
-   This function should be used only when the user would like ArrayFire to remove an already
-   pushed user generated OpenCL context and related objects.
+\returns the current sycl::queue being used by ArrayFire
 
-   \param[in] dev is the OpenCL device id that has to be popped
-   \param[in] ctx is the cl_context object to be removed from ArrayFire pool
-
-   \note ArrayFire does not take control of releasing the objects passed to it. The user needs to release them appropriately.
 */
-static inline void deleteDevice(cl_device_id dev, cl_context ctx)
-{
-    af_err err = afcl_delete_device_context(dev, ctx);
-    if (err!=AF_SUCCESS) throw af::exception("Failed to remove the requested device from ArrayFire device pool");
+static inline sycl::queue getQueue() {
+  sycl::queue q;
+  af_err err = afoneapi_get_queue((void *)&q);
+  if (err != AF_SUCCESS)
+    throw af::exception("Failed to get sycl queue from arrayfire");
+  return q;
 }
-#endif
 
+/**
+   Get the device ID for ArrayFire's current active device
+   \returns the cl_device_id of the current device
+*/
+static inline sycl::device getDevice() {
+  sycl::device dev;
+  af_err err = afoneapi_get_device((void *)&dev);
+  if (err != AF_SUCCESS)
+    throw af::exception("Failed to get sycl device");
 
-#if AF_API_VERSION >= 39
- typedef afcl_device_type deviceType;
- typedef afcl_platform platform;
-#endif
+  return dev;
+}
 
-#if AF_API_VERSION >= 39
+/**
+   Push user provided device control constructs into the ArrayFire device
+   manager pool This function will infer the sycl::device and sycl::context
+   correspondning to the provided sycl::queue
+
+   This function should be used only when the user would like ArrayFire to use
+   an user generated sycl context and related objects for ArrayFire operations.
+
+   \param[in] que is the user provided sycl queue to be used by ArrayFire
+*/
+static inline void addQueue(sycl::queue que) {
+  af_err err = afoneapi_add_queue((void *)&que);
+  if (err != AF_SUCCESS)
+    throw af::exception(
+        "Failed to push user provided queue/device/context to ArrayFire pool");
+}
+
+/**
+   Set active device with sycl::device
+
+   \param[in] dev is the sycl device id that is to be set as active device
+   inside ArrayFire
+*/
+static inline void setDevice(sycl::device dev) {
+  af_err err = afoneapi_set_device((void *)&dev);
+  if (err != AF_SUCCESS)
+    throw af::exception("Failed to set device based on sycl::device");
+}
+
+/**
+   Remove the user provided device from the ArrayFire device
+   manager pool
+
+   This function should be used only when the user would like ArrayFire to
+   remove an already pushed user generated device.
+
+   \param[in] dev is the sycl device id that has to be popped
+
+   \note ArrayFire does not take control of releasing the objects passed to it.
+   The user needs to release them appropriately.
+*/
+static inline void deleteDevice(sycl::device dev) {
+  af_err err = afoneapi_delete_device((void *)&dev);
+  if (err != AF_SUCCESS)
+    throw af::exception(
+        "Failed to remove the requested device from ArrayFire device pool");
+}
+
 /**
    Get the type of the current device
-*/
-static inline deviceType getDeviceType()
-{
-    afcl_device_type res = AFCL_DEVICE_TYPE_UNKNOWN;
-    af_err err = afcl_get_device_type(&res);
-    if (err!=AF_SUCCESS) throw af::exception("Failed to get OpenCL device type");
-    return res;
-}
-#endif
 
-#if AF_API_VERSION >= 39
+   \returns sycl::info::device_type
+*/
+static inline sycl::info::device_type getDeviceType() {
+  sycl::info::device_type res;
+  af_err err = afoneapi_get_device_type((void *)&res);
+  if (err != AF_SUCCESS)
+    throw af::exception("Failed to get sycl device type");
+  return res;
+}
+
 /**
-   Get a vendor enumeration for the current platform
+   Get a the sycl::platform of the current device
+
+   \returns sycl::platform
 */
-static inline platform getPlatform()
-{
-    afcl_platform res = AFCL_PLATFORM_UNKNOWN;
-    af_err err = afcl_get_platform(&res);
-    if (err!=AF_SUCCESS) throw af::exception("Failed to get OpenCL platform");
-    return res;
+static inline sycl::platform getPlatform() {
+  sycl::platform res;
+  af_err err = afoneapi_get_platform((void *)&res);
+  if (err != AF_SUCCESS)
+    throw af::exception("Failed to get sycl platform");
+  return res;
 }
-#endif
 
- /**
- Create an af::array object from an OpenCL cl_mem buffer
+/**
+Create an af::array object from a sycl::buffer
 
- \param[in] idims the dimensions of the buffer
- \param[in] buf the OpenCL memory object
- \param[in] type the data type contained in the buffer
- \param[in] retain if true, instructs ArrayFire to retain the memory object
- \returns an array object created from the OpenCL buffer
+\param[in] idims the dimensions of the buffer
+\param[in] buf the sycl memory object
+\returns an array object created from the sycl buffer
+ */
+template <typename T>
+static inline af::array array(af::dim4 idims, sycl::buffer<T> buf) {
+  af::dtype type = (af::dtype)af::dtype_traits<T>::af_type;
+  const unsigned ndims = (unsigned)idims.ndims();
+  const dim_t *dims = idims.get();
 
- \note Set \p retain to true if the memory originates from a cl::Buffer object
-  */
- static inline af::array array(af::dim4 idims, cl_mem buf, af::dtype type, bool retain=false)
- {
-     const unsigned ndims = (unsigned)idims.ndims();
-     const dim_t *dims = idims.get();
+  af_array out;
+  af_err err = af_device_array(&out, &buf, ndims, dims, type);
 
-     cl_context context;
-     cl_int clerr = clGetMemObjectInfo(buf, CL_MEM_CONTEXT, sizeof(cl_context), &context, NULL);
-     if (clerr != CL_SUCCESS) {
-         throw af::exception("Failed to get context from cl_mem object \"buf\" ");
-     }
+  if (err != AF_SUCCESS) {
+    throw af::exception("Failed to create device array");
+  }
+  return af::array(out);
+}
 
-     if (context != getContext()) {
-         throw(af::exception("Context mismatch between input \"buf\" and arrayfire"));
-     }
+/**
+Create an af::array object from a sycl buffer
 
+\param[in] dim0 the length of the first dimension of the buffer
+\param[in] buf the sycl::buffer
+\returns an array object created from the sycl buffer
+ */
+template <typename T>
+static inline af::array array(dim_t dim0, sycl::buffer<T> buf) {
+  return afoneapi::array(af::dim4(dim0), buf);
+}
 
-     if (retain) clerr = clRetainMemObject(buf);
+/**
+Create an af::array object from a sycl::buffer
 
-     af_array out;
-     af_err err = af_device_array(&out, buf, ndims, dims, type);
+\param[in] dim0 the length of the first dimension of the buffer
+\param[in] dim1 the length of the second dimension of the buffer
+\param[in] buf the sycl::buffer
+\returns an array object created from the sycl buffer
 
-     if (err != AF_SUCCESS || clerr != CL_SUCCESS) {
-         if (retain && clerr == CL_SUCCESS) clReleaseMemObject(buf);
-         throw af::exception("Failed to create device array");
-     }
+ */
+template <typename T>
+static inline af::array array(dim_t dim0, dim_t dim1, sycl::buffer<T> buf) {
+  return afoneapi::array(af::dim4(dim0, dim1), buf);
+}
 
-     return af::array(out);
- }
+/**
+Create an af::array object from a sycl::buffer
 
- /**
- Create an af::array object from an OpenCL cl_mem buffer
+\param[in] dim0 the length of the first dimension of the buffer
+\param[in] dim1 the length of the second dimension of the buffer
+\param[in] dim2 the length of the third dimension of the buffer
+\param[in] buf the sycl::buffer
+\returns an array object created from the sycl buffer
 
- \param[in] dim0 the length of the first dimension of the buffer
- \param[in] buf the OpenCL memory object
- \param[in] type the data type contained in the buffer
- \param[in] retain if true, instructs ArrayFire to retain the memory object
- \returns an array object created from the OpenCL buffer
+ */
+template <typename T>
+static inline af::array array(dim_t dim0, dim_t dim1, dim_t dim2,
+                              sycl::buffer<T> buf) {
+  return afoneapi::array(af::dim4(dim0, dim1, dim2), buf);
+}
 
- \note Set \p retain to true if the memory originates from a cl::Buffer object
-  */
- static inline af::array array(dim_t dim0,
-                               cl_mem buf, af::dtype type, bool retain=false)
- {
-     return afcl::array(af::dim4(dim0), buf, type, retain);
- }
+/**
+Create an af::array object from a sycl::buffer
 
- /**
- Create an af::array object from an OpenCL cl_mem buffer
+\param[in] dim0 the length of the first dimension of the buffer
+\param[in] dim1 the length of the second dimension of the buffer
+\param[in] dim2 the length of the third dimension of the buffer
+\param[in] dim3 the length of the fourth dimension of the buffer
+\param[in] buf the sycl::buffer
+\returns an array object created from the sycl buffer
 
- \param[in] dim0 the length of the first dimension of the buffer
- \param[in] dim1 the length of the second dimension of the buffer
- \param[in] buf the OpenCL memory object
- \param[in] type the data type contained in the buffer
- \param[in] retain if true, instructs ArrayFire to retain the memory object
- \returns an array object created from the OpenCL buffer
-
- \note Set \p retain to true if the memory originates from a cl::Buffer object
-  */
- static inline af::array array(dim_t dim0, dim_t dim1,
-                               cl_mem buf, af::dtype type, bool retain=false)
- {
-     return afcl::array(af::dim4(dim0, dim1), buf, type, retain);
- }
-
- /**
- Create an af::array object from an OpenCL cl_mem buffer
-
- \param[in] dim0 the length of the first dimension of the buffer
- \param[in] dim1 the length of the second dimension of the buffer
- \param[in] dim2 the length of the third dimension of the buffer
- \param[in] buf the OpenCL memory object
- \param[in] type the data type contained in the buffer
- \param[in] retain if true, instructs ArrayFire to retain the memory object
- \returns an array object created from the OpenCL buffer
-
- \note Set \p retain to true if the memory originates from a cl::Buffer object
-  */
- static inline af::array array(dim_t dim0, dim_t dim1,
-                               dim_t dim2,
-                               cl_mem buf, af::dtype type, bool retain=false)
- {
-     return afcl::array(af::dim4(dim0, dim1, dim2), buf, type, retain);
- }
-
- /**
- Create an af::array object from an OpenCL cl_mem buffer
-
- \param[in] dim0 the length of the first dimension of the buffer
- \param[in] dim1 the length of the second dimension of the buffer
- \param[in] dim2 the length of the third dimension of the buffer
- \param[in] dim3 the length of the fourth dimension of the buffer
- \param[in] buf the OpenCL memory object
- \param[in] type the data type contained in the buffer
- \param[in] retain if true, instructs ArrayFire to retain the memory object
- \returns an array object created from the OpenCL buffer
-
- \note Set \p retain to true if the memory originates from a cl::Buffer object
-  */
- static inline af::array array(dim_t dim0, dim_t dim1,
-                               dim_t dim2, dim_t dim3,
-                               cl_mem buf, af::dtype type, bool retain=false)
- {
-     return afcl::array(af::dim4(dim0, dim1, dim2, dim3), buf, type, retain);
- }
+ */
+template <typename T>
+static inline af::array array(dim_t dim0, dim_t dim1, dim_t dim2, dim_t dim3,
+                              sycl::buffer<T> buf) {
+  return afoneapi::array(af::dim4(dim0, dim1, dim2, dim3), buf);
+}
 
 /**
    @}
 */
-#endif //#IF 0 tmp comment
+#endif
 
-}
-
+} // namespace afoneapi
 
 #endif

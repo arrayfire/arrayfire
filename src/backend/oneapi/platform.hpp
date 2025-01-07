@@ -99,19 +99,19 @@ std::string getPlatformName(const sycl::device& device);
 
 int setDevice(int device);
 
-void addDeviceContext(sycl::device& dev, sycl::context& ctx, sycl::queue& que);
+void addDeviceContext(sycl::queue& que);
 
 void setDeviceContext(sycl::device& dev, sycl::context& ctx);
 
-void removeDeviceContext(sycl::device& dev, sycl::context& ctx);
+void removeDevice(sycl::device& dev);
 
 void sync(int device);
 
 bool synchronize_calls();
 
-int getActiveDeviceType();
+sycl::info::device_type getActiveDeviceType();
 
-int getActivePlatform();
+sycl::platform getActivePlatform();
 
 bool& evalFlag();
 
