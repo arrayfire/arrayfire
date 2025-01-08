@@ -9,13 +9,16 @@
 
 kernel void csr2Dense(global T *output, global const T *values,
                       global const int *rowidx, global const int *colidx,
-                      const int M) {
+                      const int M, const int v_off, const int r_off, const int c_off) {
+    T *v = values + v_off;
+    int *r = rowidx + r_off;
+    int *c = colidx + c_off;
     int lid = get_local_id(0);
     for (int rowId = get_group_id(0); rowId < M; rowId += get_num_groups(0)) {
-        int colStart = rowidx[rowId];
-        int colEnd   = rowidx[rowId + 1];
+        int colStart = r[rowId];
+        int colEnd   = r[rowId + 1];
         for (int colId = colStart + lid; colId < colEnd; colId += THREADS) {
-            output[rowId + colidx[colId] * M] = values[colId];
+            output[rowId + c[colId] * M] = v[colId];
         }
     }
 }
