@@ -14,12 +14,16 @@
 #include <af/data.h>
 #include <af/device.h>
 #include <af/random.h>
+#include <af/half.h>
+#include "half.hpp"  //note: NOT common. From extern/half/include/half.hpp
 
 #include <cfenv>
 #include <cmath>
 
 using namespace std;
 using namespace af;
+
+using half_float_half = half_float::half;
 
 const int num = 10000;
 
@@ -122,7 +126,7 @@ af::array randgen(const int num, dtype ty) {
                                                                       \
         af_dtype ta = (af_dtype)dtype_traits<Ta>::af_type;            \
         af::array a = randgen(num, ta);                               \
-        Tb h_b      = 0.3;                                            \
+        Tb h_b      = (Tb)0.3;                                            \
         af::array c = func(a, h_b);                                   \
         Ta *h_a     = a.host<Ta>();                                   \
         Td *h_d     = c.host<Td>();                                   \
@@ -139,7 +143,7 @@ af::array randgen(const int num, dtype ty) {
         SUPPORTED_TYPE_CHECK(Tc);                                     \
                                                                       \
         af_dtype tb = (af_dtype)dtype_traits<Tb>::af_type;            \
-        Ta h_a      = 0.3;                                            \
+        Ta h_a      = (Ta)0.3;                                            \
         af::array b = randgen(num, tb);                               \
         af::array c = func(h_a, b);                                   \
         Tb *h_b     = b.host<Tb>();                                   \
@@ -163,6 +167,8 @@ af::array randgen(const int num, dtype ty) {
 #define BINARY_TESTS_UINT(func) BINARY_TESTS(uint, uint, uint, func)
 #define BINARY_TESTS_INTL(func) BINARY_TESTS(intl, intl, intl, func)
 #define BINARY_TESTS_UINTL(func) BINARY_TESTS(uintl, uintl, uintl, func)
+#define BINARY_TESTS_NEAR_HALF(func) \
+    BINARY_TESTS_NEAR(half_float_half, half_float_half, half_float_half, func, 1e-3)
 #define BINARY_TESTS_NEAR_FLOAT(func) \
     BINARY_TESTS_NEAR(float, float, float, func, 1e-5)
 #define BINARY_TESTS_NEAR_DOUBLE(func) \
@@ -187,6 +193,9 @@ BINARY_TESTS_DOUBLE(mod)
 BINARY_TESTS_NEAR_FLOAT(atan2)
 BINARY_TESTS_NEAR_FLOAT(pow)
 BINARY_TESTS_NEAR_FLOAT(hypot)
+
+BINARY_TESTS_NEAR_HALF(atan2)
+BINARY_TESTS_NEAR_HALF(hypot)
 
 BINARY_TESTS_NEAR_DOUBLE(atan2)
 BINARY_TESTS_NEAR_DOUBLE(pow)
