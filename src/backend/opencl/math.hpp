@@ -18,6 +18,7 @@
 
 #include <algorithm>
 #include <complex>
+#include <climits>
 #include <limits>
 
 #if defined(__GNUC__) || defined(__GNUG__)

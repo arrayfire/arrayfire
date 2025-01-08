@@ -50,20 +50,21 @@ fg_chart setup_vector_field(fg_window window, const vector<af_array>& points,
     vector<Array<T>> pnts;
     vector<Array<T>> dirs;
 
-    for (unsigned i = 0; i < points.size(); ++i) {
-        pnts.push_back(getArray<T>(points[i]));
-        dirs.push_back(getArray<T>(directions[i]));
+    Array<T> pIn = getArray<T>(points[0]);
+    Array<T> dIn = getArray<T>(directions[0]);
+    if (points.size() > 1) {
+        for (unsigned i = 0; i < points.size(); ++i) {
+            pnts.push_back(getArray<T>(points[i]));
+            dirs.push_back(getArray<T>(directions[i]));
+        }
+
+        // Join for set up vector
+        const dim4 odims(pIn.dims()[0], points.size());
+        pIn = createEmptyArray<T>(odims);
+        dIn = createEmptyArray<T>(odims);
+        detail::join<T>(pIn, 1, pnts);
+        detail::join<T>(dIn, 1, dirs);
     }
-
-    // Join for set up vector
-    dim4 odims(3, points.size());
-    Array<T> out_pnts = createEmptyArray<T>(odims);
-    Array<T> out_dirs = createEmptyArray<T>(odims);
-    detail::join(out_pnts, 1, pnts);
-    detail::join(out_dirs, 1, dirs);
-    Array<T> pIn = out_pnts;
-    Array<T> dIn = out_dirs;
-
     // do transpose if required
     if (transpose_) {
         pIn = transpose<T>(pIn, false);

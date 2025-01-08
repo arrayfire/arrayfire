@@ -260,8 +260,6 @@ af_err af_assign_gen(af_array* out, const af_array lhs, const dim_t ndims,
             return af_create_handle(out, 0, nullptr, lhsType);
         }
 
-        ARG_ASSERT(2, (ndims == 1) || (ndims == (dim_t)lInfo.ndims()));
-
         if (ndims == 1 && ndims != static_cast<dim_t>(lInfo.ndims())) {
             af_array tmp_in  = 0;
             af_array tmp_out = 0;
@@ -279,7 +277,6 @@ af_err af_assign_gen(af_array* out, const af_array lhs, const dim_t ndims,
 
         ARG_ASSERT(1, (lhsType == rhsType));
         ARG_ASSERT(1, (lhsDims.ndims() >= rhsDims.ndims()));
-        ARG_ASSERT(2, (lhsDims.ndims() >= ndims));
 
         af_array output = 0;
         if (*out != lhs) {
