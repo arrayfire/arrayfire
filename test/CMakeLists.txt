@@ -372,51 +372,53 @@ if(OpenCL_FOUND)
             CXX11)
 endif()
 
-if(CUDA_FOUND)
-  include(AFcuda_helpers)
-  foreach(backend ${enabled_backends})
-    set(cuda_test_backends "cuda" "unified")
-    if(${backend} IN_LIST cuda_test_backends)
-      set(target test_cuda_${backend})
-      add_executable(${target} cuda.cu)
-      target_include_directories(${target}
-        PRIVATE
-        ${CMAKE_SOURCE_DIR}
-        ${CMAKE_CURRENT_SOURCE_DIR})
-      target_include_directories(${target}
-        SYSTEM PRIVATE
-          ${ArrayFire_SOURCE_DIR}/extern/half/include)
-      if(${backend} STREQUAL "unified")
+if(AF_BUILD_CUDA)
+  if(CUDA_FOUND)
+    include(AFcuda_helpers)
+    foreach(backend ${enabled_backends})
+      set(cuda_test_backends "cuda" "unified")
+      if(${backend} IN_LIST cuda_test_backends)
+        set(target test_cuda_${backend})
+        add_executable(${target} cuda.cu)
+        target_include_directories(${target}
+          PRIVATE
+          ${CMAKE_SOURCE_DIR}
+          ${CMAKE_CURRENT_SOURCE_DIR})
+        target_include_directories(${target}
+          SYSTEM PRIVATE
+            ${ArrayFire_SOURCE_DIR}/extern/half/include)
+        if(${backend} STREQUAL "unified")
+          target_link_libraries(${target}
+            ArrayFire::af)
+        else()
+          target_link_libraries(${target}
+            ArrayFire::af${backend})
+        endif()
         target_link_libraries(${target}
-          ArrayFire::af)
-      else()
-        target_link_libraries(${target}
-          ArrayFire::af${backend})
+          mmio
+          arrayfire_test)
+  
+        # Couldn't get Threads::Threads to work with this cuda binary. The import
+        # target would not add the -pthread flag which is required for this
+        # executable (on Ubuntu 18.04 anyway)
+        check_cxx_compiler_flag(-pthread pthread_flag)
+        if(pthread_flag)
+          target_link_libraries(${target} -pthread)
+        endif()
+  
+        af_detect_and_set_cuda_architectures(${target})
+  
+        set_target_properties(${target}
+          PROPERTIES
+            FOLDER "Tests"
+            OUTPUT_NAME "cuda_${backend}")
+  
+        if(NOT ${backend} STREQUAL "unified")
+          af_add_test(${target} ${backend} ON)
+        endif()
       endif()
-      target_link_libraries(${target}
-        mmio
-        arrayfire_test)
-
-      # Couldn't get Threads::Threads to work with this cuda binary. The import
-      # target would not add the -pthread flag which is required for this
-      # executable (on Ubuntu 18.04 anyway)
-      check_cxx_compiler_flag(-pthread pthread_flag)
-      if(pthread_flag)
-        target_link_libraries(${target} -pthread)
-      endif()
-
-      af_detect_and_set_cuda_architectures(${target})
-
-      set_target_properties(${target}
-        PROPERTIES
-          FOLDER "Tests"
-          OUTPUT_NAME "cuda_${backend}")
-
-      if(NOT ${backend} STREQUAL "unified")
-        af_add_test(${target} ${backend} ON)
-      endif()
-    endif()
-  endforeach()
+    endforeach()
+  endif()
 endif()
 
 
