@@ -164,6 +164,13 @@ struct mqr_solve_func_def_t {
         const T *, int, const T *, T *, int, T *, int, int *);
 };
 
+template<typename T>
+struct mqr_solve_buf_func_def_t {
+    typedef cusolverStatus_t (*mqr_solve_buf_func_def)(
+	cusolverDnHandle_t, cublasSideMode_t, cublasOperation_t, int, int, int,
+        const T *, int, const T *, T *, int, int *);
+};
+
 #define QR_FUNC_DEF(FUNC)                                                     \
     template<typename T>                                                      \
     static typename FUNC##_solve_func_def_t<T>::FUNC##_solve_func_def         \
@@ -195,17 +202,28 @@ QR_FUNC(geqrf, double, D)
 QR_FUNC(geqrf, cfloat, C)
 QR_FUNC(geqrf, cdouble, Z)
 
-#define MQR_FUNC_DEF(FUNC)                                            \
-    template<typename T>                                              \
-    static typename FUNC##_solve_func_def_t<T>::FUNC##_solve_func_def \
-        FUNC##_solve_func();
+#define MQR_FUNC_DEF(FUNC)                                                    \
+    template<typename T>                                                      \
+    static typename FUNC##_solve_func_def_t<T>::FUNC##_solve_func_def         \
+        FUNC##_solve_func();                                                  \
+	                                                                      \
+    template<typename T>                                                      \
+    static typename FUNC##_solve_buf_func_def_t<T>::FUNC##_solve_buf_func_def \
+       	FUNC##_solve_buf_func();
 
-#define MQR_FUNC(FUNC, TYPE, PREFIX)                                    \
-    template<>                                                          \
-    typename FUNC##_solve_func_def_t<TYPE>::FUNC##_solve_func_def       \
-        FUNC##_solve_func<TYPE>() {                                     \
-        return (FUNC##_solve_func_def_t<TYPE>::FUNC##_solve_func_def) & \
-               cusolverDn##PREFIX;                                      \
+#define MQR_FUNC(FUNC, TYPE, PREFIX)                                            \
+    template<>                                                                  \
+    typename FUNC##_solve_func_def_t<TYPE>::FUNC##_solve_func_def               \
+        FUNC##_solve_func<TYPE>() {                                             \
+        return (FUNC##_solve_func_def_t<TYPE>::FUNC##_solve_func_def) &         \
+               cusolverDn##PREFIX;                                              \
+    }                                                                           \
+                                                                                \
+    template<>                                                                  \
+    typename FUNC##_solve_buf_func_def_t<TYPE>::FUNC##_solve_buf_func_def       \
+        FUNC##_solve_buf_func<TYPE>() {                                         \
+        return (FUNC##_solve_buf_func_def_t<TYPE>::FUNC##_solve_buf_func_def) & \
+               cusolverDn##PREFIX##_bufferSize;                                 \
     }
 
 MQR_FUNC_DEF(mqr)
@@ -393,6 +411,13 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b) {
         B.resetDims(dim4(N, K));
 
         // matmul(Q, Bpad)
+        CUSOLVER_CHECK(mqr_solve_buf_func<T>()(
+            solverDnHandle(), CUBLAS_SIDE_LEFT, CUBLAS_OP_N, B.dims()[0],
+    	    B.dims()[1], A.dims()[0], A.get(), A.strides()[1], t.get(), B.get(),
+	    B.strides()[1], &lwork));
+    
+        workspace = memAlloc<T>(lwork);
+
         CUSOLVER_CHECK(mqr_solve_func<T>()(
             solverDnHandle(), CUBLAS_SIDE_LEFT, CUBLAS_OP_N, B.dims()[0],
             B.dims()[1], A.dims()[0], A.get(), A.strides()[1], t.get(), B.get(),
@@ -427,10 +452,17 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b) {
             t.get(), workspace.get(), lwork, info.get()));
 
         // matmul(Q1, B)
+        CUSOLVER_CHECK(mqr_solve_buf_func<T>()(
+            solverDnHandle(), CUBLAS_SIDE_LEFT, trans<T>(), M, K, N, A.get(),
+	    A.strides()[1], t.get(), B.get(), B.strides()[1], &lwork));
+    
+        workspace = memAlloc<T>(lwork);
+
         CUSOLVER_CHECK(mqr_solve_func<T>()(
             solverDnHandle(), CUBLAS_SIDE_LEFT, trans<T>(), M, K, N, A.get(),
             A.strides()[1], t.get(), B.get(), B.strides()[1], workspace.get(),
             lwork, info.get()));
+
         // tri_solve(R1, Bt)
         A.resetDims(dim4(N, N));
         B.resetDims(dim4(N, K));
