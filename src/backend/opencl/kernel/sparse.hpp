@@ -39,7 +39,7 @@ void coo2dense(Param out, const Param values, const Param rowIdx,
     };
     std::vector<std::string> compileOpts = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
-        DefineKeyValue(resp, REPEAT),
+        DefineKeyValue(reps, REPEAT),
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
@@ -49,7 +49,8 @@ void coo2dense(Param out, const Param values, const Param rowIdx,
     cl::NDRange local(THREADS_PER_GROUP, 1, 1);
 
     cl::NDRange global(
-        divup(out.info.dims[0], local[0] * REPEAT) * THREADS_PER_GROUP, 1, 1);
+        divup(values.info.dims[0], local[0] * REPEAT) * THREADS_PER_GROUP, 1,
+        1);
 
     coo2dense(cl::EnqueueArgs(getQueue(), global, local), *out.data, out.info,
               *values.data, values.info, *rowIdx.data, rowIdx.info,
@@ -84,7 +85,10 @@ void csr2dense(Param output, const Param values, const Param rowIdx,
     cl::NDRange global(local[0] * groups_x, 1);
 
     csr2dense(cl::EnqueueArgs(getQueue(), global, local), *output.data,
-              *values.data, *rowIdx.data, *colIdx.data, M);
+              *values.data, *rowIdx.data, *colIdx.data, M,
+	      static_cast<int>(values.info.offset),
+	      static_cast<int>(rowIdx.info.offset),
+	      static_cast<int>(colIdx.info.offset));
     CL_DEBUG_FINISH(getQueue());
 }
 

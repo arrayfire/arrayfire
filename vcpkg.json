@@ -19,6 +19,14 @@
         {
             "name": "spdlog",
             "version": "1.9.2"
+        },
+        {
+            "name": "jasper",
+            "version": "4.2.0"
+        },
+        {
+            "name": "boost-modular-build-helper",
+            "version": "1.84.0#3"
         }
     ],
     "features": {

@@ -501,6 +501,29 @@ TEST(DeviceId, Different) {
     deviceGC();
 }
 
+TEST(Device, MigrateAllDevicesToAllDevices) {
+    int ndevices = getDeviceCount();
+    if (ndevices < 2) GTEST_SKIP() << "Skipping mult-GPU test";
+
+    for (int i = 0; i < ndevices; i++) {
+        for (int j = 0; j < ndevices; j++) {
+            setDevice(i);
+            array a = constant(i * 255, 10, 10);
+            a.eval();
+
+            setDevice(j);
+            array b = constant(j * 256, 10, 10);
+            b.eval();
+
+            array c = a + b;
+
+            std::vector<float> gold(10 * 10, i * 255 + j * 256);
+
+            ASSERT_VEC_ARRAY_EQ(gold, dim4(10, 10), c);
+        }
+    }
+}
+
 TEST(Device, empty) {
     array a = array();
     ASSERT_EQ(a.device<float>(), nullptr);

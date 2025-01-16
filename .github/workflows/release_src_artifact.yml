@@ -9,7 +9,7 @@ name: ci
 jobs:
     upload_src_tarball:
         name: Upload release source tarball
-        runs-on: ubuntu-18.04
+        runs-on: ubuntu-latest
         steps:
             - name: Fetch Repo Info
               run: |
@@ -40,7 +40,7 @@ jobs:
                                           libopenblas-dev \
                                           ocl-icd-opencl-dev \
                                           nvidia-cuda-toolkit \
-                                          libboost1.68-dev
+                                          libboost-dev
 
             - name: CMake Configure
               run: |
