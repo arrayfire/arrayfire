@@ -87,6 +87,7 @@ using uint16_t = unsigned short;
 #define AF_CONSTEXPR constexpr
 #else
 #include <af/compilers.h>
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <cstring>
@@ -245,9 +246,9 @@ AF_CONSTEXPR __DH__ native_half_t int2half_impl(T value) noexcept {
 /// \return binary representation of half-precision value
 template<std::float_round_style R = std::round_to_nearest>
 __DH__ native_half_t float2half_impl(float value) noexcept {
-    uint32_t bits = 0;  // = *reinterpret_cast<uint32*>(&value);
-                        // //violating strict aliasing!
-    std::memcpy(&bits, &value, sizeof(float));
+    alignas(std::max(alignof(uint32_t), alignof(float))) float _value = value;
+    uint32_t bits = *reinterpret_cast<uint32_t*>(&_value);
+
     constexpr uint16_t base_table[512] = {
         0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
         0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
@@ -337,9 +338,10 @@ __DH__ native_half_t float2half_impl(float value) noexcept {
         24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
         24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
         24, 24, 24, 24, 24, 24, 24, 13};
-    uint16_t hbits =
-        base_table[bits >> 23] +
-        static_cast<uint16_t>((bits & 0x7FFFFF) >> shift_table[bits >> 23]);
+    alignas(std::max(alignof(uint16_t), alignof(native_half_t)))
+        uint16_t hbits =
+            base_table[bits >> 23] +
+            static_cast<uint16_t>((bits & 0x7FFFFF) >> shift_table[bits >> 23]);
     AF_IF_CONSTEXPR(R == std::round_to_nearest)
     hbits +=
         (((bits & 0x7FFFFF) >> (shift_table[bits >> 23] - 1)) |
@@ -367,7 +369,8 @@ __DH__ native_half_t float2half_impl(float value) noexcept {
           (((bits >> 23) <= 358) & ((bits >> 23) != 256))) &
          (hbits < 0xFC00) & (hbits >> 15)) -
         ((hbits == 0x7C00) & ((bits >> 23) != 255));
-    return hbits;
+
+    return *reinterpret_cast<native_half_t*>(&hbits);
 }
 
 /// Convert IEEE double-precision to half-precision.
@@ -379,11 +382,11 @@ __DH__ native_half_t float2half_impl(float value) noexcept {
 /// \return binary representation of half-precision value
 template<std::float_round_style R>
 __DH__ native_half_t float2half_impl(double value) {
-    uint64_t bits{0};  // = *reinterpret_cast<uint64*>(&value);		//violating
-                       // strict aliasing!
-    std::memcpy(&bits, &value, sizeof(double));
+    alignas(std::max(alignof(uint64_t), alignof(double))) double _value = value;
+    uint64_t bits = *reinterpret_cast<uint64_t*>(&_value);
     uint32_t hi = bits >> 32, lo = bits & 0xFFFFFFFF;
-    uint16_t hbits = (hi >> 16) & 0x8000;
+    alignas(std::max(alignof(uint16_t), alignof(native_half_t)))
+        uint16_t hbits = (hi >> 16) & 0x8000;
     hi &= 0x7FFFFFFF;
     int exp = hi >> 20;
     if (exp == 2047)
@@ -420,7 +423,8 @@ __DH__ native_half_t float2half_impl(double value) {
         ~(hbits >> 15) & (s | g);
     else AF_IF_CONSTEXPR(R == std::round_toward_neg_infinity) hbits +=
         (hbits >> 15) & (g | s);
-    return hbits;
+
+    return *reinterpret_cast<native_half_t*>(&hbits);
 }
 
 __DH__ inline float half2float_impl(native_half_t value) noexcept {
@@ -790,14 +794,14 @@ __DH__ inline float half2float_impl(native_half_t value) noexcept {
         1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024,
         1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024};
 
-    uint16_t value_bits = 0;
-    std::memcpy(&value_bits, &value, sizeof(uint16_t));
-    uint32_t bits =
+    alignas(std::max(alignof(uint16_t), alignof(native_half_t)))
+        native_half_t _value = value;
+    uint16_t value_bits      = *reinterpret_cast<uint16_t*>(&_value);
+
+    alignas(std::max(alignof(uint32_t), alignof(float))) uint32_t bits =
         mantissa_table[offset_table[value_bits >> 10] + (value_bits & 0x3FF)] +
         exponent_table[value_bits >> 10];
-    float out = 0.0f;
-    std::memcpy(&out, &bits, sizeof(float));
-    return out;
+    return *reinterpret_cast<float*>(&bits);
 }
 
 #endif  // __CUDACC_RTC__
@@ -872,7 +876,9 @@ AF_CONSTEXPR T half2int(native_half_t value) {
     else AF_IF_CONSTEXPR(std::is_same<T, int>::value) {
         return __half2int_rn(value);
     }
-    else { return __half2uint_rn(value); }
+    else {
+        return __half2uint_rn(value);
+    }
 #elif defined(AF_ONEAPI)
     return static_cast<T>(value);
 #else
