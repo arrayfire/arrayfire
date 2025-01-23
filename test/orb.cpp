@@ -261,7 +261,7 @@ TEST(ORB, CPP) {
 
     features feat;
     array desc;
-    ASSERT_SUCCESS_CPP(orb(feat, desc, in, 20.0f, 400, 1.2f, 8, true));
+    orb(feat, desc, in, 20.0f, 400, 1.2f, 8, true);
 
     float* outX           = new float[feat.getNumFeatures()];
     float* outY           = new float[feat.getNumFeatures()];

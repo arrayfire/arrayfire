@@ -179,8 +179,7 @@ TEST(FloatHarris, CPP) {
 
     array in = loadImage(inFiles[0].c_str(), false);
 
-    features out;
-    ASSERT_SUCCESS_CPP(out = harris(in, 500, 1e5f, 0.0f, 3, 0.04f));
+    features out = harris(in, 500, 1e5f, 0.0f, 3, 0.04f);
 
     vector<float> outX(gold[0].size());
     vector<float> outY(gold[1].size());

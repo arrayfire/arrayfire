@@ -47,8 +47,7 @@ TEST(hsv2rgb, CPP) {
 
     dim4 dims = numDims[0];
     array input(dims, &(in[0].front()));
-    array output;
-    ASSERT_SUCCESS_CPP(output = hsv2rgb(input));
+    array output = hsv2rgb(input);
 
     vector<float> currGoldBar = tests[0];
     ASSERT_VEC_ARRAY_NEAR(currGoldBar, dims, output, 1.0e-3);
@@ -64,8 +63,7 @@ TEST(rgb2hsv, CPP) {
 
     dim4 dims = numDims[0];
     array input(dims, &(in[0].front()));
-    array output;
-    ASSERT_SUCCESS_CPP(output = rgb2hsv(input));
+    array output = rgb2hsv(input);
 
     vector<float> currGoldBar = tests[0];
     ASSERT_VEC_ARRAY_NEAR(currGoldBar, dims, output, 1.0e-3);
@@ -85,9 +83,8 @@ TEST(rgb2hsv, MaxDim) {
     const size_t largeDim = 65535 * 16 + 1;
     unsigned int ntile    = (largeDim + dims[1] - 1) / dims[1];
     input                 = tile(input, 1, ntile);
-    array output;
-    ASSERT_SUCCESS_CPP(output = rgb2hsv(input));
-    dim4 outDims = output.dims();
+    array output          = rgb2hsv(input);
+    dim4 outDims          = output.dims();
 
     float *outData = new float[outDims.elements()];
     output.host((void *)outData);
@@ -124,9 +121,8 @@ TEST(hsv2rgb, MaxDim) {
     const size_t largeDim = 65535 * 16 + 1;
     unsigned int ntile    = (largeDim + dims[1] - 1) / dims[1];
     input                 = tile(input, 1, ntile);
-    array output;
-    ASSERT_SUCCESS_CPP(output = hsv2rgb(input));
-    dim4 outDims = output.dims();
+    array output          = hsv2rgb(input);
+    dim4 outDims          = output.dims();
 
     float *outData = new float[outDims.elements()];
     output.host((void *)outData);

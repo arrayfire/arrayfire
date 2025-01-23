@@ -192,8 +192,7 @@ TEST(FloatFAST, CPP) {
 
     array in = loadImage(inFiles[0].c_str(), false);
 
-    features out;
-    ASSERT_SUCCESS_CPP(out = fast(in, 20.0f, 9, true, 0.05f, 3));
+    features out = fast(in, 20.0f, 9, true, 0.05f, 3);
 
     float *outX           = new float[gold[0].size()];
     float *outY           = new float[gold[1].size()];

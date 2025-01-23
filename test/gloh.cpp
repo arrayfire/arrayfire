@@ -277,7 +277,7 @@ TEST(GLOH, CPP) {
 
     features feat;
     array desc;
-    ASSERT_SUCCESS_CPP(gloh(feat, desc, in, 3, 0.04f, 10.0f, 1.6f, true, 1.f / 256.f, 0.05f));
+    gloh(feat, desc, in, 3, 0.04f, 10.0f, 1.6f, true, 1.f / 256.f, 0.05f);
 
     float* outX           = new float[feat.getNumFeatures()];
     float* outY           = new float[feat.getNumFeatures()];

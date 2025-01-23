@@ -180,9 +180,9 @@ void morphImageTest(string pTestFile, dim_t seLen) {
 
         af_err error_code = AF_SUCCESS;
         if (isDilation) {
-            ASSERT_SUCCESS_CPP(error_code = af_dilate(&outArray, inArray, maskArray));
+            error_code = af_dilate(&outArray, inArray, maskArray);
         } else {
-            ASSERT_SUCCESS_CPP(error_code = af_erode(&outArray, inArray, maskArray));
+            error_code = af_erode(&outArray, inArray, maskArray);
         }
 
 #if defined(AF_CPU)
@@ -415,9 +415,9 @@ void cppMorphImageTest(string pTestFile) {
         array output;
 
         if (isDilation)
-            ASSERT_SUCCESS_CPP(output = dilate(img, mask));
+            output = dilate(img, mask);
         else
-            ASSERT_SUCCESS_CPP(output = erode(img, mask));
+            output = erode(img, mask);
 
         vector<T> outData(nElems);
         output.host((void*)outData.data());
@@ -444,14 +444,13 @@ TEST(Morph, GFOR) {
     array B    = constant(0, dims);
     array mask = randu(3, 3) > 0.3;
 
+    gfor(seq ii, 3) { B(span, span, ii) = erode(A(span, span, ii), mask); }
+
     for (int ii = 0; ii < 3; ii++) {
-        array c_ii;
-        ASSERT_SUCCESS_CPP(c_ii = erode(A(span, span, ii), mask));
+        array c_ii = erode(A(span, span, ii), mask);
         array b_ii = B(span, span, ii);
         ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
     }
-
-    gfor(seq ii, 3) { B(span, span, ii) = erode(A(span, span, ii), mask); }
 }
 
 TEST(Morph, EdgeIssue1564) {
@@ -471,8 +470,7 @@ TEST(Morph, EdgeIssue1564) {
     int maskData[3 * 3] = {1, 1, 1, 1, 0, 1, 1, 1, 1};
     array mask(3, 3, maskData);
     
-    array dilated;
-    ASSERT_SUCCESS_CPP(dilated = dilate(input.as(b8), mask.as(b8)));
+    array dilated = dilate(input.as(b8), mask.as(b8));
 
     size_t nElems = dilated.elements();
     vector<char> outData(nElems);
