@@ -202,6 +202,7 @@ void homographyTest(string pTestFile, const af_homography_type htype,
 
 #define HOMOGRAPHY_INIT(desc, image, htype, rotate, size_ratio)            \
     TYPED_TEST(Homography, desc) {                                         \
+        UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);                            \
         homographyTest<TypeParam>(                                         \
             string(TEST_DIR "/homography/" #image ".test"), htype, rotate, \
             size_ratio);                                                   \
@@ -221,6 +222,7 @@ using af::features;
 using af::loadImage;
 
 TEST(Homography, CPP) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;

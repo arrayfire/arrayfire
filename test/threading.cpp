@@ -130,6 +130,7 @@ int nextTargetDeviceId() {
 
 void morphTest(const array input, const array mask, const bool isDilation,
                const array gold, int targetDevice) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     setDevice(targetDevice);
 
     array out;

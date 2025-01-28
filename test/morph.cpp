@@ -86,52 +86,63 @@ void morphTest(string pTestFile) {
 }
 
 TYPED_TEST(Morph, Dilate3x3) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     morphTest<TypeParam, true, false>(string(TEST_DIR "/morph/dilate3x3.test"));
 }
 
 TYPED_TEST(Morph, Erode3x3) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     morphTest<TypeParam, false, false>(string(TEST_DIR "/morph/erode3x3.test"));
 }
 
 TYPED_TEST(Morph, Dilate4x4) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     morphTest<TypeParam, true, false>(string(TEST_DIR "/morph/dilate4x4.test"));
 }
 
 TYPED_TEST(Morph, Dilate12x12) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     morphTest<TypeParam, true, false>(
         string(TEST_DIR "/morph/dilate12x12.test"));
 }
 
 TYPED_TEST(Morph, Erode4x4) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     morphTest<TypeParam, false, false>(string(TEST_DIR "/morph/erode4x4.test"));
 }
 
 TYPED_TEST(Morph, Dilate3x3_Batch) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     morphTest<TypeParam, true, false>(
         string(TEST_DIR "/morph/dilate3x3_batch.test"));
 }
 
 TYPED_TEST(Morph, Erode3x3_Batch) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     morphTest<TypeParam, false, false>(
         string(TEST_DIR "/morph/erode3x3_batch.test"));
 }
 
 TYPED_TEST(Morph, Dilate3x3x3) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     morphTest<TypeParam, true, true>(
         string(TEST_DIR "/morph/dilate3x3x3.test"));
 }
 
 TYPED_TEST(Morph, Erode3x3x3) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     morphTest<TypeParam, false, true>(
         string(TEST_DIR "/morph/erode3x3x3.test"));
 }
 
 TYPED_TEST(Morph, Dilate4x4x4) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     morphTest<TypeParam, true, true>(
         string(TEST_DIR "/morph/dilate4x4x4.test"));
 }
 
 TYPED_TEST(Morph, Erode4x4x4) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     morphTest<TypeParam, false, true>(
         string(TEST_DIR "/morph/erode4x4x4.test"));
 }
@@ -207,10 +218,12 @@ void morphImageTest(string pTestFile, dim_t seLen) {
 }
 
 TEST(Morph, GrayscaleDilation3x3StructuringElement) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     morphImageTest<float, true, false>(string(TEST_DIR "/morph/gray.test"), 3);
 }
 
 TEST(Morph, ColorImageErosion3x3StructuringElement) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     morphImageTest<float, false, true>(string(TEST_DIR "/morph/color.test"), 3);
 }
 
@@ -431,14 +444,17 @@ void cppMorphImageTest(string pTestFile) {
 }
 
 TEST(Morph, Grayscale_CPP) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     cppMorphImageTest<float, true, false>(string(TEST_DIR "/morph/gray.test"));
 }
 
 TEST(Morph, ColorImage_CPP) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     cppMorphImageTest<float, false, true>(string(TEST_DIR "/morph/color.test"));
 }
 
 TEST(Morph, GFOR) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     dim4 dims  = dim4(10, 10, 3);
     array A    = iota(dims);
     array B    = constant(0, dims);
@@ -454,6 +470,7 @@ TEST(Morph, GFOR) {
 }
 
 TEST(Morph, EdgeIssue1564) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     int inputData[10 * 10] = {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,

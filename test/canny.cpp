@@ -72,10 +72,12 @@ void cannyTest(string pTestFile) {
 }
 
 TYPED_TEST(CannyEdgeDetector, ArraySizeLessThanBlockSize10x10) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     cannyTest<TypeParam>(string(TEST_DIR "/CannyEdgeDetector/fast10x10.test"));
 }
 
 TYPED_TEST(CannyEdgeDetector, ArraySizeEqualBlockSize16x16) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     cannyTest<TypeParam>(string(TEST_DIR "/CannyEdgeDetector/fast16x16.test"));
 }
 
@@ -157,6 +159,7 @@ void cannyImageOtsuTest(string pTestFile, bool isColor) {
 }
 
 TEST(CannyEdgeDetector, OtsuThreshold) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     cannyImageOtsuTest<float>(string(TEST_DIR "/CannyEdgeDetector/gray.test"),
                               false);
 }
@@ -257,6 +260,7 @@ void cannyImageOtsuBatchTest(string pTestFile, const dim_t targetBatchCount) {
 }
 
 TEST(CannyEdgeDetector, BatchofImagesUsingCPPAPI) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     // DO NOT INCREASE BATCH COUNT BEYOND 4
     // This is a limitation on the test assert macro that is saving
     // images to disk which can't handle a batch of images.

@@ -242,8 +242,29 @@ bool noHalfTests(af::dtype ty);
     if (noHalfTests((af_dtype)af::dtype_traits<type>::af_type))   \
     GTEST_SKIP() << "Device doesn't support Half"
 
-#define SKIP_BACKEND(backend) \
-    GTEST_SKIP() << "Skipping unsupported function on backend: " #backend
+#ifdef SKIP_UNSUPPORTED_TESTS
+#define UNSUPPORTED_BACKEND(backend)                                           \
+    do {                                                                       \
+    if(backend == af::getActiveBackend()) {                                    \
+        switch(backend) {                                                      \
+        case AF_BACKEND_CPU:                                                   \
+            GTEST_SKIP() << "Skipping unsupported function on CPU backend";    \
+            break;                                                             \
+        case AF_BACKEND_CUDA:                                                  \
+            GTEST_SKIP() << "Skipping unsupported function on CUDA backend";   \
+            break;                                                             \
+        case AF_BACKEND_OPENCL:                                                \
+            GTEST_SKIP() << "Skipping unsupported function on OpenCL backend"; \
+            break;                                                             \
+        case AF_BACKEND_ONEAPI:                                                \
+            GTEST_SKIP() << "Skipping unsupported function on oneAPI backend"; \
+            break;                                                             \
+        }                                                                      \
+    }                                                                          \
+    } while (0)
+#else
+#define UNSUPPORTED_BACKEND(backend)
+#endif
 
 #define LAPACK_ENABLED_CHECK() \
     if (!af::isLAPACKAvailable()) GTEST_SKIP() << "LAPACK Not Configured."

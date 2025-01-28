@@ -95,21 +95,25 @@ void hammingMatcherTest(string pTestFile, int feat_dim) {
 }
 
 TYPED_TEST(HammingMatcher8, Hamming_500_5000_Dim0) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     hammingMatcherTest<TypeParam>(
         string(TEST_DIR "/hamming/hamming_500_5000_dim0_u8.test"), 0);
 }
 
 TYPED_TEST(HammingMatcher8, Hamming_500_5000_Dim1) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     hammingMatcherTest<TypeParam>(
         string(TEST_DIR "/hamming/hamming_500_5000_dim1_u8.test"), 1);
 }
 
 TYPED_TEST(HammingMatcher32, Hamming_500_5000_Dim0) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     hammingMatcherTest<TypeParam>(
         string(TEST_DIR "/hamming/hamming_500_5000_dim0_u32.test"), 0);
 }
 
 TYPED_TEST(HammingMatcher32, Hamming_500_5000_Dim1) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     hammingMatcherTest<TypeParam>(
         string(TEST_DIR "/hamming/hamming_500_5000_dim1_u32.test"), 1);
 }
@@ -117,6 +121,7 @@ TYPED_TEST(HammingMatcher32, Hamming_500_5000_Dim1) {
 ///////////////////////////////////// CPP ////////////////////////////////
 //
 TEST(HammingMatcher, CPP) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     using af::array;
     using af::dim4;
 
@@ -155,6 +160,7 @@ TEST(HammingMatcher, CPP) {
 }
 
 TEST(HammingMatcher64bit, CPP) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     using af::array;
     using af::dim4;
 

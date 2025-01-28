@@ -254,6 +254,7 @@ void glohTest(string pTestFile) {
 
 #define GLOH_INIT(desc, image)                                         \
     TYPED_TEST(GLOH, desc) {                                           \
+        UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);                        \
         glohTest<TypeParam>(string(TEST_DIR "/gloh/" #image ".test")); \
     }
 
@@ -262,6 +263,7 @@ GLOH_INIT(man, man);
 ///////////////////////////////////// CPP ////////////////////////////////
 //
 TEST(GLOH, CPP) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;

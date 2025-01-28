@@ -160,6 +160,7 @@ class ConfidenceConnectedDataTest
     : public testing::TestWithParam<CCCTestParams> {};
 
 TYPED_TEST(ConfidenceConnectedImageTest, DonutBackgroundExtraction) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     const unsigned seedx = 10;
     const unsigned seedy = 10;
     testImage<TypeParam>(std::string("donut_background.test"), 1, &seedx,
@@ -167,6 +168,7 @@ TYPED_TEST(ConfidenceConnectedImageTest, DonutBackgroundExtraction) {
 }
 
 TYPED_TEST(ConfidenceConnectedImageTest, DonutRingExtraction) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     const unsigned seedx = 132;
     const unsigned seedy = 132;
     testImage<TypeParam>(std::string("donut_ring.test"), 1, &seedx, &seedy, 3,
@@ -174,6 +176,7 @@ TYPED_TEST(ConfidenceConnectedImageTest, DonutRingExtraction) {
 }
 
 TYPED_TEST(ConfidenceConnectedImageTest, DonutKernelExtraction) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     const unsigned seedx = 150;
     const unsigned seedy = 150;
     testImage<TypeParam>(std::string("donut_core.test"), 1, &seedx, &seedy, 3,
@@ -181,6 +184,7 @@ TYPED_TEST(ConfidenceConnectedImageTest, DonutKernelExtraction) {
 }
 
 TEST_P(ConfidenceConnectedDataTest, SegmentARegion) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     testData<unsigned char>(GetParam());
 }
 
