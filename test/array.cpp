@@ -420,6 +420,23 @@ TEST(Array, ISSUE_951) {
     array b       = a.cols(0, 20).rows(10, 20);
 }
 
+TEST(Array, ISSUE_3534) {
+    // This works
+    // array a = range(dim4(5,5));
+    // a = a.rows(0,3).copy();
+    // Following assignment failed silently without above copy()
+    // a(0,0) = 1234;
+
+    array a = range(dim4(5, 5));
+    a       = a.rows(1, 4);
+    a(1, 1) = 1234;
+
+    array b = range(dim4(4, 5)) + 1.0;
+    b(1, 1) = 1234;
+
+    ASSERT_ARRAYS_EQ(a, b);
+}
+
 TEST(Array, CreateHandleInvalidNullDimsPointer) {
     af_array out = 0;
     EXPECT_EQ(AF_ERR_ARG, af_create_handle(&out, 1, NULL, f32));
