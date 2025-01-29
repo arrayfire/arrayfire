@@ -114,20 +114,26 @@ TEST(Sparse, ISSUE_1918) {
     array reference(2,2);
     reference(0, span) = 0;
     reference(1, span) = 2;
-    array output;
     float value[] = { 1, 1, 2, 2 };
-    int index[] = { -1, 1, 2 };
-    int row[] = { 0, 2, 2, 0, 0, 2 };
+    int row_csr[] = { 0, 2, 2, 0, 0, 2 };
+    int row_coo[] = { 0, 0, 1, 1 };
     int col[] = { 0, 1, 0, 1 };
     array values(4, 1, value, afHost);
-    array rows(6, 1, row, afHost);
+    array rows_csr(6, 1, row_csr, afHost);
+    array rows_coo(4, 1, row_coo, afHost);
     array cols(4, 1, col, afHost);
-    array S;
+    array S_csr;
+    array S_coo;
   
-    S = sparse(2, 2, values(seq(2, 3)), rows(seq(3, 5)), cols(seq(2, 3)));
-    output = dense(S);
+    S_csr = sparse(2, 2, values(seq(2, 3)), rows_csr(seq(3, 5)), cols(seq(2, 3)));
+    array output_csr = dense(S_csr);
 
-    ASSERT_ARRAYS_EQ(reference, output);
+    EXPECT_ARRAYS_EQ(reference, output_csr);
+
+    S_coo = sparse(2, 2, values(seq(2, 3)), rows_coo(seq(2, 3)), cols(seq(2, 3)), AF_STORAGE_COO);
+    array output_coo = dense(S_coo);
+
+    EXPECT_ARRAYS_EQ(reference, output_coo);
 }
 
 TEST(Sparse, ISSUE_2134_COO) {
