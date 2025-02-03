@@ -357,16 +357,16 @@ target_link_libraries(afoneapi
     -fno-sycl-id-queries-fit-in-int
     $<$<PLATFORM_ID:Linux>:-fsycl-link-huge-device-code>
     $<$<PLATFORM_ID:Linux>:-fvisibility-inlines-hidden>
-    $<$<PLATFORM_ID:Linux>:-fno-sycl-rdc>
+    -fno-sycl-rdc>
     -fsycl-max-parallel-link-jobs=${NumberOfThreads}
-    MKL::MKL_DPCPP
+  PUBLIC
+    MKL::MKL_SYCL
   )
   set_sycl_language(afcommon_interface
     oneapi_sort_by_key
     c_api_interface
     cpp_api_interface
     afoneapi)
-
 
 #af_split_debug_info(afoneapi ${AF_INSTALL_LIB_DIR})
 

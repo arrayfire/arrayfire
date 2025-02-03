@@ -86,7 +86,7 @@ function(af_add_test target backend is_serial)
 endfunction()
 
 # Reset the CXX flags for tests
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
 # TODO(pradeep) perhaps rename AF_USE_RELATIVE_TEST_DIR to AF_WITH_TEST_DATA_DIR
 #               with empty default value
@@ -235,7 +235,7 @@ function(make_test)
           )
     endif()
 
-    if(${mt_args_CXX11})
+    if(${mt_args_CXX11} AND NOT ${backend} STREQUAL "oneapi")
       set_target_properties(${target}
         PROPERTIES
           CXX_STANDARD 11)
