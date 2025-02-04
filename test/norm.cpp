@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2014, ArrayFire
+ * Copyright (c) 2025, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -48,6 +48,25 @@ double cpu_norm1_impl(af::dim4 &dims, std::vector<T> &value) {
     return norm1;
 }
 
+template<typename T>
+double cpu_norm_pq_impl(af::dim4 &dims, std::vector<T> &value, double p, double q) {
+    int N = dims[0];
+    int M = dims[1];
+
+    double norm = 0;
+    for (int n = 0; n < N; n++) {
+        T *columnN = value.data() + n * M;
+        double sum = 0;
+        
+        for (int m = 0; m < M; m++) { sum += std::pow(std::abs(columnN[m]), p); }
+
+        norm += std::pow(sum, q / p);
+    }
+    norm = std::pow(norm, 1.0 / q);
+
+    return norm;
+}
+
 double cpu_norm1(af::array &value) {
     double norm1;
     af::dim4 dims = value.dims();
@@ -65,6 +84,25 @@ double cpu_norm1(af::array &value) {
         norm1 = cpu_norm1_impl<double>(dims, values);
     }
     return norm1;
+}
+
+double cpu_norm_pq(af::array &value, double p, double q) {
+    double norm2;
+    af::dim4 dims = value.dims();
+    if (value.type() == f16) {
+        vector<half_float::half> values(value.elements());
+        value.host(values.data());
+        norm2 = cpu_norm_pq_impl<half_float::half>(dims, values, p, q);
+    } else if (value.type() == c32 || value.type() == c64) {
+        vector<complex<double> > values(value.elements());
+        value.as(c64).host(values.data());
+        norm2 = cpu_norm_pq_impl<complex<double> >(dims, values, p, q);
+    } else {
+        vector<double> values(value.elements());
+        value.as(f64).host(values.data());
+        norm2 = cpu_norm_pq_impl<double>(dims, values, p, q);
+    }
+    return norm2;
 }
 
 template<typename T>
@@ -140,6 +178,70 @@ TEST_P(Norm, Random_AF_NORM_MATRIX_1) {
     double norm1  = cpu_norm1(in);
 
     ASSERT_NEAR(norm1, result, 2e-4);
+}
+
+TEST_P(Norm, Random_AF_NORM_VECTOR_1) {
+    using std::get;
+    norm_params param = GetParam();
+    if (get<1>(param) == f16) SUPPORTED_TYPE_CHECK(half_float::half);
+    if (get<1>(param) == f64) SUPPORTED_TYPE_CHECK(double);
+
+    af::dim4 dims = get<0>(param);
+    dims[1] = 1; // Test a vector
+
+    array in      = af::randu(dims, get<1>(param)) - 0.5f;
+    double result = norm(in, AF_NORM_VECTOR_1);
+    double norm1  = cpu_norm_pq(in, 1, 1);
+
+    ASSERT_NEAR(norm1, result, 2e-4);
+}
+
+TEST_P(Norm, Random_AF_NORM_VECTOR_INF) {
+    using std::get;
+    norm_params param = GetParam();
+    if (get<1>(param) == f16) SUPPORTED_TYPE_CHECK(half_float::half);
+    if (get<1>(param) == f64) SUPPORTED_TYPE_CHECK(double);
+
+    af::dim4 dims = get<0>(param);
+    dims[1] = 1; // Test a vector
+
+    array in      = af::randu(dims, get<1>(param)) - 0.5f;
+    double result = norm(in, AF_NORM_VECTOR_INF);
+    double norm_inf  = cpu_norm_inf(in);
+
+    ASSERT_NEAR(norm_inf, result, 2e-4);
+}
+
+TEST_P(Norm, Random_AF_NORM_VECTOR_2) {
+    using std::get;
+    norm_params param = GetParam();
+    if (get<1>(param) == f16) SUPPORTED_TYPE_CHECK(half_float::half);
+    if (get<1>(param) == f64) SUPPORTED_TYPE_CHECK(double);
+
+    af::dim4 dims = get<0>(param);
+    dims[1] = 1; // Test a vector
+
+    array in      = af::randu(dims, get<1>(param)) - 0.5f;
+    double result = norm(in, AF_NORM_VECTOR_2);
+    double norm2  = cpu_norm_pq(in, 1, 2); // vectors lie in first dims so swap p and q
+
+    ASSERT_NEAR(norm2, result, 3e-4);
+}
+
+TEST_P(Norm, Random_AF_NORM_VECTOR_P_P_EQUAL_3_POINT_5) {
+    using std::get;
+    norm_params param = GetParam();
+    if (get<1>(param) == f16) SUPPORTED_TYPE_CHECK(half_float::half);
+    if (get<1>(param) == f64) SUPPORTED_TYPE_CHECK(double);
+
+    af::dim4 dims = get<0>(param);
+    dims[1] = 1; // Test a vector
+
+    array in      = af::randu(dims, get<1>(param)) - 0.5f;
+    double result = norm(in, AF_NORM_VECTOR_P, 3.5);
+    double normp  = cpu_norm_pq(in, 1, 3.5); // vectors lie in first dims so swap p and q
+
+    ASSERT_NEAR(normp, result, 3e-4);
 }
 
 TEST_P(Norm, Identity_AF_NORM_MATRIX_2_NOT_SUPPORTED) {

@@ -88,8 +88,11 @@ LOGIC_CPLX_FN(double, af_or_t, ||)
 
 template<typename T>
 static T __mod(T lhs, T rhs) {
-    T res = lhs % rhs;
-    return (res < 0) ? abs(rhs - res) : res;
+    T res = lhs % rhs; // Same as other backends
+
+    // Does this break compatibility?
+    // return (res < 0) ? abs(rhs - res) : res;
+    return res;
 }
 
 template<typename T>

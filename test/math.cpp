@@ -157,8 +157,14 @@ TEST(Math, Modulus) {
     auto rem  = a % b;
     auto diff = rem - a;
 
+    auto neg_rem = -a % b;
+    auto neg_diff = neg_rem + a;
+
     ASSERT_ARRAYS_EQ(af::constant(1, shape, s64), rem);
     ASSERT_ARRAYS_EQ(af::constant(0, shape, s64), diff);
+
+    ASSERT_ARRAYS_EQ(af::constant(-1, shape, s64), neg_rem);
+    ASSERT_ARRAYS_EQ(af::constant(0, shape, s64), neg_diff);
 }
 
 TEST(Math, ModulusHalf) {
