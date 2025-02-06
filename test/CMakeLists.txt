@@ -239,7 +239,7 @@ function(make_test)
       set_target_properties(${target}
         PROPERTIES
           CXX_STANDARD 11)
-    endif(${mt_args_CXX11})
+    endif()
 
     set_target_properties(${target}
       PROPERTIES
