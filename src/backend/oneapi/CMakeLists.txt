@@ -329,7 +329,7 @@ target_compile_options(afoneapi
   $<$<COMPILE_LANGUAGE:SYCL>:
     -fno-sycl-id-queries-fit-in-int
     -sycl-std=2020
-    $<$<PLATFORM_ID:Linux>: -fno-sycl-rdc>
+    -fno-sycl-rdc
     >
 )
 
@@ -357,7 +357,7 @@ target_link_libraries(afoneapi
     -fno-sycl-id-queries-fit-in-int
     $<$<PLATFORM_ID:Linux>:-fsycl-link-huge-device-code>
     $<$<PLATFORM_ID:Linux>:-fvisibility-inlines-hidden>
-    -fno-sycl-rdc>
+    -fno-sycl-rdc
     -fsycl-max-parallel-link-jobs=${NumberOfThreads}
   PUBLIC
     MKL::MKL_SYCL
