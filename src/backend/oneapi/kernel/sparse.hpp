@@ -182,17 +182,13 @@ class dense2csrCreateKernel {
         if (gidy >= (unsigned)valinfo_.dims[1]) return;
 
         int rowoff       = rowptr_[gidx];
-        T *svalptr_ptr   = svalptr_.get_pointer();
-        int *scolptr_ptr = scolptr_.get_pointer();
-        svalptr_ptr += rowoff;
-        scolptr_ptr += rowoff;
+        auto svalptr_ptr = svalptr_.get_pointer();
+        auto scolptr_ptr = scolptr_.get_pointer();
 
-        T *dvalptr_ptr   = dvalptr_.get_pointer();
-        int *dcolptr_ptr = dcolptr_.get_pointer();
-        dvalptr_ptr += valinfo_.offset;
-        dcolptr_ptr += colinfo_.offset;
+        auto dvalptr_ptr = dvalptr_.get_pointer();
+        auto dcolptr_ptr = dcolptr_.get_pointer();
 
-        T val = dvalptr_ptr[gidx + gidy * (unsigned)valinfo_.strides[1]];
+        T val = dvalptr_ptr[gidx + gidy * (unsigned)valinfo_.strides[1] + valinfo_.offset];
 
         if constexpr (std::is_same_v<decltype(val), std::complex<float>> ||
                       std::is_same_v<decltype(val), std::complex<double>>) {
@@ -201,9 +197,9 @@ class dense2csrCreateKernel {
             if (val == 0) return;
         }
 
-        int oloc              = dcolptr_ptr[gidx + gidy * colinfo_.strides[1]];
-        svalptr_ptr[oloc - 1] = val;
-        scolptr_ptr[oloc - 1] = gidy;
+        int oloc = dcolptr_ptr[gidx + gidy * colinfo_.strides[1] + colinfo_.offset];
+        svalptr_ptr[oloc + rowoff - 1] = val;
+        scolptr_ptr[oloc + rowoff - 1] = gidy;
     }
 
    private:

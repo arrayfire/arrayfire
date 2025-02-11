@@ -677,6 +677,8 @@ target_compile_options(afcuda
                                                             -Xcompiler=/wd4710
                                                             -Xcompiler=/wd4505
                                                             -Xcompiler=/bigobj>>
+    $<$<PLATFORM_ID:Windows>: $<$<COMPILE_LANGUAGE:CUDA>: $<$<CXX_COMPILER_ID:IntelLLVM>:
+                                                            -Xcompiler=/bigobj>>>
 )
 
 

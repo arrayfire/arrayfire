@@ -609,12 +609,14 @@ T mean_all_weighted(Param<T> in, Param<Tw> iwt) {
                                       blocks_y, threads_x);
 
         compute_t<T> val;
+        auto tmpOut_get = tmpOut.get();
+        auto tmpWt_get = tmpWt.get();
         getQueue()
             .submit([&](sycl::handler &h) {
                 auto acc_in =
-                    tmpOut.get()->template get_host_access(h, sycl::read_only);
+                    tmpOut_get->get_host_access(h, sycl::read_only);
                 auto acc_wt =
-                    tmpWt.get()->template get_host_access(h, sycl::read_only);
+                    tmpWt_get->get_host_access(h, sycl::read_only);
 
                 h.host_task([acc_in, acc_wt, tmp_elements, &val] {
                     val = static_cast<compute_t<T>>(acc_in[0]);
@@ -633,9 +635,9 @@ T mean_all_weighted(Param<T> in, Param<Tw> iwt) {
         compute_t<T> val;
         getQueue()
             .submit([&](sycl::handler &h) {
-                auto acc_in = in.data->template get_host_access(
+                auto acc_in = in.data->get_host_access(
                     h, sycl::range{in_elements}, sycl::read_only);
-                auto acc_wt = iwt.data->template get_host_access(
+                auto acc_wt = iwt.data->get_host_access(
                     h, sycl::range{in_elements}, sycl::read_only);
 
                 h.host_task([acc_in, acc_wt, in_elements, &val]() {
@@ -693,12 +695,14 @@ To mean_all(Param<Ti> in) {
         uintl tmp_elements = tmpOut.elements();
 
         compute_t<To> val;
+        auto tmpOut_get = tmpOut.get();
+        auto tmpCt_get = tmpCt.get();
         getQueue()
             .submit([&](sycl::handler &h) {
                 auto out =
-                    tmpOut.get()->template get_host_access(h, sycl::read_only);
+                    tmpOut_get->get_host_access(h, sycl::read_only);
                 auto ct =
-                    tmpCt.get()->template get_host_access(h, sycl::read_only);
+                    tmpCt_get->get_host_access(h, sycl::read_only);
 
                 h.host_task([out, ct, tmp_elements, &val] {
                     val                  = static_cast<compute_t<To>>(out[0]);
@@ -717,7 +721,7 @@ To mean_all(Param<Ti> in) {
         getQueue()
             .submit([&](sycl::handler &h) {
                 auto acc_in =
-                    in.data->template get_host_access(h, sycl::read_only);
+                    in.data->get_host_access(h, sycl::read_only);
                 h.host_task([acc_in, in_elements, &val]() {
                     common::Transform<Ti, compute_t<To>, af_add_t> transform;
                     compute_t<Tw> count = static_cast<compute_t<Tw>>(1);
