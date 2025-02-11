@@ -18,6 +18,7 @@
 using af::dim4;
 using detail::intl;
 using detail::meanshift;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -82,6 +83,10 @@ af_err af_mean_shift(af_array *out, const af_array in,
                 break;
             case u64:
                 output = mean_shift<uintl>(in, spatial_sigma, chromatic_sigma,
+                                           num_iterations, is_color);
+                break;
+            case s8:
+                output = mean_shift<schar>(in, spatial_sigma, chromatic_sigma,
                                            num_iterations, is_color);
                 break;
             case u8:

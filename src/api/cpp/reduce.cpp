@@ -191,6 +191,7 @@ void max(array &val, array &idx, const array &in, const int dim) {
     INSTANTIATE_REAL(fnC, fnCPP, short)              \
     INSTANTIATE_REAL(fnC, fnCPP, unsigned short)     \
     INSTANTIATE_REAL(fnC, fnCPP, char)               \
+    INSTANTIATE_REAL(fnC, fnCPP, signed char)        \
     INSTANTIATE_REAL(fnC, fnCPP, unsigned char)      \
     INSTANTIATE_CPLX(fnC, fnCPP, af_cfloat, float)   \
     INSTANTIATE_CPLX(fnC, fnCPP, af_cdouble, double)
@@ -294,6 +295,7 @@ INSTANTIATE(product_nan, product)
     INSTANTIATE_COMPAT(fnCPP, fnCompat, long long)          \
     INSTANTIATE_COMPAT(fnCPP, fnCompat, unsigned long long) \
     INSTANTIATE_COMPAT(fnCPP, fnCompat, char)               \
+    INSTANTIATE_COMPAT(fnCPP, fnCompat, signed char)        \
     INSTANTIATE_COMPAT(fnCPP, fnCompat, unsigned char)      \
     INSTANTIATE_COMPAT(fnCPP, fnCompat, af_cfloat)          \
     INSTANTIATE_COMPAT(fnCPP, fnCompat, af_cdouble)         \
@@ -332,6 +334,7 @@ INSTANTIATE_COMPAT(anyTrue, anytrue, bool)
     INSTANTIATE_REAL(fn, int)              \
     INSTANTIATE_REAL(fn, unsigned)         \
     INSTANTIATE_REAL(fn, char)             \
+    INSTANTIATE_REAL(fn, signed char)      \
     INSTANTIATE_REAL(fn, unsigned char)    \
     INSTANTIATE_REAL(fn, short)            \
     INSTANTIATE_REAL(fn, unsigned short)   \

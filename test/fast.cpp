@@ -61,7 +61,7 @@ class FixedFAST : public ::testing::Test {
 };
 
 typedef ::testing::Types<float, double> FloatTestTypes;
-typedef ::testing::Types<int, unsigned, short, ushort> FixedTestTypes;
+typedef ::testing::Types<int, unsigned, short, ushort, schar> FixedTestTypes;
 
 TYPED_TEST_SUITE(FloatFAST, FloatTestTypes);
 TYPED_TEST_SUITE(FixedFAST, FixedTestTypes);

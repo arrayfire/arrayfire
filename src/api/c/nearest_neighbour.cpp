@@ -21,6 +21,7 @@ using detail::cdouble;
 using detail::cfloat;
 using detail::createEmptyArray;
 using detail::intl;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -127,6 +128,10 @@ af_err af_nearest_neighbour(af_array* idx, af_array* dist, const af_array query,
                     nearest_neighbour<ushort, uint>(&oIdx, &oDist, query, train,
                                                     dist_dim, n_dist,
                                                     dist_type);
+                    break;
+                case s8:
+                    nearest_neighbour<schar, int>(&oIdx, &oDist, query, train,
+                                                  dist_dim, n_dist, dist_type);
                     break;
                 case u8:
                     nearest_neighbour<uchar, uint>(&oIdx, &oDist, query, train,

@@ -164,6 +164,10 @@ AF_CONSTEXPR __DH__ native_half_t int2half_impl(char value) noexcept {
     return __ull2half_rn(value);
 }
 template<>
+AF_CONSTEXPR __DH__ native_half_t int2half_impl(signed char value) noexcept {
+    return __ull2half_rn(value);
+}
+template<>
 AF_CONSTEXPR __DH__ native_half_t int2half_impl(unsigned char value) noexcept {
     return __ull2half_rn(value);
 }
@@ -861,6 +865,7 @@ AF_CONSTEXPR T half2int(native_half_t value) {
 #ifdef __CUDA_ARCH__
     AF_IF_CONSTEXPR(std::is_same<T, short>::value ||
                     std::is_same<T, char>::value ||
+                    std::is_same<T, signed char>::value ||
                     std::is_same<T, unsigned char>::value) {
         return __half2short_rn(value);
     }
@@ -1042,6 +1047,10 @@ class alignas(2) half {
 
     AF_CONSTEXPR __DH__ explicit operator char() const noexcept {
         return half2int<std::round_indeterminate, true, char>(data_);
+    }
+
+    AF_CONSTEXPR __DH__ explicit operator signed char() const noexcept {
+        return half2int<std::round_indeterminate, true, signed char>(data_);
     }
 
     AF_CONSTEXPR __DH__ explicit operator unsigned char() const noexcept {

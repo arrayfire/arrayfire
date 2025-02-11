@@ -309,6 +309,7 @@ UBITOP(bitnot, int)
 UBITOP(bitnot, uint)
 UBITOP(bitnot, intl)
 UBITOP(bitnot, uintl)
+UBITOP(bitnot, schar)
 UBITOP(bitnot, uchar)
 UBITOP(bitnot, short)
 UBITOP(bitnot, ushort)
@@ -399,6 +400,7 @@ DEF_TEST(Int, int)
 DEF_TEST(UShort, unsigned short)
 DEF_TEST(Short, short)
 DEF_TEST(UChar, unsigned char)
+DEF_TEST(SChar, signed char)
 
 #undef DEF_TEST
 
@@ -416,6 +418,8 @@ INSTANTIATE_TEST_SUITE_P(PositiveValues, PowPrecisionTestShort,
                          testing::Range<short>(1, 180, 50));
 INSTANTIATE_TEST_SUITE_P(PositiveValues, PowPrecisionTestUChar,
                          testing::Range<unsigned char>(1, 12, 5));
+INSTANTIATE_TEST_SUITE_P(PositiveValues, PowPrecisionTestSChar,
+                         testing::Range<signed char>(1, 9, 3));
 
 INSTANTIATE_TEST_SUITE_P(NegativeValues, PowPrecisionTestLong,
                          testing::Range<long long>(-1e7, 0, 1e6));
@@ -423,6 +427,8 @@ INSTANTIATE_TEST_SUITE_P(NegativeValues, PowPrecisionTestInt,
                          testing::Range<int>(-46340, 0, 10e3));
 INSTANTIATE_TEST_SUITE_P(NegativeValues, PowPrecisionTestShort,
                          testing::Range<short>(-180, 0, 50));
+INSTANTIATE_TEST_SUITE_P(NegativeValues, PowPrecisionTestSChar,
+                         testing::Range<signed char>(-9, 0, 3));
 
 struct result_type_param {
     af_dtype result_;
@@ -481,6 +487,7 @@ INSTANTIATE_TEST_SUITE_P(
                       result_type_param(b8),
                       result_type_param(s32),
                       result_type_param(u32),
+                      result_type_param(s8),
                       result_type_param(u8),
                       result_type_param(s64),
                       result_type_param(u64),
@@ -500,6 +507,7 @@ INSTANTIATE_TEST_SUITE_P(
                       result_type_param(f32, b8, f32),
                       result_type_param(f32, s32, f32),
                       result_type_param(f32, u32, f32),
+                      result_type_param(f32, s8, f32),
                       result_type_param(f32, u8, f32),
                       result_type_param(f32, s64, f32),
                       result_type_param(f32, u64, f32),
@@ -520,6 +528,7 @@ INSTANTIATE_TEST_SUITE_P(
                       result_type_param(f64, b8,  f64),
                       result_type_param(f64, s32, f64),
                       result_type_param(f64, u32, f64),
+                      result_type_param(f64, s8,  f64),
                       result_type_param(f64, u8,  f64),
                       result_type_param(f64, s64, f64),
                       result_type_param(f64, u64, f64),
@@ -552,7 +561,8 @@ class ResultTypeScalar : public ::testing::Test {
 };
 
 typedef ::testing::Types<float, double, unsigned int, int, short,
-                         unsigned short, char, unsigned char, half_float::half>
+                         unsigned short, char, signed char, unsigned char,
+                         half_float::half>
     TestTypes;
 TYPED_TEST_SUITE(ResultTypeScalar, TestTypes);
 

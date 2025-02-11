@@ -53,6 +53,7 @@ using detail::logicOp;
 using detail::reduce;
 using detail::reduce_all;
 using detail::scan;
+using detail::schar;
 using detail::sobelDerivatives;
 using detail::uchar;
 using detail::uint;
@@ -264,6 +265,10 @@ af_err af_canny(af_array* out, const af_array in, const af_canny_threshold ct,
             case u16:
                 output = cannyHelper<ushort>(getArray<ushort>(in), t1, ct, t2,
                                              sw, isf);
+                break;
+            case s8:
+                output = cannyHelper<schar>(getArray<schar>(in), t1, ct, t2, sw,
+                                            isf);
                 break;
             case u8:
                 output = cannyHelper<uchar>(getArray<uchar>(in), t1, ct, t2, sw,

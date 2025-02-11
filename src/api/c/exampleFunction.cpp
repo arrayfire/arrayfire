@@ -76,6 +76,7 @@ af_err af_example_function(af_array* out, const af_array a,
             case f32: output = example<float>(a, a, param); break;
             case s32: output = example<int>(a, a, param); break;
             case u32: output = example<uint>(a, a, param); break;
+            case s8: output = example<schar>(a, a, param); break;
             case u8: output = example<uchar>(a, a, param); break;
             case b8: output = example<char>(a, a, param); break;
             case c32: output = example<cfloat>(a, a, param); break;

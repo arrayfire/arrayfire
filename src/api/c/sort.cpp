@@ -27,6 +27,7 @@ using detail::cdouble;
 using detail::cfloat;
 using detail::createEmptyArray;
 using detail::intl;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -59,6 +60,7 @@ af_err af_sort(af_array *out, const af_array in, const unsigned dim,
             case u16: val = sort<ushort>(in, dim, isAscending); break;
             case s64: val = sort<intl>(in, dim, isAscending); break;
             case u64: val = sort<uintl>(in, dim, isAscending); break;
+            case s8: val = sort<schar>(in, dim, isAscending); break;
             case u8: val = sort<uchar>(in, dim, isAscending); break;
             case b8: val = sort<char>(in, dim, isAscending); break;
             default: TYPE_ERROR(1, type);
@@ -118,6 +120,7 @@ af_err af_sort_index(af_array *out, af_array *indices, const af_array in,
             case u64:
                 sort_index<uintl>(&val, &idx, in, dim, isAscending);
                 break;
+            case s8: sort_index<schar>(&val, &idx, in, dim, isAscending); break;
             case u8: sort_index<uchar>(&val, &idx, in, dim, isAscending); break;
             case b8: sort_index<char>(&val, &idx, in, dim, isAscending); break;
             default: TYPE_ERROR(1, type);
@@ -185,6 +188,9 @@ void sort_by_key_tmplt(af_array *okey, af_array *oval, const af_array ikey,
         case u64:
             sort_by_key<Tk, uintl>(okey, oval, ikey, ival, dim, isAscending);
             break;
+        case s8:
+            sort_by_key<Tk, schar>(okey, oval, ikey, ival, dim, isAscending);
+            break;
         case u8:
             sort_by_key<Tk, uchar>(okey, oval, ikey, ival, dim, isAscending);
             break;
@@ -247,6 +253,10 @@ af_err af_sort_by_key(af_array *out_keys, af_array *out_values,
                 break;
             case u64:
                 sort_by_key_tmplt<uintl>(&oKey, &oVal, keys, values, dim,
+                                         isAscending);
+                break;
+            case s8:
+                sort_by_key_tmplt<schar>(&oKey, &oVal, keys, values, dim,
                                          isAscending);
                 break;
             case u8:

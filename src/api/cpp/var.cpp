@@ -112,6 +112,7 @@ INSTANTIATE_VAR(unsigned long long);
 INSTANTIATE_VAR(short);
 INSTANTIATE_VAR(unsigned short);
 INSTANTIATE_VAR(char);
+INSTANTIATE_VAR(signed char);
 INSTANTIATE_VAR(unsigned char);
 INSTANTIATE_VAR(af_half);
 INSTANTIATE_VAR(half_float::half);

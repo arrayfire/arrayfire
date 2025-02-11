@@ -88,6 +88,7 @@ struct dtype_traits<half_float::half> {
 
 }  // namespace af
 
+typedef signed char schar;
 typedef unsigned char uchar;
 typedef unsigned int uint;
 typedef unsigned short ushort;

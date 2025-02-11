@@ -34,6 +34,7 @@ Array<T> floodFill(const Array<T>& image, const Array<uint>& seedsX,
 INSTANTIATE(float)
 INSTANTIATE(uint)
 INSTANTIATE(ushort)
+INSTANTIATE(schar)
 INSTANTIATE(uchar)
 
 }  // namespace opencl

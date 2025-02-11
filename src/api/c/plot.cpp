@@ -35,6 +35,7 @@ using detail::Array;
 using detail::copy_plot;
 using detail::forgeManager;
 using detail::reduce;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::ushort;
@@ -166,6 +167,10 @@ af_err plotWrapper(const af_window window, const af_array in,
                 chart = setup_plot<ushort>(window, in, dims[order_dim], props,
                                            ptype, marker);
                 break;
+            case s8:
+                chart = setup_plot<schar>(window, in, dims[order_dim], props,
+                                          ptype, marker);
+                break;
             case u8:
                 chart = setup_plot<uchar>(window, in, dims[order_dim], props,
                                           ptype, marker);
@@ -240,6 +245,9 @@ af_err plotWrapper(const af_window window, const af_array X, const af_array Y,
             case u16:
                 chart = setup_plot<ushort>(window, in, 3, props, ptype, marker);
                 break;
+            case s8:
+                chart = setup_plot<schar>(window, in, 3, props, ptype, marker);
+                break;
             case u8:
                 chart = setup_plot<uchar>(window, in, 3, props, ptype, marker);
                 break;
@@ -306,6 +314,9 @@ af_err plotWrapper(const af_window window, const af_array X, const af_array Y,
                 break;
             case u16:
                 chart = setup_plot<ushort>(window, in, 2, props, ptype, marker);
+                break;
+            case s8:
+                chart = setup_plot<schar>(window, in, 2, props, ptype, marker);
                 break;
             case u8:
                 chart = setup_plot<uchar>(window, in, 2, props, ptype, marker);

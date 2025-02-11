@@ -54,6 +54,8 @@ Array<in_t> lookup(const Array<in_t> &input, const Array<idx_t> &indices,
                                       const unsigned);                         \
     template Array<T> lookup<T, uintl>(const Array<T> &, const Array<uintl> &, \
                                        const unsigned);                        \
+    template Array<T> lookup<T, schar>(const Array<T> &, const Array<schar> &, \
+                                       const unsigned);                        \
     template Array<T> lookup<T, uchar>(const Array<T> &, const Array<uchar> &, \
                                        const unsigned);                        \
     template Array<T> lookup<T, half>(const Array<T> &, const Array<half> &,   \
@@ -67,6 +69,7 @@ INSTANTIATE(int);
 INSTANTIATE(unsigned);
 INSTANTIATE(intl);
 INSTANTIATE(uintl);
+INSTANTIATE(schar);
 INSTANTIATE(uchar);
 INSTANTIATE(char);
 INSTANTIATE(short);

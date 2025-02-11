@@ -29,6 +29,7 @@ using detail::Array;
 using detail::copy_histogram;
 using detail::forgeManager;
 using detail::getScalar;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::ushort;
@@ -132,6 +133,10 @@ af_err af_draw_hist(const af_window window, const af_array X,
             case u16:
                 chart =
                     setup_histogram<ushort>(window, X, minval, maxval, props);
+                break;
+            case s8:
+                chart =
+                    setup_histogram<schar>(window, X, minval, maxval, props);
                 break;
             case u8:
                 chart =

@@ -49,6 +49,8 @@ Array<outType> reshape(const Array<inType> &in, const dim4 &outDims,
                                                 dim4 const &, short, double); \
     template Array<ushort> reshape<SRC_T, ushort>(                            \
         Array<SRC_T> const &, dim4 const &, ushort, double);                  \
+    template Array<schar> reshape<SRC_T, schar>(Array<SRC_T> const &,         \
+                                                dim4 const &, schar, double); \
     template Array<uchar> reshape<SRC_T, uchar>(Array<SRC_T> const &,         \
                                                 dim4 const &, uchar, double); \
     template Array<char> reshape<SRC_T, char>(Array<SRC_T> const &,           \
@@ -64,6 +66,7 @@ INSTANTIATE(intl)
 INSTANTIATE(uintl)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
+INSTANTIATE(schar)
 INSTANTIATE(uchar)
 INSTANTIATE(char)
 INSTANTIATE(half)

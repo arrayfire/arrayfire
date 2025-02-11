@@ -28,6 +28,7 @@ using detail::Array;
 using detail::cdouble;
 using detail::cfloat;
 using detail::intl;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -64,6 +65,7 @@ af_err af_clamp(af_array* out, const af_array in, const af_array lo,
             case c64: res = clampOp<cdouble>(in, lo, hi, odims); break;
             case s32: res = clampOp<int>(in, lo, hi, odims); break;
             case u32: res = clampOp<uint>(in, lo, hi, odims); break;
+            case s8: res = clampOp<schar>(in, lo, hi, odims); break;
             case u8: res = clampOp<uchar>(in, lo, hi, odims); break;
             case b8: res = clampOp<char>(in, lo, hi, odims); break;
             case s64: res = clampOp<intl>(in, lo, hi, odims); break;

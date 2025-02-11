@@ -43,6 +43,7 @@ using detail::intl;
 using detail::logicOp;
 using detail::real;
 using detail::scalar;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -598,6 +599,7 @@ af_err af_bitnot(af_array *out, const af_array in) {
         switch (type) {
             case s32: res = bitOpNot<int>(in); break;
             case u32: res = bitOpNot<uint>(in); break;
+            case s8: res = bitOpNot<schar>(in); break;
             case u8: res = bitOpNot<uchar>(in); break;
             case b8: res = bitOpNot<char>(in); break;
             case s64: res = bitOpNot<intl>(in); break;

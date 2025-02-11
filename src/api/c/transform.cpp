@@ -19,6 +19,7 @@ using af::dim4;
 using detail::cdouble;
 using detail::cfloat;
 using detail::intl;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -158,6 +159,7 @@ void af_transform_common(af_array *out, const af_array in, const af_array tf,
     case u64: transform<uintl  >(out, in, tf, method, inverse, perspective);  break;
     case s16: transform<short  >(out, in, tf, method, inverse, perspective);  break;
     case u16: transform<ushort >(out, in, tf, method, inverse, perspective);  break;
+    case s8:  transform<schar  >(out, in, tf, method, inverse, perspective);  break;
     case u8:  transform<uchar  >(out, in, tf, method, inverse, perspective);  break;
     case b8:  transform<char   >(out, in, tf, method, inverse, perspective);  break;
     default:  TYPE_ERROR(1, itype);

@@ -39,6 +39,7 @@ using detail::Array;
 using detail::copy_image;
 using detail::createValueArray;
 using detail::forgeManager;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::ushort;
@@ -102,6 +103,7 @@ af_err af_draw_image(const af_window window, const af_array in,
             case u32: image = convert_and_copy_image<uint>(in); break;
             case s16: image = convert_and_copy_image<short>(in); break;
             case u16: image = convert_and_copy_image<ushort>(in); break;
+            case s8: image = convert_and_copy_image<schar>(in); break;
             case u8: image = convert_and_copy_image<uchar>(in); break;
             default: TYPE_ERROR(1, type);
         }

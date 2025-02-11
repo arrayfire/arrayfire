@@ -35,6 +35,7 @@ using detail::copy_vector_field;
 using detail::createEmptyArray;
 using detail::forgeManager;
 using detail::reduce;
+using detail::schar;
 using detail::transpose;
 using detail::uchar;
 using detail::uint;
@@ -183,6 +184,9 @@ af_err vectorFieldWrapper(const af_window window, const af_array points,
             case u16:
                 chart = setup_vector_field<ushort>(window, pnts, dirs, props);
                 break;
+            case s8:
+                chart = setup_vector_field<schar>(window, pnts, dirs, props);
+                break;
             case u8:
                 chart = setup_vector_field<uchar>(window, pnts, dirs, props);
                 break;
@@ -289,6 +293,10 @@ af_err vectorFieldWrapper(const af_window window, const af_array xPoints,
                 chart = setup_vector_field<ushort>(window, points, directions,
                                                    props);
                 break;
+            case s8:
+                chart = setup_vector_field<schar>(window, points, directions,
+                                                  props);
+                break;
             case u8:
                 chart = setup_vector_field<uchar>(window, points, directions,
                                                   props);
@@ -382,6 +390,10 @@ af_err vectorFieldWrapper(const af_window window, const af_array xPoints,
             case u16:
                 chart = setup_vector_field<ushort>(window, points, directions,
                                                    props);
+                break;
+            case s8:
+                chart = setup_vector_field<schar>(window, points, directions,
+                                                  props);
                 break;
             case u8:
                 chart = setup_vector_field<uchar>(window, points, directions,

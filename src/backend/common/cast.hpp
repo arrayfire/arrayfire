@@ -31,20 +31,21 @@ namespace common {
 ///                        outer -> inner -> outer
 ///
 ///                                inner cast
-///           f32  f64  c32  c64  s32  u32   u8   b8  s64  u64  s16  u16  f16
-///     f32    x    x    x    x                                            x
-///     f64    x    x    x    x                                            x
-///  o  c32    x    x    x    x                                            x
-///  u  c64    x    x    x    x                                            x
-///  t  s32    x    x    x    x    x    x              x    x              x
-///  e  u32    x    x    x    x    x    x              x    x              x
-///  r   u8    x    x    x    x    x    x    x    x    x    x    x    x    x
-///      b8    x    x    x    x    x    x    x    x    x    x    x    x    x
-///  c  s64    x    x    x    x                        x    x              x
-///  a  u64    x    x    x    x                        x    x              x
-///  s  s16    x    x    x    x    x    x              x    x    x    x    x
-///  t  u16    x    x    x    x    x    x              x    x    x    x    x
-///     f16    x    x    x    x                                            x
+///           f32  f64  c32  c64  s32  u32   s8   u8   b8  s64  u64  s16  u16  f16
+///     f32    x    x    x    x                                                 x
+///     f64    x    x    x    x                                                 x
+///  o  c32    x    x    x    x                                                 x
+///  u  c64    x    x    x    x                                                 x
+///  t  s32    x    x    x    x    x    x                   x    x              x
+///  e  u32    x    x    x    x    x    x                   x    x              x
+///  r   s8    x    x    x    x    x    x    x    x    x    x    x    x    x    x
+///      u8    x    x    x    x    x    x    x    x    x    x    x    x    x    x
+///  c   b8    x    x    x    x    x    x    x    x    x    x    x    x    x    x
+///  a  s64    x    x    x    x                             x    x              x
+///  s  u64    x    x    x    x                             x    x              x
+///  t  s16    x    x    x    x    x    x                   x    x    x    x    x
+///     u16    x    x    x    x    x    x                   x    x    x    x    x
+///     f16    x    x    x    x                                                 x
 ///
 /// \param[in] outer The type of the second cast and the child of the
 ///            previous cast
