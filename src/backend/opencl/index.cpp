@@ -42,6 +42,16 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[]) {
         p.isSeq[i] = idxrs[i].isSeq ? 1 : 0;
         p.offs[i]  = iOffs[i];
         p.strds[i] = iStrds[i];
+        p.steps[i] = 0;
+        if (idxrs[i].isSeq) {
+            af_seq seq = idxrs[i].idx.seq;
+            // The step for af_span used in the kernel must be 1
+            if (seq.begin == af_span.begin && seq.end == af_span.end &&
+                seq.step == af_span.step)
+                p.steps[i] = 1;
+            else
+                p.steps[i] = seq.step;
+        }
     }
 
     cl::Buffer* bPtrs[4];

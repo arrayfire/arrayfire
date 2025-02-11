@@ -26,6 +26,7 @@ namespace kernel {
 typedef struct {
     int offs[4];
     int strds[4];
+    int steps[4];
     char isSeq[4];
 } IndexKernelParam_t;
 

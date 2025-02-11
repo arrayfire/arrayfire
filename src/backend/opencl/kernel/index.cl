@@ -10,6 +10,7 @@
 typedef struct {
     int offs[4];
     int strds[4];
+    int steps[4];
     char isSeq[4];
 } IndexKernelParam_t;
 
@@ -47,14 +48,18 @@ kernel void indexKernel(global T* optr, KParam oInfo, global const T* iptr,
     if (gx < oInfo.dims[0] && gy < oInfo.dims[1] && gz < oInfo.dims[2] &&
         gw < oInfo.dims[3]) {
         // calculate pointer offsets for input
-        int i = p.strds[0] *
-                trimIndex(s0 ? gx + p.offs[0] : ptr0[gx], iInfo.dims[0]);
-        int j = p.strds[1] *
-                trimIndex(s1 ? gy + p.offs[1] : ptr1[gy], iInfo.dims[1]);
-        int k = p.strds[2] *
-                trimIndex(s2 ? gz + p.offs[2] : ptr2[gz], iInfo.dims[2]);
-        int l = p.strds[3] *
-                trimIndex(s3 ? gw + p.offs[3] : ptr3[gw], iInfo.dims[3]);
+        int i =
+            p.strds[0] * trimIndex(s0 ? gx * p.steps[0] + p.offs[0] : ptr0[gx],
+                                   iInfo.dims[0]);
+        int j =
+            p.strds[1] * trimIndex(s1 ? gy * p.steps[1] + p.offs[1] : ptr1[gy],
+                                   iInfo.dims[1]);
+        int k =
+            p.strds[2] * trimIndex(s2 ? gz * p.steps[2] + p.offs[2] : ptr2[gz],
+                                   iInfo.dims[2]);
+        int l =
+            p.strds[3] * trimIndex(s3 ? gw * p.steps[3] + p.offs[3] : ptr3[gw],
+                                   iInfo.dims[3]);
         // offset input and output pointers
         global const T* src = iptr + (i + j + k + l) + iInfo.offset;
         global T* dst = optr + (gx * oInfo.strides[0] + gy * oInfo.strides[1] +

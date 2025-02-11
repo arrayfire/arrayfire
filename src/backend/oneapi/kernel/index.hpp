@@ -88,13 +88,17 @@ class indexKernel {
         if (gx < odims0 && gy < odims1 && gz < odims2 && gw < odims3) {
             // calculate pointer offsets for input
             int i = p.strds[0] *
-                    trimIndex(s0 ? gx + p.offs[0] : ptr0[gx], inp.dims[0]);
+                    trimIndex(s0 ? gx * p.steps[0] + p.offs[0] : ptr0[gx],
+                              inp.dims[0]);
             int j = p.strds[1] *
-                    trimIndex(s1 ? gy + p.offs[1] : ptr1[gy], inp.dims[1]);
+                    trimIndex(s1 ? gy * p.steps[1] + p.offs[1] : ptr1[gy],
+                              inp.dims[1]);
             int k = p.strds[2] *
-                    trimIndex(s2 ? gz + p.offs[2] : ptr2[gz], inp.dims[2]);
+                    trimIndex(s2 ? gz * p.steps[2] + p.offs[2] : ptr2[gz],
+                              inp.dims[2]);
             int l = p.strds[3] *
-                    trimIndex(s3 ? gw + p.offs[3] : ptr3[gw], inp.dims[3]);
+                    trimIndex(s3 ? gw * p.steps[3] + p.offs[3] : ptr3[gw],
+                              inp.dims[3]);
             // offset input and output pointers
             const T* src = (const T*)in.get_pointer() + (i + j + k + l);
             T* dst       = (T*)out.get_pointer() +
