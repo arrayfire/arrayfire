@@ -102,14 +102,20 @@ std::string readNextNonEmptyLine(std::ifstream &file) {
     return result;
 }
 
-std::string getBackendName() {
+std::string getBackendName(bool lower) {
     af::Backend backend = af::getActiveBackend();
-    if (backend == AF_BACKEND_OPENCL)
-        return std::string("opencl");
-    else if (backend == AF_BACKEND_CUDA)
-        return std::string("cuda");
-
-    return std::string("cpu");
+    switch(backend) {
+    case AF_BACKEND_CPU:
+        return lower ? std::string("cpu") : std::string("CPU");
+    case AF_BACKEND_CUDA:
+        return lower ? std::string("cuda") : std::string("CUDA");
+    case AF_BACKEND_OPENCL:
+        return lower ? std::string("opencl") : std::string("OpenCL");
+    case AF_BACKEND_ONEAPI:
+        return lower ? std::string("oneapi") : std::string("oneAPI");
+    default:
+        return lower ? std::string("unknown") : std::string("Unknown");
+    }
 }
 
 std::string getTestName() {

@@ -92,7 +92,7 @@ typedef unsigned char uchar;
 typedef unsigned int uint;
 typedef unsigned short ushort;
 
-std::string getBackendName();
+std::string getBackendName(bool lower = false);
 std::string getTestName();
 
 std::string readNextNonEmptyLine(std::ifstream &file);
@@ -243,25 +243,10 @@ bool noHalfTests(af::dtype ty);
     GTEST_SKIP() << "Device doesn't support Half"
 
 #ifdef SKIP_UNSUPPORTED_TESTS
-#define UNSUPPORTED_BACKEND(backend)                                           \
-    do {                                                                       \
-    if(backend == af::getActiveBackend()) {                                    \
-        switch(backend) {                                                      \
-        case AF_BACKEND_CPU:                                                   \
-            GTEST_SKIP() << "Skipping unsupported function on CPU backend";    \
-            break;                                                             \
-        case AF_BACKEND_CUDA:                                                  \
-            GTEST_SKIP() << "Skipping unsupported function on CUDA backend";   \
-            break;                                                             \
-        case AF_BACKEND_OPENCL:                                                \
-            GTEST_SKIP() << "Skipping unsupported function on OpenCL backend"; \
-            break;                                                             \
-        case AF_BACKEND_ONEAPI:                                                \
-            GTEST_SKIP() << "Skipping unsupported function on oneAPI backend"; \
-            break;                                                             \
-        }                                                                      \
-    }                                                                          \
-    } while (0)
+#define UNSUPPORTED_BACKEND(backend)                        \
+    if(backend == af::getActiveBackend())                   \
+        GTEST_SKIP() << "Skipping unsupported function on " \
+                        + getBackendName() + " backend"
 #else
 #define UNSUPPORTED_BACKEND(backend)
 #endif

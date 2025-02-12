@@ -160,7 +160,7 @@ TEST(ImageIO, SavePNGCPP) {
     input(9, 0, 2)          = 255;
     input(9, 9, span)       = 255;
 
-    std::string testname  = getTestName() + "_" + getBackendName();
+    std::string testname  = getTestName() + "_" + getBackendName(true);
     std::string imagename = "SaveCPP_" + testname + ".png";
 
     saveImage(imagename.c_str(), input);
@@ -180,7 +180,7 @@ TEST(ImageIO, SaveBMPCPP) {
     input(9, 0, 2)          = 255;
     input(9, 9, span)       = 255;
 
-    std::string testname  = getTestName() + "_" + getBackendName();
+    std::string testname  = getTestName() + "_" + getBackendName(true);
     std::string imagename = "SaveCPP_" + testname + ".bmp";
 
     saveImage(imagename.c_str(), input);
@@ -291,7 +291,7 @@ TEST(ImageIO, SaveImage16CPP) {
     array input     = randu(dims, u16);
     array input_255 = floor(input.as(f32) / 257);
 
-    std::string testname  = getTestName() + "_" + getBackendName();
+    std::string testname  = getTestName() + "_" + getBackendName(true);
     std::string imagename = "saveImage16CPP_" + testname + ".png";
 
     saveImage(imagename.c_str(), input);
@@ -366,7 +366,7 @@ void saveLoadImageNativeCPPTest(dim4 dims) {
 
     array input = randu(dims, (af_dtype)dtype_traits<T>::af_type);
 
-    std::string imagename = getTestName() + "_" + getBackendName() + ".png";
+    std::string imagename = getTestName() + "_" + getBackendName(true) + ".png";
 
     saveImageNative(imagename.c_str(), input);
 
