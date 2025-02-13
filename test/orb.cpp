@@ -238,14 +238,19 @@ void orbTest(string pTestFile) {
 }
 
 TYPED_TEST(ORB, Square) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     orbTest<TypeParam>(string(TEST_DIR "/orb/square.test"));
 }
 
-TYPED_TEST(ORB, Lena) { orbTest<TypeParam>(string(TEST_DIR "/orb/lena.test")); }
+TYPED_TEST(ORB, Lena) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
+    orbTest<TypeParam>(string(TEST_DIR "/orb/lena.test"));
+}
 
 ///////////////////////////////////// CPP ////////////////////////////////
 //
 TEST(ORB, CPP) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;

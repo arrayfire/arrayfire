@@ -125,6 +125,7 @@ void susanTest(string pTestFile, float t, float g) {
 
 #define SUSAN_TEST(image, tval, gval)                                         \
     TYPED_TEST(Susan, image) {                                                \
+        UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);                               \
         susanTest<TypeParam>(string(TEST_DIR "/susan/" #image ".test"), tval, \
                              gval);                                           \
     }

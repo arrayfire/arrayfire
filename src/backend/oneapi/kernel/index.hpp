@@ -137,11 +137,14 @@ void index(Param<T> out, Param<T> in, IndexKernelParam& p,
     blocks[0] *= threads[0];
 
     sycl::nd_range<3> marange(blocks, threads);
+    sycl::buffer<uint> *idxArrs_get[4];
+    for (dim_t x = 0; x < 4; ++x)
+        idxArrs_get[x] = idxArrs[x].get();
     getQueue().submit([&](sycl::handler& h) {
         auto pp = p;
         for (dim_t x = 0; x < 4; ++x) {
             pp.ptr[x] =
-                idxArrs[x].get()->get_access<sycl::access::mode::read>(h);
+                idxArrs_get[x]->get_access<sycl::access::mode::read>(h);
         }
 
         h.parallel_for(

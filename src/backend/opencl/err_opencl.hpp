@@ -27,6 +27,6 @@ std::string getProgramBuildLog(const cl::Program &prog);
 
 #define OPENCL_NOT_SUPPORTED(message)                                       \
     do {                                                                    \
-        throw SupportError(__AF_FUNC__, __AF_FILENAME__, __LINE__, message, \
-                           boost::stacktrace::stacktrace());                \
+        throw SupportError(__AF_FUNC__, __AF_FILENAME__, __LINE__, "OpenCL",\
+                           message, boost::stacktrace::stacktrace());       \
     } while (0)

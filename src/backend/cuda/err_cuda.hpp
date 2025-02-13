@@ -14,8 +14,8 @@
 
 #define CUDA_NOT_SUPPORTED(message)                                         \
     do {                                                                    \
-        throw SupportError(__AF_FUNC__, __AF_FILENAME__, __LINE__, message, \
-                           boost::stacktrace::stacktrace());                \
+        throw SupportError(__AF_FUNC__, __AF_FILENAME__, __LINE__, "CUDA",  \
+                           message, boost::stacktrace::stacktrace());       \
     } while (0)
 
 #define CU_CHECK(fn)                                                          \

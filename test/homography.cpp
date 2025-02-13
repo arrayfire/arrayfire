@@ -69,8 +69,8 @@ void homographyTest(string pTestFile, const af_homography_type htype,
     ASSERT_SUCCESS(af_load_image(&trainArray_f32, inFiles[0].c_str(), false));
     ASSERT_SUCCESS(conv_image<T>(&trainArray, trainArray_f32));
 
-    ASSERT_SUCCESS(af_orb(&train_feat, &train_desc, trainArray, 20.0f, 2000,
-                          1.2f, 8, true));
+    ASSERT_SUCCESS(af_orb(&train_feat, &train_desc, trainArray,
+                               20.0f, 2000, 1.2f, 8, true));
 
     ASSERT_SUCCESS(af_get_features_xpos(&train_feat_x, train_feat));
     ASSERT_SUCCESS(af_get_features_ypos(&train_feat_y, train_feat));
@@ -96,15 +96,16 @@ void homographyTest(string pTestFile, const af_homography_type htype,
     const dim_t test_d0 = inDims[0][0] * size_ratio;
     const dim_t test_d1 = inDims[0][1] * size_ratio;
     const dim_t tDims[] = {test_d0, test_d1};
-    if (rotate)
+    if (rotate) {
         ASSERT_SUCCESS(af_rotate(&queryArray, trainArray, theta, false,
                                  AF_INTERP_NEAREST));
-    else
+    } else {
         ASSERT_SUCCESS(af_resize(&queryArray, trainArray, test_d0, test_d1,
                                  AF_INTERP_BILINEAR));
+    }
 
-    ASSERT_SUCCESS(af_orb(&query_feat, &query_desc, queryArray, 20.0f, 2000,
-                          1.2f, 8, true));
+    ASSERT_SUCCESS(af_orb(&query_feat, &query_desc, queryArray,
+                                      20.0f, 2000, 1.2f, 8, true));
 
     ASSERT_SUCCESS(
         af_hamming_matcher(&idx, &dist, train_desc, query_desc, 0, 1));
@@ -144,9 +145,9 @@ void homographyTest(string pTestFile, const af_homography_type htype,
 
     int inliers = 0;
     ASSERT_SUCCESS(af_homography(&H, &inliers, train_feat_x_idx,
-                                 train_feat_y_idx, query_feat_x_idx,
-                                 query_feat_y_idx, htype, 3.0f, 1000,
-                                 (af_dtype)dtype_traits<T>::af_type));
+                                             train_feat_y_idx, query_feat_x_idx,
+                                             query_feat_y_idx, htype, 3.0f, 1000,
+                                             (af_dtype)dtype_traits<T>::af_type));
 
     array HH(H);
 
@@ -201,6 +202,7 @@ void homographyTest(string pTestFile, const af_homography_type htype,
 
 #define HOMOGRAPHY_INIT(desc, image, htype, rotate, size_ratio)            \
     TYPED_TEST(Homography, desc) {                                         \
+        UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);                            \
         homographyTest<TypeParam>(                                         \
             string(TEST_DIR "/homography/" #image ".test"), htype, rotate, \
             size_ratio);                                                   \
@@ -220,6 +222,7 @@ using af::features;
 using af::loadImage;
 
 TEST(Homography, CPP) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
@@ -262,7 +265,7 @@ TEST(Homography, CPP) {
     array H;
     int inliers = 0;
     homography(H, inliers, feat_train_x, feat_train_y, feat_query_x,
-               feat_query_y, AF_HOMOGRAPHY_RANSAC, 3.0f, 1000, f32);
+                                  feat_query_y, AF_HOMOGRAPHY_RANSAC, 3.0f, 1000, f32);
 
     float* gold_t = new float[8];
     for (int i = 0; i < 8; i++) gold_t[i] = 0.f;

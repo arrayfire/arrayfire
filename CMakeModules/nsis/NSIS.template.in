@@ -714,7 +714,7 @@ Section "-Core installation"
 
   ; make sure windows knows about the change
   SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
-  MessageBox MB_OK "Added AF_PATH environment variable for all users.$\n$\nIf you chose not to modify PATH in the installer, please manually add $\"%AF_PATH%\lib$\" to the user or system PATH variable for running applications using ArrayFire."
+  MessageBox MB_OK "Added AF_PATH environment variable for all users.$\n$\nIf you chose not to modify PATH in the installer, please manually add $\"%AF_PATH%\lib$\" to the user or system PATH variable for running applications using ArrayFire." /SD IDOK
 
 
   ; Write special uninstall registry entries

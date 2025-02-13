@@ -145,6 +145,7 @@ void harrisTest(string pTestFile, float sigma, unsigned block_size) {
 
 #define HARRIS_INIT(desc, image, sigma, block_size)                        \
     TYPED_TEST(Harris, desc) {                                             \
+        UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);                            \
         harrisTest<TypeParam>(string(TEST_DIR "/harris/" #image "_" #sigma \
                                               "_" #block_size ".test"),    \
                               sigma, block_size);                          \
@@ -167,6 +168,7 @@ using af::harris;
 using af::loadImage;
 
 TEST(FloatHarris, CPP) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;

@@ -158,12 +158,14 @@ void fastTest(string pTestFile, bool nonmax) {
 
 #define FLOAT_FAST_INIT(desc, image, nonmax)                                \
     TYPED_TEST(FloatFAST, desc) {                                           \
+        UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);                             \
         fastTest<TypeParam>(string(TEST_DIR "/fast/" #image "_float.test"), \
                             nonmax);                                        \
     }
 
 #define FIXED_FAST_INIT(desc, image, nonmax)                                \
     TYPED_TEST(FixedFAST, desc) {                                           \
+        UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);                             \
         fastTest<TypeParam>(string(TEST_DIR "/fast/" #image "_fixed.test"), \
                             nonmax);                                        \
     }
@@ -180,6 +182,7 @@ using af::features;
 using af::loadImage;
 
 TEST(FloatFAST, CPP) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
