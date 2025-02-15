@@ -99,8 +99,8 @@ if(${AF_USE_RELATIVE_TEST_DIR})
 else(${AF_USE_RELATIVE_TEST_DIR})
   af_dep_check_and_populate(${testdata_prefix}
     URI https://github.com/arrayfire/arrayfire-data.git
-    #pinv large data set update change
-    REF 0144a599f913cc67c76c9227031b4100156abc25
+    #Add test file for SSAS_LinearSteps
+    REF 05703a4897c8b89b7a0ece1dbe21ede33d226f44
   )
   set(TESTDATA_SOURCE_DIR "${${testdata_prefix}_SOURCE_DIR}")
 endif(${AF_USE_RELATIVE_TEST_DIR})
