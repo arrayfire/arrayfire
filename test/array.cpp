@@ -427,14 +427,90 @@ TEST(Array, ISSUE_3534) {
     // Following assignment failed silently without above copy()
     // a(0,0) = 1234;
 
-    array a = range(dim4(5, 5));
-    a       = a.rows(1, 4);
-    a(1, 1) = 1234;
+    // Testing rows
+    {
+        array a = range(dim4(5, 5));
+        af_array before_handle = a.get();
+        const float *before_dev_pointer = a.device<float>();
 
-    array b = range(dim4(4, 5)) + 1.0;
-    b(1, 1) = 1234;
+        a       = a.rows(1, 4);
+        af_array after_handle = a.get();
+        const float *after_dev_pointer = a.device<float>();
 
-    ASSERT_ARRAYS_EQ(a, b);
+        // We expect a copy to be created, so the handle and 
+        // array pointers should be different
+        ASSERT_NE(before_handle, after_handle);
+        ASSERT_NE(before_dev_pointer, after_dev_pointer);
+
+        a(1, 1) = -1234;
+
+        array b = range(dim4(4, 5)) + 1.0;
+        b(1, 1) = -1234;
+
+        ASSERT_ARRAYS_EQ(a, b);
+    }
+
+    // Testing columns
+    {
+        array a                         = range(dim4(5, 5));
+        af_array before_handle          = a.get();
+        const float *before_dev_pointer = a.device<float>();
+
+        a                              = a.cols(1, 4);
+        af_array after_handle          = a.get();
+        const float *after_dev_pointer = a.device<float>();
+
+        // We expect a copy to be created, so the handle and
+        // array pointers should be different
+        ASSERT_NE(before_handle, after_handle);
+        ASSERT_NE(before_dev_pointer, after_dev_pointer);
+
+        a(1, 1) = -1234;
+
+        array b = range(dim4(5, 4));
+        b(1, 1) = -1234;
+
+        ASSERT_ARRAYS_EQ(a, b);
+    }
+
+    // Testing subarrays with sizes of one page
+    {
+        array a     = range(dim4(64, 64));
+        a           = a.rows(31, 57);
+        a(1, 1)     = -123456;
+
+        array b     = range(dim4(27, 64)) + 31.0;
+        b(1, 1)     = -123456;
+
+        ASSERT_ARRAYS_EQ(a, b);
+
+        a           = range(dim4(128, 128));
+        a           = a.rows(0, 63);
+        a           = a.cols(0, 63);
+        a(0, 0)     = -54321;
+        a(63, 63)   = -12345;
+
+        b = range(dim4(64, 64));
+        b(0, 0)     = -54321;
+        b(63, 63)   = -12345;
+
+        ASSERT_ARRAYS_EQ(a, b);
+
+        a             = range(dim4(128, 128));
+        a(64, 64)   = -67890;
+        a(127, 127)   = -9876;
+        a             = a.rows(64, 127);
+        a             = a.cols(64, 127);
+        
+        a(0, 0)   = -54321;
+        a(63, 63) = -12345;
+
+        b         = range(dim4(64, 64)) + 64;
+        b(0, 0)   = -54321;
+        b(63, 63) = -12345;
+
+        ASSERT_ARRAYS_EQ(a, b);
+    }
 }
 
 TEST(Array, CreateHandleInvalidNullDimsPointer) {
