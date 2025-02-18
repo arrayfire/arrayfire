@@ -830,7 +830,9 @@ struct AccretionDisk : public Object {
 
     af::array get_color(const af::array& ray_begin,
                         const af::array& ray_end) const override {
-        auto [hit, pos] = intersect(ray_begin, ray_end);
+        auto pair = intersect(ray_begin, ray_end);
+        af::array hit = pair.first;
+        af::array pos = pair.second;
 
         auto val = 1.f - (norm3(pos - center).T() - inner_radius) /
                              (outter_radius - inner_radius);
