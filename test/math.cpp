@@ -149,31 +149,44 @@ TEST(Math, Not) {
 
 TEST(Math, Modulus) {
     af::dim4 shape(2, 2);
-    std::vector<long long> aData{1, 1, 1, 1};
+    std::vector<long long> aData{3, 3, 3, 3};
     std::vector<long long> bData{2, 2, 2, 2};
 
     auto a    = af::array(shape, aData.data(), afHost);
     auto b    = af::array(shape, bData.data(), afHost);
     auto rem  = a % b;
-    auto diff = rem - a;
-
     auto neg_rem = -a % b;
-    auto neg_diff = neg_rem + a;
 
     ASSERT_ARRAYS_EQ(af::constant(1, shape, s64), rem);
-    ASSERT_ARRAYS_EQ(af::constant(0, shape, s64), diff);
-
     ASSERT_ARRAYS_EQ(af::constant(-1, shape, s64), neg_rem);
-    ASSERT_ARRAYS_EQ(af::constant(0, shape, s64), neg_diff);
 }
 
-TEST(Math, ModulusHalf) {
+TEST(Math, ModulusFloat) {
     SUPPORTED_TYPE_CHECK(half_float::half);
-    auto a     = af::constant(3, {2, 2}, af::dtype::f16);
-    auto b     = af::constant(2, {2, 2}, af::dtype::f16);
-    auto a32   = af::constant(3, {2, 2}, af::dtype::f32);
-    auto b32   = af::constant(2, {2, 2}, af::dtype::f32);
-    auto rem32 = a32 % b32;
+    af::dim4 shape(2, 2);
+
+    auto a     = af::constant(3, shape, af::dtype::f16);
+    auto b     = af::constant(2, shape, af::dtype::f16);
+    auto a32   = af::constant(3, shape, af::dtype::f32);
+    auto b32   = af::constant(2, shape, af::dtype::f32);
+    auto a64   = af::constant(3, shape, af::dtype::f64);
+    auto b64   = af::constant(2, shape, af::dtype::f64);
+
     auto rem   = a % b;
+    auto rem32 = a32 % b32;
+    auto rem64 = a64 % b64;
+
+    auto neg_rem = -a % b;
+    auto neg_rem32 = -a32 % b32;
+    auto neg_rem64 = -a64 % b64;
+    
+    ASSERT_ARRAYS_EQ(af::constant(1, shape, af::dtype::f16), rem);
+    ASSERT_ARRAYS_EQ(af::constant(1, shape, af::dtype::f32), rem32);
+    ASSERT_ARRAYS_EQ(af::constant(1, shape, af::dtype::f64), rem64);
+
+    ASSERT_ARRAYS_EQ(af::constant(-1, shape, af::dtype::f16), neg_rem);
+    ASSERT_ARRAYS_EQ(af::constant(-1, shape, af::dtype::f32), neg_rem32);
+    ASSERT_ARRAYS_EQ(af::constant(-1, shape, af::dtype::f64), neg_rem64);
+
     ASSERT_ARRAYS_EQ(rem32.as(f16), rem);
 }
