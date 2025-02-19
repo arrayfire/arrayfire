@@ -5,17 +5,8 @@
 #The complete license agreement can be obtained at:
 #http:  // arrayfire.com/licenses/BSD-3-Clause
 
-if (AF_BUILD_ONEAPI)
-    if (WIN32)
-    find_package(IntelSYCL REQUIRED)
-    find_package(oneDPL REQUIRED)
-#include_directories(${SYCL_INCLUDE_DIR} / sycl)
-    set(OPENCL_INCLUDE_DIR ${SYCL_INCLUDE_DIR}/sycl)
-    set(OPENCL_LIBRARY_DIR ${SYCL_LIBRARY_DIR})
-  else()
-    enable_language(SYCL)
-  endif()
-endif()
+set(OPENCL_INCLUDE_DIR ${SYCL_INCLUDE_DIR}/sycl)
+set(OPENCL_LIBRARY_DIR ${SYCL_LIBRARY_DIR})
 
 include(InternalUtils)
 include(build_cl2hpp)
@@ -275,28 +266,10 @@ target_sources(afoneapi
 
 function(set_sycl_language)
   foreach(target ${ARGV})
-    if (WIN32)
-      get_target_property(target_type ${target} TYPE)
-      if (NOT (${target_type} STREQUAL "INTERFACE_LIBRARY"))
-        get_target_property(TGT_SOURCES ${target} SOURCES)
-        add_sycl_to_target(TARGET ${target} SOURCES ${TGT_SOURCES})
-      endif()
-    else()
-      set_target_properties(${target}
-        PROPERTIES
-          LINKER_LANGUAGE SYCL)
-
+  get_target_property(target_type ${target} TYPE)
+    if (NOT (${target_type} STREQUAL "INTERFACE_LIBRARY"))
       get_target_property(TGT_SOURCES ${target} SOURCES)
-      if(NOT TGT_SOURCES)
-        get_target_property(TGT_SOURCES ${target} INTERFACE_SOURCES)
-      endif()
-
-      foreach(FILE ${TGT_SOURCES})
-        get_filename_component(FILE_EXTENSION ${FILE} EXT)
-        if(FILE_EXTENSION STREQUAL ".cpp")
-          set_source_files_properties(${FILE} PROPERTIES LANGUAGE SYCL)
-        endif()
-      endforeach()
+      add_sycl_to_target(TARGET ${target} SOURCES ${TGT_SOURCES})
     endif()
   endforeach()
 endfunction()
@@ -375,7 +348,9 @@ target_link_libraries(afoneapi
     $<$<PLATFORM_ID:Linux>:-fvisibility-inlines-hidden>
     $<$<PLATFORM_ID:Linux>:-fno-sycl-rdc>
     -fsycl-max-parallel-link-jobs=${NumberOfThreads}
-    MKL::MKL_DPCPP
+
+  PUBLIC
+    MKL::MKL_SYCL
   )
   set_sycl_language(afcommon_interface
     oneapi_sort_by_key

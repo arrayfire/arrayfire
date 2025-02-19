@@ -21,13 +21,9 @@ foreach(SBK_TYPE ${SBK_TYPES})
         "${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key_impl.hpp"
     )
 
-  if (WIN32)
-    target_link_libraries(oneapi_sort_by_key_${SBK_TYPE} PRIVATE oneDPL)
-  else()
-    set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key/sort_by_key_impl.cpp"
-      PROPERTIES
-        LANGUAGE SYCL)
-  endif()
+  target_link_libraries(oneapi_sort_by_key_${SBK_TYPE} PRIVATE oneDPL)
+  add_sycl_to_target(TARGET oneapi_sort_by_key_${SBK_TYPE})
+
   set_target_properties(oneapi_sort_by_key_${SBK_TYPE}
     PROPERTIES
       COMPILE_DEFINITIONS "TYPE=${SBK_TYPE};AFDLL;$<TARGET_PROPERTY:Boost::boost,INTERFACE_COMPILE_DEFINITIONS>"

@@ -27,12 +27,12 @@ static int samples = 20e6;
 /* Self-contained code to run host and device estimates of PI.  Note that
    each is generating its own random values, so the estimates of PI
    will differ. */
-static double pi_device() {
+static double compute_pi_device() {
     array x = randu(samples, f32), y = randu(samples, f32);
     return 4.0 * sum<float>(sqrt(x * x + y * y) < 1) / samples;
 }
 
-static double pi_host() {
+static double compute_pi_host() {
     int count = 0;
     for (int i = 0; i < samples; ++i) {
         float x = float(rand()) / float(RAND_MAX);
@@ -43,8 +43,8 @@ static double pi_host() {
 }
 
 // void wrappers for timeit()
-static void device_wrapper() { pi_device(); }
-static void host_wrapper() { pi_host(); }
+static void device_wrapper() { compute_pi_device(); }
+static void host_wrapper() { compute_pi_host(); }
 
 int main(int argc, char** argv) {
     try {
@@ -53,9 +53,9 @@ int main(int argc, char** argv) {
         info();
 
         printf("device:  %.5f seconds to estimate  pi = %.5f\n",
-               timeit(device_wrapper), pi_device());
+               timeit(device_wrapper), compute_pi_device());
         printf("  host:  %.5f seconds to estimate  pi = %.5f\n",
-               timeit(host_wrapper), pi_host());
+               timeit(host_wrapper), compute_pi_host());
     } catch (exception& e) {
         fprintf(stderr, "%s\n", e.what());
         throw;

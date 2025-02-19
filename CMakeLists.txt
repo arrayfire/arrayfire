@@ -6,10 +6,10 @@
 # http://arrayfire.com/licenses/BSD-3-Clause
 
 if (AF_BUILD_ONEAPI)
-  if (WIN32)
+  if (CMAKE_HOST_WIN32)
     cmake_minimum_required(VERSION 3.25)
   else()
-    cmake_minimum_required(VERSION 3.20)
+    cmake_minimum_required(VERSION 3.23.5)
   endif()
 else()
   cmake_minimum_required(VERSION 3.16.3)
@@ -51,9 +51,8 @@ option(AF_WITH_EXTERNAL_PACKAGES_ONLY "Build ArrayFire with External packages on
 if(AF_WITH_EXTERNAL_PACKAGES_ONLY)
   set(AF_REQUIRED REQUIRED)
 endif()
-if(CMAKE_SYCL_COMPILER)
-  get_filename_component(SYCL_COMPILER_NAME ${CMAKE_SYCL_COMPILER} NAME)
-endif()
+
+get_filename_component(SYCL_COMPILER_NAME ${CMAKE_CXX_COMPILER} NAME)
 if(SYCL_COMPILER_NAME STREQUAL "dpcpp" OR SYCL_COMPILER_NAME STREQUAL "dpcpp.exe"
    OR SYCL_COMPILER_NAME STREQUAL "icpx" OR SYCL_COMPILER_NAME STREQUAL "icx.exe")
   set(MKL_THREAD_LAYER "TBB" CACHE STRING "The thread layer to choose for MKL")
@@ -83,6 +82,11 @@ find_package(span-lite QUIET)
 find_package(GTest)
 find_package(CLBlast QUIET)
 find_package(Boost 1.70 ${AF_REQUIRED})
+
+if(AF_BUILD_ONEAPI)
+  find_package(IntelSYCL)
+  find_package(oneDPL)
+endif()
 
 # CLFFT used in ArrayFire requires a specific fork
 #find_package(clFFT QUIET)
@@ -142,7 +146,6 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)
   if(DEFINED ENV{MKLROOT} AND NOT DEFINED MKL_ROOT)
     set(MKL_ROOT "$ENV{MKLROOT}")
   endif()
-  set(DPCPP_COMPILER ON)
   set(MKL_THREADING "tbb_thread")
   set(MKL_INTERFACE "ilp64")
   find_package(MKL 2023.1)
