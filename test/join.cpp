@@ -268,7 +268,7 @@ TEST(Join, ManyEmpty) {
     ASSERT_ARRAYS_EQ(gold, acee);
 }
 
-TEST(Join, ISSUE3511) {
+TEST(Join, respect_parameters_order_ISSUE3511) {
     const float column_host1[] = {1., 2., 3.};
     const float column_host2[] = {4., 5., 6.};
     const af::array buf1(3, 1, column_host1);
