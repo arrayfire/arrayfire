@@ -7,13 +7,15 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <lookup.hpp>
-
 #include <Array.hpp>
 #include <common/half.hpp>
 #include <err_oneapi.hpp>
 #include <kernel/lookup.hpp>
+#include <lookup.hpp>
+#include <traits.hpp>
 #include <af/dim4.hpp>
+
+#include <cassert>
 
 using arrayfire::common::half;
 
@@ -22,12 +24,13 @@ namespace oneapi {
 template<typename in_t, typename idx_t>
 Array<in_t> lookup(const Array<in_t> &input, const Array<idx_t> &indices,
                    const unsigned dim) {
-    const dim4 &iDims = input.dims();
+    assert((af_dtype)dtype_traits<idx_t>::af_type != c32 &&
+           (af_dtype)dtype_traits<idx_t>::af_type != c64 &&
+           (af_dtype)dtype_traits<idx_t>::af_type != b8);
+    assert(dim <= 3);
 
-    dim4 oDims(1);
-    for (int d = 0; d < 4; ++d) {
-        oDims[d] = (d == int(dim) ? indices.elements() : iDims[d]);
-    }
+    dim4 oDims(input.dims());
+    oDims[dim] = indices.elements();
 
     Array<in_t> out = createEmptyArray<in_t>(oDims);
 
