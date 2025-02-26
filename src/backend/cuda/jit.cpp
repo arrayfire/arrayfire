@@ -244,16 +244,18 @@ struct Param {
             node->genOffsets(inOffsetsStream, ids_curr.id, is_linear);
             // Generate the core function body, needs children ids as well
             node->genFuncs(opsStream, ids_curr);
-            for (auto outIt{begin(output_ids)}, endIt{end(output_ids)};
-                 (outIt = find(outIt, endIt, ids_curr.id)) != endIt; ++outIt) {
-                // Generate also output parameters
-                outParamStream << (oid == 0 ? "" : ",\n") << "Param<"
-                               << full_nodes[ids_curr.id]->getTypeStr()
-                               << "> out" << oid;
-                // Generate code to write the output (offset already in ptr)
-                opsStream << "out" << oid << ".ptr[idx] = val" << ids_curr.id
-                          << ";\n";
-                ++oid;
+            for (size_t output_idx{0}; output_idx < output_ids.size();
+                 ++output_idx) {
+                if (output_ids[output_idx] == ids_curr.id) {
+                    // Generate also output parameters
+                    outParamStream << (oid == 0 ? "" : ",\n") << "Param<"
+                                   << full_nodes[ids_curr.id]->getTypeStr()
+                                   << "> out" << oid;
+                    // Generate code to write the output (offset already in ptr)
+                    opsStream << "out" << output_idx << ".ptr[idx] = val"
+                              << ids_curr.id << ";\n";
+                    ++oid;
+                }
             }
         }
 
@@ -322,8 +324,9 @@ static CUfunction getKernel(const vector<Node*>& output_nodes,
                             const bool is_linear, const bool loop0,
                             const bool loop1, const bool loop2,
                             const bool loop3) {
-    const string funcName{getFuncName(output_nodes, full_nodes, full_ids,
-                                      is_linear, loop0, loop1, loop2, loop3)};
+    const string funcName{getFuncName(output_nodes, output_ids, full_nodes,
+                                      full_ids, is_linear, loop0, loop1, loop2,
+                                      loop3)};
     // A forward lookup in module cache helps avoid recompiling
     // the JIT source generated from identical JIT-trees.
     const auto entry{

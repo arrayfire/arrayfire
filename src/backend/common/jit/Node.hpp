@@ -326,6 +326,7 @@ struct Node_ids {
 };
 
 std::string getFuncName(const std::vector<Node *> &output_nodes,
+                        const std::vector<int> &output_ids,
                         const std::vector<Node *> &full_nodes,
                         const std::vector<Node_ids> &full_ids,
                         const bool is_linear, const bool loop0,
