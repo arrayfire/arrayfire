@@ -17,9 +17,9 @@ kernel void coo2Dense(global T *oPtr, const KParam output, global const T *vPtr,
         const int id = i + get_group_id(0) * dimSize * reps;
         if (id >= values.dims[0]) return;
 
-        T v   = vPtr[id];
-        int r = rPtr[id];
-        int c = cPtr[id];
+        T v   = vPtr[id + values.offset];
+        int r = rPtr[id + rowIdx.offset];
+        int c = cPtr[id + colIdx.offset];
 
         int offset = r + c * output.strides[1];
 
