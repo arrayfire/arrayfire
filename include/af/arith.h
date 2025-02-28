@@ -80,6 +80,9 @@ namespace af
     /// C++ Interface for remainder when array divides array,
     /// scalar divides array or array divides scalar
     ///
+    /// For integers, it returns the same output as modulus (% operator)
+    /// For floating point numbers, it returns the same as std::remainder from <cmath>
+    /// 
     /// \param[in] lhs is numerator
     /// \param[in] rhs is denominator
     /// \return remainder when \p rhs divides \p lhs
@@ -96,6 +99,9 @@ namespace af
     /// @{
     /// C++ Interface for modulus when dividend and divisor are arrays
     /// or one of them is scalar
+    ///
+    /// For integers, it returns the same output as modulus (% operator)
+    /// For floating point numbers, it returns the same as std::fmod from <cmath>
     ///
     /// \param[in] lhs is dividend
     /// \param[in] rhs is divisor
@@ -906,6 +912,9 @@ extern "C" {
     /**
        C Interface for remainder
 
+       For integers, it returns the same output as modulus (% operator)
+       For floating point numbers, it returns the same as `remainder` from <math.h>
+
        \param[out] out will contain the remainder of \p lhs divided by \p rhs
        \param[in] lhs is numerator
        \param[in] rhs is denominator
@@ -918,6 +927,9 @@ extern "C" {
 
     /**
        C Interface for modulus
+
+       For integers, it returns the same output as modulus (% operator)
+       For floating point numbers, it returns the same as `fmod` from <math.h>
 
        \param[out] out will contain the output of \p lhs modulo \p rhs
        \param[in] lhs is dividend
