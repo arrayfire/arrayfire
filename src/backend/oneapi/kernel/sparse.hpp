@@ -54,9 +54,9 @@ class coo2DenseCreateKernel {
                 g.get_group_id(0) * g.get_local_range(0) * REPEAT + i;
             if (id >= values_.dims[0]) return;
 
-            T v   = vPtr_[id];
-            int r = rPtr_[id];
-            int c = cPtr_[id];
+            T v   = vPtr_[id + values_.offset];
+            int r = rPtr_[id + rowIdx_.offset];
+            int c = cPtr_[id + colIdx_.offset];
 
             int offset = r + c * output_.strides[1];
 
@@ -101,12 +101,15 @@ class csr2DenseCreateKernel {
    public:
     csr2DenseCreateKernel(write_accessor<T> output, read_accessor<T> values,
                           read_accessor<int> rowidx, read_accessor<int> colidx,
-                          const int M)
+                          const int M, const int v_off, const int r_off, const int c_off)
         : output_(output)
         , values_(values)
         , rowidx_(rowidx)
         , colidx_(colidx)
-        , M_(M) {}
+        , M_(M)
+        , v_off_(v_off)
+        , r_off_(r_off)
+        , c_off_(c_off) {}
 
     void operator()(sycl::nd_item<2> it) const {
         sycl::group g = it.get_group();
@@ -114,10 +117,10 @@ class csr2DenseCreateKernel {
         int lid = it.get_local_id(0);
         for (int rowId = g.get_group_id(0); rowId < M_;
              rowId += it.get_group_range(0)) {
-            int colStart = rowidx_[rowId];
-            int colEnd   = rowidx_[rowId + 1];
+            int colStart = rowidx_[rowId + r_off_];
+            int colEnd   = rowidx_[rowId + r_off_ + 1];
             for (int colId = colStart + lid; colId < colEnd; colId += THREADS) {
-                output_[rowId + colidx_[colId] * M_] = values_[colId];
+                output_[rowId + colidx_[colId + c_off_] * M_] = values_[colId + v_off_];
             }
         }
     }
@@ -128,6 +131,9 @@ class csr2DenseCreateKernel {
     read_accessor<int> rowidx_;
     read_accessor<int> colidx_;
     const int M_;
+    const int v_off_;
+    const int r_off_;
+    const int c_off_;
 };
 
 template<typename T>
@@ -151,7 +157,10 @@ void csr2dense(Param<T> output, const Param<T> values, const Param<int> rowIdx,
                                 sycl::no_init};
         h.parallel_for(sycl::nd_range{global, local},
                        csr2DenseCreateKernel<T, threads>(
-                           d_output, d_values, d_rowIdx, d_colIdx, M));
+                           d_output, d_values, d_rowIdx, d_colIdx, M,
+                           static_cast<int>(values.info.offset),
+                           static_cast<int>(rowIdx.info.offset),
+                           static_cast<int>(colIdx.info.offset)));
     });
 
     ONEAPI_DEBUG_FINISH(getQueue());
