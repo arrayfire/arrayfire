@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2014, ArrayFire
+ * Copyright (c) 2025, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -104,6 +104,9 @@ namespace af
     /// @{
     /// C++ Interface to calculate the remainder.
     ///
+    /// For integers, it returns the same output as modulus (% operator)
+    /// For floating point numbers, it returns the same as std::remainder from <cmath>
+    /// 
     /// \param[in] lhs numerator; can be an array or a scalar
     /// \param[in] rhs denominator; can be an array or a scalar
     /// \return        remainder
@@ -120,6 +123,9 @@ namespace af
 
     /// @{
     /// C++ Interface to calculate the modulus.
+    ///
+    /// For integers, it returns the same output as modulus (% operator)
+    /// For floating point numbers, it returns the same as std::fmod from <cmath>
     ///
     /// \param[in] lhs dividend; can be an array or a scalar
     /// \param[in] rhs divisor; can be an array or a scalar
@@ -984,6 +990,9 @@ extern "C" {
     /**
        C Interface to calculate the remainder.
 
+       For integers, it returns the same output as modulus (% operator)
+       For floating point numbers, it returns the same as `remainder` from <math.h>
+
        \param[out] out   remainder
        \param[in]  lhs   numerator
        \param[in]  rhs   denominator
@@ -997,6 +1006,9 @@ extern "C" {
 
     /**
        C Interface to calculate the modulus.
+
+       For integers, it returns the same output as modulus (% operator)
+       For floating point numbers, it returns the same as `fmod` from <math.h>
 
        \param[out] out   modulus
        \param[in]  lhs   dividend

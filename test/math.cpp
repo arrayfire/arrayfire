@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2014, ArrayFire
+ * Copyright (c) 2025, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -46,7 +46,7 @@ T rsqrt(T in) {
 }
 
 #define MATH_TEST(T, func, err, lo, hi)                                        \
-    TEST(MathTests, Test_##func##_##T) {                                       \
+    TEST(Math, func##_##T) {                                                   \
         try {                                                                  \
             SUPPORTED_TYPE_CHECK(T);                                           \
             af_dtype ty = (af_dtype)dtype_traits<T>::af_type;                  \
@@ -135,7 +135,7 @@ MATH_TESTS_REAL(erf)
 MATH_TESTS_REAL(erfc)
 #endif
 
-TEST(MathTests, Not) {
+TEST(Math, Not) {
     array a  = randu(5, 5, b8);
     array b  = !a;
     char *ha = a.host<char>();
@@ -145,4 +145,48 @@ TEST(MathTests, Not) {
 
     af_free_host(ha);
     af_free_host(hb);
+}
+
+TEST(Math, Modulus) {
+    af::dim4 shape(2, 2);
+    std::vector<long long> aData{3, 3, 3, 3};
+    std::vector<long long> bData{2, 2, 2, 2};
+
+    auto a    = af::array(shape, aData.data(), afHost);
+    auto b    = af::array(shape, bData.data(), afHost);
+    auto rem  = a % b;
+    auto neg_rem = -a % b;
+
+    ASSERT_ARRAYS_EQ(af::constant(1, shape, s64), rem);
+    ASSERT_ARRAYS_EQ(af::constant(-1, shape, s64), neg_rem);
+}
+
+TEST(Math, ModulusFloat) {
+    SUPPORTED_TYPE_CHECK(half_float::half);
+    af::dim4 shape(2, 2);
+
+    auto a     = af::constant(3, shape, af::dtype::f16);
+    auto b     = af::constant(2, shape, af::dtype::f16);
+    auto a32   = af::constant(3, shape, af::dtype::f32);
+    auto b32   = af::constant(2, shape, af::dtype::f32);
+    auto a64   = af::constant(3, shape, af::dtype::f64);
+    auto b64   = af::constant(2, shape, af::dtype::f64);
+
+    auto rem   = a % b;
+    auto rem32 = a32 % b32;
+    auto rem64 = a64 % b64;
+
+    auto neg_rem = -a % b;
+    auto neg_rem32 = -a32 % b32;
+    auto neg_rem64 = -a64 % b64;
+    
+    ASSERT_ARRAYS_EQ(af::constant(1, shape, af::dtype::f16), rem);
+    ASSERT_ARRAYS_EQ(af::constant(1, shape, af::dtype::f32), rem32);
+    ASSERT_ARRAYS_EQ(af::constant(1, shape, af::dtype::f64), rem64);
+
+    ASSERT_ARRAYS_EQ(af::constant(-1, shape, af::dtype::f16), neg_rem);
+    ASSERT_ARRAYS_EQ(af::constant(-1, shape, af::dtype::f32), neg_rem32);
+    ASSERT_ARRAYS_EQ(af::constant(-1, shape, af::dtype::f64), neg_rem64);
+
+    ASSERT_ARRAYS_EQ(rem32.as(f16), rem);
 }

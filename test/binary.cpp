@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2014, ArrayFire
+ * Copyright (c) 2025, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -38,6 +38,11 @@ typedef std::complex<double> complex_double;
 template<typename T>
 T mod(T a, T b) {
     return std::fmod(a, b);
+}
+
+template<typename T>
+T rem(T x, T y) {
+    return remainder(x, y);
 }
 
 af::array randgen(const int num, dtype ty) {
@@ -181,6 +186,7 @@ BINARY_TESTS_NEAR(float, float, float, div, 1e-3)  // FIXME
 BINARY_TESTS_FLOAT(min)
 BINARY_TESTS_FLOAT(max)
 BINARY_TESTS_NEAR(float, float, float, mod, 1e-5)  // FIXME
+BINARY_TESTS_FLOAT(rem)
 
 BINARY_TESTS_DOUBLE(add)
 BINARY_TESTS_DOUBLE(sub)
@@ -189,6 +195,7 @@ BINARY_TESTS_DOUBLE(div)
 BINARY_TESTS_DOUBLE(min)
 BINARY_TESTS_DOUBLE(max)
 BINARY_TESTS_DOUBLE(mod)
+BINARY_TESTS_DOUBLE(rem)
 
 BINARY_TESTS_NEAR_FLOAT(atan2)
 BINARY_TESTS_NEAR_FLOAT(pow)
@@ -205,18 +212,26 @@ BINARY_TESTS_NEAR_DOUBLE(hypot)
 BINARY_TESTS_INT(add)
 BINARY_TESTS_INT(sub)
 BINARY_TESTS_INT(mul)
+BINARY_TESTS_INT(div)
+BINARY_TESTS_INT(pow)
 
 BINARY_TESTS_UINT(add)
 BINARY_TESTS_UINT(sub)
 BINARY_TESTS_UINT(mul)
+BINARY_TESTS_UINT(div)
+BINARY_TESTS_UINT(pow)
 
 BINARY_TESTS_INTL(add)
 BINARY_TESTS_INTL(sub)
 BINARY_TESTS_INTL(mul)
+BINARY_TESTS_INTL(div)
+BINARY_TESTS_INTL(pow)
 
 BINARY_TESTS_UINTL(add)
 BINARY_TESTS_UINTL(sub)
 BINARY_TESTS_UINTL(mul)
+BINARY_TESTS_UINTL(div)
+BINARY_TESTS_UINTL(pow)
 
 BINARY_TESTS_CFLOAT(add)
 BINARY_TESTS_CFLOAT(sub)

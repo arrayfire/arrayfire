@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2014, ArrayFire
+ * Copyright (c) 2025, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -60,7 +60,7 @@ BINARY_TYPE_1(bitshiftr)
     };                                               \
     template<typename To>                            \
     struct BinOp<To, float, af_##fn##_t> {           \
-        const char *name() { return "f" #fn; }       \
+        const char *name() { return "f" #fn "f"; }   \
     };                                               \
     template<typename To>                            \
     struct BinOp<To, double, af_##fn##_t> {          \
@@ -79,6 +79,11 @@ BINARY_TYPE_2(min)
 BINARY_TYPE_2(max)
 BINARY_TYPE_2(rem)
 BINARY_TYPE_2(mod)
+
+template<>
+struct BinOp<common::half, common::half, af_mod_t> {
+    const char *name() { return "hmod"; }
+};
 
 template<typename To, typename Ti>
 struct BinOp<To, Ti, af_pow_t> {
