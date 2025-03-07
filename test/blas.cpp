@@ -492,6 +492,36 @@ TEST(MatrixMultiply, half) {
     }
 }
 
+TEST(MatrixMultiply, schar) {
+    array A8         = array(3, 3, h_lhs).as(s8);
+    array B8         = array(3, 3, h_rhs).as(s8);
+    array expected32 = array(3, 3, h_gold).as(f32);
+
+    {
+        af_array C32 = 0;
+        const float alpha32(1.0f);
+        const float beta32(0.0f);
+        af_backend backend;
+        af_get_active_backend(&backend);
+        if (backend == AF_BACKEND_CUDA) {
+            ASSERT_SUCCESS(af_gemm(&C32, AF_MAT_NONE, AF_MAT_NONE, &alpha32,
+                                   A8.get(), B8.get(), &beta32));
+        } else {
+            ASSERT_EQ(AF_ERR_TYPE,
+                      af_gemm(&C32, AF_MAT_NONE, AF_MAT_NONE, &alpha32,
+                              A8.get(), B8.get(), &beta32));
+            SUCCEED();
+            return;
+        }
+        af::array C(C32);
+        ASSERT_ARRAYS_NEAR(expected32, C, 0.00001);
+    }
+    {
+        array C32 = matmul(A8, B8);
+        ASSERT_ARRAYS_NEAR(expected32, C32, 0.00001);
+    }
+}
+
 struct test_params {
     af_mat_prop opt_lhs;
     af_mat_prop opt_rhs;
