@@ -1,4 +1,4 @@
-# Copyright (c) 2020, ArrayFire
+# Copyright (c) 2025, ArrayFire
 # All rights reserved.
 #
 # This file is distributed under 3-clause BSD license.
