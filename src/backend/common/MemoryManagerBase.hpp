@@ -9,8 +9,8 @@
 
 #pragma once
 
-#include <Event.hpp>
 #include <common/AllocatorInterface.hpp>
+#include <af/defines.h>
 
 #include <cstddef>
 #include <memory>
@@ -19,8 +19,8 @@ namespace spdlog {
 class logger;
 }
 
+namespace arrayfire {
 namespace common {
-namespace memory {
 /**
  * A internal base interface for a memory manager which is exposed to AF
  * internals. Externally, both the default AF memory manager implementation and
@@ -29,7 +29,7 @@ namespace memory {
  */
 class MemoryManagerBase {
    public:
-    MemoryManagerBase()        = default;
+    MemoryManagerBase()                                     = default;
     MemoryManagerBase &operator=(const MemoryManagerBase &) = delete;
     MemoryManagerBase(const MemoryManagerBase &)            = delete;
     virtual ~MemoryManagerBase() {}
@@ -89,5 +89,5 @@ class MemoryManagerBase {
     std::unique_ptr<AllocatorInterface> nmi_;
 };
 
-}  // namespace memory
 }  // namespace common
+}  // namespace arrayfire

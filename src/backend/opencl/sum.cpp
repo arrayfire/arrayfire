@@ -10,8 +10,9 @@
 #include <common/half.hpp>
 #include "reduce_impl.hpp"
 
-using common::half;
+using arrayfire::common::half;
 
+namespace arrayfire {
 namespace opencl {
 // sum
 INSTANTIATE(af_add_t, float, float)
@@ -37,3 +38,4 @@ INSTANTIATE(af_add_t, ushort, float)
 INSTANTIATE(af_add_t, half, half)
 INSTANTIATE(af_add_t, half, float)
 }  // namespace opencl
+}  // namespace arrayfire

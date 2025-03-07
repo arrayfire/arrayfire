@@ -13,6 +13,7 @@
 #include <identity.hpp>
 #include <solve.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
@@ -29,3 +30,4 @@ INSTANTIATE(double)
 INSTANTIATE(cdouble)
 
 }  // namespace cuda
+}  // namespace arrayfire

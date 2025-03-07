@@ -13,6 +13,7 @@
 #include <math.hpp>
 #include <af/traits.hpp>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -173,3 +174,4 @@ void resize(Param<T> out, CParam<T> in) {
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

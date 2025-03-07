@@ -49,7 +49,7 @@ typedef ::testing::Types<float, cfloat, double, cdouble, int, uint, char, uchar,
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Transpose, TestTypes);
+TYPED_TEST_SUITE(Transpose, TestTypes);
 
 template<typename T>
 void trsTest(string pTestFile, bool isSubRef = false,
@@ -58,8 +58,8 @@ void trsTest(string pTestFile, bool isSubRef = false,
 
     vector<dim4> numDims;
 
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
     readTests<T, T, int>(pTestFile, numDims, in, tests);
     dim4 dims = numDims[0];
 
@@ -157,8 +157,8 @@ template<typename T>
 void trsCPPTest(string pFileName) {
     vector<dim4> numDims;
 
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
     readTests<T, T, int>(pFileName, numDims, in, tests);
     dim4 dims = numDims[0];
 
@@ -262,4 +262,26 @@ TEST(Transpose, GFOR) {
         array b_ii = B(span, span, ii);
         ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
     }
+}
+
+TEST(Transpose, SNIPPET_blas_func_transpose) {
+    // clang-format off
+    //! [ex_blas_func_transpose]
+    //!
+    // Create a, a 2x3 array
+    array a = iota(dim4(2, 3));    // a = [0, 2, 4
+                                   //      1, 3, 5]
+
+    // Create b, the transpose of a
+    array b = transpose(a);        // b = [0, 1,
+                                   //      2, 3,
+                                   //      4, 5]
+
+    //! [ex_blas_func_transpose]
+    // clang-format on
+
+    using std::vector;
+    vector<float> gold_b{0, 2, 4, 1, 3, 5};
+
+    ASSERT_VEC_ARRAY_EQ(gold_b, b.dims(), b);
 }

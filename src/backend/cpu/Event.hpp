@@ -14,6 +14,7 @@
 
 #include <type_traits>
 
+namespace arrayfire {
 namespace cpu {
 
 class CPUEventPolicy {
@@ -58,3 +59,4 @@ void block(af_event eventHandle);
 af_event createAndMarkEvent();
 
 }  // namespace cpu
+}  // namespace arrayfire

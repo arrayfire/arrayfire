@@ -10,12 +10,12 @@
 #include <Param.hpp>
 #include <math.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename AccType, typename T, int channels>
-__global__
-void meanshift(Param<T> out, CParam<T> in, int radius, float cvar,
-               uint numIters, int nBBS0, int nBBS1) {
+__global__ void meanshift(Param<T> out, CParam<T> in, int radius, float cvar,
+                          uint numIters, int nBBS0, int nBBS1) {
     unsigned b2 = blockIdx.x / nBBS0;
     unsigned b3 = blockIdx.y / nBBS1;
     const T* iptr =
@@ -126,4 +126,5 @@ void meanshift(Param<T> out, CParam<T> in, int radius, float cvar,
               ch * out.strides[2])] = currentCenterColors[ch];
 }
 
-} // namespace cuda
+}  // namespace cuda
+}  // namespace arrayfire

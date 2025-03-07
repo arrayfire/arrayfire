@@ -5,13 +5,17 @@
 # The complete license agreement can be obtained at:
 # http://arrayfire.com/licenses/BSD-3-Clause
 
-cmake_minimum_required(VERSION 3.5)
+if(AF_BUILD_ONEAPI)
+  cmake_minimum_required(VERSION 3.20)
+else()
+  cmake_minimum_required(VERSION 3.16.3)
+endif()
+include(CheckLanguage)
 
 include(CMakeModules/AF_vcpkg_options.cmake)
 
-project(ArrayFire VERSION 3.9.0 LANGUAGES C CXX)
-
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
+project(ArrayFire VERSION 3.9.0 LANGUAGES C CXX)
 
 include(AFconfigure_deps_vars)
 include(AFBuildConfigurations)
@@ -37,12 +41,30 @@ set_policies(
            CMP0074
            CMP0077
            CMP0079)
+if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.27")
+  cmake_policy(SET CMP0146 OLD)
+endif()
 arrayfire_set_cmake_default_variables()
 
-#Set Intel OpenMP as default MKL thread layer
-set(MKL_THREAD_LAYER "Intel OpenMP" CACHE STRING "The thread layer to choose for MKL")
+option(AF_WITH_EXTERNAL_PACKAGES_ONLY "Build ArrayFire with External packages only" OFF)
+if(AF_WITH_EXTERNAL_PACKAGES_ONLY)
+  set(AF_REQUIRED REQUIRED)
+endif()
+if(CMAKE_SYCL_COMPILER)
+  get_filename_component(SYCL_COMPILER_NAME ${CMAKE_SYCL_COMPILER} NAME)
+endif()
+if(SYCL_COMPILER_NAME STREQUAL "dpcpp" OR SYCL_COMPILER_NAME STREQUAL "dpcpp.exe"
+   OR SYCL_COMPILER_NAME STREQUAL "icpx" OR SYCL_COMPILER_NAME STREQUAL "icx.exe")
+  set(MKL_THREAD_LAYER "TBB" CACHE STRING "The thread layer to choose for MKL")
+  set(MKL_INTERFACE "ilp64")
+  set(MKL_INTERFACE_INTEGER_SIZE 8)
+else()
+  set(MKL_THREAD_LAYER "Intel OpenMP" CACHE STRING "The thread layer to choose for MKL")
+  set(MKL_INTERFACE "lp64")
+  set(MKL_INTERFACE_INTEGER_SIZE 4)
+endif()
 
-find_package(CUDA 9.0)
+find_package(CUDA 10.2)
 find_package(cuDNN 4.0)
 find_package(OpenCL 1.2)
 find_package(OpenGL)
@@ -53,8 +75,16 @@ find_package(FFTW)
 find_package(CBLAS)
 find_package(LAPACKE)
 find_package(Doxygen)
-find_package(MKL)
-find_package(spdlog 1.8.5 QUIET)
+find_package(AF_MKL)
+find_package(spdlog QUIET ${AF_REQUIRED} NO_CMAKE_PACKAGE_REGISTRY)
+find_package(fmt QUIET ${AF_REQUIRED})
+find_package(span-lite QUIET)
+find_package(GTest)
+find_package(CLBlast QUIET)
+find_package(Boost 1.70 ${AF_REQUIRED})
+
+# CLFFT used in ArrayFire requires a specific fork
+#find_package(clFFT QUIET)
 
 include(boost_package)
 include(config_ccache)
@@ -62,6 +92,7 @@ include(config_ccache)
 option(AF_BUILD_CPU      "Build ArrayFire with a CPU backend"        ON)
 option(AF_BUILD_CUDA     "Build ArrayFire with a CUDA backend"       ${CUDA_FOUND})
 option(AF_BUILD_OPENCL   "Build ArrayFire with a OpenCL backend"     ${OpenCL_FOUND})
+option(AF_BUILD_ONEAPI   "Build ArrayFire with a oneAPI backend"     OFF)
 option(AF_BUILD_UNIFIED  "Build Backend-Independent ArrayFire API"   ON)
 option(AF_BUILD_DOCS     "Create ArrayFire Documentation"            ${DOXYGEN_FOUND})
 option(AF_BUILD_EXAMPLES "Build Examples"                            ON)
@@ -75,6 +106,11 @@ option(AF_WITH_STACKTRACE  "Add stacktraces to the error messages." ON)
 option(AF_CACHE_KERNELS_TO_DISK "Enable caching kernels to disk" ON)
 option(AF_WITH_STATIC_MKL "Link against static Intel MKL libraries" OFF)
 option(AF_WITH_STATIC_CUDA_NUMERIC_LIBS "Link libafcuda with static numeric libraries(cublas, cufft, etc.)" OFF)
+option(AF_WITH_SPDLOG_HEADER_ONLY "Build ArrayFire with header only version of spdlog" OFF)
+option(AF_WITH_FMT_HEADER_ONLY "Build ArrayFire with header only version of fmt" OFF)
+option(AF_WITH_FAST_MATH "Use lower precision but high performance numeric optimizations" OFF)
+option(AF_CTEST_SEPARATED "Run tests separately when called from ctest(increases test times)" OFF)
+option(AF_SKIP_UNSUPPORTED_TESTS "Skip tests where functions are unsupported by the backend instead of failing" OFF)
 
 if(AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
   option(AF_WITH_PRUNE_STATIC_CUDA_NUMERIC_LIBS "Prune CUDA static libraries to reduce binary size.(WARNING: May break some libs on older CUDA toolkits for some compute arch)" OFF)
@@ -83,6 +119,33 @@ endif()
 set(default_compute_library "FFTW/LAPACK/BLAS")
 if(MKL_FOUND)
   set(default_compute_library "Intel-MKL")
+endif()
+
+if(AF_WITH_STATIC_MKL)
+  set(MKL_LINK static)
+endif()
+if(MKL_THREAD_LAYER STREQUAL "Sequential")
+  set(MKL_THREADING "sequential")
+elseif(MKL_THREAD_LAYER STREQUAL "GNU OpenMP")
+  set(MKL_THREADING "gnu_thread")
+elseif(MKL_THREAD_LAYER STREQUAL "Intel OpenMP")
+  set(MKL_THREADING "intel_thread")
+elseif(MKL_THREAD_LAYER STREQUAL "TBB")
+  set(MKL_THREADING "tbb_thread")
+else()
+endif()
+
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)
+  # VCPKG overrides the find_package command and the PATH parameter is currently
+  # broken with the current version of VCPKG so we are setting the MKL_ROOT
+  # directory to the MKLROOT environment variable.
+  if(DEFINED ENV{MKLROOT} AND NOT DEFINED MKL_ROOT)
+    set(MKL_ROOT "$ENV{MKLROOT}")
+  endif()
+  set(SYCL_COMPILER ON)
+  set(MKL_THREADING "tbb_thread")
+  set(MKL_INTERFACE "ilp64")
+  find_package(MKL 2024.1)
 endif()
 
 af_multiple_option(NAME        AF_COMPUTE_LIBRARY
@@ -116,6 +179,19 @@ option(AF_WITH_STATIC_FREEIMAGE "Use Static FreeImage Lib" OFF)
 
 set(AF_WITH_CPUID ON CACHE BOOL "Build with CPUID integration")
 
+if(AF_BUILD_CUDA)
+  check_language(CUDA)
+  if(CMAKE_CUDA_COMPILER)
+    enable_language(CUDA)
+  elseif(CUDA_NVCC_EXECUTABLE)
+    message(STATUS "Using the FindCUDA script to search for the CUDA compiler")
+    set(CMAKE_CUDA_COMPILER ${CUDA_NVCC_EXECUTABLE} CACHE INTERNAL "CUDA compiler executable")
+    enable_language(CUDA)
+  else()
+    message(WARNING "No CUDA support")
+  endif()
+endif()
+
 af_deprecate(BUILD_CPU             AF_BUILD_CPU)
 af_deprecate(BUILD_CUDA            AF_BUILD_CUDA)
 af_deprecate(BUILD_OPENCL          AF_BUILD_OPENCL)
@@ -142,36 +218,14 @@ if(DEFINED USE_CPU_MKL OR DEFINED USE_OPENCL_MKL)
   endif()
 endif()
 
-mark_as_advanced(
-  AF_BUILD_FRAMEWORK
-  AF_CACHE_KERNELS_TO_DISK
-  AF_INSTALL_STANDALONE
-  AF_WITH_CPUID
-  AF_WITH_LOGGING
-  AF_WITH_STACKTRACE
-  AF_WITH_STATIC_FREEIMAGE
-  AF_WITH_NONFREE
-  AF_WITH_IMAGEIO
-  AF_WITH_RELATIVE_TEST_DIR
-  AF_TEST_WITH_MTX_FILES
-  ArrayFire_DIR
-  Boost_INCLUDE_DIR
-  CUDA_HOST_COMPILER
-  CUDA_SDK_ROOT_DIR
-  CUDA_USE_STATIC_CUDA_RUNTIME
-  CUDA_rt_LIBRARY
-  SPDLOG_BUILD_EXAMPLES
-  SPDLOG_BUILD_TESTING
-  ADDR2LINE_PROGRAM
-  Backtrace_LIBRARY
-  AF_WITH_STATIC_MKL
-  GIT
-  Forge_DIR
-  glad_DIR
-  spdlog_DIR
-  FG_BUILD_OFFLINE
-  )
-mark_as_advanced(CLEAR CUDA_VERSION)
+if(AF_COMPUTE_LIBRARY STREQUAL "Intel-MKL")
+  set(BLA_VENDOR "Intel10_64lp")
+  if(MKL_THREAD_LAYER STREQUAL "Sequential")
+    set(BLA_VENDOR "${BLA_VENDOR}_seq")
+  endif()
+endif()
+find_package(BLAS)
+find_package(LAPACK)
 
 # IF: the old USE_CPU_MKL/USE_OPENCL_MKL flags are present,
 # THEN Irrespective of AF_COMPUTE_LIBRARY value, continue with MKL to preserve old
@@ -185,7 +239,7 @@ if(${AF_BUILD_CPU} OR ${AF_BUILD_OPENCL})
   if("${AF_COMPUTE_LIBRARY}" STREQUAL "Intel-MKL"
       OR "${AF_COMPUTE_LIBRARY}" STREQUAL "MKL")
     af_mkl_batch_check()
-    dependency_check(MKL_FOUND "Please ensure Intel-MKL / oneAPI-oneMKL is installed")
+    dependency_check(MKL_Shared_FOUND "Please ensure Intel-MKL / oneAPI-oneMKL is installed")
     set(BUILD_WITH_MKL ON)
   elseif("${AF_COMPUTE_LIBRARY}" STREQUAL "FFTW/LAPACK/BLAS")
     dependency_check(FFTW_FOUND "FFTW not found")
@@ -200,22 +254,48 @@ endif()
 #forge is included in ALL target if AF_BUILD_FORGE is ON
 #otherwise, forge is not built at all
 include(AFconfigure_forge_dep)
-add_library(af_spdlog INTERFACE)
-set_target_properties(af_spdlog
-  PROPERTIES
-    INTERFACE_COMPILE_DEFINITIONS FMT_HEADER_ONLY)
 
-if(TARGET spdlog::spdlog_header_only)
-  target_include_directories(af_spdlog
-    SYSTEM INTERFACE
-      $<TARGET_PROPERTY:spdlog::spdlog_header_only,INTERFACE_INCLUDE_DIRECTORIES>
-    )
+if(TARGET fmt::fmt AND AF_WITH_FMT_HEADER_ONLY)
+  set_target_properties(fmt::fmt
+    PROPERTIES
+      INTERFACE_COMPILE_DEFINITIONS "FMT_HEADER_ONLY=1")
+endif()
+
+if(TARGET spdlog::spdlog OR AF_WITH_EXTERNAL_PACKAGES_ONLY)
+  if(AF_WITH_SPDLOG_HEADER_ONLY)
+    add_library(af_spdlog ALIAS spdlog::spdlog_header_only)
+  else()
+    add_library(af_spdlog ALIAS spdlog::spdlog)
+  endif()
 else()
+  add_library(af_spdlog INTERFACE)
   af_dep_check_and_populate(${spdlog_prefix}
     URI https://github.com/gabime/spdlog.git
-    REF v1.8.5
+    REF v1.9.2
   )
-  target_include_directories(af_spdlog INTERFACE "${${spdlog_prefix}_SOURCE_DIR}/include")
+
+  if(TARGET fmt::fmt)
+    set(SPDLOG_FMT_EXTERNAL ON)
+  endif()
+
+  add_subdirectory(${${spdlog_prefix}_SOURCE_DIR} ${${spdlog_prefix}_BINARY_DIR} EXCLUDE_FROM_ALL)
+
+  if(AF_WITH_SPDLOG_HEADER_ONLY)
+    set_target_properties(af_spdlog
+      PROPERTIES
+        INTERFACE_COMPILE_DEFINITIONS "FMT_HEADER_ONLY=1"
+        INTERFACE_LINK_LIBRARIES "spdlog_header_only")
+  else()
+    target_compile_options(spdlog
+      PRIVATE
+        $<$<BOOL:${has_cxx_fp_model}>:-fp-model precise>)
+    install(TARGETS spdlog
+      COMPONENT common_backend_dependencies
+      DESTINATION ${AF_INSTALL_BIN_DIR})
+    set_target_properties(af_spdlog
+      PROPERTIES
+        INTERFACE_LINK_LIBRARIES "spdlog")
+  endif()
 endif()
 
 if(NOT TARGET glad::glad)
@@ -228,26 +308,31 @@ if(NOT TARGET glad::glad)
   add_library(af_glad STATIC $<TARGET_OBJECTS:af_glad_obj_lib>)
   target_link_libraries(af_glad PUBLIC ${CMAKE_DL_LIBS})
   target_include_directories(af_glad
-    PUBLIC
-    $<BUILD_INTERFACE:$<TARGET_PROPERTY:af_glad_obj_lib,INTERFACE_INCLUDE_DIRECTORIES>>
-    )
+    SYSTEM PUBLIC
+      $<BUILD_INTERFACE:$<TARGET_PROPERTY:af_glad_obj_lib,INTERFACE_INCLUDE_DIRECTORIES>>)
 endif()
 
-af_dep_check_and_populate(span-lite
-  URI https://github.com/martinmoene/span-lite
-  REF "ccf2351"
-  )
+if(NOT TARGET nonstd::span-lite)
+  af_dep_check_and_populate(span-lite
+    URI https://github.com/martinmoene/span-lite
+    REF "ccf2351"
+    )
+  add_subdirectory(${span-lite_SOURCE_DIR} EXCLUDE_FROM_ALL)
+  get_property(span_include_dir
+    TARGET span-lite
+    PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+  set_target_properties(span-lite
+    PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${span_include_dir}")
+  set_target_properties(span-lite
+    PROPERTIES INTERFACE_COMPILE_DEFINITIONS "span_FEATURE_WITH_INITIALIZER_LIST_P2447=1")
+
+endif()
 
 af_dep_check_and_populate(${assets_prefix}
   URI https://github.com/arrayfire/assets.git
   REF master
 )
 set(ASSETS_DIR ${${assets_prefix}_SOURCE_DIR})
-
-configure_file(
-    ${ArrayFire_SOURCE_DIR}/CMakeModules/version.hpp.in
-    ${ArrayFire_BINARY_DIR}/version.hpp
-)
 
 # when crosscompiling use the bin2cpp file from the native bin directory
 if(CMAKE_CROSSCOMPILING)
@@ -260,8 +345,15 @@ if(CMAKE_CROSSCOMPILING)
                        "directory and build the bin2cpp target.")
   endif()
 else()
-  add_executable(bin2cpp ${ArrayFire_SOURCE_DIR}/CMakeModules/bin2cpp.cpp
-                         ${ArrayFire_SOURCE_DIR}/src/backend/common/util.cpp)
+  add_executable(bin2cpp CMakeModules/bin2cpp.cpp
+                         src/backend/common/deterministicHash.cpp
+                         src/backend/common/deterministicHash.hpp
+                         src/backend/common/Source.hpp)
+  set_target_properties(bin2cpp
+    PROPERTIES
+      CXX_STANDARD 17)
+  target_link_libraries(bin2cpp PRIVATE nonstd::span-lite)
+
   if(WIN32)
     target_compile_definitions(bin2cpp PRIVATE OS_WIN)
   elseif(APPLE)
@@ -273,11 +365,6 @@ else()
                              ${ArrayFire_SOURCE_DIR}/include
                              ${ArrayFire_BINARY_DIR}/include
                              ${ArrayFire_SOURCE_DIR}/src/backend)
-  if(TARGET spdlog::spdlog_header_only)
-    target_link_libraries(bin2cpp PRIVATE spdlog::spdlog_header_only)
-  else()
-    target_link_libraries(bin2cpp PRIVATE af_spdlog)
-  endif()
   export(TARGETS bin2cpp FILE ${CMAKE_BINARY_DIR}/ImportExecutables.cmake)
 endif()
 
@@ -289,7 +376,6 @@ if(NOT LAPACK_FOUND)
         unset(LAPACK_LIB CACHE)
         unset(LAPACKE_INCLUDES CACHE)
         unset(LAPACKE_ROOT_DIR CACHE)
-        find_package(LAPACK)
     endif()
 endif()
 
@@ -299,6 +385,7 @@ add_subdirectory(src/api/cpp)
 
 conditional_directory(AF_BUILD_CPU     src/backend/cpu)
 conditional_directory(AF_BUILD_CUDA    src/backend/cuda)
+conditional_directory(AF_BUILD_ONEAPI  src/backend/oneapi)
 conditional_directory(AF_BUILD_OPENCL  src/backend/opencl)
 conditional_directory(AF_BUILD_UNIFIED src/api/unified)
 
@@ -314,11 +401,18 @@ if(TARGET afcuda)
   list(APPEND built_backends afcuda)
 endif()
 
+if(TARGET afoneapi)
+  list(APPEND built_backends afoneapi)
+endif()
+
 if(TARGET afopencl)
   list(APPEND built_backends afopencl)
 endif()
 
 set_target_properties(${built_backends} PROPERTIES
+                      CXX_STANDARD 17
+                      CXX_EXTENSIONS OFF
+                      CXX_VISIBILITY_PRESET hidden
                       VERSION "${ArrayFire_VERSION}"
                       SOVERSION "${ArrayFire_VERSION_MAJOR}")
 
@@ -352,16 +446,11 @@ find_library(Backtrace_LIBRARY backtrace
 find_program(ADDR2LINE_PROGRAM addr2line
   DOC "The path to the addr2line program for informative stacktraces")
 
+check_cxx_compiler_flag(-Wno-ignored-attributes has_ignored_attributes_flag)
+check_cxx_compiler_flag(-Wall has_all_warnings_flag)
+
 foreach(backend ${built_backends})
-  target_compile_definitions(${backend} PRIVATE AFDLL)
-  if(AF_WITH_LOGGING)
-    target_compile_definitions(${backend}
-      PRIVATE AF_WITH_LOGGING)
-  endif()
-  if(AF_CACHE_KERNELS_TO_DISK)
-    target_compile_definitions(${backend}
-      PRIVATE AF_CACHE_KERNELS_TO_DISK)
-  endif()
+  arrayfire_set_default_cxx_flags(${backend})
 endforeach()
 
 if(AF_BUILD_FRAMEWORK)
@@ -408,7 +497,7 @@ install(DIRECTORY "${ArrayFire_SOURCE_DIR}/LICENSES/"
     DESTINATION LICENSES
     COMPONENT licenses)
 
-foreach(backend CPU CUDA OpenCL Unified)
+foreach(backend CPU CUDA OpenCL oneAPI Unified)
   string(TOUPPER ${backend} upper_backend)
   string(TOLOWER ${backend} lower_backend)
   if(AF_BUILD_${upper_backend})
@@ -469,6 +558,7 @@ if(BUILD_WITH_MKL AND AF_INSTALL_STANDALONE)
     get_filename_component(mkl_shd ${MKL_Core_LINK_LIBRARY} REALPATH)
     get_filename_component(mkl_tly ${MKL_ThreadLayer_LINK_LIBRARY} REALPATH)
     install(FILES
+      ${mkl_sycl}
       ${mkl_rnt}
       ${mkl_shd}
       ${mkl_tly}
@@ -531,6 +621,19 @@ include(CPackConfig)
 # for ArrayFire Development. They are marked hidden.
 # If VCPKG is not used, marking them is not harmful
 mark_as_advanced(
+  AF_BUILD_FRAMEWORK
+  AF_CACHE_KERNELS_TO_DISK
+  AF_INSTALL_STANDALONE
+  AF_WITH_CPUID
+  AF_WITH_LOGGING
+  AF_WITH_STACKTRACE
+  AF_WITH_STATIC_FREEIMAGE
+  AF_WITH_NONFREE
+  AF_WITH_IMAGEIO
+  AF_WITH_RELATIVE_TEST_DIR
+  AF_TEST_WITH_MTX_FILES
+  ArrayFire_DIR
+
   VCPKG_APPLOCAL_DEPS
   VCPKG_BOOTSTRAP_OPTIONS
   VCPKG_INSTALL_OPTIONS
@@ -546,4 +649,54 @@ mark_as_advanced(
   Z_VCPKG_PWSH_PATH
   Z_VCPKG_CL
   _VCPKG_INSTALLED_DIR
+
+  Boost_INCLUDE_DIR
+  CLEAR CUDA_VERSION
+  CUDA_HOST_COMPILER
+  CUDA_SDK_ROOT_DIR
+  CUDA_USE_STATIC_CUDA_RUNTIME
+  CUDA_rt_LIBRARY
+  SPDLOG_BUILD_EXAMPLES
+  SPDLOG_BUILD_TESTING
+  ADDR2LINE_PROGRAM
+  Backtrace_LIBRARY
+  AF_WITH_STATIC_MKL
+  GIT
+  Forge_DIR
+  glad_DIR
+  spdlog_DIR
+  FG_BUILD_OFFLINE
+  SPAN_LITE_COLOURISE_TEST
+  SPAN_LITE_EXPORT_PACKAGE
+  SPAN_LITE_OPT_BUILD_EXAMPLES
+  SPAN_LITE_OPT_BUILD_TESTS
+  SPAN_LITE_OPT_SELECT_NONSTD
+  SPAN_LITE_OPT_SELECT_STD
+  FETCHCONTENT_SOURCE_DIR_SPAN-LITE
+  SPDLOG_BUILD_ALL
+  SPDLOG_BUILD_BENCH
+  SPDLOG_BUILD_EXAMPLE
+  SPDLOG_BUILD_EXAMPLE_HO
+  SPDLOG_BUILD_SHARED
+  SPDLOG_BUILD_TESTS
+  SPDLOG_BUILD_TESTS_HO
+  SPDLOG_BUILD_WARNINGS
+  SPDLOG_CLOCK_COARSE
+  SPDLOG_DISABLE_DEFAULT_LOGGER
+  SPDLOG_ENABLE_PCH
+  SPDLOG_FMT_EXTERNAL
+  SPDLOG_FMT_EXTERNAL_HO
+  SPDLOG_INSTALL
+  SPDLOG_NO_ATOMIC_LEVELS
+  SPDLOG_NO_EXCEPTIONS
+  SPDLOG_NO_THREAD_ID
+  SPDLOG_NO_TLS
+  SPDLOG_PREVENT_CHILD_FD
+  SPDLOG_SANITIZE_ADDRESS
+  SPDLOG_TIDY
+  SPDLOG_WCHAR_FILENAMES
+  SPDLOG_WCHAR_SUPPORT
+  cub_include_dir
+  fmt_DIR
+  span-lite_DIR
   )

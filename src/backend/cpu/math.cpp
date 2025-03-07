@@ -10,6 +10,7 @@
 #include <math.hpp>
 #include <complex>
 
+namespace arrayfire {
 namespace cpu {
 
 uint abs(uint val) { return val; }
@@ -39,3 +40,4 @@ cdouble max(cdouble lhs, cdouble rhs) {
 }
 
 }  // namespace cpu
+}  // namespace arrayfire

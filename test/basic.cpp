@@ -314,6 +314,7 @@ TEST(Assert, TestEqualsC) {
 }
 
 TEST(Assert, TestEqualsDiffTypes) {
+    SUPPORTED_TYPE_CHECK(double);
     array gold = constant(1, 10, 10, f64);
     array out  = constant(1, 10, 10);
 

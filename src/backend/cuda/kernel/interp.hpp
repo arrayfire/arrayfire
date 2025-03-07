@@ -9,6 +9,7 @@
 
 #include <math.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
@@ -328,3 +329,4 @@ struct Interp2<Ty, Tp, xdim, ydim, 3> {
 };
 
 }  // namespace cuda
+}  // namespace arrayfire

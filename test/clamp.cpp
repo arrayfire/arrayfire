@@ -51,8 +51,19 @@ class Clamp : public ::testing::TestWithParam<clamp_params> {
    public:
     void SetUp() {
         clamp_params params = GetParam();
-        if (noDoubleTests(params.in_type_)) return;
-        if (noHalfTests(params.in_type_)) return;
+        SUPPORTED_TYPE_CHECK(double);
+        if (noDoubleTests(params.in_type_))
+            GTEST_SKIP() << "Double not supported on this device";
+        if (noHalfTests(params.in_type_))
+            GTEST_SKIP() << "Half not supported on this device";
+        if (noDoubleTests(params.hi_type_))
+            GTEST_SKIP() << "Double not supported on this device";
+        if (noHalfTests(params.hi_type_))
+            GTEST_SKIP() << "Half not supported on this device";
+        if (noDoubleTests(params.lo_type_))
+            GTEST_SKIP() << "Double not supported on this device";
+        if (noHalfTests(params.lo_type_))
+            GTEST_SKIP() << "Half not supported on this device";
 
         in_ = randu(params.size_, params.in_type_);
         lo_ = randu(params.size_, params.lo_type_) / T(10);
@@ -104,7 +115,7 @@ string testNameGenerator(const ::testing::TestParamInfo<clamp_params> info) {
 typedef Clamp<double> ClampFloatingPoint;
 
 // clang-format off
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SmallDims, ClampFloatingPoint,
     ::testing::Values(
                       clamp_params(dim4(10), f32, f32, f32, f32),
@@ -138,13 +149,11 @@ INSTANTIATE_TEST_CASE_P(
 
 TEST_P(ClampFloatingPoint, Basic) {
     clamp_params params = GetParam();
-    if (noDoubleTests(params.in_type_)) return;
-    if (noHalfTests(params.in_type_)) return;
-    array out = clamp(in_, lo_, hi_);
+    array out           = clamp(in_, lo_, hi_);
     ASSERT_ARRAYS_NEAR(gold_, out, 1e-5);
 }
 
-TEST(ClampTests, FloatArrayArray) {
+TEST(Clamp, FloatArrayArray) {
     array in = randu(num, f32);
     array lo = randu(num, f32) / 10;        // Ensure lo <= 0.1
     array hi = 1.0 - randu(num, f32) / 10;  // Ensure hi >= 0.9
@@ -165,7 +174,7 @@ TEST(ClampTests, FloatArrayArray) {
     }
 }
 
-TEST(ClampTests, FloatArrayScalar) {
+TEST(Clamp, FloatArrayScalar) {
     array in = randu(num, f32);
     array lo = randu(num, f32) / 10;  // Ensure lo <= 0.1
     float hi = 0.9;
@@ -185,7 +194,7 @@ TEST(ClampTests, FloatArrayScalar) {
     }
 }
 
-TEST(ClampTests, FloatScalarArray) {
+TEST(Clamp, FloatScalarArray) {
     array in = randu(num, f32);
     float lo = 0.1;
     array hi = 1.0 - randu(num, f32) / 10;  // Ensure hi >= 0.9
@@ -205,7 +214,7 @@ TEST(ClampTests, FloatScalarArray) {
     }
 }
 
-TEST(ClampTests, FloatScalarScalar) {
+TEST(Clamp, FloatScalarScalar) {
     array in = randu(num, f32);
     float lo = 0.1;
     float hi = 0.9;

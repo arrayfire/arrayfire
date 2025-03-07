@@ -38,7 +38,7 @@ template<typename T>
 class svd : public ::testing::Test {};
 
 typedef ::testing::Types<float, double, cfloat, cdouble> TestTypes;
-TYPED_TEST_CASE(svd, TestTypes);
+TYPED_TEST_SUITE(svd, TestTypes);
 
 template<typename T>
 inline double get_val(T val) {
@@ -58,7 +58,7 @@ double get_val<cdouble>(cdouble val) {
 template<typename T>
 void svdTest(const int M, const int N) {
     SUPPORTED_TYPE_CHECK(T);
-    if (noLAPACKTests()) return;
+    LAPACK_ENABLED_CHECK();
 
     dtype ty = (dtype)dtype_traits<T>::af_type;
 
@@ -87,7 +87,7 @@ void svdTest(const int M, const int N) {
 template<typename T>
 void svdInPlaceTest(const int M, const int N) {
     SUPPORTED_TYPE_CHECK(T);
-    if (noLAPACKTests()) return;
+    LAPACK_ENABLED_CHECK();
 
     dtype ty = (dtype)dtype_traits<T>::af_type;
 
@@ -115,7 +115,7 @@ void svdInPlaceTest(const int M, const int N) {
 template<typename T>
 void checkInPlaceSameResults(const int M, const int N) {
     SUPPORTED_TYPE_CHECK(T);
-    if (noLAPACKTests()) return;
+    LAPACK_ENABLED_CHECK();
 
     dtype ty = (dtype)dtype_traits<T>::af_type;
 

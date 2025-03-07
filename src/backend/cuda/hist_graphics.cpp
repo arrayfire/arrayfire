@@ -14,11 +14,16 @@
 #include <err_cuda.hpp>
 #include <hist_graphics.hpp>
 
+using arrayfire::common::ForgeManager;
+using arrayfire::common::ForgeModule;
+using arrayfire::common::forgePlugin;
+
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
 void copy_histogram(const Array<T> &data, fg_histogram hist) {
-    auto stream = cuda::getActiveStream();
+    auto stream = getActiveStream();
     if (DeviceManager::checkGraphicsInteropCapability()) {
         const T *d_P = data.get();
 
@@ -36,7 +41,7 @@ void copy_histogram(const Array<T> &data, fg_histogram hist) {
 
         POST_LAUNCH_CHECK();
     } else {
-        ForgeModule &_ = graphics::forgePlugin();
+        ForgeModule &_ = common::forgePlugin();
         unsigned bytes = 0, buffer = 0;
         FG_CHECK(_.fg_get_histogram_vertex_buffer(&buffer, hist));
         FG_CHECK(_.fg_get_histogram_vertex_buffer_size(&bytes, hist));
@@ -67,3 +72,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(uchar)
 
 }  // namespace cuda
+}  // namespace arrayfire

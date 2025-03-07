@@ -29,7 +29,7 @@ typedef ::testing::Types<float, double, cfloat, cdouble, char, unsigned char,
                          ushort /*, half_float::half*/>
     TestTypes;
 
-TYPED_TEST_CASE(PadBorders, TestTypes);
+TYPED_TEST_SUITE(PadBorders, TestTypes);
 
 template<typename T>
 void testPad(const vector<T>& input, const dim4& inDims, const dim4& lbPadding,

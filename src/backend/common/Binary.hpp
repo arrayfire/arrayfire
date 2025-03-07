@@ -18,6 +18,7 @@
 
 #include "optypes.hpp"
 
+namespace arrayfire {
 namespace common {
 
 using namespace detail;  // NOLINT
@@ -40,10 +41,24 @@ struct Binary<T, af_add_t> {
 };
 
 template<typename T>
+struct Binary<T, af_sub_t> {
+    static __DH__ T init() { return scalar<T>(0); }
+
+    __DH__ T operator()(T lhs, T rhs) { return lhs - rhs; }
+};
+
+template<typename T>
 struct Binary<T, af_mul_t> {
     static __DH__ T init() { return scalar<T>(1); }
 
     __DH__ T operator()(T lhs, T rhs) { return lhs * rhs; }
+};
+
+template<typename T>
+struct Binary<T, af_div_t> {
+    static __DH__ T init() { return scalar<T>(1); }
+
+    __DH__ T operator()(T lhs, T rhs) { return lhs / rhs; }
 };
 
 template<typename T>
@@ -78,15 +93,17 @@ template<>
 struct Binary<char, af_min_t> {
     static __DH__ char init() { return 1; }
 
-    __DH__ char operator()(char lhs, char rhs) { return min(lhs > 0, rhs > 0); }
+    __DH__ char operator()(char lhs, char rhs) {
+        return detail::min(lhs > 0, rhs > 0);
+    }
 };
 
-#define SPECIALIZE_COMPLEX_MIN(T, Tr)                               \
-    template<>                                                      \
-    struct Binary<T, af_min_t> {                                    \
-        static __DH__ T init() { return scalar<T>(maxval<Tr>()); }  \
-                                                                    \
-        __DH__ T operator()(T lhs, T rhs) { return min(lhs, rhs); } \
+#define SPECIALIZE_COMPLEX_MIN(T, Tr)                                       \
+    template<>                                                              \
+    struct Binary<T, af_min_t> {                                            \
+        static __DH__ T init() { return scalar<T>(maxval<Tr>()); }          \
+                                                                            \
+        __DH__ T operator()(T lhs, T rhs) { return detail::min(lhs, rhs); } \
     };
 
 SPECIALIZE_COMPLEX_MIN(cfloat, float)
@@ -122,3 +139,4 @@ SPECIALIZE_COMPLEX_MAX(cdouble, double)
 #undef SPECIALIZE_COMPLEX_MAX
 
 }  // namespace common
+}  // namespace arrayfire

@@ -10,6 +10,7 @@
 #pragma once
 #include <Param.hpp>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -94,3 +95,4 @@ void non_maximal(Param<float> xcoords, Param<float> ycoords,
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

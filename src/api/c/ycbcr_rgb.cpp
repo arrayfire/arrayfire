@@ -69,7 +69,7 @@ static af_array convert(const af_array& in, const af_ycc_std standard) {
     static const float INV_219 = 0.004566210;
     static const float INV_112 = 0.008928571;
     const static float k[6]    = {0.1140f, 0.2990f, 0.0722f,
-                               0.2126f, 0.0593f, 0.2627f};
+                                  0.2126f, 0.0593f, 0.2627f};
     unsigned stdIdx            = 0;  // Default standard is AF_YCC_601
     switch (standard) {
         case AF_YCC_709: stdIdx = 2; break;

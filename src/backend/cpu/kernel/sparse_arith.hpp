@@ -13,6 +13,7 @@
 
 #include <cmath>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -223,3 +224,4 @@ void sparseArithOp(Param<T> oVals, Param<int> oColIdx, CParam<int> oRowIdx,
 }
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

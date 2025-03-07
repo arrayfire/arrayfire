@@ -42,7 +42,7 @@ string getTypeName(
     return info.param.name;
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Types, ArrayIOType,
     ::testing::Values(type_params("f32", f32, 3.14f, 0),
                       type_params("f64", f64, 3.14, 0),
@@ -56,6 +56,7 @@ INSTANTIATE_TEST_CASE_P(
 
 TEST_P(ArrayIOType, ReadType) {
     type_params p = GetParam();
+    if (noDoubleTests(p.type)) GTEST_SKIP() << "No double support.";
     array arr =
         readArray((string(TEST_DIR) + "/arrayio/" + p.name + ".arr").c_str(),
                   p.name.c_str());
@@ -65,6 +66,7 @@ TEST_P(ArrayIOType, ReadType) {
 
 TEST_P(ArrayIOType, ReadSize) {
     type_params p = GetParam();
+    if (noDoubleTests(p.type)) GTEST_SKIP() << "No double support.";
     array arr =
         readArray((string(TEST_DIR) + "/arrayio/" + p.name + ".arr").c_str(),
                   p.name.c_str());
@@ -89,6 +91,7 @@ void checkVals(array arr, double r, double i, af_dtype t) {
 
 TEST_P(ArrayIOType, ReadContent) {
     type_params p = GetParam();
+    if (noDoubleTests(p.type)) GTEST_SKIP() << "No double support.";
     array arr =
         readArray((string(TEST_DIR) + "/arrayio/" + p.name + ".arr").c_str(),
                   p.name.c_str());

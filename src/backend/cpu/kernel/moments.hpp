@@ -13,6 +13,7 @@
 #include <utility.hpp>
 #include <af/defines.h>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -58,3 +59,4 @@ void moments(Param<float> output, CParam<T> input, af_moment_type moment) {
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

@@ -17,6 +17,7 @@
 #include <array>
 #include <vector>
 
+namespace arrayfire {
 namespace cpu {
 
 namespace jit {
@@ -25,13 +26,13 @@ template<typename To, typename Ti, af_op_t op>
 class BinaryNode : public TNode<compute_t<To>> {
    protected:
     BinOp<compute_t<To>, compute_t<Ti>, op> m_op;
-    using common::Node::m_children;
+    using TNode<compute_t<To>>::m_children;
 
    public:
     BinaryNode(common::Node_ptr lhs, common::Node_ptr rhs)
         : TNode<compute_t<To>>(compute_t<To>(0),
                                std::max(lhs->getHeight(), rhs->getHeight()) + 1,
-                               {{lhs, rhs}}) {}
+                               {{lhs, rhs}}, common::kNodeType::Nary) {}
 
     std::unique_ptr<common::Node> clone() final {
         return std::make_unique<BinaryNode>(*this);
@@ -70,7 +71,8 @@ class BinaryNode : public TNode<compute_t<To>> {
     }
 
     int setArgs(int start_id, bool is_linear,
-                std::function<void(int id, const void *ptr, size_t arg_size)>
+                std::function<void(int id, const void *ptr, size_t arg_size,
+                                   bool is_buffer)>
                     setArg) const override {
         UNUSED(is_linear);
         UNUSED(setArg);
@@ -92,5 +94,5 @@ class BinaryNode : public TNode<compute_t<To>> {
 };
 
 }  // namespace jit
-
 }  // namespace cpu
+}  // namespace arrayfire

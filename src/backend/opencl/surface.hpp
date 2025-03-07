@@ -10,9 +10,11 @@
 #include <Array.hpp>
 #include <common/graphics_common.hpp>
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T>
 void copy_surface(const Array<T> &P, fg_surface surface);
 
-}
+}  // namespace opencl
+}  // namespace arrayfire

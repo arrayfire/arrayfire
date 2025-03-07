@@ -13,12 +13,12 @@
 #include <assign_kernel_param.hpp>
 #include <utility.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
-__global__ void index(Param<T> out, CParam<T> in,
-                      const cuda::IndexKernelParam p, const int nBBS0,
-                      const int nBBS1) {
+__global__ void index(Param<T> out, CParam<T> in, const IndexKernelParam p,
+                      const int nBBS0, const int nBBS1) {
     // retrieve index pointers
     // these can be 0 where af_array index is not used
     const uint* ptr0 = p.ptr[0];
@@ -43,13 +43,17 @@ __global__ void index(Param<T> out, CParam<T> in,
         gw < out.dims[3]) {
         // calculate pointer offsets for input
         int i =
-            p.strds[0] * trimIndex(s0 ? gx + p.offs[0] : ptr0[gx], in.dims[0]);
+            p.strds[0] *
+            trimIndex(s0 ? gx * p.steps[0] + p.offs[0] : ptr0[gx], in.dims[0]);
         int j =
-            p.strds[1] * trimIndex(s1 ? gy + p.offs[1] : ptr1[gy], in.dims[1]);
+            p.strds[1] *
+            trimIndex(s1 ? gy * p.steps[1] + p.offs[1] : ptr1[gy], in.dims[1]);
         int k =
-            p.strds[2] * trimIndex(s2 ? gz + p.offs[2] : ptr2[gz], in.dims[2]);
+            p.strds[2] *
+            trimIndex(s2 ? gz * p.steps[2] + p.offs[2] : ptr2[gz], in.dims[2]);
         int l =
-            p.strds[3] * trimIndex(s3 ? gw + p.offs[3] : ptr3[gw], in.dims[3]);
+            p.strds[3] *
+            trimIndex(s3 ? gw * p.steps[3] + p.offs[3] : ptr3[gw], in.dims[3]);
         // offset input and output pointers
         const T* src = (const T*)in.ptr + (i + j + k + l);
         T* dst = (T*)out.ptr + (gx * out.strides[0] + gy * out.strides[1] +
@@ -60,3 +64,4 @@ __global__ void index(Param<T> out, CParam<T> in,
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

@@ -15,6 +15,7 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/sparse_cuh.hpp>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -23,13 +24,13 @@ void coo2dense(Param<T> output, CParam<T> values, CParam<int> rowIdx,
                CParam<int> colIdx) {
     constexpr int reps = 4;
 
-    auto coo2Dense =
-        common::getKernel("cuda::coo2Dense", {sparse_cuh_src},
-                          {TemplateTypename<T>()}, {DefineValue(reps)});
+    auto coo2Dense = common::getKernel(
+        "arrayfire::cuda::coo2Dense", {{sparse_cuh_src}},
+        TemplateArgs(TemplateTypename<T>()), {{DefineValue(reps)}});
 
     dim3 threads(256, 1, 1);
 
-    dim3 blocks(divup(output.dims[0], threads.x * reps), 1, 1);
+    dim3 blocks(divup(values.dims[0], threads.x * reps), 1, 1);
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
@@ -39,3 +40,4 @@ void coo2dense(Param<T> output, CParam<T> values, CParam<int> rowIdx,
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

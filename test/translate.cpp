@@ -42,8 +42,8 @@ typedef ::testing::Types<float, double, cfloat, cdouble> TestTypes;
 typedef ::testing::Types<int, intl, char, short> TestTypesInt;
 
 // register the type list
-TYPED_TEST_CASE(Translate, TestTypes);
-TYPED_TEST_CASE(TranslateInt, TestTypesInt);
+TYPED_TEST_SUITE(Translate, TestTypes);
+TYPED_TEST_SUITE(TranslateInt, TestTypesInt);
 
 template<typename T>
 void translateTest(string pTestFile, const unsigned resultIdx, dim4 odims,
@@ -52,8 +52,8 @@ void translateTest(string pTestFile, const unsigned resultIdx, dim4 odims,
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<float> > tests;
+    vector<vector<T>> in;
+    vector<vector<float>> tests;
     readTests<T, float, float>(pTestFile, numDims, in, tests);
 
     af_array inArray  = 0;

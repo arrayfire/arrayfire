@@ -17,6 +17,7 @@
 #include <af/defines.h>
 #include <af/lapack.h>
 
+using arrayfire::getArray;
 using detail::cdouble;
 using detail::cfloat;
 

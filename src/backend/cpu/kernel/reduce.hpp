@@ -13,6 +13,7 @@
 #include <common/Transform.hpp>
 #include <common/half.hpp>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -147,6 +148,7 @@ struct reduce_dim_by_key<op, Ti, Tk, To, 0> {
 
                 current_key = keyval;
                 out_val     = transform(inValsPtr[vOffset + (i * istride)]);
+                if (change_nan) out_val = IS_NAN(out_val) ? nanval : out_val;
                 ++keyidx;
             }
 
@@ -199,3 +201,4 @@ struct reduce_all {
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

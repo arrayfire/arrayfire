@@ -39,16 +39,16 @@ typedef ::testing::Types<int, unsigned, char, unsigned char, short, ushort>
     TestTypesInt;
 
 // register the type list
-TYPED_TEST_CASE(Sobel, TestTypes);
-TYPED_TEST_CASE(Sobel_Integer, TestTypesInt);
+TYPED_TEST_SUITE(Sobel, TestTypes);
+TYPED_TEST_SUITE(Sobel_Integer, TestTypesInt);
 
 template<typename Ti, typename To>
 void testSobelDerivatives(string pTestFile) {
     SUPPORTED_TYPE_CHECK(Ti);
 
     vector<dim4> numDims;
-    vector<vector<Ti> > in;
-    vector<vector<To> > tests;
+    vector<vector<Ti>> in;
+    vector<vector<To>> tests;
 
     readTests<Ti, To, int>(pTestFile, numDims, in, tests);
 
@@ -79,11 +79,13 @@ void testSobelDerivatives(string pTestFile) {
 // border type is set to cv.BORDER_REFLECT_101 in opencv
 
 TYPED_TEST(Sobel, Rectangle) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     testSobelDerivatives<TypeParam, TypeParam>(
         string(TEST_DIR "/sobel/rectangle.test"));
 }
 
 TYPED_TEST(Sobel_Integer, Rectangle) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     testSobelDerivatives<TypeParam, int>(
         string(TEST_DIR "/sobel/rectangle.test"));
 }

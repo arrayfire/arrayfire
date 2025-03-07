@@ -51,7 +51,7 @@ void solveTester(const int m, const int n, const int k, const int b, double eps,
     deviceGC();
 
     SUPPORTED_TYPE_CHECK(T);
-    if (noLAPACKTests()) return;
+    LAPACK_ENABLED_CHECK();
 
 #if 1
     array A  = cpu_randu<T>(dim4(m, n, b));
@@ -88,7 +88,7 @@ void solveLUTester(const int n, const int k, double eps,
     deviceGC();
 
     SUPPORTED_TYPE_CHECK(T);
-    if (noLAPACKTests()) return;
+    LAPACK_ENABLED_CHECK();
 
 #if 1
     array A  = cpu_randu<T>(dim4(n, n));
@@ -125,7 +125,7 @@ void solveTriangleTester(const int n, const int k, bool is_upper, double eps,
     deviceGC();
 
     SUPPORTED_TYPE_CHECK(T);
-    if (noLAPACKTests()) return;
+    LAPACK_ENABLED_CHECK();
 
 #if 1
     array A  = cpu_randu<T>(dim4(n, n));
@@ -174,7 +174,7 @@ template<typename T>
 class Solve : public ::testing::Test {};
 
 typedef ::testing::Types<float, cfloat, double, cdouble> TestTypes;
-TYPED_TEST_CASE(Solve, TestTypes);
+TYPED_TEST_SUITE(Solve, TestTypes);
 
 template<typename T>
 double eps();

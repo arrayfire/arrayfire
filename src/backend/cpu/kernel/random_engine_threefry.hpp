@@ -46,6 +46,7 @@
 
 #pragma once
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 // Utils
@@ -156,3 +157,4 @@ static inline void threefry(uint k[2], uint c[2], uint X[2]) {
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

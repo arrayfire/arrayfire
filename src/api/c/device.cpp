@@ -28,7 +28,11 @@
 #include <string>
 
 using af::dim4;
-using common::half;
+using arrayfire::getSparseArray;
+using arrayfire::common::getCacheDirectory;
+using arrayfire::common::getEnvVar;
+using arrayfire::common::half;
+using arrayfire::common::JIT_KERNEL_CACHE_DIRECTORY_ENV_NAME;
 using detail::Array;
 using detail::cdouble;
 using detail::cfloat;
@@ -39,6 +43,7 @@ using detail::getActiveDeviceId;
 using detail::getBackend;
 using detail::getDeviceCount;
 using detail::getDeviceInfo;
+using detail::init;
 using detail::intl;
 using detail::isDoubleSupported;
 using detail::isHalfSupported;
@@ -75,7 +80,7 @@ af_err af_get_available_backends(int* result) {
 af_err af_get_backend_id(af_backend* result, const af_array in) {
     try {
         if (in) {
-            const ArrayInfo& info = getInfo(in, false, false);
+            const ArrayInfo& info = getInfo(in, false);
             *result               = info.getBackendId();
         } else {
             return AF_ERR_ARG;
@@ -88,7 +93,7 @@ af_err af_get_backend_id(af_backend* result, const af_array in) {
 af_err af_get_device_id(int* device, const af_array in) {
     try {
         if (in) {
-            const ArrayInfo& info = getInfo(in, false, false);
+            const ArrayInfo& info = getInfo(in, false);
             *device               = static_cast<int>(info.getDevId());
         } else {
             return AF_ERR_ARG;
@@ -107,7 +112,7 @@ af_err af_init() {
     try {
         thread_local std::once_flag flag;
         std::call_once(flag, []() {
-            getDeviceInfo();
+            init();
 #if defined(USE_MKL) && !defined(USE_STATIC_MKL)
             int errCode = -1;
             // Have used the AF_MKL_INTERFACE_SIZE as regular if's so that
@@ -163,8 +168,9 @@ af_err af_info_string(char** str, const bool verbose) {
     UNUSED(verbose);  // TODO(umar): Add something useful
     try {
         std::string infoStr = getDeviceInfo();
-        af_alloc_host(reinterpret_cast<void**>(str),
-                      sizeof(char) * (infoStr.size() + 1));
+        void* halloc_ptr    = nullptr;
+        af_alloc_host(&halloc_ptr, sizeof(char) * (infoStr.size() + 1));
+        memcpy(str, &halloc_ptr, sizeof(void*));
 
         // Need to do a deep copy
         // str.c_str wont cut it

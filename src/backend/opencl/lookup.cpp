@@ -15,8 +15,9 @@
 #include <err_opencl.hpp>
 #include <af/dim4.hpp>
 
-using common::half;
+using arrayfire::common::half;
 
+namespace arrayfire {
 namespace opencl {
 template<typename in_t, typename idx_t>
 Array<in_t> lookup(const Array<in_t> &input, const Array<idx_t> &indices,
@@ -71,3 +72,4 @@ INSTANTIATE(ushort);
 INSTANTIATE(short);
 INSTANTIATE(half);
 }  // namespace opencl
+}  // namespace arrayfire

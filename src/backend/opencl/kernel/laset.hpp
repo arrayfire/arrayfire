@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -46,20 +47,18 @@ void laset(int m, int n, T offdiag, T diag, cl_mem dA, size_t dA_offset,
     constexpr int BLK_X = 64;
     constexpr int BLK_Y = 32;
 
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 2> targs = {
         TemplateTypename<T>(),
         TemplateArg(uplo),
     };
-    std::vector<std::string> options = {
-        DefineKeyValue(T, dtype_traits<T>::getName()),
-        DefineValue(BLK_X),
+    std::array<std::string, 5> options = {
+        DefineKeyValue(T, dtype_traits<T>::getName()), DefineValue(BLK_X),
         DefineValue(BLK_Y),
-        DefineKeyValue(IS_CPLX, static_cast<int>(af::iscplx<T>())),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        DefineKeyValue(IS_CPLX, static_cast<int>(iscplx<T>())),
+        getTypeBuildDefinition<T>()};
 
     auto lasetOp =
-        common::getKernel(laset_name<uplo>(), {laset_cl_src}, targs, options);
+        common::getKernel(laset_name<uplo>(), {{laset_cl_src}}, targs, options);
 
     int groups_x = (m - 1) / BLK_X + 1;
     int groups_y = (n - 1) / BLK_Y + 1;
@@ -70,9 +69,10 @@ void laset(int m, int n, T offdiag, T diag, cl_mem dA, size_t dA_offset,
     // retain the cl_mem object during cl::Buffer creation
     cl::Buffer dAObj(dA, true);
 
-    cl::CommandQueue q(queue);
+    cl::CommandQueue q(queue, true);
     lasetOp(cl::EnqueueArgs(q, global, local), m, n, offdiag, diag, dAObj,
             dA_offset, ldda);
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

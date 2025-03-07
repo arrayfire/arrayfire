@@ -60,7 +60,7 @@ struct CLBlastType<cdouble> {
     using Type = std::complex<double>;
 };
 template<>
-struct CLBlastType<common::half> {
+struct CLBlastType<arrayfire::common::half> {
     using Type = cl_half;
 };
 
@@ -78,7 +78,7 @@ double inline toCLBlastConstant(const double val) {
     return val;
 }
 template<>
-cl_half inline toCLBlastConstant(const common::half val) {
+cl_half inline toCLBlastConstant(const arrayfire::common::half val) {
     cl_half out;
     memcpy(&out, &val, sizeof(cl_half));
     return out;
@@ -98,7 +98,7 @@ struct CLBlastBasicType {
     using Type = T;
 };
 template<>
-struct CLBlastBasicType<common::half> {
+struct CLBlastBasicType<arrayfire::common::half> {
     using Type = cl_half;
 };
 template<>

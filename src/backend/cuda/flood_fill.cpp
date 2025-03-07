@@ -12,6 +12,7 @@
 #include <err_cuda.hpp>
 #include <kernel/flood_fill.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
@@ -36,3 +37,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(uchar)
 
 }  // namespace cuda
+}  // namespace arrayfire

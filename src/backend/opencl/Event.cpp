@@ -20,6 +20,7 @@
 using std::make_unique;
 using std::unique_ptr;
 
+namespace arrayfire {
 namespace opencl {
 /// \brief Creates a new event and marks it in the queue
 Event makeEvent(cl::CommandQueue& queue) {
@@ -70,3 +71,4 @@ af_event createAndMarkEvent() {
 }
 
 }  // namespace opencl
+}  // namespace arrayfire

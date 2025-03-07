@@ -19,6 +19,7 @@
 
 #include <cusolverDn.hpp>
 
+namespace arrayfire {
 namespace cuda {
 template<typename T>
 cusolverStatus_t gesvd_buf_func(cusolverDnHandle_t /*handle*/, int /*m*/,
@@ -114,3 +115,4 @@ INSTANTIATE(cfloat, float)
 INSTANTIATE(cdouble, double)
 
 }  // namespace cuda
+}  // namespace arrayfire

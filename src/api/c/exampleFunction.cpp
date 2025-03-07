@@ -41,7 +41,7 @@ af_array example(const af_array& a, const af_array& b,
     // getArray<T> function is defined in handle.hpp
     // and it returns backend specific Array, namely one of the following
     //      * cpu::Array<T>
-    //      * cuda::Array<T>
+    //      * arrayfire::cuda::Array<T>
     //      * opencl::Array<T>
     // getHandle<T> function is defined in handle.hpp takes one of the
     // above backend specific detail::Array<T> and returns the

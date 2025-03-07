@@ -12,6 +12,7 @@
 #include <Array.hpp>
 #include <common/SparseArray.hpp>
 
+namespace arrayfire {
 namespace cpu {
 template<typename T, af_storage stype>
 common::SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in);
@@ -23,3 +24,4 @@ template<typename T, af_storage dest, af_storage src>
 common::SparseArray<T> sparseConvertStorageToStorage(
     const common::SparseArray<T> &in);
 }  // namespace cpu
+}  // namespace arrayfire

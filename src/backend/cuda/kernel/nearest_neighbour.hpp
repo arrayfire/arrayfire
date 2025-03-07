@@ -15,6 +15,7 @@
 #include <memory.hpp>
 #include <platform.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 namespace kernel {
@@ -52,7 +53,7 @@ struct dist_op<uint, To, AF_SHD> {
 
 template<typename To>
 struct dist_op<uintl, To, AF_SHD> {
-    __device__ To operator()(uintl v1, uintl v2) { return __popc(v1 ^ v2); }
+    __device__ To operator()(uintl v1, uintl v2) { return __popcll(v1 ^ v2); }
 };
 
 template<typename To>
@@ -188,3 +189,4 @@ void all_distances(Param<To> dist, CParam<T> query, CParam<T> train,
 }  // namespace kernel
 
 }  // namespace cuda
+}  // namespace arrayfire

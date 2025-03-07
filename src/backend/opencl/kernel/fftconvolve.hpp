@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -70,24 +71,23 @@ void packDataHelper(Param packed, Param sig, Param filter, const int rank,
     constexpr auto ctDType =
         static_cast<af_dtype>(dtype_traits<convT>::af_type);
 
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 3> targs = {
         TemplateTypename<T>(),
         TemplateTypename<convT>(),
         TemplateArg(IsTypeDouble),
     };
     std::vector<std::string> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
-    };
+        getTypeBuildDefinition<T, convT>()};
     if (ctDType == c32) {
         options.emplace_back(DefineKeyValue(CONVT, "float"));
     } else if (ctDType == c64 && IsTypeDouble) {
         options.emplace_back(DefineKeyValue(CONVT, "double"));
     }
-    options.emplace_back(getTypeBuildDefinition<T, convT>());
 
-    auto packData = common::getKernel("pack_data", {fftconvolve_pack_cl_src},
+    auto packData = common::getKernel("pack_data", {{fftconvolve_pack_cl_src}},
                                       targs, options);
-    auto padArray = common::getKernel("pad_array", {fftconvolve_pack_cl_src},
+    auto padArray = common::getKernel("pad_array", {{fftconvolve_pack_cl_src}},
                                       targs, options);
 
     Param sig_tmp, filter_tmp;
@@ -129,7 +129,7 @@ void complexMultiplyHelper(Param packed, Param sig, Param filter,
     constexpr auto ctDType =
         static_cast<af_dtype>(dtype_traits<convT>::af_type);
 
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 3> targs = {
         TemplateTypename<T>(),
         TemplateTypename<convT>(),
         TemplateArg(IsTypeDouble),
@@ -140,16 +140,15 @@ void complexMultiplyHelper(Param packed, Param sig, Param filter,
         DefineKeyValue(AF_BATCH_LHS, static_cast<int>(AF_BATCH_LHS)),
         DefineKeyValue(AF_BATCH_RHS, static_cast<int>(AF_BATCH_RHS)),
         DefineKeyValue(AF_BATCH_SAME, static_cast<int>(AF_BATCH_SAME)),
-    };
+        getTypeBuildDefinition<T, convT>()};
     if (ctDType == c32) {
         options.emplace_back(DefineKeyValue(CONVT, "float"));
     } else if (ctDType == c64 && IsTypeDouble) {
         options.emplace_back(DefineKeyValue(CONVT, "double"));
     }
-    options.emplace_back(getTypeBuildDefinition<T, convT>());
 
     auto cplxMul = common::getKernel(
-        "complex_multiply", {fftconvolve_multiply_cl_src}, targs, options);
+        "complex_multiply", {{fftconvolve_multiply_cl_src}}, targs, options);
 
     Param sig_tmp, filter_tmp;
     calcParamSizes(sig_tmp, filter_tmp, packed, sig, filter, rank, kind);
@@ -179,7 +178,7 @@ void reorderOutputHelper(Param out, Param packed, Param sig, Param filter,
         static_cast<af_dtype>(dtype_traits<convT>::af_type);
     constexpr bool RoundResult = std::is_integral<T>::value;
 
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 5> targs = {
         TemplateTypename<T>(),     TemplateTypename<convT>(),
         TemplateArg(IsTypeDouble), TemplateArg(RoundResult),
         TemplateArg(expand),
@@ -188,16 +187,15 @@ void reorderOutputHelper(Param out, Param packed, Param sig, Param filter,
         DefineKeyValue(T, dtype_traits<T>::getName()),
         DefineKeyValue(ROUND_OUT, static_cast<int>(RoundResult)),
         DefineKeyValue(EXPAND, static_cast<int>(expand)),
-    };
+        getTypeBuildDefinition<T, convT>()};
     if (ctDType == c32) {
         options.emplace_back(DefineKeyValue(CONVT, "float"));
     } else if (ctDType == c64 && IsTypeDouble) {
         options.emplace_back(DefineKeyValue(CONVT, "double"));
     }
-    options.emplace_back(getTypeBuildDefinition<T, convT>());
 
     auto reorder = common::getKernel(
-        "reorder_output", {fftconvolve_reorder_cl_src}, targs, options);
+        "reorder_output", {{fftconvolve_reorder_cl_src}}, targs, options);
 
     int fftScale = 1;
 
@@ -228,3 +226,4 @@ void reorderOutputHelper(Param out, Param packed, Param sig, Param filter,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

@@ -17,6 +17,7 @@
 
 DEFINE_HANDLER(cufftHandle, cufftCreate, cufftDestroy);
 
+namespace arrayfire {
 namespace cuda {
 
 typedef cufftHandle PlanType;
@@ -35,16 +36,17 @@ class PlanCache : public common::FFTPlanCache<PlanCache, PlanType> {
 };
 
 }  // namespace cuda
+}  // namespace arrayfire
 
-#define CUFFT_CHECK(fn)                                           \
-    do {                                                          \
-        cufftResult _cufft_res = fn;                              \
-        if (_cufft_res != CUFFT_SUCCESS) {                        \
-            char cufft_res_msg[1024];                             \
-            snprintf(cufft_res_msg, sizeof(cufft_res_msg),        \
-                     "cuFFT Error (%d): %s\n", (int)(_cufft_res), \
-                     cuda::_cufftGetResultString(_cufft_res));    \
-                                                                  \
-            AF_ERROR(cufft_res_msg, AF_ERR_INTERNAL);             \
-        }                                                         \
+#define CUFFT_CHECK(fn)                                                   \
+    do {                                                                  \
+        cufftResult _cufft_res = fn;                                      \
+        if (_cufft_res != CUFFT_SUCCESS) {                                \
+            char cufft_res_msg[1024];                                     \
+            snprintf(cufft_res_msg, sizeof(cufft_res_msg),                \
+                     "cuFFT Error (%d): %s\n", (int)(_cufft_res),         \
+                     arrayfire::cuda::_cufftGetResultString(_cufft_res)); \
+                                                                          \
+            AF_ERROR(cufft_res_msg, AF_ERR_INTERNAL);                     \
+        }                                                                 \
     } while (0)

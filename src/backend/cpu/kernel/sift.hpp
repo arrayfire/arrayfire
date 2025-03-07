@@ -26,6 +26,7 @@
 
 using af::dim4;
 
+namespace arrayfire {
 namespace cpu {
 
 static const float PI_VAL = 3.14159265358979323846f;
@@ -1053,3 +1054,4 @@ unsigned sift_impl(Array<float>& x, Array<float>& y, Array<float>& score,
 }
 
 }  // namespace cpu
+}  // namespace arrayfire

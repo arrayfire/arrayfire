@@ -12,6 +12,7 @@
 
 using af::features;
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T, typename convAccT>
@@ -21,4 +22,5 @@ unsigned orb(Array<float> &x, Array<float> &y, Array<float> &score,
              const unsigned max_feat, const float scl_fctr,
              const unsigned levels, const bool blur_img);
 
-}
+}  // namespace opencl
+}  // namespace arrayfire

@@ -20,6 +20,7 @@ using std::exp;
 using std::pow;
 using std::sqrt;
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -188,3 +189,4 @@ void anisotropicDiffusion(Param<T> inout, const float dt, const float mct,
 }
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

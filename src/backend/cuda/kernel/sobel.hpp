@@ -15,6 +15,7 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/sobel_cuh.hpp>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -26,13 +27,10 @@ void sobel(Param<To> dx, Param<To> dy, CParam<Ti> in,
            const unsigned& ker_size) {
     UNUSED(ker_size);
 
-    auto sobel3x3 =
-        common::getKernel("cuda::sobel3x3", {sobel_cuh_src},
-                          {
-                              TemplateTypename<Ti>(),
-                              TemplateTypename<To>(),
-                          },
-                          {DefineValue(THREADS_X), DefineValue(THREADS_Y)});
+    auto sobel3x3 = common::getKernel(
+        "arrayfire::cuda::sobel3x3", {{sobel_cuh_src}},
+        TemplateArgs(TemplateTypename<Ti>(), TemplateTypename<To>()),
+        {{DefineValue(THREADS_X), DefineValue(THREADS_Y)}});
 
     const dim3 threads(THREADS_X, THREADS_Y);
 
@@ -52,3 +50,4 @@ void sobel(Param<To> dx, Param<To> dy, CParam<Ti> in,
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

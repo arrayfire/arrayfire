@@ -8,14 +8,14 @@ requirements are that you include the ArrayFire header directories and link with
 the ArrayFire library you intend to use i.e. CUDA, OpenCL, CPU, or Unified
 backends.
 
-## The big picture  {#big-picture}
+## The big picture  {#big-picture-linux}
 
 On Linux, we recommend installing ArrayFire to `/opt/arrayfire` directory. The
 installer will populate files in the following sub-directories:
 
     include/arrayfire.h         - Primary ArrayFire include file
     include/af/*.h              - Additional include files
-    lib/libaf*                  - CPU, CUDA, and OpenCL libraries (.a, .so)
+    lib/libaf*                  - CPU, CUDA, oneAPI and OpenCL libraries (.a, .so)
     lib/libforge*               - Visualization library
     lib/libcu*                  - CUDA backend dependencies
     lib/libOpenCL.so            - OpenCL ICD Loader library
@@ -57,7 +57,7 @@ apt install build-essential cmake cmake-curses-gui
 ## CMake
 
 We recommend that the CMake build system be used to create ArrayFire projects.
-As [discussed above](#big-picture), ArrayFire ships with a series of CMake
+As [discussed above](#big-picture-linux), ArrayFire ships with a series of CMake
 scripts to make finding and using our library easy.
 
 First create a file called `CMakeLists.txt` in your project directory:
@@ -81,6 +81,7 @@ how to use CMake. To link with a specific backend directly, replace the
 
 * `ArrayFire::afcpu` for CPU backend.
 * `ArrayFire::afcuda` for CUDA backend.
+* `ArrayFire::afoneapi` for oneAPI backend.
 * `ArrayFire::afopencl` for OpenCL backend.
 
 Next we need to instruct CMake to create build instructions and then compile. We
@@ -116,8 +117,8 @@ directory containing `arrayfire.h` file. This should be `-I
 Similarly, you will need to specify the path to the ArrayFire library using the
 `-L` option (e.g. `-L/opt/arrayfire/lib`) followed by the specific ArrayFire
 library you wish to use using the `-l` option (for example `-lafcpu`,
-`-lafopencl`, `-lafcuda`, or `-laf` for the CPU, OpenCL, CUDA, and unified
-backends, respectively.
+`-lafopencl`, `-lafoneapi`, `-lafcuda`, or `-laf` for the CPU, OpenCL, oneAPI
+and CUDA, and unified backends, respectively.
 
 Here is a minimal example Makefile which uses ArrayFire's CPU backend:
 

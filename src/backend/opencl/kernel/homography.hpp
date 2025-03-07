@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 constexpr int HG_THREADS_X = 16;
@@ -31,16 +32,14 @@ constexpr int HG_THREADS   = 256;
 
 template<typename T>
 std::array<Kernel, 5> getHomographyKernels(const af_homography_type htype) {
-    std::vector<TemplateArg> targs   = {TemplateTypename<T>(),
-                                      TemplateArg(htype)};
+    std::array<TemplateArg, 2> targs = {TemplateTypename<T>(),
+                                        TemplateArg(htype)};
     std::vector<std::string> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
-    options.emplace_back(
+        getTypeBuildDefinition<T>(),
         DefineKeyValue(EPS, (std::is_same<T, double>::value
                                  ? std::numeric_limits<double>::epsilon()
-                                 : std::numeric_limits<float>::epsilon())));
+                                 : std::numeric_limits<float>::epsilon()))};
     if (htype == AF_HOMOGRAPHY_RANSAC) {
         options.emplace_back(DefineKey(RANSAC));
     }
@@ -51,15 +50,15 @@ std::array<Kernel, 5> getHomographyKernels(const af_homography_type htype) {
         options.emplace_back(DefineKey(IS_CPU));
     }
     return {
-        common::getKernel("compute_homography", {homography_cl_src}, targs,
+        common::getKernel("compute_homography", {{homography_cl_src}}, targs,
                           options),
-        common::getKernel("eval_homography", {homography_cl_src}, targs,
+        common::getKernel("eval_homography", {{homography_cl_src}}, targs,
                           options),
-        common::getKernel("compute_median", {homography_cl_src}, targs,
+        common::getKernel("compute_median", {{homography_cl_src}}, targs,
                           options),
-        common::getKernel("find_min_median", {homography_cl_src}, targs,
+        common::getKernel("find_min_median", {{homography_cl_src}}, targs,
                           options),
-        common::getKernel("compute_lmeds_inliers", {homography_cl_src}, targs,
+        common::getKernel("compute_lmeds_inliers", {{homography_cl_src}}, targs,
                           options),
     };
 }
@@ -195,7 +194,7 @@ int computeH(Param bestH, Param H, Param err, Param x_src, Param y_src,
                                      sizeof(unsigned), &inliersH);
 
         bufferFree(totalInliers.data);
-    } else if (htype == AF_HOMOGRAPHY_RANSAC) {
+    } else /* if (htype == AF_HOMOGRAPHY_RANSAC) */ {
         unsigned blockIdx;
         inliersH = kernel::ireduceAll<unsigned, af_max_t>(&blockIdx, inliers);
 
@@ -215,3 +214,4 @@ int computeH(Param bestH, Param H, Param err, Param x_src, Param y_src,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

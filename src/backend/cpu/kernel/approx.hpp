@@ -12,6 +12,7 @@
 #include <math.hpp>
 #include "interp.hpp"
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -137,3 +138,4 @@ void approx2(Param<InT> zo, CParam<InT> zi, CParam<LocT> xo, const int xdim,
 }
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

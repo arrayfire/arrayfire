@@ -16,6 +16,7 @@
 #include <jit/BufferNode.hpp>
 #include <vector>
 
+namespace arrayfire {
 namespace cpu {
 template<typename To, typename Ti, af_op_t op>
 struct UnOp {
@@ -28,12 +29,13 @@ namespace jit {
 template<typename To, typename Ti, af_op_t op>
 class UnaryNode : public TNode<To> {
    protected:
-    using common::Node::m_children;
+    using arrayfire::common::Node::m_children;
     UnOp<To, Ti, op> m_op;
 
    public:
     UnaryNode(common::Node_ptr child)
-        : TNode<To>(To(0), child->getHeight() + 1, {{child}}) {}
+        : TNode<To>(To(0), child->getHeight() + 1, {{child}},
+                    common::kNodeType::Nary) {}
 
     std::unique_ptr<common::Node> clone() final {
         return std::make_unique<UnaryNode>(*this);
@@ -70,5 +72,5 @@ class UnaryNode : public TNode<To> {
 };
 
 }  // namespace jit
-
 }  // namespace cpu
+}  // namespace arrayfire

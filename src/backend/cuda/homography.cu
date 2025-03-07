@@ -18,6 +18,7 @@
 
 using af::dim4;
 
+namespace arrayfire {
 namespace cuda {
 
 #define RANSACConfidence 0.99f
@@ -64,3 +65,4 @@ INSTANTIATE(float)
 INSTANTIATE(double)
 
 }  // namespace cuda
+}  // namespace arrayfire

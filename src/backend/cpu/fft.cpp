@@ -22,6 +22,7 @@
 using af::dim4;
 using std::array;
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
@@ -229,3 +230,4 @@ INSTANTIATE_REAL(float, cfloat)
 INSTANTIATE_REAL(double, cdouble)
 
 }  // namespace cpu
+}  // namespace arrayfire

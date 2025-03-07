@@ -33,15 +33,15 @@ class ImageIO : public ::testing::Test {
 typedef ::testing::Types<float> TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(ImageIO, TestTypes);
+TYPED_TEST_SUITE(ImageIO, TestTypes);
 
 void loadImageTest(string pTestFile, string pImageFile, const bool isColor) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> numDims;
 
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
     readTests<float, float, float>(pTestFile, numDims, in, tests);
     dim4 dims = numDims[0];
 
@@ -93,7 +93,7 @@ TYPED_TEST(ImageIO, ColorSeq) {
 }
 
 void loadimageArgsTest(string pImageFile, const bool isColor, af_err err) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     af_array imgArray = 0;
 
@@ -122,12 +122,12 @@ using af::saveImageMem;
 using af::span;
 
 TEST(ImageIO, CPP) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> numDims;
 
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
     readTests<float, float, float>(string(TEST_DIR "/imageio/color_small.test"),
                                    numDims, in, tests);
 
@@ -150,7 +150,7 @@ TEST(ImageIO, CPP) {
 }
 
 TEST(ImageIO, SavePNGCPP) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     array input(10, 10, 3, f32);
 
@@ -160,7 +160,7 @@ TEST(ImageIO, SavePNGCPP) {
     input(9, 0, 2)          = 255;
     input(9, 9, span)       = 255;
 
-    std::string testname  = getTestName() + "_" + getBackendName();
+    std::string testname  = getTestName() + "_" + getBackendName(true);
     std::string imagename = "SaveCPP_" + testname + ".png";
 
     saveImage(imagename.c_str(), input);
@@ -170,7 +170,7 @@ TEST(ImageIO, SavePNGCPP) {
 }
 
 TEST(ImageIO, SaveBMPCPP) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     array input(10, 10, 3, f32);
 
@@ -180,7 +180,7 @@ TEST(ImageIO, SaveBMPCPP) {
     input(9, 0, 2)          = 255;
     input(9, 9, span)       = 255;
 
-    std::string testname  = getTestName() + "_" + getBackendName();
+    std::string testname  = getTestName() + "_" + getBackendName(true);
     std::string imagename = "SaveCPP_" + testname + ".bmp";
 
     saveImage(imagename.c_str(), input);
@@ -190,7 +190,7 @@ TEST(ImageIO, SaveBMPCPP) {
 }
 
 TEST(ImageMem, SaveMemPNG) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     array img =
         loadImage(string(TEST_DIR "/imageio/color_seq.png").c_str(), true);
@@ -205,7 +205,7 @@ TEST(ImageMem, SaveMemPNG) {
 }
 
 TEST(ImageMem, SaveMemJPG1) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     array img =
         loadImage(string(TEST_DIR "/imageio/color_seq.png").c_str(), false);
@@ -222,7 +222,7 @@ TEST(ImageMem, SaveMemJPG1) {
 }
 
 TEST(ImageMem, SaveMemJPG3) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     array img =
         loadImage(string(TEST_DIR "/imageio/color_seq.png").c_str(), true);
@@ -239,7 +239,7 @@ TEST(ImageMem, SaveMemJPG3) {
 }
 
 TEST(ImageMem, SaveMemBMP) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     array img =
         loadImage(string(TEST_DIR "/imageio/color_rand.png").c_str(), true);
@@ -254,12 +254,12 @@ TEST(ImageMem, SaveMemBMP) {
 }
 
 TEST(ImageIO, LoadImage16CPP) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> numDims;
 
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
     readTests<float, float, float>(
         string(TEST_DIR "/imageio/color_seq_16.test"), numDims, in, tests);
 
@@ -284,22 +284,22 @@ TEST(ImageIO, LoadImage16CPP) {
 }
 
 TEST(ImageIO, SaveImage16CPP) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     dim4 dims(16, 24, 3);
 
     array input     = randu(dims, u16);
-    array input_255 = (input / 257).as(u16);
+    array input_255 = floor(input.as(f32) / 257);
 
-    std::string testname  = getTestName() + "_" + getBackendName();
+    std::string testname  = getTestName() + "_" + getBackendName(true);
     std::string imagename = "saveImage16CPP_" + testname + ".png";
 
     saveImage(imagename.c_str(), input);
 
     array img = loadImage(imagename.c_str(), true);
-    ASSERT_EQ(img.type(), f32);  // loadImage should always return float
 
-    ASSERT_FALSE(anyTrue<bool>(abs(img - input_255)));
+    ASSERT_EQ(img.type(), f32);  // loadImage should always return float
+    ASSERT_IMAGES_NEAR(input_255, img, 0.001);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -312,12 +312,12 @@ using af::saveImageNative;
 
 template<typename T>
 void loadImageNativeCPPTest(string pTestFile, string pImageFile) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> numDims;
 
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
     readTests<float, float, float>(pTestFile, numDims, in, tests);
 
     dim4 dims = numDims[0];
@@ -362,11 +362,11 @@ TEST(ImageIONative, LoadImageNative16GrayCPP) {
 
 template<typename T>
 void saveLoadImageNativeCPPTest(dim4 dims) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     array input = randu(dims, (af_dtype)dtype_traits<T>::af_type);
 
-    std::string imagename = getTestName() + "_" + getBackendName() + ".png";
+    std::string imagename = getTestName() + "_" + getBackendName(true) + ".png";
 
     saveImageNative(imagename.c_str(), input);
 

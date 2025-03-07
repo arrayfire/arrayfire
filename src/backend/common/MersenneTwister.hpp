@@ -51,6 +51,7 @@
 
 #include <af/defines.h>
 
+namespace arrayfire {
 namespace common {
 const dim_t MaxBlocks     = 32;
 const dim_t TableLength   = 16 * MaxBlocks;
@@ -261,3 +262,4 @@ static unsigned temper_tbl[] = {
 };
 
 }  // namespace common
+}  // namespace arrayfire

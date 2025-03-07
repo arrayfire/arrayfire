@@ -12,6 +12,7 @@
 #include <common/Binary.hpp>
 #include <common/Transform.hpp>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -72,3 +73,4 @@ struct scan_dim<op, Ti, To, 0, inclusive_scan> {
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

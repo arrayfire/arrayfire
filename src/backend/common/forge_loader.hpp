@@ -10,12 +10,43 @@
 #pragma once
 
 #include <common/DependencyModule.hpp>
+#include <forge.h>
+
+#if defined(__clang__)
+/* Clang/LLVM */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wignored-attributes"
+#elif defined(__ICC) || defined(__INTEL_COMPILER)
+/* Intel ICC/ICPC */
+// Fix the warning code here, if any
+#elif defined(_MSC_VER)
+/* Microsoft Visual Studio */
+#else
+/* Other */
+#endif
 
 #include <glad/glad.h>
 
-#include <forge.h>
+#if defined(__clang__)
+/* Clang/LLVM */
+#pragma clang diagnostic pop
+#elif defined(__ICC) || defined(__INTEL_COMPILER)
+/* Intel ICC/ICPC */
+// Fix the warning code here, if any
+#elif defined(__GNUC__) || defined(__GNUG__)
+/* GNU GCC/G++ */
+#pragma GCC diagnostic pop
+#elif defined(_MSC_VER)
+/* Microsoft Visual Studio */
+#pragma warning(pop)
+#else
+/* Other */
+#endif
 
-class ForgeModule : public common::DependencyModule {
+namespace arrayfire {
+namespace common {
+
+class ForgeModule : public DependencyModule {
    public:
     ForgeModule();
 
@@ -89,9 +120,7 @@ class ForgeModule : public common::DependencyModule {
     MODULE_MEMBER(fg_err_to_string);
 };
 
-namespace graphics {
 ForgeModule& forgePlugin();
-}
 
 #define FG_CHECK(fn)                                        \
     do {                                                    \
@@ -100,3 +129,6 @@ ForgeModule& forgePlugin();
             AF_ERROR("forge call failed", AF_ERR_INTERNAL); \
         }                                                   \
     } while (0);
+
+}  // namespace common
+}  // namespace arrayfire

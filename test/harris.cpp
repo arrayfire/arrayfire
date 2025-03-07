@@ -56,16 +56,16 @@ class Harris : public ::testing::Test {
 
 typedef ::testing::Types<float, double> TestTypes;
 
-TYPED_TEST_CASE(Harris, TestTypes);
+TYPED_TEST_SUITE(Harris, TestTypes);
 
 template<typename T>
 void harrisTest(string pTestFile, float sigma, unsigned block_size) {
     SUPPORTED_TYPE_CHECK(T);
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
     vector<string> inFiles;
-    vector<vector<float> > gold;
+    vector<vector<float>> gold;
 
     readImageTests(pTestFile, inDims, inFiles, gold);
 
@@ -145,6 +145,7 @@ void harrisTest(string pTestFile, float sigma, unsigned block_size) {
 
 #define HARRIS_INIT(desc, image, sigma, block_size)                        \
     TYPED_TEST(Harris, desc) {                                             \
+        UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);                            \
         harrisTest<TypeParam>(string(TEST_DIR "/harris/" #image "_" #sigma \
                                               "_" #block_size ".test"),    \
                               sigma, block_size);                          \
@@ -167,11 +168,12 @@ using af::harris;
 using af::loadImage;
 
 TEST(FloatHarris, CPP) {
-    if (noImageIOTests()) return;
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
     vector<string> inFiles;
-    vector<vector<float> > gold;
+    vector<vector<float>> gold;
 
     readImageTests(string(TEST_DIR "/harris/square_0_3.test"), inDims, inFiles,
                    gold);

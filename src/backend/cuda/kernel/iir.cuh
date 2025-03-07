@@ -12,6 +12,7 @@
 #include <Param.hpp>
 #include <math.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T, bool batch_a>
@@ -67,3 +68,4 @@ __global__ void iir(Param<T> y, CParam<T> c, CParam<T> a, const int blocks_y) {
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

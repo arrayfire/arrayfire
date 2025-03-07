@@ -38,7 +38,7 @@ typedef ::testing::Types<float, cfloat, double, cdouble, int, unsigned, char,
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Write, TestTypes);
+TYPED_TEST_SUITE(Write, TestTypes);
 
 template<typename T>
 void writeTest(dim4 dims) {

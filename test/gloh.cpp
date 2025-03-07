@@ -65,7 +65,7 @@ static void array_to_feat_desc(vector<feat_desc_t>& feat, float* x, float* y,
 
 static void array_to_feat_desc(vector<feat_desc_t>& feat, float* x, float* y,
                                float* score, float* ori, float* size,
-                               vector<vector<float> >& desc, unsigned nfeat) {
+                               vector<vector<float>>& desc, unsigned nfeat) {
     feat.resize(nfeat);
     for (size_t i = 0; i < feat.size(); i++) {
         feat[i].f[0] = x[i];
@@ -132,17 +132,17 @@ class GLOH : public ::testing::Test {
 
 typedef ::testing::Types<float, double> TestTypes;
 
-TYPED_TEST_CASE(GLOH, TestTypes);
+TYPED_TEST_SUITE(GLOH, TestTypes);
 
 template<typename T>
 void glohTest(string pTestFile) {
     SUPPORTED_TYPE_CHECK(T);
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
     vector<string> inFiles;
-    vector<vector<float> > goldFeat;
-    vector<vector<float> > goldDesc;
+    vector<vector<float>> goldFeat;
+    vector<vector<float>> goldDesc;
 
     readImageFeaturesDescriptors<float>(pTestFile, inDims, inFiles, goldFeat,
                                         goldDesc);
@@ -161,8 +161,9 @@ void glohTest(string pTestFile) {
             af_load_image(&inArray_f32, inFiles[testId].c_str(), false));
         ASSERT_SUCCESS(conv_image<T>(&inArray, inArray_f32));
 
-        ASSERT_SUCCESS(af_gloh(&feat, &desc, inArray, 3, 0.04f, 10.0f, 1.6f,
-                               true, 1.f / 256.f, 0.05f));
+        ASSERT_SUCCESS(af_gloh(&feat, &desc, inArray, 3,
+                                           0.04f, 10.0f, 1.6f,
+                                           true, 1.f / 256.f, 0.05f));
 
         dim_t n = 0;
         af_array x, y, score, orientation, size;
@@ -253,6 +254,7 @@ void glohTest(string pTestFile) {
 
 #define GLOH_INIT(desc, image)                                         \
     TYPED_TEST(GLOH, desc) {                                           \
+        UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);                        \
         glohTest<TypeParam>(string(TEST_DIR "/gloh/" #image ".test")); \
     }
 
@@ -261,12 +263,13 @@ GLOH_INIT(man, man);
 ///////////////////////////////////// CPP ////////////////////////////////
 //
 TEST(GLOH, CPP) {
-    if (noImageIOTests()) return;
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
     vector<string> inFiles;
-    vector<vector<float> > goldFeat;
-    vector<vector<float> > goldDesc;
+    vector<vector<float>> goldFeat;
+    vector<vector<float>> goldDesc;
 
     readImageFeaturesDescriptors<float>(string(TEST_DIR "/gloh/man.test"),
                                         inDims, inFiles, goldFeat, goldDesc);

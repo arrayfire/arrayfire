@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -34,16 +35,14 @@ void laswp(int n, cl_mem in, size_t offset, int ldda, int k1, int k2,
            const int *ipiv, int inci, cl::CommandQueue &queue) {
     constexpr int NTHREADS = 256;
 
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 1> targs = {
         TemplateTypename<T>(),
     };
-    std::vector<std::string> options = {
-        DefineKeyValue(T, dtype_traits<T>::getName()),
-        DefineValue(MAX_PIVOTS),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+    std::array<std::string, 3> options = {
+        DefineKeyValue(T, dtype_traits<T>::getName()), DefineValue(MAX_PIVOTS),
+        getTypeBuildDefinition<T>()};
 
-    auto laswpOp = common::getKernel("laswp", {laswp_cl_src}, targs, options);
+    auto laswpOp = common::getKernel("laswp", {{laswp_cl_src}}, targs, options);
 
     int groups = divup(n, NTHREADS);
     cl::NDRange local(NTHREADS);
@@ -70,3 +69,4 @@ void laswp(int n, cl_mem in, size_t offset, int ldda, int k1, int k2,
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

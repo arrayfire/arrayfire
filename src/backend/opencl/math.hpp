@@ -18,6 +18,7 @@
 
 #include <algorithm>
 #include <complex>
+#include <climits>
 #include <limits>
 
 #if defined(__GNUC__) || defined(__GNUG__)
@@ -28,6 +29,7 @@
 /* Other */
 #endif
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T>
@@ -58,22 +60,22 @@ cfloat division(cfloat lhs, double rhs);
 cdouble division(cdouble lhs, double rhs);
 
 template<>
-STATIC_ cfloat max<cfloat>(cfloat lhs, cfloat rhs) {
+inline cfloat max<cfloat>(cfloat lhs, cfloat rhs) {
     return abs(lhs) > abs(rhs) ? lhs : rhs;
 }
 
 template<>
-STATIC_ cdouble max<cdouble>(cdouble lhs, cdouble rhs) {
+inline cdouble max<cdouble>(cdouble lhs, cdouble rhs) {
     return abs(lhs) > abs(rhs) ? lhs : rhs;
 }
 
 template<>
-STATIC_ cfloat min<cfloat>(cfloat lhs, cfloat rhs) {
+inline cfloat min<cfloat>(cfloat lhs, cfloat rhs) {
     return abs(lhs) < abs(rhs) ? lhs : rhs;
 }
 
 template<>
-STATIC_ cdouble min<cdouble>(cdouble lhs, cdouble rhs) {
+inline cdouble min<cdouble>(cdouble lhs, cdouble rhs) {
     return abs(lhs) < abs(rhs) ? lhs : rhs;
 }
 
@@ -83,7 +85,7 @@ static T scalar(double val) {
 }
 
 template<>
-STATIC_ cfloat scalar<cfloat>(double val) {
+inline cfloat scalar<cfloat>(double val) {
     cfloat cval;
     cval.s[0] = (float)val;
     cval.s[1] = 0;
@@ -91,7 +93,7 @@ STATIC_ cfloat scalar<cfloat>(double val) {
 }
 
 template<>
-STATIC_ cdouble scalar<cdouble>(double val) {
+inline cdouble scalar<cdouble>(double val) {
     cdouble cval;
     cval.s[0] = val;
     cval.s[1] = 0;
@@ -106,40 +108,27 @@ static To scalar(Ti real, Ti imag) {
     return cval;
 }
 
+#ifdef AF_WITH_FAST_MATH
+constexpr bool fast_math = true;
+#else
+constexpr bool fast_math = false;
+#endif
+
 template<typename T>
-STATIC_ T maxval() {
-    return std::numeric_limits<T>::max();
+inline T maxval() {
+    if constexpr (std::is_floating_point_v<T> && !fast_math) {
+        return std::numeric_limits<T>::infinity();
+    } else {
+        return std::numeric_limits<T>::max();
+    }
 }
 template<typename T>
-STATIC_ T minval() {
-    return std::numeric_limits<T>::min();
-}
-template<>
-STATIC_ float maxval() {
-    return std::numeric_limits<float>::infinity();
-}
-template<>
-STATIC_ double maxval() {
-    return std::numeric_limits<double>::infinity();
-}
-
-template<>
-STATIC_ common::half maxval() {
-    return std::numeric_limits<common::half>::infinity();
-}
-
-template<>
-STATIC_ float minval() {
-    return -std::numeric_limits<float>::infinity();
-}
-
-template<>
-STATIC_ double minval() {
-    return -std::numeric_limits<double>::infinity();
-}
-template<>
-STATIC_ common::half minval() {
-    return -std::numeric_limits<common::half>::infinity();
+inline T minval() {
+    if constexpr (std::is_floating_point_v<T> && !fast_math) {
+        return -std::numeric_limits<T>::infinity();
+    } else {
+        return std::numeric_limits<T>::lowest();
+    }
 }
 
 static inline double real(cdouble in) { return in.s[0]; }
@@ -155,19 +144,22 @@ cfloat operator*(cfloat lhs, cfloat rhs);
 cdouble operator*(cdouble lhs, cdouble rhs);
 common::half operator+(common::half lhs, common::half rhs) noexcept;
 }  // namespace opencl
+}  // namespace arrayfire
 
-static inline bool operator==(opencl::cfloat lhs, opencl::cfloat rhs) noexcept {
+static inline bool operator==(arrayfire::opencl::cfloat lhs,
+                              arrayfire::opencl::cfloat rhs) noexcept {
     return (lhs.s[0] == rhs.s[0]) && (lhs.s[1] == rhs.s[1]);
 }
-static inline bool operator!=(opencl::cfloat lhs, opencl::cfloat rhs) noexcept {
+static inline bool operator!=(arrayfire::opencl::cfloat lhs,
+                              arrayfire::opencl::cfloat rhs) noexcept {
     return !(lhs == rhs);
 }
-static inline bool operator==(opencl::cdouble lhs,
-                              opencl::cdouble rhs) noexcept {
+static inline bool operator==(arrayfire::opencl::cdouble lhs,
+                              arrayfire::opencl::cdouble rhs) noexcept {
     return (lhs.s[0] == rhs.s[0]) && (lhs.s[1] == rhs.s[1]);
 }
-static inline bool operator!=(opencl::cdouble lhs,
-                              opencl::cdouble rhs) noexcept {
+static inline bool operator!=(arrayfire::opencl::cdouble lhs,
+                              arrayfire::opencl::cdouble rhs) noexcept {
     return !(lhs == rhs);
 }
 

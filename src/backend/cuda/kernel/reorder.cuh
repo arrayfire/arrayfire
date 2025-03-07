@@ -11,6 +11,7 @@
 
 #include <Param.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
@@ -56,3 +57,4 @@ __global__ void reorder(Param<T> out, CParam<T> in, const int d0, const int d1,
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

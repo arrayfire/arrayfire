@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -32,7 +33,7 @@ void bilateral(Param out, const Param in, const float s_sigma,
     constexpr bool UseNativeExp = !std::is_same<inType, double>::value ||
                                   std::is_same<inType, cdouble>::value;
 
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 2> targs = {
         TemplateTypename<inType>(),
         TemplateTypename<outType>(),
     };
@@ -44,7 +45,7 @@ void bilateral(Param out, const Param in, const float s_sigma,
     options.emplace_back(getTypeBuildDefinition<inType>());
 
     auto bilateralOp =
-        common::getKernel("bilateral", {bilateral_cl_src}, targs, options);
+        common::getKernel("bilateral", {{bilateral_cl_src}}, targs, options);
 
     cl::NDRange local(THREADS_X, THREADS_Y);
 
@@ -77,3 +78,4 @@ void bilateral(Param out, const Param in, const float s_sigma,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

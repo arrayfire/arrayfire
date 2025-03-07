@@ -161,7 +161,26 @@ static void convertCSR(const int M, const int N, const double ratio,
     af::array s  = af::sparse(a, AF_STORAGE_CSR);
     af::array aa = af::dense(s);
 
-    ASSERT_EQ(0, af::max<double>(af::abs(a - aa)));
+    ASSERT_ARRAYS_EQ(a, aa);
+}
+
+template<typename T>
+static void convertCSC(const int M, const int N, const double ratio,
+                       int targetDevice = -1) {
+    if (targetDevice >= 0) af::setDevice(targetDevice);
+
+    SUPPORTED_TYPE_CHECK(T);
+#if 1
+    af::array a = cpu_randu<T>(af::dim4(M, N));
+#else
+    af::array a = af::randu(M, N);
+#endif
+    a = a * (a > ratio);
+
+    af::array s  = af::sparse(a, AF_STORAGE_CSC);
+    af::array aa = af::dense(s);
+
+    ASSERT_ARRAYS_EQ(a, aa);
 }
 
 // This test essentially verifies that the sparse structures have the correct

@@ -5,12 +5,12 @@
 # The complete license agreement can be obtained at:
 # http://arrayfire.com/licenses/BSD-3-Clause
 
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 project(ArrayFire-Example-Linear-Algebra
   VERSION 3.5.0
   LANGUAGES CXX)
 
-find_package(ArrayFire)
+find_package(ArrayFire REQUIRED)
 
 if(ArrayFire_CPU_FOUND)
   # Cholesky example
@@ -56,4 +56,18 @@ if(ArrayFire_OpenCL_FOUND)
 
   add_executable(svd_opencl svd.cpp)
   target_link_libraries(svd_opencl ArrayFire::afopencl)
+endif()
+
+if(ArrayFire_oneAPI_FOUND)
+  add_executable(cholesky_oneapi cholesky.cpp)
+  target_link_libraries(cholesky_oneapi ArrayFire::afoneapi)
+
+  add_executable(lu_oneapi lu.cpp)
+  target_link_libraries(lu_oneapi ArrayFire::afoneapi)
+
+  add_executable(qr_oneapi qr.cpp)
+  target_link_libraries(qr_oneapi ArrayFire::afoneapi)
+
+  add_executable(svd_oneapi svd.cpp)
+  target_link_libraries(svd_oneapi ArrayFire::afoneapi)
 endif()

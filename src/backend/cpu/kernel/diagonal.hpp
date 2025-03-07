@@ -13,6 +13,7 @@
 
 #include <af/dim4.hpp>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -62,3 +63,4 @@ void diagExtract(Param<T> out, CParam<T> in, int const num) {
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

@@ -15,11 +15,11 @@
 #include <common/err_common.hpp>
 #include <common/half.hpp>
 #include <common/moddims.hpp>
+#include <common/tile.hpp>
 #include <copy.hpp>
 #include <handle.hpp>
 #include <indexing_common.hpp>
 #include <math.hpp>
-#include <tile.hpp>
 #include <af/data.h>
 #include <af/defines.h>
 #include <af/dim4.hpp>
@@ -30,12 +30,13 @@ using std::swap;
 using std::vector;
 
 using af::dim4;
-using common::convert2Canonical;
-using common::createSpanIndex;
-using common::half;
-using common::if_complex;
-using common::if_real;
-using common::modDims;
+using arrayfire::common::convert2Canonical;
+using arrayfire::common::createSpanIndex;
+using arrayfire::common::half;
+using arrayfire::common::if_complex;
+using arrayfire::common::if_real;
+using arrayfire::common::modDims;
+using arrayfire::common::tile;
 using detail::Array;
 using detail::cdouble;
 using detail::cfloat;
@@ -77,9 +78,9 @@ static void assign(Array<Tout>& out, const vector<af_seq> seqs,
 
         // If both out and in are vectors of equal elements,
         // reshape in to out dims
-        Array<Tin> in_ =
-            in.elements() == 1 ? tile(in, oDims) : modDims(in, oDims);
-        auto dst = createSubArray<Tout>(out, seqs, false);
+        Array<Tin> in_ = in.elements() == 1 ? arrayfire::common::tile(in, oDims)
+                                            : modDims(in, oDims);
+        auto dst       = createSubArray<Tout>(out, seqs, false);
 
         copyArray<Tin, Tout>(dst, in_);
     } else {
@@ -259,8 +260,6 @@ af_err af_assign_gen(af_array* out, const af_array lhs, const dim_t ndims,
             return af_create_handle(out, 0, nullptr, lhsType);
         }
 
-        ARG_ASSERT(2, (ndims == 1) || (ndims == (dim_t)lInfo.ndims()));
-
         if (ndims == 1 && ndims != static_cast<dim_t>(lInfo.ndims())) {
             af_array tmp_in  = 0;
             af_array tmp_out = 0;
@@ -278,7 +277,6 @@ af_err af_assign_gen(af_array* out, const af_array lhs, const dim_t ndims,
 
         ARG_ASSERT(1, (lhsType == rhsType));
         ARG_ASSERT(1, (lhsDims.ndims() >= rhsDims.ndims()));
-        ARG_ASSERT(2, (lhsDims.ndims() >= ndims));
 
         af_array output = 0;
         if (*out != lhs) {

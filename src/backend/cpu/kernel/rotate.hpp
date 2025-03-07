@@ -16,6 +16,7 @@
 
 using af::dtype_traits;
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -89,3 +90,4 @@ void rotate(Param<T> output, CParam<T> input, const float theta,
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

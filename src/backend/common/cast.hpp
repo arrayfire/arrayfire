@@ -17,6 +17,7 @@
 #include <jit/UnaryNode.hpp>
 #endif
 
+namespace arrayfire {
 namespace common {
 /// This function determines if consecutive cast operations should be
 /// removed from a JIT AST.
@@ -71,7 +72,7 @@ struct CastWrapper {
     }
 
     detail::Array<To> operator()(const detail::Array<Ti> &in) {
-        using cpu::jit::UnaryNode;
+        using detail::jit::UnaryNode;
 
         common::Node_ptr in_node = in.getNode();
         constexpr af::dtype to_dtype =
@@ -118,11 +119,11 @@ struct CastWrapper {
     }
 
     detail::Array<To> operator()(const detail::Array<Ti> &in) {
-        using common::UnaryNode;
+        using arrayfire::common::UnaryNode;
         detail::CastOp<To, Ti> cop;
         common::Node_ptr in_node = in.getNode();
         constexpr af::dtype to_dtype =
-            static_cast<af::dtype>(dtype_traits<To>::af_type);
+            static_cast<af::dtype>(af::dtype_traits<To>::af_type);
         constexpr af::dtype in_dtype =
             static_cast<af::dtype>(af::dtype_traits<Ti>::af_type);
 
@@ -137,7 +138,7 @@ struct CastWrapper {
             if (in_node_unary && in_node_unary->getOp() == af_cast_t) {
                 // child child's output type is the input type of the child
                 AF_TRACE("Cast optimiztion performed by removing cast to {}",
-                         dtype_traits<Ti>::getName());
+                         af::dtype_traits<Ti>::getName());
                 auto in_child_node = in_node_unary->getChildren()[0];
                 if (in_child_node->getType() == to_dtype) {
                     // ignore the input node and simply connect a noop node from
@@ -182,3 +183,4 @@ auto cast(const detail::Array<Ti> &in)
 }
 
 }  // namespace common
+}  // namespace arrayfire

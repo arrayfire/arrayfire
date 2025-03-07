@@ -14,8 +14,9 @@
 #include <debug_cuda.hpp>
 #include <af/dim4.hpp>
 
-using common::half;
+using arrayfire::common::half;
 
+namespace arrayfire {
 namespace cuda {
 template<typename T>
 Array<T> identity(const dim4& dims) {
@@ -42,3 +43,4 @@ INSTANTIATE_IDENTITY(ushort)
 INSTANTIATE_IDENTITY(half)
 
 }  // namespace cuda
+}  // namespace arrayfire

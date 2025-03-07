@@ -18,8 +18,9 @@
 #include <complex>
 
 using af::dim4;
-using common::half;
+using arrayfire::common::half;
 
+namespace arrayfire {
 namespace cpu {
 
 template<af_op_t op, typename T>
@@ -125,3 +126,4 @@ INSTANTIATE(af_max_t, ushort)
 INSTANTIATE(af_max_t, half)
 
 }  // namespace cpu
+}  // namespace arrayfire

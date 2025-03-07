@@ -16,6 +16,7 @@
 #include <where.hpp>
 #include <complex>
 
+namespace arrayfire {
 namespace cuda {
 template<typename T>
 Array<uint> where(const Array<T> &in) {
@@ -40,3 +41,4 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 
 }  // namespace cuda
+}  // namespace arrayfire

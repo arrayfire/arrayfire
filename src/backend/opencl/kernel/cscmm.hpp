@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 template<typename T>
@@ -38,13 +39,13 @@ void cscmm_nn(Param out, const Param &values, const Param &colIdx,
     const bool use_alpha = (alpha != scalar<T>(1.0));
     const bool use_beta  = (beta != scalar<T>(0.0));
 
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 7> targs = {
         TemplateTypename<T>(),       TemplateArg(use_alpha),
         TemplateArg(use_beta),       TemplateArg(is_conj),
         TemplateArg(rows_per_group), TemplateArg(cols_per_group),
         TemplateArg(threads),
     };
-    std::vector<std::string> options = {
+    std::array<std::string, 9> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
         DefineKeyValue(USE_ALPHA, use_alpha),
         DefineKeyValue(USE_BETA, use_beta),
@@ -52,12 +53,11 @@ void cscmm_nn(Param out, const Param &values, const Param &colIdx,
         DefineKeyValue(THREADS, threads),
         DefineKeyValue(ROWS_PER_GROUP, rows_per_group),
         DefineKeyValue(COLS_PER_GROUP, cols_per_group),
-        DefineKeyValue(IS_CPLX, (af::iscplx<T>() ? 1 : 0)),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        DefineKeyValue(IS_CPLX, (iscplx<T>() ? 1 : 0)),
+        getTypeBuildDefinition<T>()};
 
     auto cscmmNN =
-        common::getKernel("cscmm_nn", {cscmm_cl_src}, targs, options);
+        common::getKernel("cscmm_nn", {{cscmm_cl_src}}, targs, options);
 
     cl::NDRange local(threads, 1);
     int M = out.info.dims[0];
@@ -75,3 +75,4 @@ void cscmm_nn(Param out, const Param &values, const Param &colIdx,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

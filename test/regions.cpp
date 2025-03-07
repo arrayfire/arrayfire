@@ -39,7 +39,7 @@ class Regions : public ::testing::Test {
 typedef ::testing::Types<float, double, int, unsigned, short, ushort> TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Regions, TestTypes);
+TYPED_TEST_SUITE(Regions, TestTypes);
 
 template<typename T>
 void regionsTest(string pTestFile, af_connectivity connectivity,
@@ -47,8 +47,8 @@ void regionsTest(string pTestFile, af_connectivity connectivity,
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<uchar> > in;
-    vector<vector<T> > tests;
+    vector<vector<uchar>> in;
+    vector<vector<T>> tests;
     readTests<uchar, T, int>(pTestFile, numDims, in, tests);
 
     dim4 idims = numDims[0];
@@ -71,7 +71,7 @@ void regionsTest(string pTestFile, af_connectivity connectivity,
     }
 
     ASSERT_SUCCESS(af_regions(&outArray, inArray, connectivity,
-                              (af_dtype)dtype_traits<T>::af_type));
+                               (af_dtype)dtype_traits<T>::af_type));
 
     // Get result
     T* outData = new T[idims.elements()];
@@ -97,6 +97,7 @@ void regionsTest(string pTestFile, af_connectivity connectivity,
 
 #define REGIONS_INIT(desc, file, conn, conn_type)                             \
     TYPED_TEST(Regions, desc) {                                               \
+        UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);                               \
         regionsTest<TypeParam>(                                               \
             string(TEST_DIR "/regions/" #file "_" #conn ".test"), conn_type); \
     }
@@ -109,9 +110,10 @@ REGIONS_INIT(Regions3, regions_128x128, 8, AF_CONNECTIVITY_8);
 ///////////////////////////////////// CPP ////////////////////////////////
 //
 TEST(Regions, CPP) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
     readTests<float, float, int>(string(TEST_DIR "/regions/regions_8x8_4.test"),
                                  numDims, in, tests);
 
@@ -139,6 +141,7 @@ TEST(Regions, CPP) {
 
 ///////////////////////////////// Documentation Examples ///////////////////
 TEST(Regions, Docs_8) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     // input data
     uchar input[64] = {0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1,
                        0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0,
@@ -185,6 +188,7 @@ TEST(Regions, Docs_8) {
 }
 
 TEST(Regions, Docs_4) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     // input data
     uchar input[64] = {0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1,
                        0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0,
@@ -236,6 +240,7 @@ TEST(Regions, Docs_4) {
 }
 
 TEST(Regions, WholeImageComponent) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     const int dim = 101;
     const int sz  = dim * dim;
     vector<char> input(sz, 1);
@@ -252,6 +257,7 @@ TEST(Regions, WholeImageComponent) {
 }
 
 TEST(Regions, NoComponentImage) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     const int dim = 101;
     const int sz  = dim * dim;
     vector<char> input(sz, 0);

@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 template<typename Ti, typename To, unsigned ker_size>
@@ -39,7 +40,7 @@ void sobel(Param dx, Param dy, const Param in) {
     compileOpts.emplace_back(getTypeBuildDefinition<Ti>());
 
     auto sobel =
-        common::getKernel("sobel3x3", {sobel_cl_src}, targs, compileOpts);
+        common::getKernel("sobel3x3", {{sobel_cl_src}}, targs, compileOpts);
 
     cl::NDRange local(THREADS_X, THREADS_Y);
 
@@ -58,3 +59,4 @@ void sobel(Param dx, Param dy, const Param in) {
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

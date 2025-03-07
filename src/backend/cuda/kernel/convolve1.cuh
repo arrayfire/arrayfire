@@ -11,17 +11,16 @@
 #include <math.hpp>
 #include <shared.hpp>
 
-__constant__ char
-    cFilter[2 * (2 * (MAX_CONV1_FILTER_LEN - 1) + CONV_THREADS) *
-            sizeof(double)];
+__constant__ char cFilter[2 * (2 * (MAX_CONV1_FILTER_LEN - 1) + CONV_THREADS) *
+                          sizeof(double)];
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T, typename aT, bool expand>
-__global__
-void convolve1(Param<T> out, CParam<T> signal,
-               int fLen, int nBBS0, int nBBS1,
-               int o1, int o2, int o3, int s1, int s2, int s3) {
+__global__ void convolve1(Param<T> out, CParam<T> signal, int fLen, int nBBS0,
+                          int nBBS1, int o1, int o2, int o3, int s1, int s2,
+                          int s3) {
     SharedMemory<T> shared;
     T *shrdMem = shared.getPointer();
 
@@ -74,4 +73,5 @@ void convolve1(Param<T> out, CParam<T> signal,
     }
 }
 
-}
+}  // namespace cuda
+}  // namespace arrayfire

@@ -20,6 +20,7 @@
 #include <sstream>
 #include <string>
 
+namespace arrayfire {
 namespace common {
 
 template<typename BufferNode>
@@ -31,7 +32,9 @@ class ShiftNodeBase : public Node {
    public:
     ShiftNodeBase(const af::dtype type, std::shared_ptr<BufferNode> buffer_node,
                   const std::array<int, 4> shifts)
-        : Node(type, 0, {}), m_buffer_node(buffer_node), m_shifts(shifts) {
+        : Node(type, 0, {}, kNodeType::Shift)
+        , m_buffer_node(buffer_node)
+        , m_shifts(shifts) {
         static_assert(std::is_nothrow_move_assignable<ShiftNodeBase>::value,
                       "ShiftNode is not move assignable");
         static_assert(std::is_nothrow_move_constructible<ShiftNodeBase>::value,
@@ -50,6 +53,8 @@ class ShiftNodeBase : public Node {
         return *this;
     }
 
+    std::array<int, 4> &getShifts() { return m_shifts; }
+
     std::unique_ptr<Node> clone() final {
         return std::make_unique<ShiftNodeBase>(*this);
     }
@@ -61,6 +66,9 @@ class ShiftNodeBase : public Node {
         swap(m_buffer_node, other.m_buffer_node);
         swap(m_shifts, other.m_shifts);
     }
+
+    BufferNode &getBufferNode() { return *m_buffer_node; }
+    const BufferNode &getBufferNode() const { return *m_buffer_node; }
 
     bool isLinear(const dim_t dims[4]) const final {
         UNUSED(dims);
@@ -84,12 +92,14 @@ class ShiftNodeBase : public Node {
     }
 
     int setArgs(int start_id, bool is_linear,
-                std::function<void(int id, const void *ptr, size_t arg_size)>
+                std::function<void(int id, const void *ptr, size_t arg_size,
+                                   bool is_buffer)>
                     setArg) const {
         int curr_id = m_buffer_node->setArgs(start_id, is_linear, setArg);
         for (int i = 0; i < 4; i++) {
             const int &d = m_shifts[i];
-            setArg(curr_id + i, static_cast<const void *>(&d), sizeof(int));
+            setArg(curr_id + i, static_cast<const void *>(&d), sizeof(int),
+                   false);
         }
         return curr_id + 4;
     }
@@ -115,3 +125,4 @@ class ShiftNodeBase : public Node {
     }
 };
 }  // namespace common
+}  // namespace arrayfire

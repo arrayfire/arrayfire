@@ -12,6 +12,7 @@
 #include <Param.hpp>
 #include <math.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
@@ -39,3 +40,4 @@ __global__ void identity(Param<T> out, int blocks_x, int blocks_y) {
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

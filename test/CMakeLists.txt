@@ -11,19 +11,21 @@ set(AF_TEST_WITH_MTX_FILES
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 
+if(AF_CTEST_SEPARATED)
+  include(GoogleTest)
+endif()
+
 if(AF_TEST_WITH_MTX_FILES)
   include(download_sparse_datasets)
 endif()
 
-if(NOT TARGET gtest)
+if(AF_WITH_EXTERNAL_PACKAGES_ONLY)
+  dependency_check(GTest_FOUND "Google Tests not found.")
+elseif(NOT TARGET GTest::gtest)
   af_dep_check_and_populate(${gtest_prefix}
     URI https://github.com/google/googletest.git
-    REF release-1.8.1
+    REF release-1.12.1
   )
-
-  # gtest targets cmake version 2.6 which throws warnings for policy CMP0042 on
-  # newer cmakes. This sets the default global setting for that policy.
-  set(CMAKE_POLICY_DEFAULT_CMP0042 NEW)
   if(WIN32)
     set(gtest_force_shared_crt ON
         CACHE INTERNAL "Required so that the libs Runtime is not set to MT DLL")
@@ -31,17 +33,16 @@ if(NOT TARGET gtest)
   endif()
 
   add_subdirectory(${${gtest_prefix}_SOURCE_DIR} ${${gtest_prefix}_BINARY_DIR} EXCLUDE_FROM_ALL)
-  set_target_properties(gtest gtest_main
+  target_compile_definitions(gtest PRIVATE GTEST_HAS_SEH=OFF)
+  set_target_properties(gtest
     PROPERTIES
       FOLDER "ExternalProjectTargets/gtest")
-  if(UNIX)
-    if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" AND
-      CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "10.3.0")
-      target_compile_options(gtest PRIVATE -Wno-maybe-uninitialized)
-      target_compile_options(gtest_main PRIVATE -Wno-maybe-uninitialized)
-    endif()
+  target_compile_options(gtest
+    PRIVATE
+      $<$<BOOL:${has_cxx_fp_model}>:-fp-model precise>)
+  if(NOT TARGET GTest::gtest)
+    add_library(GTest::gtest ALIAS gtest)
   endif()
-
   # Hide gtest project variables
   mark_as_advanced(
     BUILD_SHARED_LIBS
@@ -60,6 +61,30 @@ if(NOT TARGET mmio)
   add_subdirectory(mmio)
 endif()
 
+
+# Registers test with ctest
+#
+# Parameters
+#  target: The target associated with this test
+#  backend: The backend associated with this test
+#  is_serial: If true the test will be serialized
+function(af_add_test target backend is_serial)
+  if(AF_CTEST_SEPARATED)
+    gtest_discover_tests(${target}
+      TEST_PREFIX $<UPPER_CASE:${backend}>.
+      DISCOVERY_TIMEOUT 40)
+  else()
+    add_test(NAME ${target} COMMAND ${target})
+    if(${is_serial})
+      set_tests_properties(${target}
+        PROPERTIES
+          ENVIRONMENT AF_PRINT_ERRORS=1
+          TIMEOUT 900
+          RUN_SERIAL ON)
+    endif(${is_serial})
+  endif()
+endfunction()
+
 # Reset the CXX flags for tests
 set(CMAKE_CXX_STANDARD 11)
 
@@ -74,8 +99,8 @@ if(${AF_USE_RELATIVE_TEST_DIR})
 else(${AF_USE_RELATIVE_TEST_DIR})
   af_dep_check_and_populate(${testdata_prefix}
     URI https://github.com/arrayfire/arrayfire-data.git
-    #pinv large data set update change
-    REF 0144a599f913cc67c76c9227031b4100156abc25
+    #Add test file for SSAS_LinearSteps
+    REF 05703a4897c8b89b7a0ece1dbe21ede33d226f44
   )
   set(TESTDATA_SOURCE_DIR "${${testdata_prefix}_SOURCE_DIR}")
 endif(${AF_USE_RELATIVE_TEST_DIR})
@@ -92,12 +117,15 @@ if(AF_BUILD_OPENCL)
   list(APPEND enabled_backends "opencl")
 endif(AF_BUILD_OPENCL)
 
+if(AF_BUILD_ONEAPI)
+  list(APPEND enabled_backends "oneapi")
+endif(AF_BUILD_ONEAPI)
+
 if(AF_BUILD_UNIFIED)
   list(APPEND enabled_backends "unified")
 endif(AF_BUILD_UNIFIED)
 
-
-add_library(arrayfire_test OBJECT
+add_library(arrayfire_test STATIC
   testHelpers.hpp
   arrayfire_test.cpp)
 
@@ -105,17 +133,27 @@ target_include_directories(arrayfire_test
   PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}
     ${ArrayFire_SOURCE_DIR}/include
-    ${ArrayFire_BINARY_DIR}/include
-    ${ArrayFire_SOURCE_DIR}/extern/half/include
-    mmio
-    $<TARGET_PROPERTY:Boost::boost,INTERFACE_INCLUDE_DIRECTORIES>
-    ${${gtest_prefix}_SOURCE_DIR}/googletest/include)
+    ${ArrayFire_BINARY_DIR}/include)
 
+target_include_directories(arrayfire_test
+  SYSTEM PRIVATE
+    ${ArrayFire_SOURCE_DIR}/extern/half/include
+  )
+
+# The tautological-constant-compare warning is always thrown for std::nan
+# and std::info calls. Its unnecessarily verbose.
+target_compile_options(arrayfire_test
+  PUBLIC
+    # Intel compilers use fast math by default and ignore special floating point
+    # values like NaN and Infs.
+    $<$<COMPILE_LANGUAGE:CXX>:
+      $<$<BOOL:${has_cxx_fp_model}>:-fp-model precise>
+      $<$<BOOL:${has_cxx_unqualified_std_cast_call}>:-Wno-unqualified-std-cast-call>>
+  PRIVATE
+    $<$<CXX_COMPILER_ID:MSVC>: /bigobj
+                               /EHsc>
+  )
 if(WIN32)
-  target_compile_options(arrayfire_test
-    PRIVATE
-      /bigobj
-      /EHsc)
   target_compile_definitions(arrayfire_test
     PRIVATE
       WIN32_LEAN_AND_MEAN
@@ -123,9 +161,19 @@ if(WIN32)
 endif()
 
 target_compile_definitions(arrayfire_test
+  PUBLIC
+    $<$<BOOL:${AF_WITH_FAST_MATH}>:AF_WITH_FAST_MATH>
   PRIVATE
     TEST_RESULT_IMAGE_DIR="${CMAKE_BINARY_DIR}/test/"
     USE_MTX)
+
+target_link_libraries(arrayfire_test
+  PRIVATE
+    mmio
+  PUBLIC
+    GTest::gtest
+    Boost::boost
+  )
 
 # Creates tests for all backends
 #
@@ -155,21 +203,25 @@ function(make_test)
     endif()
     set(target "test_${src_name}_${backend}")
 
-    if (${mt_args_NO_ARRAYFIRE_TEST})
-      add_executable(${target} ${mt_args_SRC})
-    else()
-      add_executable(${target} ${mt_args_SRC} $<TARGET_OBJECTS:arrayfire_test>)
-    endif()
+    add_executable(${target} ${mt_args_SRC})
     target_include_directories(${target}
       PRIVATE
-        ${ArrayFire_SOURCE_DIR}/extern/half/include
         ${CMAKE_SOURCE_DIR}
-        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR})
+    target_include_directories(${target}
+      SYSTEM PRIVATE
+        ${ArrayFire_SOURCE_DIR}/extern/half/include
       )
     target_link_libraries(${target}
       PRIVATE
         ${mt_args_LIBRARIES}
-        gtest
+        arrayfire_test
+      )
+
+    target_compile_options(${target}
+      PRIVATE
+        $<$<CXX_COMPILER_ID:MSVC>: /bigobj
+                                   /EHsc>
       )
 
     if(${backend} STREQUAL "unified")
@@ -207,11 +259,12 @@ function(make_test)
         MTX_TEST_DIR="${ArrayFire_BINARY_DIR}/extern/matrixmarket/"
         )
     endif()
-    if(WIN32)
-      target_compile_options(${target}
+    if(AF_SKIP_UNSUPPORTED_TESTS)
+      target_compile_definitions(${target}
         PRIVATE
-          /bigobj
-          /EHsc)
+          SKIP_UNSUPPORTED_TESTS)
+    endif()
+    if(WIN32)
       target_compile_definitions(${target}
         PRIVATE
           WIN32_LEAN_AND_MEAN
@@ -220,12 +273,7 @@ function(make_test)
 
     # TODO(umar): Create this executable separately
     if(NOT ${backend} STREQUAL "unified" OR ${target} STREQUAL "backend_unified")
-      add_test(NAME ${target} COMMAND ${target})
-	    if(${mt_args_SERIAL})
-        set_tests_properties(${target}
-          PROPERTIES
-            RUN_SERIAL ON)
-	    endif(${mt_args_SERIAL})
+      af_add_test(${target} ${backend} ${mt_args_SERIAL})
     endif()
 
   endforeach()
@@ -330,54 +378,53 @@ if(OpenCL_FOUND)
             CXX11)
 endif()
 
-if(CUDA_FOUND)
-  foreach(backend ${enabled_backends})
-    set(cuda_test_backends "cuda" "unified")
-    if(${backend} IN_LIST cuda_test_backends)
-      set(target test_cuda_${backend})
-      if(${CMAKE_VERSION} VERSION_LESS 3.5.2)
-        cuda_include_directories(
-          ${ArrayFire_SOURCE_DIR}/include
-          ${ArrayFire_BINARY_DIR}/include
-          ${ArrayFire_SOURCE_DIR}/extern/half/include
-          ${CMAKE_CURRENT_SOURCE_DIR}
-          ${${gtest_prefix}_SOURCE_DIR}/googletest/include
-        )
-      endif()
-      cuda_add_executable(${target} cuda.cu  $<TARGET_OBJECTS:arrayfire_test>)
-      target_include_directories(${target} PRIVATE
-        ${ArrayFire_SOURCE_DIR}/extern/half/include
-        ${CMAKE_SOURCE_DIR}
-        ${CMAKE_CURRENT_SOURCE_DIR})
-      if(${backend} STREQUAL "unified")
+if(AF_BUILD_CUDA)
+  if(CUDA_FOUND)
+    include(AFcuda_helpers)
+    foreach(backend ${enabled_backends})
+      set(cuda_test_backends "cuda" "unified")
+      if(${backend} IN_LIST cuda_test_backends)
+        set(target test_cuda_${backend})
+        add_executable(${target} cuda.cu)
+        target_include_directories(${target}
+          PRIVATE
+          ${CMAKE_SOURCE_DIR}
+          ${CMAKE_CURRENT_SOURCE_DIR})
+        target_include_directories(${target}
+          SYSTEM PRIVATE
+            ${ArrayFire_SOURCE_DIR}/extern/half/include)
+        if(${backend} STREQUAL "unified")
+          target_link_libraries(${target}
+            ArrayFire::af)
+        else()
+          target_link_libraries(${target}
+            ArrayFire::af${backend})
+        endif()
         target_link_libraries(${target}
-          ArrayFire::af)
-      else()
-        target_link_libraries(${target}
-          ArrayFire::af${backend})
+          mmio
+          arrayfire_test)
+  
+        # Couldn't get Threads::Threads to work with this cuda binary. The import
+        # target would not add the -pthread flag which is required for this
+        # executable (on Ubuntu 18.04 anyway)
+        check_cxx_compiler_flag(-pthread pthread_flag)
+        if(pthread_flag)
+          target_link_libraries(${target} -pthread)
+        endif()
+  
+        af_detect_and_set_cuda_architectures(${target})
+  
+        set_target_properties(${target}
+          PROPERTIES
+            FOLDER "Tests"
+            OUTPUT_NAME "cuda_${backend}")
+  
+        if(NOT ${backend} STREQUAL "unified")
+          af_add_test(${target} ${backend} ON)
+        endif()
       endif()
-      target_link_libraries(${target}
-        mmio
-        gtest)
-
-      # Couldn't get Threads::Threads to work with this cuda binary. The import
-      # target would not add the -pthread flag which is required for this
-      # executable (on Ubuntu 18.04 anyway)
-      check_cxx_compiler_flag(-pthread pthread_flag)
-      if(pthread_flag)
-        target_link_libraries(${target} -pthread)
-      endif()
-
-      set_target_properties(${target}
-        PROPERTIES
-        FOLDER "Tests"
-        OUTPUT_NAME "cuda_${backend}")
-
-      if(NOT ${backend} STREQUAL "unified")
-        add_test(NAME ${target} COMMAND ${target})
-      endif()
-    endif()
-  endforeach()
+    endforeach()
+  endif()
 endif()
 
 
@@ -433,7 +480,7 @@ make_test(SRC write.cpp)
 make_test(SRC ycbcr_rgb.cpp)
 
 foreach(backend ${enabled_backends})
-  set(target "test_basic_c_${backend}")
+  set(target "basic_c_${backend}")
   add_executable(${target} basic_c.c)
   if(${backend} STREQUAL "unified")
     target_link_libraries(${target}
@@ -460,6 +507,8 @@ elseif(AF_BUILD_CUDA)
   target_link_libraries(print_info ArrayFire::afcuda)
 elseif(AF_BUILD_CPU)
   target_link_libraries(print_info ArrayFire::afcpu)
+elseif(AF_BUILD_ONEAPI)
+  target_link_libraries(print_info ArrayFire::afoneapi)
 endif()
 
 make_test(SRC jit_test_api.cpp)

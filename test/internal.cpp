@@ -36,7 +36,7 @@ TEST(Internal, CreateStrided) {
     dim_t dims[]    = {3, 3, 2};
     dim_t strides[] = {1, 5, 20};
     array a         = createStridedArray((void *)ha, offset, dim4(ndims, dims),
-                                 dim4(ndims, strides), f32, afHost);
+                                         dim4(ndims, strides), f32, afHost);
 
     dim4 astrides = getStrides(a);
     dim4 adims    = a.dims();

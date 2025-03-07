@@ -18,78 +18,116 @@ function(conditional_directory variable directory)
   endif()
 endfunction()
 
-function(arrayfire_get_platform_definitions variable)
-if(WIN32)
-  set(${variable} -DOS_WIN -DWIN32_LEAN_AND_MEAN -DNOMINMAX PARENT_SCOPE)
-elseif(APPLE)
-  set(${variable} -DOS_MAC PARENT_SCOPE)
-elseif(UNIX)
-  set(${variable} -DOS_LNX PARENT_SCOPE)
-endif()
-endfunction()
-
-function(arrayfire_get_cuda_cxx_flags cuda_flags)
-  if(MSVC)
-    set(flags -Xcompiler /wd4251
-              -Xcompiler /wd4068
-              -Xcompiler /wd4275
-              -Xcompiler /bigobj
-              -Xcompiler /EHsc
-              --expt-relaxed-constexpr)
-    if(CMAKE_GENERATOR MATCHES "Ninja")
-      set(flags ${flags} -Xcompiler /FS)
-    endif()
-    if(cplusplus_define)
-      list(APPEND flags -Xcompiler /Zc:__cplusplus
-                        -Xcompiler /std:c++14)
-    endif()
-  else()
-    set(flags -std=c++14
-              -Xcompiler -fPIC
-              -Xcompiler ${CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY}hidden
-              --expt-relaxed-constexpr)
-  endif()
-
-  if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" AND
-      CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "5.3.0" AND
-      ${CUDA_VERSION_MAJOR} LESS 8)
-    set(flags ${flags} -D_FORCE_INLINES -D_MWAITXINTRIN_H_INCLUDED)
-  endif()
-  set(${cuda_flags} ${flags} PARENT_SCOPE)
-endfunction()
-
 include(CheckCXXCompilerFlag)
 
+if(WIN32)
+  check_cxx_compiler_flag(/Zc:__cplusplus cplusplus_define)
+  check_cxx_compiler_flag(/permissive- cxx_compliance)
+endif()
+
+check_cxx_compiler_flag(-ffast-math has_cxx_fast_math)
+check_cxx_compiler_flag("-fp-model fast" has_cxx_fp_model)
+check_cxx_compiler_flag(-fno-errno-math has_cxx_no_errno_math)
+check_cxx_compiler_flag(-fno-trapping-math  has_cxx_no_trapping_math)
+check_cxx_compiler_flag(-fno-signed-zeros  has_cxx_no_signed_zeros)
+check_cxx_compiler_flag(-mno-ieee-fp has_cxx_no_ieee_fp)
+check_cxx_compiler_flag(-Wno-unqualified-std-cast-call has_cxx_unqualified_std_cast_call)
+check_cxx_compiler_flag(-Werror=reorder-ctor has_cxx_error_reorder_ctor)
+check_cxx_compiler_flag(-Rno-debug-disables-optimization has_cxx_debug-disables-optimization)
+
+
 function(arrayfire_set_default_cxx_flags target)
-  arrayfire_get_platform_definitions(defs)
-  target_compile_definitions(${target} PRIVATE ${defs})
+  target_compile_options(${target}
+    PRIVATE
 
-  if(MSVC)
-    target_compile_options(${target}
-      PRIVATE
-        /wd4251 /wd4068 /wd4275 /bigobj /EHsc)
+      $<$<BOOL:${CMAKE_SYCL_COMPILER}>:
+        $<$<COMPILE_LANGUAGE:SYCL>:
+                # OpenCL targets need this flag to avoid
+                # ignored attribute warnings in the OpenCL
+                # headers
+                -Wno-ignored-attributes
+                -Wall
+                -Wno-unqualified-std-cast-call
+                -Werror=reorder-ctor
+                #-fp-model precise
+                $<$<BOOL:${AF_WITH_FAST_MATH}>: -ffast-math -fno-errno-math -fno-trapping-math -fno-signed-zeros -mno-ieee-fp>
+                $<$<NOT:$<BOOL:${AF_WITH_FAST_MATH}>>: $<IF:$<PLATFORM_ID:Windows>,/fp=precise,-fp-model=precise>>
+                $<$<CONFIG:Debug>:-Rno-debug-disables-optimization>
 
-    if(CMAKE_GENERATOR MATCHES "Ninja")
-      target_compile_options(${target}
-        PRIVATE
-          /FS)
-    endif()
-  else()
-    check_cxx_compiler_flag(-Wno-ignored-attributes has_ignored_attributes_flag)
+                $<$<PLATFORM_ID:Windows>: /wd4251
+                                          /wd4068
+                                          /wd4275
+                                          /wd4668
+                                          /wd4710
+                                          /wd4505
+                                          /we5038
+                                          /bigobj
+                                          /EHsc
+                                          /nologo
+                                          # MSVC incorrectly sets the cplusplus to 199711L even if the compiler supports
+                                          # c++11 features. This flag sets it to the correct standard supported by the
+                                          # compiler
+                                          $<$<BOOL:${cplusplus_define}>:/Zc:__cplusplus>
+                                          $<$<BOOL:${cxx_compliance}>:/permissive-> >
+            >>
+      $<$<COMPILE_LANGUAGE:CXX>:
+              # C4068: Warnings about unknown pragmas
+              # C4668: Warnings about unknown defintions
+              # C4275: Warnings about using non-exported classes as base class of an
+              #        exported class
+              $<$<CXX_COMPILER_ID:MSVC>:  /wd4251
+                                          /wd4068
+                                          /wd4275
+                                          /wd4668
+                                          /wd4710
+                                          /wd4505
+                                          /we5038
+                                          /bigobj
+                                          /EHsc
+                                          /nologo
+                                          # MSVC incorrectly sets the cplusplus to 199711L even if the compiler supports
+                                          # c++11 features. This flag sets it to the correct standard supported by the
+                                          # compiler
+                                          $<$<BOOL:${cplusplus_define}>:/Zc:__cplusplus>
+                                          $<$<BOOL:${cxx_compliance}>:/permissive-> >
 
-    # OpenCL targets need this flag to avoid ignored attribute warnings in the
-    # OpenCL headers
-    if(has_ignored_attributes_flag)
-        target_compile_options(${target}
-          PRIVATE -Wno-ignored-attributes)
-    endif()
+              # OpenCL targets need this flag to avoid
+              # ignored attribute warnings in the OpenCL
+              # headers
+              $<$<BOOL:${has_ignored_attributes_flag}>:-Wno-ignored-attributes>
+              $<$<BOOL:${has_all_warnings_flag}>:-Wall>
+              $<$<BOOL:${has_cxx_unqualified_std_cast_call}>:-Wno-unqualified-std-cast-call>
+              $<$<BOOL:${has_cxx_error_reorder_ctor}>:-Werror=reorder-ctor>
 
-    check_cxx_compiler_flag(-Wall has_all_warnings_flag)
-    if(has_all_warnings_flag)
-      target_compile_options(${target}
-        PRIVATE -Wall)
-    endif()
-  endif()
+              $<$<BOOL:${AF_WITH_FAST_MATH}>:
+                  $<$<BOOL:${has_cxx_fast_math}>:-ffast-math>
+                  $<$<BOOL:${has_cxx_no_errno_math}>:-fno-errno-math>
+                  $<$<BOOL:${has_cxx_no_trapping_math}>:-fno-trapping-math>
+                  $<$<BOOL:${has_cxx_no_signed_zeros}>:-fno-signed-zeros>
+                  $<$<BOOL:${has_cxx_no_ieee_fp}>:-mno-ieee-fp>
+                  >
+
+              $<$<NOT:$<BOOL:${AF_WITH_FAST_MATH}>>:
+                    $<$<BOOL:${has_cxx_fp_model}>:-fp-model precise>>
+
+              $<$<BOOL:${has_cxx_debug-disables-optimization}>:
+                  $<$<CONFIG:Debug>:-Rno-debug-disables-optimization>>
+          >
+    )
+
+  target_compile_definitions(${target}
+    PRIVATE
+      AFDLL
+      $<$<PLATFORM_ID:Windows>:             OS_WIN
+                                            WIN32_LEAN_AND_MEAN
+                                            NOMINMAX>
+      $<$<PLATFORM_ID:Darwin>:              OS_MAC>
+      $<$<PLATFORM_ID:Linux>:               OS_LNX>
+
+      $<$<BOOL:${AF_WITH_LOGGING}>:           AF_WITH_LOGGING>
+      $<$<BOOL:${AF_CACHE_KERNELS_TO_DISK}>:  AF_CACHE_KERNELS_TO_DISK>
+      $<$<BOOL:${AF_WITH_FAST_MATH}>:         AF_WITH_FAST_MATH>
+  )
 endfunction()
 
 function(__af_deprecate_var var access value)
@@ -121,10 +159,6 @@ endfunction()
 macro(arrayfire_set_cmake_default_variables)
   set(CMAKE_PREFIX_PATH "${ArrayFire_BINARY_DIR};${CMAKE_PREFIX_PATH}")
   set(BUILD_SHARED_LIBS ON)
-
-  set(CMAKE_CXX_STANDARD 14)
-  set(CMAKE_CXX_EXTENSIONS OFF)
-  set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
   set(CMAKE_CXX_FLAGS_COVERAGE
       "-g -O0"
@@ -177,8 +211,8 @@ macro(arrayfire_set_cmake_default_variables)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ArrayFire_BINARY_DIR}/bin)
   endif()
 
-  if(APPLE)
-    set(CMAKE_INSTALL_RPATH "/opt/arrayfire/lib")
+  if(APPLE AND (NOT DEFINED CMAKE_INSTALL_RPATH))
+      message(WARNING "CMAKE_INSTALL_RPATH is required when installing ArrayFire to the local system. Set it to /opt/arrayfire/lib if making the installer or your own custom install path.")
   endif()
 
   # This code is used to generate the compilers.h file in CMakeModules. Not all
@@ -189,6 +223,11 @@ macro(arrayfire_set_cmake_default_variables)
   #  #define AF_CONSTEXPR constexpr
   #  #else
   #  #define AF_CONSTEXPR
+  #  #endif
+  #  #if __cpp_if_constexpr || __cplusplus >= 201606L
+  #  #define AF_IF_CONSTEXPR if constexpr
+  #  #else
+  #  #define AF_IF_CONSTEXPR if
   #  #endif
   #  ]=])
   #  include(WriteCompilerDetectionHeader)

@@ -28,10 +28,11 @@
 #include <af/dim4.hpp>
 
 using af::dim4;
-using common::flip;
-using common::half;
-using common::modDims;
+using arrayfire::common::flip;
+using arrayfire::common::half;
+using arrayfire::common::modDims;
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T, typename accT>
@@ -144,7 +145,7 @@ Array<T> convolve2_unwrap(const Array<T> &signal, const Array<T> &filter,
 
     Array<T> collapsedFilter = flip(filter, {1, 1, 0, 0});
     collapsedFilter          = modDims(collapsedFilter,
-                              dim4(fDims[0] * fDims[1] * fDims[2], fDims[3]));
+                                       dim4(fDims[0] * fDims[1] * fDims[2], fDims[3]));
 
     Array<T> res =
         matmul(unwrapped, collapsedFilter, AF_MAT_TRANS, AF_MAT_NONE);
@@ -187,7 +188,7 @@ Array<T> conv2DataGradient(const Array<T> &incoming_gradient,
 
     Array<T> collapsed_filter = flip(original_filter, {1, 1, 0, 0});
     collapsed_filter          = modDims(collapsed_filter,
-                               dim4(fDims[0] * fDims[1] * fDims[2], fDims[3]));
+                                        dim4(fDims[0] * fDims[1] * fDims[2], fDims[3]));
 
     Array<T> collapsed_gradient = incoming_gradient;
     collapsed_gradient          = reorder(collapsed_gradient, dim4(0, 1, 3, 2));
@@ -256,3 +257,4 @@ INSTANTIATE(half)
 #undef INSTANTIATE
 
 }  // namespace cpu
+}  // namespace arrayfire

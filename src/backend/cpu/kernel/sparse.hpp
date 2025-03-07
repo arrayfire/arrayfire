@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <tuple>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -173,3 +174,4 @@ void coo2csr(Param<T> ovalues, Param<int> orowIdx, Param<int> ocolIdx,
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

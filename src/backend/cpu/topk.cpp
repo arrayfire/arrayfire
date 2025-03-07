@@ -18,12 +18,13 @@
 #include <numeric>
 #include <vector>
 
-using common::half;
+using arrayfire::common::half;
 using std::iota;
 using std::min;
 using std::partial_sort_copy;
 using std::vector;
 
+namespace arrayfire {
 namespace cpu {
 template<typename T>
 void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
@@ -130,3 +131,4 @@ INSTANTIATE(long long)
 INSTANTIATE(unsigned long long)
 INSTANTIATE(half)
 }  // namespace cpu
+}  // namespace arrayfire

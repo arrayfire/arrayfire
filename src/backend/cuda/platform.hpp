@@ -38,18 +38,16 @@ namespace spdlog {
 class logger;
 }
 
-namespace graphics {
-class ForgeManager;
-}
-
+namespace arrayfire {
 namespace common {
-namespace memory {
+class ForgeManager;
 class MemoryManagerBase;
-}
 }  // namespace common
+}  // namespace arrayfire
 
-using common::memory::MemoryManagerBase;
+using arrayfire::common::MemoryManagerBase;
 
+namespace arrayfire {
 namespace cuda {
 
 class GraphicsResourceManager;
@@ -69,7 +67,7 @@ std::string getDriverVersion() noexcept;
 std::string getCUDARuntimeVersion() noexcept;
 
 // Returns true if double is supported by the device
-bool isDoubleSupported(int device);
+bool isDoubleSupported(int device) noexcept;
 
 // Returns true if half is supported by the device
 bool isHalfSupported(int device);
@@ -80,7 +78,9 @@ int& getMaxJitSize();
 
 int getDeviceCount();
 
-unsigned getActiveDeviceId();
+void init();
+
+int getActiveDeviceId();
 
 int getDeviceNativeId(int device);
 
@@ -88,9 +88,35 @@ cudaStream_t getStream(int device);
 
 cudaStream_t getActiveStream();
 
+/// Returns true if the buffer on device buf_device_id can be accessed by
+/// kernels on device execution_id
+///
+/// \param[in] buf_device_id The device id of the buffer
+/// \param[in] execution_id The device where the buffer will be accessed.
+bool isDeviceBufferAccessible(int buf_device_id, int execution_id);
+
+/// Return a handle to the stream for the device.
+///
+/// \param[in] device The device of the returned stream
+/// \returns The handle to the queue/stream
+cudaStream_t getQueueHandle(int device);
+
 size_t getDeviceMemorySize(int device);
 
 size_t getHostMemorySize();
+
+size_t getL2CacheSize(const int device);
+
+// Returns int[3] of maxGridSize
+const int* getMaxGridSize(const int device);
+
+unsigned getMemoryBusWidth(const int device);
+
+// maximum nr of threads the device really can run in parallel, without
+// scheduling
+unsigned getMaxParallelThreads(const int device);
+
+unsigned getMultiProcessorCount(const int device);
 
 int setDevice(int device);
 
@@ -99,7 +125,7 @@ void sync(int device);
 // Returns true if the AF_SYNCHRONIZE_CALLS environment variable is set to 1
 bool synchronize_calls();
 
-cudaDeviceProp getDeviceProp(int device);
+const cudaDeviceProp& getDeviceProp(const int device);
 
 std::pair<int, int> getComputeCapability(const int device);
 
@@ -117,7 +143,7 @@ void setMemoryManagerPinned(std::unique_ptr<MemoryManagerBase> mgr);
 
 void resetMemoryManagerPinned();
 
-graphics::ForgeManager& forgeManager();
+arrayfire::common::ForgeManager& forgeManager();
 
 GraphicsResourceManager& interopManager();
 
@@ -134,3 +160,4 @@ SolveHandle solverDnHandle();
 SparseHandle sparseHandle();
 
 }  // namespace cuda
+}  // namespace arrayfire

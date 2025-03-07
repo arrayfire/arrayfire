@@ -17,6 +17,7 @@
 
 #include <cfloat>
 
+namespace arrayfire {
 namespace cuda {
 
 namespace kernel {
@@ -157,7 +158,7 @@ __device__ bool computeMeanScale(
     CParam<float> x_dst, CParam<float> y_dst, CParam<float> rnd, int i) {
     const unsigned ridx = rnd.dims[0] * i;
     unsigned r[4]       = {(unsigned)rnd.ptr[ridx], (unsigned)rnd.ptr[ridx + 1],
-                     (unsigned)rnd.ptr[ridx + 2], (unsigned)rnd.ptr[ridx + 3]};
+                           (unsigned)rnd.ptr[ridx + 2], (unsigned)rnd.ptr[ridx + 3]};
 
     // If one of the points is repeated, it's a bad samples, will still
     // compute homography to ensure all threads pass __syncthreads()
@@ -553,25 +554,25 @@ int computeH(Param<T> bestH, Param<T> H, Param<float> err, CParam<float> x_src,
 
             CUDA_CHECK(cudaMemcpyAsync(&minMedian, finalMedian.get(),
                                        sizeof(float), cudaMemcpyDeviceToHost,
-                                       cuda::getActiveStream()));
+                                       getActiveStream()));
             CUDA_CHECK(cudaMemcpyAsync(&minIdx, finalIdx.get(),
                                        sizeof(unsigned), cudaMemcpyDeviceToHost,
-                                       cuda::getActiveStream()));
+                                       getActiveStream()));
             CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
         } else {
             CUDA_CHECK(cudaMemcpyAsync(&minMedian, median.get(), sizeof(float),
                                        cudaMemcpyDeviceToHost,
-                                       cuda::getActiveStream()));
+                                       getActiveStream()));
             CUDA_CHECK(cudaMemcpyAsync(&minIdx, idx.get(), sizeof(unsigned),
                                        cudaMemcpyDeviceToHost,
-                                       cuda::getActiveStream()));
+                                       getActiveStream()));
             CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
         }
 
         // Copy best homography to output
         CUDA_CHECK(cudaMemcpyAsync(bestH.ptr, H.ptr + minIdx * 9, 9 * sizeof(T),
                                    cudaMemcpyDeviceToDevice,
-                                   cuda::getActiveStream()));
+                                   getActiveStream()));
 
         blocks = dim3(divup(nsamples, threads.x));
         // sync stream for the device to host copies to be visible for
@@ -588,7 +589,7 @@ int computeH(Param<T> bestH, Param<T> H, Param<float> err, CParam<float> x_src,
 
         CUDA_CHECK(cudaMemcpyAsync(&inliersH, totalInliers.get(),
                                    sizeof(unsigned), cudaMemcpyDeviceToHost,
-                                   cuda::getActiveStream()));
+                                   getActiveStream()));
         CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
 
     } else if (htype == AF_HOMOGRAPHY_RANSAC) {
@@ -597,11 +598,11 @@ int computeH(Param<T> bestH, Param<T> H, Param<float> err, CParam<float> x_src,
         // Copies back index and number of inliers of best homography estimation
         CUDA_CHECK(cudaMemcpyAsync(&idxH, idx.get() + blockIdx,
                                    sizeof(unsigned), cudaMemcpyDeviceToHost,
-                                   cuda::getActiveStream()));
+                                   getActiveStream()));
         CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
         CUDA_CHECK(cudaMemcpyAsync(bestH.ptr, H.ptr + idxH * 9, 9 * sizeof(T),
                                    cudaMemcpyDeviceToDevice,
-                                   cuda::getActiveStream()));
+                                   getActiveStream()));
     }
 
     // sync stream for the device to host copies to be visible for
@@ -614,3 +615,4 @@ int computeH(Param<T> bestH, Param<T> H, Param<float> err, CParam<float> x_src,
 }  // namespace kernel
 
 }  // namespace cuda
+}  // namespace arrayfire

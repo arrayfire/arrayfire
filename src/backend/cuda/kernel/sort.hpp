@@ -18,6 +18,7 @@
 #include <thrust/sort.h>
 #include <thrust_utils.hpp>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 // Wrapper functions
@@ -80,3 +81,4 @@ void sort0(Param<T> val, bool isAscending) {
 }
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

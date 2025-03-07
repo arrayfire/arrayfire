@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -34,16 +35,15 @@ void assign(Param out, const Param in, const AssignKernelParam_t& p,
     constexpr int THREADS_X = 32;
     constexpr int THREADS_Y = 8;
 
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 1> targs = {
         TemplateTypename<T>(),
     };
-    std::vector<std::string> options = {
+    std::array<std::string, 2> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        getTypeBuildDefinition<T>()};
 
     auto assign =
-        common::getKernel("assignKernel", {assign_cl_src}, targs, options);
+        common::getKernel("assignKernel", {{assign_cl_src}}, targs, options);
 
     cl::NDRange local(THREADS_X, THREADS_Y);
 
@@ -60,3 +60,4 @@ void assign(Param out, const Param in, const AssignKernelParam_t& p,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

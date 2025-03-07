@@ -21,4 +21,4 @@
 
 #include "types.hpp"
 
-namespace detail = cpu;
+namespace detail = arrayfire::cpu;

@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -50,7 +51,7 @@ void anisotropicDiffusion(Param inout, const float dt, const float mct,
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
     auto diffUpdate =
-        common::getKernel("aisoDiffUpdate", {anisotropic_diffusion_cl_src},
+        common::getKernel("aisoDiffUpdate", {{anisotropic_diffusion_cl_src}},
                           tmpltArgs, compileOpts);
 
     NDRange local(THREADS_X, THREADS_Y, 1);
@@ -68,3 +69,4 @@ void anisotropicDiffusion(Param inout, const float dt, const float mct,
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

@@ -16,25 +16,53 @@
 #endif
 
 #include <common/Logger.hpp>
+#include <common/TemplateArg.hpp>
 #include <common/defines.hpp>
 #include <common/util.hpp>
+#include <optypes.hpp>
 #include <af/defines.h>
 
+#include <nonstd/span.hpp>
 #include <sys/stat.h>
+
 #include <algorithm>
+#include <array>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
 #include <numeric>
+#include <sstream>
 #include <string>
 #include <thread>
 #include <vector>
 
+#ifdef __has_include
+#if __has_include(<charconv>)
+#include <charconv>
+#endif
+#if __has_include(<version>)
+#include <version>
+#endif
+#endif
+
+using nonstd::span;
 using std::accumulate;
+using std::array;
+using std::hash;
+using std::ofstream;
+using std::once_flag;
+using std::rename;
+using std::size_t;
 using std::string;
+using std::stringstream;
+using std::thread;
+using std::to_string;
+using std::uint8_t;
 using std::vector;
 
+namespace arrayfire {
+namespace common {
 // http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring/217605#217605
 // trim from start
 string& ltrim(string& s) {
@@ -43,7 +71,7 @@ string& ltrim(string& s) {
     return s;
 }
 
-string getEnvVar(const std::string& key) {
+string getEnvVar(const string& key) {
 #if defined(OS_WIN)
     DWORD bufSize =
         32767;  // limit according to GetEnvironment Variable documentation
@@ -80,24 +108,30 @@ const char* getName(af_dtype type) {
     }
 }
 
-void saveKernel(const std::string& funcName, const std::string& jit_ker,
-                const std::string& ext) {
+void saveKernel(const string& funcName, const string& jit_ker,
+                const string& ext) {
     static constexpr const char* saveJitKernelsEnvVarName =
         "AF_JIT_KERNEL_TRACE";
     static const char* jitKernelsOutput = getenv(saveJitKernelsEnvVarName);
     if (!jitKernelsOutput) { return; }
-    if (std::strcmp(jitKernelsOutput, "stdout") == 0) {
+    if (strcmp(jitKernelsOutput, "stdout") == 0) {
         fputs(jit_ker.c_str(), stdout);
         return;
     }
-    if (std::strcmp(jitKernelsOutput, "stderr") == 0) {
+    if (strcmp(jitKernelsOutput, "stderr") == 0) {
         fputs(jit_ker.c_str(), stderr);
         return;
     }
     // Path to a folder
-    const std::string ffp =
-        std::string(jitKernelsOutput) + AF_PATH_SEPARATOR + funcName + ext;
+    const string ffp =
+        string(jitKernelsOutput) + AF_PATH_SEPARATOR + funcName + ext;
+
+#if defined(OS_WIN)
+    FILE* f = fopen(ffp.c_str(), "w");
+#else
     FILE* f = fopen(ffp.c_str(), "we");
+#endif
+
     if (!f) {
         fprintf(stderr, "Cannot open file %s\n", ffp.c_str());
         return;
@@ -106,11 +140,6 @@ void saveKernel(const std::string& funcName, const std::string& jit_ker,
         fprintf(stderr, "Failed to write kernel to file %s\n", ffp.c_str());
     }
     fclose(f);
-}
-
-std::string int_version_to_string(int version) {
-    return std::to_string(version / 1000) + "." +
-           std::to_string(static_cast<int>((version % 1000) / 10.));
 }
 
 #if defined(OS_WIN)
@@ -162,25 +191,26 @@ bool removeFile(const string& path) {
 }
 
 bool renameFile(const string& sourcePath, const string& destPath) {
-    return std::rename(sourcePath.c_str(), destPath.c_str()) == 0;
+    return rename(sourcePath.c_str(), destPath.c_str()) == 0;
 }
 
 bool isDirectoryWritable(const string& path) {
     if (!directoryExists(path) && !createDirectory(path)) { return false; }
 
     const string testPath = path + AF_PATH_SEPARATOR + "test";
-    if (!std::ofstream(testPath).is_open()) { return false; }
+    if (!ofstream(testPath).is_open()) { return false; }
     removeFile(testPath);
 
     return true;
 }
 
+#ifndef NOSPDLOG
 string& getCacheDirectory() {
-    static std::once_flag flag;
+    static once_flag flag;
     static string cacheDirectory;
 
-    std::call_once(flag, []() {
-        std::string pathList[] = {
+    call_once(flag, []() {
+        string pathList[] = {
 #if defined(OS_WIN)
             getTemporaryDirectory() + "\\ArrayFire"
 #else
@@ -200,8 +230,8 @@ string& getCacheDirectory() {
         }
 
         if (env_path.empty()) {
-            auto iterDir = std::find_if(begin(pathList), end(pathList),
-                                        isDirectoryWritable);
+            auto iterDir =
+                find_if(begin(pathList), end(pathList), isDirectoryWritable);
 
             cacheDirectory = iterDir != end(pathList) ? *iterDir : "";
         } else {
@@ -211,47 +241,286 @@ string& getCacheDirectory() {
 
     return cacheDirectory;
 }
+#endif
 
 string makeTempFilename() {
-    thread_local std::size_t fileCount = 0u;
+    thread_local size_t fileCount = 0u;
 
     ++fileCount;
-    const std::size_t threadID =
-        std::hash<std::thread::id>{}(std::this_thread::get_id());
+    const size_t threadID = hash<thread::id>{}(std::this_thread::get_id());
 
-    return std::to_string(std::hash<string>{}(std::to_string(threadID) + "_" +
-                                              std::to_string(fileCount)));
+    return to_string(
+        hash<string>{}(to_string(threadID) + "_" + to_string(fileCount)));
 }
 
-std::size_t deterministicHash(const void* data, std::size_t byteSize,
-                              std::size_t prevHash) {
-    // Fowler-Noll-Vo "1a" 32 bit hash
-    // https://en.wikipedia.org/wiki/Fowler-Noll-Vo_hash_function
-    const auto* byteData = static_cast<const std::uint8_t*>(data);
-    return std::accumulate(byteData, byteData + byteSize, prevHash,
-                           [&](std::size_t hash, std::uint8_t data) {
-                               return (hash ^ data) * FNV1A_PRIME;
-                           });
-}
-
-std::size_t deterministicHash(const std::string& data,
-                              const std::size_t prevHash) {
-    return deterministicHash(data.data(), data.size(), prevHash);
-}
-
-std::size_t deterministicHash(const vector<std::string>& list,
-                              const std::size_t prevHash) {
-    std::size_t hash = prevHash;
-    for (auto s : list) { hash = deterministicHash(s.data(), s.size(), hash); }
-    return hash;
-}
-
-std::size_t deterministicHash(const std::vector<common::Source>& list) {
-    // Combine the different source codes, via their hashes
-    std::size_t hash = FNV1A_BASE_OFFSET;
-    for (auto s : list) {
-        size_t h = s.hash ? s.hash : deterministicHash(s.ptr, s.length);
-        hash     = deterministicHash(&h, sizeof(size_t), hash);
+template<typename T>
+string toString(T value) {
+#ifdef __cpp_lib_to_chars
+    array<char, 128> out;
+    if (auto [ptr, ec] = std::to_chars(out.data(), out.data() + 128, value);
+        ec == std::errc()) {
+        return string(out.data(), ptr);
+    } else {
+        return string("#error invalid conversion");
     }
-    return hash;
+#else
+    stringstream ss;
+    ss.imbue(std::locale::classic());
+    ss << value;
+    return ss.str();
+#endif
 }
+
+template string toString<int>(int);
+template string toString<unsigned short>(unsigned short);
+template string toString<short>(short);
+template string toString<unsigned char>(unsigned char);
+template string toString<char>(char);
+template string toString<long>(long);
+template string toString<long long>(long long);
+template string toString<unsigned>(unsigned);
+template string toString<unsigned long>(unsigned long);
+template string toString<unsigned long long>(unsigned long long);
+template string toString<float>(float);
+template string toString<double>(double);
+template string toString<long double>(long double);
+
+template<>
+string toString(TemplateArg arg) {
+    return arg._tparam;
+}
+
+template<>
+string toString(bool val) {
+    return string(val ? "true" : "false");
+}
+
+template<>
+string toString(const char* str) {
+    return string(str);
+}
+
+template<>
+string toString(const string str) {
+    return str;
+}
+
+template<>
+string toString(af_op_t val) {
+    const char* retVal = NULL;
+#define CASE_STMT(v) \
+    case v: retVal = #v; break
+    switch (val) {
+        CASE_STMT(af_add_t);
+        CASE_STMT(af_sub_t);
+        CASE_STMT(af_mul_t);
+        CASE_STMT(af_div_t);
+
+        CASE_STMT(af_and_t);
+        CASE_STMT(af_or_t);
+        CASE_STMT(af_eq_t);
+        CASE_STMT(af_neq_t);
+        CASE_STMT(af_lt_t);
+        CASE_STMT(af_le_t);
+        CASE_STMT(af_gt_t);
+        CASE_STMT(af_ge_t);
+
+        CASE_STMT(af_bitnot_t);
+        CASE_STMT(af_bitor_t);
+        CASE_STMT(af_bitand_t);
+        CASE_STMT(af_bitxor_t);
+        CASE_STMT(af_bitshiftl_t);
+        CASE_STMT(af_bitshiftr_t);
+
+        CASE_STMT(af_min_t);
+        CASE_STMT(af_max_t);
+        CASE_STMT(af_cplx2_t);
+        CASE_STMT(af_atan2_t);
+        CASE_STMT(af_pow_t);
+        CASE_STMT(af_hypot_t);
+
+        CASE_STMT(af_sin_t);
+        CASE_STMT(af_cos_t);
+        CASE_STMT(af_tan_t);
+        CASE_STMT(af_asin_t);
+        CASE_STMT(af_acos_t);
+        CASE_STMT(af_atan_t);
+
+        CASE_STMT(af_sinh_t);
+        CASE_STMT(af_cosh_t);
+        CASE_STMT(af_tanh_t);
+        CASE_STMT(af_asinh_t);
+        CASE_STMT(af_acosh_t);
+        CASE_STMT(af_atanh_t);
+
+        CASE_STMT(af_exp_t);
+        CASE_STMT(af_expm1_t);
+        CASE_STMT(af_erf_t);
+        CASE_STMT(af_erfc_t);
+
+        CASE_STMT(af_log_t);
+        CASE_STMT(af_log10_t);
+        CASE_STMT(af_log1p_t);
+        CASE_STMT(af_log2_t);
+
+        CASE_STMT(af_sqrt_t);
+        CASE_STMT(af_cbrt_t);
+
+        CASE_STMT(af_abs_t);
+        CASE_STMT(af_cast_t);
+        CASE_STMT(af_cplx_t);
+        CASE_STMT(af_real_t);
+        CASE_STMT(af_imag_t);
+        CASE_STMT(af_conj_t);
+
+        CASE_STMT(af_floor_t);
+        CASE_STMT(af_ceil_t);
+        CASE_STMT(af_round_t);
+        CASE_STMT(af_trunc_t);
+        CASE_STMT(af_signbit_t);
+
+        CASE_STMT(af_rem_t);
+        CASE_STMT(af_mod_t);
+
+        CASE_STMT(af_tgamma_t);
+        CASE_STMT(af_lgamma_t);
+
+        CASE_STMT(af_notzero_t);
+
+        CASE_STMT(af_iszero_t);
+        CASE_STMT(af_isinf_t);
+        CASE_STMT(af_isnan_t);
+
+        CASE_STMT(af_sigmoid_t);
+
+        CASE_STMT(af_noop_t);
+
+        CASE_STMT(af_select_t);
+        CASE_STMT(af_not_select_t);
+        CASE_STMT(af_rsqrt_t);
+        CASE_STMT(af_moddims_t);
+
+        CASE_STMT(af_none_t);
+    }
+#undef CASE_STMT
+    return retVal;
+}
+
+template<>
+string toString(af_interp_type p) {
+    const char* retVal = NULL;
+#define CASE_STMT(v) \
+    case v: retVal = #v; break
+    switch (p) {
+        CASE_STMT(AF_INTERP_NEAREST);
+        CASE_STMT(AF_INTERP_LINEAR);
+        CASE_STMT(AF_INTERP_BILINEAR);
+        CASE_STMT(AF_INTERP_CUBIC);
+        CASE_STMT(AF_INTERP_LOWER);
+        CASE_STMT(AF_INTERP_LINEAR_COSINE);
+        CASE_STMT(AF_INTERP_BILINEAR_COSINE);
+        CASE_STMT(AF_INTERP_BICUBIC);
+        CASE_STMT(AF_INTERP_CUBIC_SPLINE);
+        CASE_STMT(AF_INTERP_BICUBIC_SPLINE);
+    }
+#undef CASE_STMT
+    return retVal;
+}
+
+template<>
+string toString(af_border_type p) {
+    const char* retVal = NULL;
+#define CASE_STMT(v) \
+    case v: retVal = #v; break
+    switch (p) {
+        CASE_STMT(AF_PAD_ZERO);
+        CASE_STMT(AF_PAD_SYM);
+        CASE_STMT(AF_PAD_CLAMP_TO_EDGE);
+        CASE_STMT(AF_PAD_PERIODIC);
+    }
+#undef CASE_STMT
+    return retVal;
+}
+
+template<>
+string toString(af_moment_type p) {
+    const char* retVal = NULL;
+#define CASE_STMT(v) \
+    case v: retVal = #v; break
+    switch (p) {
+        CASE_STMT(AF_MOMENT_M00);
+        CASE_STMT(AF_MOMENT_M01);
+        CASE_STMT(AF_MOMENT_M10);
+        CASE_STMT(AF_MOMENT_M11);
+        CASE_STMT(AF_MOMENT_FIRST_ORDER);
+    }
+#undef CASE_STMT
+    return retVal;
+}
+
+template<>
+string toString(af_match_type p) {
+    const char* retVal = NULL;
+#define CASE_STMT(v) \
+    case v: retVal = #v; break
+    switch (p) {
+        CASE_STMT(AF_SAD);
+        CASE_STMT(AF_ZSAD);
+        CASE_STMT(AF_LSAD);
+        CASE_STMT(AF_SSD);
+        CASE_STMT(AF_ZSSD);
+        CASE_STMT(AF_LSSD);
+        CASE_STMT(AF_NCC);
+        CASE_STMT(AF_ZNCC);
+        CASE_STMT(AF_SHD);
+    }
+#undef CASE_STMT
+    return retVal;
+}
+
+template<>
+string toString(af_flux_function p) {
+    const char* retVal = NULL;
+#define CASE_STMT(v) \
+    case v: retVal = #v; break
+    switch (p) {
+        CASE_STMT(AF_FLUX_QUADRATIC);
+        CASE_STMT(AF_FLUX_EXPONENTIAL);
+        CASE_STMT(AF_FLUX_DEFAULT);
+    }
+#undef CASE_STMT
+    return retVal;
+}
+
+template<>
+string toString(AF_BATCH_KIND val) {
+    const char* retVal = NULL;
+#define CASE_STMT(v) \
+    case v: retVal = #v; break
+    switch (val) {
+        CASE_STMT(AF_BATCH_NONE);
+        CASE_STMT(AF_BATCH_LHS);
+        CASE_STMT(AF_BATCH_RHS);
+        CASE_STMT(AF_BATCH_SAME);
+        CASE_STMT(AF_BATCH_DIFF);
+        CASE_STMT(AF_BATCH_UNSUPPORTED);
+    }
+#undef CASE_STMT
+    return retVal;
+}
+
+template<>
+string toString(af_homography_type val) {
+    const char* retVal = NULL;
+#define CASE_STMT(v) \
+    case v: retVal = #v; break
+    switch (val) {
+        CASE_STMT(AF_HOMOGRAPHY_RANSAC);
+        CASE_STMT(AF_HOMOGRAPHY_LMEDS);
+    }
+#undef CASE_STMT
+    return retVal;
+}
+
+}  // namespace common
+}  // namespace arrayfire

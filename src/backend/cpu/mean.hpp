@@ -9,6 +9,7 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace cpu {
 template<typename Ti, typename Tw, typename To>
 Array<To> mean(const Array<Ti>& in, const int dim);
@@ -22,3 +23,4 @@ T mean(const Array<T>& in, const Array<Tw>& wts);
 template<typename Ti, typename Tw, typename To>
 To mean(const Array<Ti>& in);
 }  // namespace cpu
+}  // namespace arrayfire

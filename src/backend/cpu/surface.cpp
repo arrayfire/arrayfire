@@ -15,12 +15,16 @@
 #include <surface.hpp>
 
 using af::dim4;
+using arrayfire::common::ForgeManager;
+using arrayfire::common::ForgeModule;
+using arrayfire::common::forgePlugin;
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
 void copy_surface(const Array<T> &P, fg_surface surface) {
-    ForgeModule &_ = graphics::forgePlugin();
+    ForgeModule &_ = common::forgePlugin();
     P.eval();
     getQueue().sync();
 
@@ -48,3 +52,4 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 
 }  // namespace cpu
+}  // namespace arrayfire

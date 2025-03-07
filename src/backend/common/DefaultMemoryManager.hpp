@@ -16,6 +16,7 @@
 #include <unordered_map>
 #include <vector>
 
+namespace arrayfire {
 namespace common {
 
 constexpr unsigned MAX_BUFFERS = 1000;
@@ -23,7 +24,7 @@ constexpr size_t ONE_GB        = 1 << 30;
 
 using uptr_t = std::unique_ptr<void, std::function<void(void *)>>;
 
-class DefaultMemoryManager final : public common::memory::MemoryManagerBase {
+class DefaultMemoryManager final : public common::MemoryManagerBase {
     size_t mem_step_size;
     unsigned max_buffers;
 
@@ -57,9 +58,9 @@ class DefaultMemoryManager final : public common::memory::MemoryManagerBase {
             , lock_bytes(0)
             , lock_buffers(0) {}
 
-        memory_info(memory_info &other)  = delete;
-        memory_info(memory_info &&other) = default;
-        memory_info &operator=(memory_info &other) = delete;
+        memory_info(memory_info &other)             = delete;
+        memory_info(memory_info &&other)            = default;
+        memory_info &operator=(memory_info &other)  = delete;
         memory_info &operator=(memory_info &&other) = default;
     };
 
@@ -121,11 +122,11 @@ class DefaultMemoryManager final : public common::memory::MemoryManagerBase {
     ~DefaultMemoryManager() = default;
 
    protected:
-    DefaultMemoryManager()                                  = delete;
-    DefaultMemoryManager(const DefaultMemoryManager &other) = delete;
-    DefaultMemoryManager(DefaultMemoryManager &&other)      = default;
+    DefaultMemoryManager()                                             = delete;
+    DefaultMemoryManager(const DefaultMemoryManager &other)            = delete;
+    DefaultMemoryManager(DefaultMemoryManager &&other)                 = delete;
     DefaultMemoryManager &operator=(const DefaultMemoryManager &other) = delete;
-    DefaultMemoryManager &operator=(DefaultMemoryManager &&other) = default;
+    DefaultMemoryManager &operator=(DefaultMemoryManager &&other)      = delete;
     common::mutex_t memory_mutex;
     // backend-specific
     std::vector<memory_info> memory;
@@ -134,3 +135,4 @@ class DefaultMemoryManager final : public common::memory::MemoryManagerBase {
 };
 
 }  // namespace common
+}  // namespace arrayfire

@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace cpu {
 
@@ -313,4 +314,5 @@ INSTANTIATE_SOLVE(cdouble)
 
 }  // namespace cpu
 }  // namespace opencl
+}  // namespace arrayfire
 #endif  // WITH_LINEAR_ALGEBRA

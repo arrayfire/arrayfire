@@ -15,6 +15,7 @@
 
 #include <cstring>  //memcpy
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -160,3 +161,4 @@ void copy(Param<OutT> dst, CParam<InT> src) {
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

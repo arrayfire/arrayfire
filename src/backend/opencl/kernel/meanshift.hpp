@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -32,19 +33,18 @@ void meanshift(Param out, const Param in, const float spatialSigma,
     constexpr int THREADS_X = 16;
     constexpr int THREADS_Y = 16;
 
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 2> targs = {
         TemplateTypename<T>(),
         TemplateArg(is_color),
     };
-    std::vector<std::string> options = {
+    std::array<std::string, 4> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
         DefineKeyValue(AccType, dtype_traits<AccType>::getName()),
         DefineKeyValue(MAX_CHANNELS, (is_color ? 3 : 1)),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        getTypeBuildDefinition<T>()};
 
     auto meanshiftOp =
-        common::getKernel("meanshift", {meanshift_cl_src}, targs, options);
+        common::getKernel("meanshift", {{meanshift_cl_src}}, targs, options);
 
     cl::NDRange local(THREADS_X, THREADS_Y);
 
@@ -67,3 +67,4 @@ void meanshift(Param out, const Param in, const float spatialSigma,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

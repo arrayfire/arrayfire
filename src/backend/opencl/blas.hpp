@@ -14,6 +14,7 @@
 // functions. They can be implemented in different back-ends,
 // such as CLBlast or clBLAS.
 
+namespace arrayfire {
 namespace opencl {
 
 void initBlas();
@@ -40,3 +41,4 @@ template<typename T>
 Array<T> dot(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
              af_mat_prop optRhs);
 }  // namespace opencl
+}  // namespace arrayfire

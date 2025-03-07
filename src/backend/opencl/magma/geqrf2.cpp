@@ -230,12 +230,12 @@ magma_int_t magma_geqrf2_gpu(magma_int_t m, magma_int_t n, cl_mem dA,
     }
     */
 
-    cl_mem buffer = clCreateBuffer(opencl::getContext()(),
+    cl_mem buffer = clCreateBuffer(arrayfire::opencl::getContext()(),
                                    CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
                                    sizeof(Ty) * lwork, NULL, NULL);
     work          = (Ty *)clEnqueueMapBuffer(queue[0], buffer, CL_TRUE,
-                                    CL_MAP_READ | CL_MAP_WRITE, 0,
-                                    lwork * sizeof(Ty), 0, NULL, NULL, NULL);
+                                             CL_MAP_READ | CL_MAP_WRITE, 0,
+                                             lwork * sizeof(Ty), 0, NULL, NULL, NULL);
 
     cpu_lapack_geqrf_work_func<Ty> cpu_lapack_geqrf;
     cpu_lapack_larft_func<Ty> cpu_lapack_larft;

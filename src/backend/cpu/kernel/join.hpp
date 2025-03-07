@@ -10,6 +10,7 @@
 #pragma once
 #include <Param.hpp>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -60,3 +61,4 @@ void join(const int dim, Param<T> out, const std::vector<CParam<T>> inputs,
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

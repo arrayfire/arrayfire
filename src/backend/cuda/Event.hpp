@@ -13,6 +13,7 @@
 #include <cuda_runtime_api.h>
 #include <af/event.h>
 
+namespace arrayfire {
 namespace cuda {
 
 class CUDARuntimeEventPolicy {
@@ -64,3 +65,4 @@ void block(af_event eventHandle);
 af_event createAndMarkEvent();
 
 }  // namespace cuda
+}  // namespace arrayfire

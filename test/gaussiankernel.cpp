@@ -30,15 +30,15 @@ class GaussianKernel : public ::testing::Test {
 typedef ::testing::Types<float> TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(GaussianKernel, TestTypes);
+TYPED_TEST_SUITE(GaussianKernel, TestTypes);
 
 template<typename T>
 void gaussianKernelTest(string pFileName, double sigma) {
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<int> > in;
-    vector<vector<T> > tests;
+    vector<vector<int>> in;
+    vector<vector<T>> tests;
 
     readTestsFromFile<int, T>(pFileName, numDims, in, tests);
 
@@ -114,8 +114,8 @@ using af::gaussianKernel;
 
 void gaussianKernelTestCPP(string pFileName, double sigma) {
     vector<dim4> numDims;
-    vector<vector<int> > in;
-    vector<vector<float> > tests;
+    vector<vector<int>> in;
+    vector<vector<float>> tests;
 
     readTestsFromFile<int, float>(pFileName, numDims, in, tests);
 

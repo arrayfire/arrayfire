@@ -15,12 +15,16 @@
 #include <plot.hpp>
 
 using af::dim4;
+using arrayfire::common::ForgeManager;
+using arrayfire::common::ForgeModule;
+using arrayfire::common::forgePlugin;
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
 void copy_plot(const Array<T> &P, fg_plot plot) {
-    auto stream = cuda::getActiveStream();
+    auto stream = getActiveStream();
     if (DeviceManager::checkGraphicsInteropCapability()) {
         const T *d_P = P.get();
 
@@ -38,7 +42,7 @@ void copy_plot(const Array<T> &P, fg_plot plot) {
 
         POST_LAUNCH_CHECK();
     } else {
-        ForgeModule &_ = graphics::forgePlugin();
+        ForgeModule &_ = common::forgePlugin();
         unsigned bytes = 0, buffer = 0;
         FG_CHECK(_.fg_get_plot_vertex_buffer(&buffer, plot));
         FG_CHECK(_.fg_get_plot_vertex_buffer_size(&bytes, plot));
@@ -69,3 +73,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(uchar)
 
 }  // namespace cuda
+}  // namespace arrayfire

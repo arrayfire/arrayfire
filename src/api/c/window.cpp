@@ -15,8 +15,10 @@
 #include <common/graphics_common.hpp>
 #include <platform.hpp>
 
+using arrayfire::common::ForgeManager;
+using arrayfire::common::forgePlugin;
+using arrayfire::common::step_round;
 using detail::forgeManager;
-using namespace graphics;
 
 af_err af_create_window(af_window* out, const int width, const int height,
                         const char* const title) {

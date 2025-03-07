@@ -11,18 +11,20 @@
 
 #include <platform.hpp>
 
+#include <array>
 #include <memory>
 #include <mutex>
 #include <string>
 #include <utility>
 #include <vector>
 
-using common::memory::MemoryManagerBase;
+using arrayfire::common::MemoryManagerBase;
 
 #ifndef AF_CUDA_MEM_DEBUG
 #define AF_CUDA_MEM_DEBUG 0
 #endif
 
+namespace arrayfire {
 namespace cuda {
 
 struct cudaDevice_t {
@@ -66,7 +68,7 @@ class DeviceManager {
 
     void resetMemoryManagerPinned();
 
-    friend graphics::ForgeManager& forgeManager();
+    friend arrayfire::common::ForgeManager& forgeManager();
 
     friend GraphicsResourceManager& interopManager();
 
@@ -90,9 +92,11 @@ class DeviceManager {
 
     friend int setDevice(int device);
 
-    friend cudaDeviceProp getDeviceProp(int device);
+    friend const cudaDeviceProp& getDeviceProp(int device);
 
     friend std::pair<int, int> getComputeCapability(const int device);
+
+    friend bool isDeviceBufferAccessible(int buf_device_id, int execution_id);
 
    private:
     DeviceManager();
@@ -116,13 +120,19 @@ class DeviceManager {
 
     std::shared_ptr<spdlog::logger> logger;
 
+    /// A matrix of booleans where true indicates that the corresponding
+    /// corrdinate devices can access each other buffers. False indicates
+    /// buffers need to be copied over to the other device
+    std::array<std::array<bool, MAX_DEVICES>, MAX_DEVICES>
+        device_peer_access_map;
+
     std::vector<cudaDevice_t> cuDevices;
     std::vector<std::pair<int, int>> devJitComputes;
 
     int nDevices;
     cudaStream_t streams[MAX_DEVICES]{};
 
-    std::unique_ptr<graphics::ForgeManager> fgMngr;
+    std::unique_ptr<arrayfire::common::ForgeManager> fgMngr;
 
     std::unique_ptr<MemoryManagerBase> memManager;
 
@@ -134,3 +144,4 @@ class DeviceManager {
 };
 
 }  // namespace cuda
+}  // namespace arrayfire

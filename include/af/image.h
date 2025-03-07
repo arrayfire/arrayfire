@@ -602,7 +602,7 @@ AFAPI array unwrap(const array& in, const dim_t wx, const dim_t wy,
 
 #if AF_API_VERSION >= 31
 /**
-   C++ Interface for performing the opposite of \ref unwrap()
+   C++ Interface for performing the opposite of \ref unwrap
 
    \param[in]  in is the input array
    \param[in]  ox is the output's dimension 0 size
@@ -1487,7 +1487,7 @@ extern "C" {
 
 #if AF_API_VERSION >= 31
     /**
-       C Interface for performing the opposite of \ref unwrap()
+       C Interface for performing the opposite of \ref af::unwrap()
 
        \param[out] out is an array with the input's columns (or rows) reshaped as
                    patches
@@ -1506,7 +1506,7 @@ extern "C" {
        otherwise an appropriate error code is returned.
 
        \note Wrap is typically used to recompose an unwrapped image. If this is the
-             case, use the same parameters that were used in \ref unwrap(). Also
+             case, use the same parameters that were used in \ref af::unwrap(). Also
              use the original image size (before unwrap) for \p ox and \p oy.
        \note The window/patch size, \p wx \f$\times\f$ \p wy, must equal
              `input.dims(0)` (or `input.dims(1)` if \p is_column is false).
@@ -1552,7 +1552,7 @@ extern "C" {
        otherwise an appropriate error code is returned.
 
        \note Wrap is typically used to recompose an unwrapped image. If this is the
-             case, use the same parameters that were used in \ref unwrap(). Also
+             case, use the same parameters that were used in \ref af::unwrap(). Also
              use the original image size (before unwrap) for \p ox and \p oy.
        \note The window/patch size, \p wx \f$\times\f$ \p wy, must equal
              `input.dims(0)` (or `input.dims(1)` if \p is_column is false).

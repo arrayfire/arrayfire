@@ -14,6 +14,7 @@
 
 #include <cassert>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -73,3 +74,4 @@ void derivative(Param<To> output, CParam<Ti> input) {
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

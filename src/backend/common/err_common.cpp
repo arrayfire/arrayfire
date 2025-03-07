@@ -24,33 +24,37 @@
 #ifdef AF_OPENCL
 #include <errorcodes.hpp>
 #include <platform.hpp>
+#elif defined(AF_ONEAPI)
+#include <oneapi/mkl/exceptions.hpp>
+#include <sycl/sycl.hpp>
 #endif
 
+using boost::stacktrace::stacktrace;
 using std::move;
 using std::string;
 using std::stringstream;
 
-using common::is_stacktrace_enabled;
+using arrayfire::common::getEnvVar;
+using arrayfire::common::getName;
+using arrayfire::common::is_stacktrace_enabled;
 
 AfError::AfError(const char *const func, const char *const file, const int line,
-                 const char *const message, af_err err,
-                 boost::stacktrace::stacktrace st)
+                 const char *const message, af_err err, stacktrace st)
     : logic_error(message)
     , functionName(func)
     , fileName(file)
+    , st_(std::move(st))
     , lineNumber(line)
-    , error(err)
-    , st_(move(st)) {}
+    , error(err) {}
 
 AfError::AfError(string func, string file, const int line,
-                 const string &message, af_err err,
-                 boost::stacktrace::stacktrace st)
+                 const string &message, af_err err, stacktrace st)
     : logic_error(message)
-    , functionName(move(func))
-    , fileName(move(file))
+    , functionName(std::move(func))
+    , fileName(std::move(file))
+    , st_(std::move(st))
     , lineNumber(line)
-    , error(err)
-    , st_(move(st)) {}
+    , error(err) {}
 
 const string &AfError::getFunctionName() const noexcept { return functionName; }
 
@@ -64,10 +68,10 @@ AfError::~AfError() noexcept = default;
 
 TypeError::TypeError(const char *const func, const char *const file,
                      const int line, const int index, const af_dtype type,
-                     boost::stacktrace::stacktrace st)
-    : AfError(func, file, line, "Invalid data type", AF_ERR_TYPE, move(st))
-    , argIndex(index)
-    , errTypeName(getName(type)) {}
+                     stacktrace st)
+    : AfError(func, file, line, "Invalid data type", AF_ERR_TYPE, std::move(st))
+    , errTypeName(getName(type))
+    , argIndex(index) {}
 
 const string &TypeError::getTypeName() const noexcept { return errTypeName; }
 
@@ -75,11 +79,10 @@ int TypeError::getArgIndex() const noexcept { return argIndex; }
 
 ArgumentError::ArgumentError(const char *const func, const char *const file,
                              const int line, const int index,
-                             const char *const expectString,
-                             boost::stacktrace::stacktrace st)
-    : AfError(func, file, line, "Invalid argument", AF_ERR_ARG, move(st))
-    , argIndex(index)
-    , expected(expectString) {}
+                             const char *const expectString, stacktrace st)
+    : AfError(func, file, line, "Invalid argument", AF_ERR_ARG, std::move(st))
+    , expected(expectString)
+    , argIndex(index) {}
 
 const string &ArgumentError::getExpectedCondition() const noexcept {
     return expected;
@@ -89,9 +92,9 @@ int ArgumentError::getArgIndex() const noexcept { return argIndex; }
 
 SupportError::SupportError(const char *const func, const char *const file,
                            const int line, const char *const back,
-                           boost::stacktrace::stacktrace st)
-    : AfError(func, file, line, "Unsupported Error", AF_ERR_NOT_SUPPORTED,
-              move(st))
+                           const char *const message, stacktrace st)
+    : AfError(func, file, line, message, AF_ERR_NOT_SUPPORTED,
+              std::move(st))
     , backend(back) {}
 
 const string &SupportError::getBackendName() const noexcept { return backend; }
@@ -99,10 +102,10 @@ const string &SupportError::getBackendName() const noexcept { return backend; }
 DimensionError::DimensionError(const char *const func, const char *const file,
                                const int line, const int index,
                                const char *const expectString,
-                               const boost::stacktrace::stacktrace &st)
+                               const stacktrace &st)
     : AfError(func, file, line, "Invalid size", AF_ERR_SIZE, st)
-    , argIndex(index)
-    , expected(expectString) {}
+    , expected(expectString)
+    , argIndex(index) {}
 
 const string &DimensionError::getExpectedCondition() const noexcept {
     return expected;
@@ -111,7 +114,7 @@ const string &DimensionError::getExpectedCondition() const noexcept {
 int DimensionError::getArgIndex() const noexcept { return argIndex; }
 
 af_err set_global_error_string(const string &msg, af_err err) {
-    std::string perr = getEnvVar("AF_PRINT_ERRORS");
+    string perr = getEnvVar("AF_PRINT_ERRORS");
     if (!perr.empty()) {
         if (perr != "0") { fprintf(stderr, "%s\n", msg.c_str()); }
     }
@@ -161,6 +164,24 @@ af_err processException() {
         if (is_stacktrace_enabled()) { ss << ex.getStacktrace(); }
 
         err = set_global_error_string(ss.str(), ex.getError());
+#ifdef AF_ONEAPI
+    } catch (const sycl::exception &ex) {
+        char oneapi_err_msg[1024];
+        snprintf(oneapi_err_msg, sizeof(oneapi_err_msg),
+                 "oneAPI Error (%d): %s", ex.code().value(), ex.what());
+
+        if (ex.code() == sycl::errc::memory_allocation) {
+            err = set_global_error_string(oneapi_err_msg, AF_ERR_NO_MEM);
+        } else {
+            err = set_global_error_string(oneapi_err_msg, AF_ERR_INTERNAL);
+        }
+    } catch (const oneapi::mkl::exception &ex) {
+        char oneapi_err_msg[1024];
+        snprintf(oneapi_err_msg, sizeof(oneapi_err_msg), "MKL Error: %s",
+                 ex.what());
+
+        err = set_global_error_string(oneapi_err_msg, AF_ERR_INTERNAL);
+#endif
 #ifdef AF_OPENCL
     } catch (const cl::Error &ex) {
         char opencl_err_msg[1024];
@@ -174,6 +195,8 @@ af_err processException() {
             err = set_global_error_string(opencl_err_msg, AF_ERR_INTERNAL);
         }
 #endif
+    } catch (const std::exception &ex) {
+        err = set_global_error_string(ex.what(), AF_ERR_UNKNOWN);
     } catch (...) { err = set_global_error_string(ss.str(), AF_ERR_UNKNOWN); }
 
     return err;
@@ -222,6 +245,7 @@ const char *af_err_to_string(const af_err err) {
            "case in af_err_to_string.";
 }
 
+namespace arrayfire {
 namespace common {
 
 bool &is_stacktrace_enabled() noexcept {
@@ -230,3 +254,4 @@ bool &is_stacktrace_enabled() noexcept {
 }
 
 }  // namespace common
+}  // namespace arrayfire

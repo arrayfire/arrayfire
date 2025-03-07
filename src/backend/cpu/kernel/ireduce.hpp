@@ -10,8 +10,11 @@
 #pragma once
 #include <Param.hpp>
 #include <common/Binary.hpp>
+#include <common/half.hpp>
 #include <algorithm>
+#include <cmath>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -22,16 +25,13 @@ double cabs(const T in) {
 static double cabs(const char in) { return (double)(in > 0); }
 static double cabs(const cfloat &in) { return (double)abs(in); }
 static double cabs(const cdouble &in) { return (double)abs(in); }
-template<typename T>
-static bool is_nan(T in) {
-    return in != in;
-}
 
 template<af_op_t op, typename T>
 struct MinMaxOp {
     T m_val;
     uint m_idx;
     MinMaxOp(T val, uint idx) : m_val(val), m_idx(idx) {
+        using arrayfire::cpu::is_nan;
         if (is_nan(val)) { m_val = common::Binary<T, op>::init(); }
     }
 
@@ -49,6 +49,7 @@ struct MinMaxOp<af_max_t, T> {
     T m_val;
     uint m_idx;
     MinMaxOp(T val, uint idx) : m_val(val), m_idx(idx) {
+        using arrayfire::cpu::is_nan;
         if (is_nan(val)) { m_val = common::Binary<T, af_max_t>::init(); }
     }
 
@@ -104,3 +105,4 @@ struct ireduce_dim<op, T, 0> {
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

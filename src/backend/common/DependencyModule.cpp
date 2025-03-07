@@ -7,8 +7,10 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <common/ArrayFireTypesIO.hpp>
 #include <common/DependencyModule.hpp>
 #include <common/Logger.hpp>
+#include <common/Version.hpp>
 #include <common/module_loading.hpp>
 
 #include <algorithm>
@@ -20,13 +22,11 @@
 #include <dlfcn.h>
 #endif
 
-using common::Version;
+using arrayfire::common::Version;
 using std::make_tuple;
 using std::string;
 using std::to_string;
 using std::vector;
-
-constexpr Version NullVersion{-1, -1, -1};
 
 #ifdef OS_WIN
 #include <Windows.h>
@@ -35,7 +35,7 @@ static const char* librarySuffix = ".dll";
 
 namespace {
 vector<string> libNames(const std::string& name, const string& suffix,
-                        const Version& ver = NullVersion) {
+                        const Version& ver = arrayfire::common::NullVersion) {
     UNUSED(ver);  // Windows DLL files are not version suffixed
     return {name + suffix + librarySuffix};
 }
@@ -48,11 +48,11 @@ static const char* libraryPrefix = "lib";
 
 namespace {
 vector<string> libNames(const std::string& name, const string& suffix,
-                        const Version& ver = NullVersion) {
+                        const Version& ver = arrayfire::common::NullVersion) {
     UNUSED(suffix);
     const string noVerName = libraryPrefix + name + librarySuffix;
-    if (ver != NullVersion) {
-        const string infix = "." + to_string(std::get<0>(ver)) + ".";
+    if (ver != arrayfire::common::NullVersion) {
+        const string infix = "." + to_string(ver.major()) + ".";
         return {libraryPrefix + name + infix + librarySuffix, noVerName};
     } else {
         return {noVerName};
@@ -67,15 +67,15 @@ static const char* libraryPrefix = "lib";
 
 namespace {
 vector<string> libNames(const std::string& name, const string& suffix,
-                        const Version& ver = NullVersion) {
+                        const Version& ver = arrayfire::common::NullVersion) {
     UNUSED(suffix);
     const string noVerName = libraryPrefix + name + librarySuffix;
-    if (ver != NullVersion) {
-        const string soname("." + to_string(std::get<0>(ver)));
+    if (ver != arrayfire::common::NullVersion) {
+        const string soname("." + to_string(ver.major()));
 
-        const string vsfx = "." + to_string(std::get<0>(ver)) + "." +
-                            to_string(std::get<1>(ver)) + "." +
-                            to_string(std::get<2>(ver));
+        const string vsfx = "." + to_string(ver.major()) + "." +
+                            to_string(ver.minor()) + "." +
+                            to_string(ver.patch());
         return {noVerName + vsfx, noVerName + soname, noVerName};
     } else {
         return {noVerName};
@@ -87,11 +87,14 @@ vector<string> libNames(const std::string& name, const string& suffix,
 #error "Unsupported platform"
 #endif
 
+namespace arrayfire {
 namespace common {
 
 DependencyModule::DependencyModule(const char* plugin_file_name,
                                    const char** paths)
-    : handle(nullptr), logger(common::loggerFactory("platform")) {
+    : handle(nullptr)
+    , logger(common::loggerFactory("platform"))
+    , version(-1, -1) {
     // TODO(umar): Implement handling of non-standard paths
     UNUSED(paths);
     if (plugin_file_name) {
@@ -106,12 +109,14 @@ DependencyModule::DependencyModule(const char* plugin_file_name,
     }
 }
 
-DependencyModule::DependencyModule(const vector<string>& plugin_base_file_name,
-                                   const vector<string>& suffixes,
-                                   const vector<string>& paths,
-                                   const size_t verListSize,
-                                   const Version* versions)
-    : handle(nullptr), logger(common::loggerFactory("platform")) {
+DependencyModule::DependencyModule(
+    const vector<string>& plugin_base_file_name, const vector<string>& suffixes,
+    const vector<string>& paths, const size_t verListSize,
+    const Version* versions,
+    std::function<Version(const LibHandle&)> versionFunction)
+    : handle(nullptr)
+    , logger(common::loggerFactory("platform"))
+    , version(-1, -1) {
     for (const string& base_name : plugin_base_file_name) {
         for (const string& path : paths) {
             UNUSED(path);
@@ -127,7 +132,12 @@ DependencyModule::DependencyModule(const vector<string>& plugin_base_file_name,
                         AF_TRACE("Attempting to load: {}", fileName);
                         handle = loadLibrary(fileName.c_str());
                         if (handle) {
-                            AF_TRACE("Found: {}", fileName);
+                            if (versionFunction) {
+                                version = versionFunction(handle);
+                                AF_TRACE("Found: {}({})", fileName, version);
+                            } else {
+                                AF_TRACE("Found: {}", fileName);
+                            }
                             return;
                         }
                     }
@@ -137,7 +147,12 @@ DependencyModule::DependencyModule(const vector<string>& plugin_base_file_name,
                 AF_TRACE("Attempting to load: {}", fileNames[0]);
                 handle = loadLibrary(fileNames[0].c_str());
                 if (handle) {
-                    AF_TRACE("Found: {}", fileNames[0]);
+                    if (versionFunction) {
+                        version = versionFunction(handle);
+                        AF_TRACE("Found: {}({})", fileNames[0], version);
+                    } else {
+                        AF_TRACE("Found: {}", fileNames[0]);
+                    }
                     return;
                 }
             }
@@ -168,3 +183,4 @@ spdlog::logger* DependencyModule::getLogger() const noexcept {
 }
 
 }  // namespace common
+}  // namespace arrayfire

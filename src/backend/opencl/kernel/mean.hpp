@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -108,7 +109,7 @@ void meanDimLauncher(Param out, Param owt, Param in, Param inWeight,
     ToNumStr<Tw> twNumStr;
     common::Transform<uint, Tw, af_add_t> transform_weight;
 
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 7> targs = {
         TemplateTypename<Ti>(),     TemplateTypename<To>(),
         TemplateTypename<Tw>(),     TemplateArg(dim),
         TemplateArg(threads_y),     TemplateArg(input_weight),
@@ -124,13 +125,12 @@ void meanDimLauncher(Param out, Param owt, Param in, Param inWeight,
         DefineKeyValue(init_To, toNumStr(common::Binary<To, af_add_t>::init())),
         DefineKeyValue(init_Tw, twNumStr(transform_weight(0))),
         DefineKeyValue(one_Tw, twNumStr(transform_weight(1))),
-    };
-    options.emplace_back(getTypeBuildDefinition<Ti, To>());
+        getTypeBuildDefinition<Ti, To>()};
     if (input_weight) { options.emplace_back(DefineKey(INPUT_WEIGHT)); }
     if (output_weight) { options.emplace_back(DefineKey(OUTPUT_WEIGHT)); }
 
     auto meanOp = common::getKernel(
-        "meanDim", {mean_ops_cl_src, mean_dim_cl_src}, targs, options);
+        "meanDim", {{mean_ops_cl_src, mean_dim_cl_src}}, targs, options);
 
     NDRange local(THREADS_X, threads_y);
     NDRange global(groups_all[0] * groups_all[2] * local[0],
@@ -202,7 +202,7 @@ void meanFirstLauncher(Param out, Param owt, Param in, Param inWeight,
     ToNumStr<Tw> twNumStr;
     common::Transform<uint, Tw, af_add_t> transform_weight;
 
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 6> targs = {
         TemplateTypename<Ti>(),    TemplateTypename<To>(),
         TemplateTypename<Tw>(),    TemplateArg(threads_x),
         TemplateArg(input_weight), TemplateArg(output_weight),
@@ -222,7 +222,7 @@ void meanFirstLauncher(Param out, Param owt, Param in, Param inWeight,
     if (output_weight) { options.emplace_back(DefineKey(OUTPUT_WEIGHT)); }
 
     auto meanOp = common::getKernel(
-        "meanFirst", {mean_ops_cl_src, mean_first_cl_src}, targs, options);
+        "meanFirst", {{mean_ops_cl_src, mean_first_cl_src}}, targs, options);
 
     NDRange local(threads_x, THREADS_PER_GROUP / threads_x);
     NDRange global(groups_x * in.info.dims[2] * local[0],
@@ -466,3 +466,4 @@ To meanAll(Param in) {
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

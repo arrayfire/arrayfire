@@ -65,7 +65,7 @@ static void array_to_feat_desc(vector<feat_desc_t>& feat, float* x, float* y,
 
 static void array_to_feat_desc(vector<feat_desc_t>& feat, float* x, float* y,
                                float* score, float* ori, float* size,
-                               vector<vector<float> >& desc, unsigned nfeat) {
+                               vector<vector<float>>& desc, unsigned nfeat) {
     feat.resize(nfeat);
     for (size_t i = 0; i < feat.size(); i++) {
         feat[i].f[0] = x[i];
@@ -132,18 +132,18 @@ class SIFT : public ::testing::Test {
 
 typedef ::testing::Types<float, double> TestTypes;
 
-TYPED_TEST_CASE(SIFT, TestTypes);
+TYPED_TEST_SUITE(SIFT, TestTypes);
 
 template<typename T>
 void siftTest(string pTestFile, unsigned nLayers, float contrastThr,
               float edgeThr, float initSigma, bool doubleInput) {
     SUPPORTED_TYPE_CHECK(T);
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
     vector<string> inFiles;
-    vector<vector<float> > goldFeat;
-    vector<vector<float> > goldDesc;
+    vector<vector<float>> goldFeat;
+    vector<vector<float>> goldDesc;
 
     readImageFeaturesDescriptors<float>(pTestFile, inDims, inFiles, goldFeat,
                                         goldDesc);
@@ -162,9 +162,9 @@ void siftTest(string pTestFile, unsigned nLayers, float contrastThr,
             af_load_image(&inArray_f32, inFiles[testId].c_str(), false));
         ASSERT_SUCCESS(conv_image<T>(&inArray, inArray_f32));
 
-        ASSERT_SUCCESS(af_sift(&feat, &desc, inArray, nLayers, contrastThr,
-                               edgeThr, initSigma, doubleInput, 1.f / 256.f,
-                               0.05f));
+        ASSERT_SUCCESS(af_sift(&feat, &desc, inArray, nLayers,
+                                           contrastThr, edgeThr, initSigma,
+                                           doubleInput, 1.f / 256.f, 0.05f));
 
         dim_t n = 0;
         af_array x, y, score, orientation, size;
@@ -256,6 +256,7 @@ void siftTest(string pTestFile, unsigned nLayers, float contrastThr,
 #define SIFT_INIT(desc, image, nLayers, contrastThr, edgeThr, initSigma,  \
                   doubleInput)                                            \
     TYPED_TEST(SIFT, desc) {                                              \
+        UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);                           \
         for (int i = 0; i < 1; i++)                                       \
             siftTest<TypeParam>(string(TEST_DIR "/sift/" #image ".test"), \
                                 nLayers, contrastThr, edgeThr, initSigma, \
@@ -272,12 +273,13 @@ SIFT_INIT(Man_NoDoubleInput, man_nodoubleinput, 3, 0.04f, 10.0f, 1.6f, false);
 ///////////////////////////////////// CPP ////////////////////////////////
 //
 TEST(SIFT, CPP) {
-    if (noImageIOTests()) return;
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
     vector<string> inFiles;
-    vector<vector<float> > goldFeat;
-    vector<vector<float> > goldDesc;
+    vector<vector<float>> goldFeat;
+    vector<vector<float>> goldDesc;
 
     readImageFeaturesDescriptors<float>(string(TEST_DIR "/sift/man.test"),
                                         inDims, inFiles, goldFeat, goldDesc);

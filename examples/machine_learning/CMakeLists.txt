@@ -5,12 +5,12 @@
 # The complete license agreement can be obtained at:
 # http://arrayfire.com/licenses/BSD-3-Clause
 
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 project(ArrayFire-Example-Linear-Algebra
   VERSION 3.5.0
   LANGUAGES CXX)
 
-find_package(ArrayFire)
+find_package(ArrayFire REQUIRED)
 
 add_definitions("-DASSETS_DIR=\"${ASSETS_DIR}\"")
 
@@ -118,4 +118,36 @@ if(ArrayFire_OpenCL_FOUND)
 
   add_executable(softmax_regression_opencl softmax_regression.cpp)
   target_link_libraries(softmax_regression_opencl ArrayFire::afopencl)
+endif()
+
+if(ArrayFire_oneAPI_FOUND)
+  add_executable(bagging_oneapi bagging.cpp)
+  target_link_libraries(bagging_oneapi ArrayFire::afoneapi)
+
+  add_executable(deep_belief_net_oneapi deep_belief_net.cpp)
+  target_link_libraries(deep_belief_net_oneapi ArrayFire::afoneapi)
+
+  add_executable(geneticalgorithm_oneapi geneticalgorithm.cpp)
+  target_link_libraries(geneticalgorithm_oneapi ArrayFire::afoneapi)
+
+  add_executable(kmeans_oneapi kmeans.cpp)
+  target_link_libraries(kmeans_oneapi ArrayFire::afoneapi)
+
+  add_executable(logistic_regression_oneapi logistic_regression.cpp)
+  target_link_libraries(logistic_regression_oneapi ArrayFire::afoneapi)
+
+  add_executable(naive_bayes_oneapi naive_bayes.cpp)
+  target_link_libraries(naive_bayes_oneapi ArrayFire::afoneapi)
+
+  add_executable(neural_network_oneapi neural_network.cpp)
+  target_link_libraries(neural_network_oneapi ArrayFire::afoneapi)
+
+  add_executable(perceptron_oneapi perceptron.cpp)
+  target_link_libraries(perceptron_oneapi ArrayFire::afoneapi)
+
+  add_executable(rbm_oneapi rbm.cpp)
+  target_link_libraries(rbm_oneapi ArrayFire::afoneapi)
+
+  add_executable(softmax_regression_oneapi softmax_regression.cpp)
+  target_link_libraries(softmax_regression_oneapi ArrayFire::afoneapi)
 endif()

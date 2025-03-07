@@ -274,7 +274,7 @@ endif(AF_WITH_CPUID)
 
 af_dep_check_and_populate(${threads_prefix}
   URI https://github.com/arrayfire/threads.git
-  REF b666773940269179f19ef11c8f1eb77005e85d9a
+  REF 4d4a4f0384d1ac2f25b2c4fc1d57b9e25f4d6818
 )
 
 target_sources(afcpu
@@ -282,8 +282,6 @@ target_sources(afcpu
     ${${threads_prefix}_SOURCE_DIR}/include/threads/async_queue.hpp
     ${${threads_prefix}_SOURCE_DIR}/include/threads/event.hpp
   )
-
-arrayfire_set_default_cxx_flags(afcpu)
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key/CMakeLists.txt")
 
@@ -294,9 +292,11 @@ target_include_directories(afcpu
     $<INSTALL_INTERFACE:${AF_INSTALL_INC_DIR}>
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${${threads_prefix}_SOURCE_DIR}/include
-    ${CBLAS_INCLUDE_DIR}
-  )
+    ${${threads_prefix}_SOURCE_DIR}/include)
+
+target_include_directories(afcpu
+  SYSTEM PRIVATE
+    ${CBLAS_INCLUDE_DIR})
 
 target_compile_definitions(afcpu
   PRIVATE
@@ -331,9 +331,8 @@ else()
       FFTW::FFTW
       FFTW::FFTWF
     )
-  if(LAPACK_FOUND)
-    target_link_libraries(afcpu PRIVATE ${LAPACK_LIBRARIES})
-    target_include_directories(afcpu PRIVATE ${LAPACK_INCLUDE_DIR})
+  if(LAPACK_FOUND AND LAPACKE_FOUND)
+    target_link_libraries(afcpu PRIVATE LAPACKE::LAPACKE ${LAPACK_LIBRARIES})
   endif()
 endif()
 
@@ -359,5 +358,5 @@ source_group(api\\cpp REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/api/cpp/*)
 source_group(api\\c   REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/api/c/*)
 source_group(backend  REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/backend/common/*|${CMAKE_CURRENT_SOURCE_DIR}/*)
 source_group(backend\\kernel  REGULAR_EXPRESSION ${CMAKE_CURRENT_SOURCE_DIR}/kernel/*)
-source_group("generated files" FILES ${ArrayFire_BINARY_DIR}/version.hpp ${ArrayFire_BINARY_DIR}/include/af/version.h)
+source_group("generated files" FILES ${ArrayFire_BINARY_DIR}/src/backend/build_version.hpp ${ArrayFire_BINARY_DIR}/include/af/version.h)
 source_group("" FILES CMakeLists.txt)

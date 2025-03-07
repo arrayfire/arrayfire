@@ -14,6 +14,7 @@
 // The line below is read by CMake to determenine the instantiations
 // SBK_BINARY_OPS:af_add_t af_mul_t af_max_t af_min_t
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 // clang-format off
@@ -22,3 +23,4 @@ INSTANTIATE_SCAN_DIM_BY_KEY_OP( @SBK_BINARY_OP@ )
 // clang-format on
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

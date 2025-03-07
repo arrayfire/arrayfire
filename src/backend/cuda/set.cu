@@ -10,9 +10,9 @@
 #include <Array.hpp>
 #include <copy.hpp>
 #include <debug_cuda.hpp>
-#include <thrust_utils.hpp>
 #include <set.hpp>
 #include <sort.hpp>
+#include <thrust_utils.hpp>
 #include <af/dim4.hpp>
 
 #include <thrust/device_ptr.h>
@@ -22,6 +22,7 @@
 
 #include <algorithm>
 
+namespace arrayfire {
 namespace cuda {
 using af::dim4;
 
@@ -127,3 +128,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(intl)
 INSTANTIATE(uintl)
 }  // namespace cuda
+}  // namespace arrayfire

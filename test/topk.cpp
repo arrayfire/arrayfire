@@ -49,7 +49,7 @@ class TopK : public ::testing::Test {};
 
 typedef ::testing::Types<float, double, int, uint, half_float::half> TestTypes;
 
-TYPED_TEST_CASE(TopK, TestTypes);
+TYPED_TEST_SUITE(TopK, TestTypes);
 
 template<typename T>
 void increment_next(T& val,
@@ -149,7 +149,7 @@ void topkTest(const int ndims, const dim_t* dims, const unsigned k,
             case f32:
                 EXPECT_FLOAT_EQ(outData[i], hovals[i]) << "at: " << i;
                 break;
-            default: EXPECT_EQ(outData[i], hovals[i]); break;
+            default: EXPECT_EQ(outData[i], hovals[i]) << "at: " << i; break;
         }
         ASSERT_EQ(outIdxs[i], hoidxs[i]) << "at: " << i;
     }
@@ -318,7 +318,7 @@ ostream& operator<<(ostream& os, const topk_params& param) {
 
 class TopKParams : public ::testing::TestWithParam<topk_params> {};
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     InstantiationName, TopKParams,
     ::testing::Values(topk_params{100, 10, 32, 0, AF_TOPK_MIN},
                       topk_params{100, 10, 64, 0, AF_TOPK_MIN},

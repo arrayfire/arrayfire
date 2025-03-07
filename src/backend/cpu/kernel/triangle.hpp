@@ -12,6 +12,7 @@
 #include <Param.hpp>
 #include <math.hpp>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -56,3 +57,4 @@ void triangle(Param<T> out, CParam<T> in) {
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

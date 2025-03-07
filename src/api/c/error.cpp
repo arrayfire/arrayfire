@@ -13,6 +13,7 @@
 #include <af/util.h>
 
 #include <algorithm>
+#include <cstring>
 #include <string>
 
 void af_get_last_error(char **str, dim_t *len) {
@@ -26,7 +27,9 @@ void af_get_last_error(char **str, dim_t *len) {
         return;
     }
 
-    af_alloc_host(reinterpret_cast<void **>(str), sizeof(char) * (slen + 1));
+    void *halloc_ptr = nullptr;
+    af_alloc_host(&halloc_ptr, sizeof(char) * (slen + 1));
+    memcpy(str, &halloc_ptr, sizeof(void *));
     global_error_string.copy(*str, slen);
 
     (*str)[slen]        = '\0';
@@ -36,7 +39,7 @@ void af_get_last_error(char **str, dim_t *len) {
 }
 
 af_err af_set_enable_stacktrace(int is_enabled) {
-    common::is_stacktrace_enabled() = is_enabled;
+    arrayfire::common::is_stacktrace_enabled() = is_enabled;
 
     return AF_SUCCESS;
 }

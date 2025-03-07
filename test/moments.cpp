@@ -39,7 +39,7 @@ class Image : public ::testing::Test {
 typedef ::testing::Types<float, double, int> TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Image, TestTypes);
+TYPED_TEST_SUITE(Image, TestTypes);
 
 template<typename T>
 void momentsTest(string pTestFile) {
@@ -47,8 +47,8 @@ void momentsTest(string pTestFile) {
 
     vector<dim4> numDims;
 
-    vector<vector<T> > in;
-    vector<vector<float> > tests;
+    vector<vector<T>> in;
+    vector<vector<float>> tests;
     readTests<T, float, float>(pTestFile, numDims, in, tests);
 
     array imgArray(numDims.front(), &in.front()[0]);
@@ -98,11 +98,11 @@ void momentsTest(string pTestFile) {
 }
 
 void momentsOnImageTest(string pTestFile, string pImageFile, bool isColor) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
     vector<dim4> numDims;
 
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
     readTests<float, float, float>(pTestFile, numDims, in, tests);
 
     array imgArray = loadImage(pImageFile.c_str(), isColor);
@@ -158,25 +158,30 @@ void momentsOnImageTest(string pTestFile, string pImageFile, bool isColor) {
 }
 
 TEST(IMAGE, MomentsImage) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     momentsOnImageTest(string(TEST_DIR "/moments/gray_seq_16_moments.test"),
                        string(TEST_DIR "/imageio/gray_seq_16.png"), false);
 }
 
 TEST(Image, MomentsImageBatch) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     momentsTest<float>(
         string(TEST_DIR "/moments/simple_mat_batch_moments.test"));
 }
 
 TEST(Image, MomentsBatch2D) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     momentsOnImageTest(string(TEST_DIR "/moments/color_seq_16_moments.test"),
                        string(TEST_DIR "/imageio/color_seq_16.png"), true);
 }
 
 TYPED_TEST(Image, MomentsSynthTypes) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     momentsTest<TypeParam>(string(TEST_DIR "/moments/simple_mat_moments.test"));
 }
 
 TEST(Image, Moment_Issue1957) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     array A = identity(3, 3, b8);
 
     double m00;

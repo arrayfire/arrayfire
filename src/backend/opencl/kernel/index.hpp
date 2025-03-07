@@ -19,25 +19,27 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
 typedef struct {
     int offs[4];
     int strds[4];
+    int steps[4];
     char isSeq[4];
 } IndexKernelParam_t;
 
 template<typename T>
 void index(Param out, const Param in, const IndexKernelParam_t& p,
            cl::Buffer* bPtr[4]) {
-    std::vector<std::string> options = {
+    std::array<std::string, 2> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        getTypeBuildDefinition<T>()};
 
-    auto index    = common::getKernel("indexKernel", {index_cl_src},
-                                   {TemplateTypename<T>()}, options);
+    auto index =
+        common::getKernel("indexKernel", {{index_cl_src}},
+                          TemplateArgs(TemplateTypename<T>()), options);
     int threads_x = 256;
     int threads_y = 1;
     cl::NDRange local(threads_x, threads_y);
@@ -63,3 +65,4 @@ void index(Param out, const Param in, const IndexKernelParam_t& p,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

@@ -13,6 +13,7 @@
 #include <cmath>
 #include "backend.hpp"
 
+namespace arrayfire {
 namespace cpu {
 static inline dim_t trimIndex(int const& idx, dim_t const& len) {
     int ret_val = idx;
@@ -47,3 +48,4 @@ void gaussian1D(T* out, int const dim, double sigma = 0.0) {
     for (int k = 0; k < dim; k++) out[k] /= sum;
 }
 }  // namespace cpu
+}  // namespace arrayfire

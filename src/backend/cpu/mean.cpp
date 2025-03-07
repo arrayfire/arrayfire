@@ -19,8 +19,9 @@
 #include <complex>
 
 using af::dim4;
-using common::half;
+using arrayfire::common::half;
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename Ti, typename Tw, typename To>
@@ -159,3 +160,4 @@ INSTANTIATE_WGT(cdouble, double);
 INSTANTIATE_WGT(half, float);
 
 }  // namespace cpu
+}  // namespace arrayfire

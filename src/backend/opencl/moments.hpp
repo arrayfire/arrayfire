@@ -9,7 +9,9 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace opencl {
 template<typename T>
 Array<float> moments(const Array<T> &in, const af_moment_type moment);
-}
+}  // namespace opencl
+}  // namespace arrayfire

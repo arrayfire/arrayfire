@@ -22,7 +22,7 @@
 #include <af/defines.h>
 
 using af::dim4;
-using common::half;
+using arrayfire::common::half;
 using detail::arithOp;
 using detail::Array;
 using detail::cdouble;

@@ -17,6 +17,7 @@
 #include <af/dim4.hpp>
 #include <complex>
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename To, typename Ti>
@@ -33,8 +34,8 @@ struct UnOp<To, Ti, af_cast_t> {
 /// TODO(umar): make a macro to reduce repeat code
 
 template<typename To>
-struct UnOp<To, common::half, af_cast_t> {
-    typedef common::half Ti;
+struct UnOp<To, arrayfire::common::half, af_cast_t> {
+    typedef arrayfire::common::half Ti;
 
     void eval(jit::array<To> &out, const jit::array<Ti> &in, int lim) {
         for (int i = 0; i < lim; i++) {
@@ -49,8 +50,8 @@ struct UnOp<To, common::half, af_cast_t> {
 };
 
 template<typename Ti>
-struct UnOp<common::half, Ti, af_cast_t> {
-    typedef common::half To;
+struct UnOp<arrayfire::common::half, Ti, af_cast_t> {
+    typedef arrayfire::common::half To;
 
     void eval(jit::array<To> &out, const jit::array<Ti> &in, int lim) {
         for (int i = 0; i < lim; i++) {
@@ -65,8 +66,8 @@ struct UnOp<common::half, Ti, af_cast_t> {
 };
 
 template<>
-struct UnOp<common::half, std::complex<float>, af_cast_t> {
-    typedef common::half To;
+struct UnOp<arrayfire::common::half, std::complex<float>, af_cast_t> {
+    typedef arrayfire::common::half To;
     typedef std::complex<float> Ti;
 
     void eval(jit::array<To> &out, const jit::array<Ti> &in, int lim) {
@@ -82,8 +83,8 @@ struct UnOp<common::half, std::complex<float>, af_cast_t> {
 };
 
 template<>
-struct UnOp<common::half, std::complex<double>, af_cast_t> {
-    typedef common::half To;
+struct UnOp<arrayfire::common::half, std::complex<double>, af_cast_t> {
+    typedef arrayfire::common::half To;
     typedef std::complex<double> Ti;
 
     void eval(jit::array<To> &out, const jit::array<Ti> &in, int lim) {
@@ -153,3 +154,4 @@ CAST_B8(uchar)
 CAST_B8(char)
 
 }  // namespace cpu
+}  // namespace arrayfire

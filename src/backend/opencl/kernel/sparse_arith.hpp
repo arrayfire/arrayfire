@@ -20,11 +20,13 @@
 #include <kernel_headers/sparse_arith_csr.hpp>
 #include <kernel_headers/ssarith_calc_out_nnz.hpp>
 #include <math.hpp>
+#include <memory.hpp>
 #include <traits.hpp>
 
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -50,7 +52,7 @@ auto fetchKernel(const std::string key, const common::Source &additionalSrc,
     constexpr bool IsComplex =
         std::is_same<T, cfloat>::value || std::is_same<T, cdouble>::value;
 
-    std::vector<TemplateArg> tmpltArgs = {
+    std::array<TemplateArg, 2> tmpltArgs = {
         TemplateTypename<T>(),
         TemplateArg(op),
     };
@@ -62,7 +64,7 @@ auto fetchKernel(const std::string key, const common::Source &additionalSrc,
     options.emplace_back(getTypeBuildDefinition<T>());
     options.insert(std::end(options), std::begin(additionalOptions),
                    std::end(additionalOptions));
-    return common::getKernel(key, {sparse_arith_common_cl_src, additionalSrc},
+    return common::getKernel(key, {{sparse_arith_common_cl_src, additionalSrc}},
                              tmpltArgs, options);
 }
 
@@ -143,7 +145,7 @@ static void csrCalcOutNNZ(Param outRowIdx, unsigned &nnzC, const uint M,
     };
 
     auto calcNNZ = common::getKernel(
-        "csr_calc_out_nnz", {ssarith_calc_out_nnz_cl_src}, tmpltArgs, {});
+        "csr_calc_out_nnz", {{ssarith_calc_out_nnz_cl_src}}, tmpltArgs, {});
 
     cl::NDRange local(256, 1);
     cl::NDRange global(divup(M, local[0]) * local[0], 1, 1);
@@ -169,7 +171,7 @@ void ssArithCSR(Param oVals, Param oColIdx, const Param oRowIdx, const uint M,
 
     auto arithOp = fetchKernel<T, op>(
         "ssarith_csr", sp_sp_arith_csr_cl_src,
-        {DefineKeyValue(IDENTITY_VALUE, af::scalar_to_option(iden_val))});
+        {DefineKeyValue(IDENTITY_VALUE, scalar_to_option(iden_val))});
 
     cl::NDRange local(256, 1);
     cl::NDRange global(divup(M, local[0]) * local[0], 1, 1);
@@ -182,3 +184,4 @@ void ssArithCSR(Param oVals, Param oColIdx, const Param oRowIdx, const uint M,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

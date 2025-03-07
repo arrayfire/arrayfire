@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include "config.hpp"
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -22,3 +23,4 @@ std::ostream& operator<<(std::ostream& out, const cdouble& var) {
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

@@ -11,6 +11,7 @@
 
 #ifdef __CUDACC_RTC__
 
+namespace arrayfire {
 namespace cuda {
 template<typename T>
 struct SharedMemory {
@@ -20,9 +21,11 @@ struct SharedMemory {
     }
 };
 }  // namespace cuda
+}  // namespace arrayfire
 
 #else
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -58,5 +61,6 @@ SPECIALIZE(uintl)
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire
 
 #endif

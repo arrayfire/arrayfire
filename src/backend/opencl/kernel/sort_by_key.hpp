@@ -13,6 +13,7 @@
 #include <debug_opencl.hpp>
 #include <traits.hpp>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 template<typename Tk, typename Tv>
@@ -25,3 +26,4 @@ template<typename Tk, typename Tv>
 void sort0ByKey(Param pKey, Param pVal, bool isAscending);
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

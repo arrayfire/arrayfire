@@ -17,30 +17,30 @@ static const char *binOpName() {
 }
 
 template<>
-STATIC_ const char *binOpName<af_add_t>() {
+inline const char *binOpName<af_add_t>() {
     return "ADD_OP";
 }
 template<>
-STATIC_ const char *binOpName<af_mul_t>() {
+inline const char *binOpName<af_mul_t>() {
     return "MUL_OP";
 }
 template<>
-STATIC_ const char *binOpName<af_and_t>() {
+inline const char *binOpName<af_and_t>() {
     return "AND_OP";
 }
 template<>
-STATIC_ const char *binOpName<af_or_t>() {
+inline const char *binOpName<af_or_t>() {
     return "OR_OP";
 }
 template<>
-STATIC_ const char *binOpName<af_min_t>() {
+inline const char *binOpName<af_min_t>() {
     return "MIN_OP";
 }
 template<>
-STATIC_ const char *binOpName<af_max_t>() {
+inline const char *binOpName<af_max_t>() {
     return "MAX_OP";
 }
 template<>
-STATIC_ const char *binOpName<af_notzero_t>() {
+inline const char *binOpName<af_notzero_t>() {
     return "NOTZERO_OP";
 }

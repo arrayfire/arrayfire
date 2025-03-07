@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 template<typename T>
@@ -38,25 +39,24 @@ void csrmm_nt(Param out, const Param &values, const Param &rowIdx,
     const bool use_alpha = (alpha != scalar<T>(1.0));
     const bool use_beta  = (beta != scalar<T>(0.0));
 
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 4> targs = {
         TemplateTypename<T>(),
         TemplateArg(use_alpha),
         TemplateArg(use_beta),
         TemplateArg(use_greedy),
     };
-    std::vector<std::string> options = {
+    std::array<std::string, 7> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
         DefineKeyValue(USE_ALPHA, use_alpha),
         DefineKeyValue(USE_BETA, use_beta),
         DefineKeyValue(USE_GREEDY, use_greedy),
         DefineValue(THREADS_PER_GROUP),
-        DefineKeyValue(IS_CPLX, (af::iscplx<T>() ? 1 : 0)),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        DefineKeyValue(IS_CPLX, (iscplx<T>() ? 1 : 0)),
+        getTypeBuildDefinition<T>()};
 
     // FIXME: Switch to perf (thread vs block) baesd kernel
     auto csrmm_nt_func =
-        common::getKernel("csrmm_nt", {csrmm_cl_src}, targs, options);
+        common::getKernel("csrmm_nt", {{csrmm_cl_src}}, targs, options);
 
     cl::NDRange local(THREADS_PER_GROUP, 1);
     int M = rowIdx.info.dims[0] - 1;
@@ -77,3 +77,4 @@ void csrmm_nt(Param out, const Param &values, const Param &rowIdx,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

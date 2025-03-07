@@ -24,8 +24,8 @@
 #include <af/image.h>
 
 using af::dim4;
-using common::cast;
-using common::flip;
+using arrayfire::common::cast;
+using arrayfire::common::flip;
 using detail::arithOp;
 using detail::Array;
 using detail::cdouble;
@@ -61,6 +61,8 @@ af_array morph<char>(const af_array &input, const af_array &mask,
 #elif defined(AF_CUDA)
     constexpr unsigned fftMethodThreshold = 17;
 #elif defined(AF_OPENCL)
+    constexpr unsigned fftMethodThreshold = 19;
+#elif defined(AF_ONEAPI)
     constexpr unsigned fftMethodThreshold = 19;
 #endif  // defined(AF_CPU)
 

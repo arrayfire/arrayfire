@@ -94,7 +94,7 @@ std::string rngmatch_info(
     return ss.str();
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     PhiloxCPU_CUDA, RNGMatch,
     ::testing::Combine(
         ::testing::Values(AF_RANDOM_ENGINE_PHILOX),

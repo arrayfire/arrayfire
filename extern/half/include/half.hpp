@@ -403,7 +403,14 @@ namespace half_float
 		template<typename T> bool builtin_isinf(T arg)
 		{
 		#if HALF_ENABLE_CPP11_CMATH
+#ifdef __clang__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wtautological-constant-compare"
+#endif
 			return std::isinf(arg);
+#ifdef __clang__
+#pragma GCC diagnostic pop
+#endif
 		#elif defined(_MSC_VER)
 			return !::_finite(static_cast<double>(arg)) && !::_isnan(static_cast<double>(arg));
 		#else
@@ -419,7 +426,14 @@ namespace half_float
 		template<typename T> bool builtin_isnan(T arg)
 		{
 		#if HALF_ENABLE_CPP11_CMATH
+#ifdef __clang__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wtautological-constant-compare"
+#endif
 			return std::isnan(arg);
+#ifdef __clang__
+#pragma GCC diagnostic pop
+#endif
 		#elif defined(_MSC_VER)
 			return ::_isnan(static_cast<double>(arg)) != 0;
 		#else

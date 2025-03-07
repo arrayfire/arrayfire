@@ -12,14 +12,14 @@
 #include <Param.hpp>
 #include <math.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 #define sidx(y, x) scratch[y + 1][x + 1]
 
 template<typename T>
 __global__ void gradient(Param<T> grad0, Param<T> grad1, CParam<T> in,
-                         const int blocksPerMatX,
-                         const int blocksPerMatY) {
+                         const int blocksPerMatX, const int blocksPerMatY) {
     const int idz = blockIdx.x / blocksPerMatX;
     const int idw = (blockIdx.y + blockIdx.z * gridDim.y) / blocksPerMatY;
 
@@ -63,9 +63,9 @@ __global__ void gradient(Param<T> grad0, Param<T> grad1, CParam<T> in,
     // Cols
     if (threadIdx.y == 0) {
         // Y-1
-        sidx(-1, threadIdx.x) = (cond || idy == 0)
-                                    ? sidx(0, threadIdx.x)
-                                    : in.ptr[iIdx - in.strides[1]];
+        sidx(-1, threadIdx.x)   = (cond || idy == 0)
+                                      ? sidx(0, threadIdx.x)
+                                      : in.ptr[iIdx - in.strides[1]];
         sidx(ymax, threadIdx.x) = (cond || (idy + ymax) >= in.dims[1])
                                       ? sidx(ymax - 1, threadIdx.x)
                                       : in.ptr[iIdx + ymax * in.strides[1]];
@@ -90,3 +90,4 @@ __global__ void gradient(Param<T> grad0, Param<T> grad1, CParam<T> in,
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

@@ -21,6 +21,7 @@
 using std::unique_ptr;
 using std::vector;
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -246,12 +247,12 @@ __global__ void extract_orb(unsigned* desc_out, const unsigned n_feat,
                 int dist_x = lookup(i * 16 * 4 + j * 4, luTable);
                 int dist_y = lookup(i * 16 * 4 + j * 4 + 1, luTable);
                 T p1       = get_pixel(x, y, ori, size, dist_x, dist_y, image,
-                                 patch_size);
+                                       patch_size);
 
                 dist_x = lookup(i * 16 * 4 + j * 4 + 2, luTable);
                 dist_y = lookup(i * 16 * 4 + j * 4 + 3, luTable);
                 T p2   = get_pixel(x, y, ori, size, dist_x, dist_y, image,
-                                 patch_size);
+                                   patch_size);
 
                 // Calculate bit based on p1 and p2 and shifts it to correct
                 // position
@@ -291,7 +292,7 @@ void orb(unsigned* out_feat, float** d_x, float** d_y, float** d_score,
     // distribution instead of using the reference one
     // CUDA_CHECK(cudaMemcpyToSymbolAsync(d_ref_pat, h_ref_pat, 256 * 4 *
     // sizeof(int), 0,
-    // cudaMemcpyHostToDevice, cuda::getActiveStream()));
+    // cudaMemcpyHostToDevice, getActiveStream()));
 
     vector<float*> d_score_pyr(max_levels);
     vector<float*> d_ori_pyr(max_levels);
@@ -311,8 +312,7 @@ void orb(unsigned* out_feat, float** d_x, float** d_y, float** d_score,
         gauss_filter = createHostDataArray<convAccT>(gauss_dim, h_gauss.data());
         CUDA_CHECK(cudaMemcpyAsync(gauss_filter.get(), h_gauss.data(),
                                    h_gauss.size() * sizeof(convAccT),
-                                   cudaMemcpyHostToDevice,
-                                   cuda::getActiveStream()));
+                                   cudaMemcpyHostToDevice, getActiveStream()));
         CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
     }
 
@@ -378,7 +378,7 @@ void orb(unsigned* out_feat, float** d_x, float** d_y, float** d_score,
         unsigned* d_desc_lvl = memAlloc<unsigned>(feat_pyr[i] * 8).release();
         CUDA_CHECK(cudaMemsetAsync(d_desc_lvl, 0,
                                    feat_pyr[i] * 8 * sizeof(unsigned),
-                                   cuda::getActiveStream()));
+                                   getActiveStream()));
 
         // Compute ORB descriptors
         threads = dim3(THREADS_X, THREADS_Y);
@@ -419,23 +419,23 @@ void orb(unsigned* out_feat, float** d_x, float** d_y, float** d_score,
 
         CUDA_CHECK(cudaMemcpyAsync(
             *d_x + offset, d_x_pyr[i], feat_pyr[i] * sizeof(float),
-            cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
+            cudaMemcpyDeviceToDevice, getActiveStream()));
         CUDA_CHECK(cudaMemcpyAsync(
             *d_y + offset, d_y_pyr[i], feat_pyr[i] * sizeof(float),
-            cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
+            cudaMemcpyDeviceToDevice, getActiveStream()));
         CUDA_CHECK(cudaMemcpyAsync(
             *d_score + offset, d_score_pyr[i], feat_pyr[i] * sizeof(float),
-            cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
+            cudaMemcpyDeviceToDevice, getActiveStream()));
         CUDA_CHECK(cudaMemcpyAsync(
             *d_ori + offset, d_ori_pyr[i], feat_pyr[i] * sizeof(float),
-            cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
+            cudaMemcpyDeviceToDevice, getActiveStream()));
         CUDA_CHECK(cudaMemcpyAsync(
             *d_size + offset, d_size_pyr[i], feat_pyr[i] * sizeof(float),
-            cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
+            cudaMemcpyDeviceToDevice, getActiveStream()));
         CUDA_CHECK(cudaMemcpyAsync(*d_desc + (offset * 8), d_desc_pyr[i],
                                    feat_pyr[i] * 8 * sizeof(unsigned),
                                    cudaMemcpyDeviceToDevice,
-                                   cuda::getActiveStream()));
+                                   getActiveStream()));
 
         memFree(d_x_pyr[i]);
         memFree(d_y_pyr[i]);
@@ -451,3 +451,4 @@ void orb(unsigned* out_feat, float** d_x, float** d_y, float** d_score,
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

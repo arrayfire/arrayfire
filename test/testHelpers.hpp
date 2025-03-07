@@ -7,13 +7,17 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 #pragma once
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wparentheses"
+#endif
 #include <half.hpp>
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif
 #include <af/array.h>
 #include <af/defines.h>
 #include <af/dim4.hpp>
@@ -28,7 +32,17 @@
 #if defined(USE_MTX)
 #include <mmio.h>
 #include <cstdlib>
+#endif
 
+/// GTest deprecated the INSTANTIATED_TEST_CASE_P macro in favor of the
+/// INSTANTIATE_TEST_SUITE_P macro which has the same syntax but the older
+/// versions of gtest do not support this new macro adds the
+/// INSTANTIATE_TEST_SUITE_P macro and maps it to the old macro
+#ifndef INSTANTIATE_TEST_SUITE_P
+#define INSTANTIATE_TEST_SUITE_P INSTANTIATE_TEST_CASE_P
+#endif
+#ifndef TYPED_TEST_SUITE
+#define TYPED_TEST_SUITE TYPED_TEST_CASE
 #endif
 
 bool operator==(const af_half &lhs, const af_half &rhs);
@@ -39,11 +53,20 @@ std::ostream &operator<<(std::ostream &os, const af_half &val);
     do { (void)(expr); } while (0)
 
 namespace aft {
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#elif defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4996)
+#endif
 typedef intl intl;
 typedef uintl uintl;
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#elif defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 }  // namespace aft
 
 using aft::intl;
@@ -69,7 +92,7 @@ typedef unsigned char uchar;
 typedef unsigned int uint;
 typedef unsigned short ushort;
 
-std::string getBackendName();
+std::string getBackendName(bool lower = false);
 std::string getTestName();
 
 std::string readNextNonEmptyLine(std::ifstream &file);
@@ -90,14 +113,14 @@ extern template af_half convert(int in);
 
 template<typename inType, typename outType, typename FileElementType>
 void readTests(const std::string &FileName, std::vector<af::dim4> &inputDims,
-               std::vector<std::vector<inType> > &testInputs,
-               std::vector<std::vector<outType> > &testOutputs);
+               std::vector<std::vector<inType>> &testInputs,
+               std::vector<std::vector<outType>> &testOutputs);
 
 template<typename inType, typename outType>
 void readTestsFromFile(const std::string &FileName,
                        std::vector<af::dim4> &inputDims,
-                       std::vector<std::vector<inType> > &testInputs,
-                       std::vector<std::vector<outType> > &testOutputs);
+                       std::vector<std::vector<inType>> &testInputs,
+                       std::vector<std::vector<outType>> &testOutputs);
 
 void readImageTests(const std::string &pFileName,
                     std::vector<af::dim4> &pInputDims,
@@ -109,14 +132,14 @@ template<typename outType>
 void readImageTests(const std::string &pFileName,
                     std::vector<af::dim4> &pInputDims,
                     std::vector<std::string> &pTestInputs,
-                    std::vector<std::vector<outType> > &pTestOutputs);
+                    std::vector<std::vector<outType>> &pTestOutputs);
 
 template<typename descType>
 void readImageFeaturesDescriptors(
     const std::string &pFileName, std::vector<af::dim4> &pInputDims,
     std::vector<std::string> &pTestInputs,
-    std::vector<std::vector<float> > &pTestFeats,
-    std::vector<std::vector<descType> > &pTestDescs);
+    std::vector<std::vector<float>> &pTestFeats,
+    std::vector<std::vector<descType>> &pTestDescs);
 
 /**
  * Below is not a pair wise comparition method, rather
@@ -213,13 +236,33 @@ bool noDoubleTests(af::dtype ty);
 
 bool noHalfTests(af::dtype ty);
 
-#define SUPPORTED_TYPE_CHECK(type)                                        \
-    if (noDoubleTests((af_dtype)af::dtype_traits<type>::af_type)) return; \
-    if (noHalfTests((af_dtype)af::dtype_traits<type>::af_type)) return;
+#define SUPPORTED_TYPE_CHECK(type)                                \
+    if (noDoubleTests((af_dtype)af::dtype_traits<type>::af_type)) \
+        GTEST_SKIP() << "Device doesn't support Doubles";         \
+    if (noHalfTests((af_dtype)af::dtype_traits<type>::af_type))   \
+    GTEST_SKIP() << "Device doesn't support Half"
 
-bool noImageIOTests();
+#ifdef SKIP_UNSUPPORTED_TESTS
+#define UNSUPPORTED_BACKEND(backend)                        \
+    if(backend == af::getActiveBackend())                   \
+        GTEST_SKIP() << "Skipping unsupported function on " \
+                        + getBackendName() + " backend"
+#else
+#define UNSUPPORTED_BACKEND(backend)
+#endif
 
-bool noLAPACKTests();
+#define LAPACK_ENABLED_CHECK() \
+    if (!af::isLAPACKAvailable()) GTEST_SKIP() << "LAPACK Not Configured."
+
+#define IMAGEIO_ENABLED_CHECK() \
+    if (!af::isImageIOAvailable()) GTEST_SKIP() << "Image IO Not Configured"
+
+#ifdef AF_WITH_FAST_MATH
+#define SKIP_IF_FAST_MATH_ENABLED() \
+    GTEST_SKIP() << "ArrayFire compiled with AF_WITH_FAST_MATH"
+#else
+#define SKIP_IF_FAST_MATH_ENABLED()
+#endif
 
 template<typename TO, typename FROM>
 TO convert_to(FROM in) {
@@ -387,6 +430,34 @@ template<typename T>
     ASSERT_PRED_FORMAT3(assertArrayEq, EXPECTED_VEC, EXPECTED_ARR_DIMS,  \
                         ACTUAL_ARR)
 
+/// Compares two af::array or af_arrays for their types, dims, and values
+/// (strict equality).
+///
+/// \param[in] EXPECTED The expected array of the assertion
+/// \param[in] ACTUAL The actual resulting array from the calculation
+#define EXPECT_ARRAYS_EQ(EXPECTED, ACTUAL) \
+    EXPECT_PRED_FORMAT2(assertArrayEq, EXPECTED, ACTUAL)
+
+/// Same as EXPECT_ARRAYS_EQ, but for cases when a "special" output array is
+/// given to the function.
+/// The special array can be null, a full-sized array, a subarray, or reordered
+/// Can only be used for testing C-API functions currently
+///
+/// \param[in] EXPECTED The expected array of the assertion
+/// \param[in] ACTUAL The actual resulting array from the calculation
+#define EXPECT_SPECIAL_ARRAYS_EQ(EXPECTED, ACTUAL, META) \
+    EXPECT_PRED_FORMAT3(assertArrayEq, EXPECTED, ACTUAL, META)
+
+/// Compares a std::vector with an af::/af_array for their types, dims, and
+/// values (strict equality).
+///
+/// \param[in] EXPECTED_VEC The vector that represents the expected array
+/// \param[in] EXPECTED_ARR_DIMS The dimensions of the expected array
+/// \param[in] ACTUAL_ARR The actual resulting array from the calculation
+#define EXPECT_VEC_ARRAY_EQ(EXPECTED_VEC, EXPECTED_ARR_DIMS, ACTUAL_ARR) \
+    EXPECT_PRED_FORMAT3(assertArrayEq, EXPECTED_VEC, EXPECTED_ARR_DIMS,  \
+                        ACTUAL_ARR)
+
 /// Compares two af::array or af_arrays for their type, dims, and values (with a
 /// given tolerance).
 ///
@@ -422,6 +493,43 @@ template<typename T>
 #define ASSERT_VEC_ARRAY_NEAR(EXPECTED_VEC, EXPECTED_ARR_DIMS, ACTUAL_ARR, \
                               MAX_ABSDIFF)                                 \
     ASSERT_PRED_FORMAT4(assertArrayNear, EXPECTED_VEC, EXPECTED_ARR_DIMS,  \
+                        ACTUAL_ARR, MAX_ABSDIFF)
+
+/// Compares two af::array or af_arrays for their type, dims, and values (with a
+/// given tolerance).
+///
+/// \param[in] EXPECTED Expected value of the assertion
+/// \param[in] ACTUAL Actual value of the calculation
+/// \param[in] MAX_ABSDIFF Expected maximum absolute difference between
+///            elements of EXPECTED and ACTUAL
+///
+/// \NOTE: This macro will deallocate the af_arrays after the call
+#define EXPECT_ARRAYS_NEAR(EXPECTED, ACTUAL, MAX_ABSDIFF) \
+    EXPECT_PRED_FORMAT3(assertArrayNear, EXPECTED, ACTUAL, MAX_ABSDIFF)
+
+/// Compares two af::array or af_arrays for their type, dims, and values (with a
+/// given tolerance).
+///
+/// \param[in] EXPECTED Expected value of the assertion
+/// \param[in] ACTUAL Actual value of the calculation
+/// \param[in] MAX_ABSDIFF Expected maximum absolute difference between
+///            elements of EXPECTED and ACTUAL
+///
+/// \NOTE: This macro will deallocate the af_arrays after the call
+#define EXPECT_IMAGES_NEAR(EXPECTED, ACTUAL, MAX_ABSDIFF) \
+    EXPECT_PRED_FORMAT3(assertImageNear, EXPECTED, ACTUAL, MAX_ABSDIFF)
+
+/// Compares a std::vector with an af::array for their dims and values (with a
+/// given tolerance).
+///
+/// \param[in] EXPECTED_VEC The vector that represents the expected array
+/// \param[in] EXPECTED_ARR_DIMS The dimensions of the expected array
+/// \param[in] ACTUAL_ARR The actual array from the calculation
+/// \param[in] MAX_ABSDIFF Expected maximum absolute difference between
+///            elements of EXPECTED and ACTUAL
+#define EXPECT_VEC_ARRAY_NEAR(EXPECTED_VEC, EXPECTED_ARR_DIMS, ACTUAL_ARR, \
+                              MAX_ABSDIFF)                                 \
+    EXPECT_PRED_FORMAT4(assertArrayNear, EXPECTED_VEC, EXPECTED_ARR_DIMS,  \
                         ACTUAL_ARR, MAX_ABSDIFF)
 
 #define ASSERT_REF(arr, expected) \
@@ -544,4 +652,6 @@ void genTestOutputArray(af_array *out_ptr, double val, const unsigned ndims,
                                          const af_array a, const af_array b,
                                          TestOutputArrayInfo *metadata);
 
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif

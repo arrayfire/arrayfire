@@ -14,13 +14,16 @@
 #include <vector_field.hpp>
 
 using af::dim4;
+using arrayfire::common::ForgeModule;
+using arrayfire::common::forgePlugin;
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T>
 void copy_vector_field(const Array<T> &points, const Array<T> &directions,
                        fg_vector_field vfield) {
-    ForgeModule &_ = graphics::forgePlugin();
+    ForgeModule &_ = common::forgePlugin();
     if (isGLSharingSupported()) {
         CheckGL("Begin OpenCL resource copy");
         const cl::Buffer *d_points     = points.get();
@@ -101,3 +104,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(uchar)
 
 }  // namespace opencl
+}  // namespace arrayfire

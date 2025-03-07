@@ -16,6 +16,7 @@
 
 #include <stdexcept>
 
+namespace arrayfire {
 namespace cuda {
 template<typename T>
 void gradient(Array<T> &grad0, Array<T> &grad1, const Array<T> &in) {
@@ -31,3 +32,4 @@ INSTANTIATE(double)
 INSTANTIATE(cfloat)
 INSTANTIATE(cdouble)
 }  // namespace cuda
+}  // namespace arrayfire

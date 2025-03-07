@@ -18,10 +18,11 @@
 #include <type_traits>
 
 using af::dim4;
-using common::half;
+using arrayfire::common::half;
 using std::conditional;
 using std::is_same;
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T, typename accT>
@@ -103,3 +104,4 @@ INSTANTIATE(intl, float)
 #undef INSTANTIATE
 
 }  // namespace cuda
+}  // namespace arrayfire

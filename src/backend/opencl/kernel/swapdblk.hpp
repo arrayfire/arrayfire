@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 template<typename T>
@@ -33,6 +34,9 @@ void swapdblk(int n, int nb, cl_mem dA, size_t dA_offset, int ldda, int inca,
     using std::string;
     using std::vector;
 
+    int nblocks = n / nb;
+    if (nblocks == 0) return;
+
     vector<TemplateArg> targs = {
         TemplateTypename<T>(),
     };
@@ -42,11 +46,7 @@ void swapdblk(int n, int nb, cl_mem dA, size_t dA_offset, int ldda, int inca,
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
     auto swapdblk =
-        common::getKernel("swapdblk", {swapdblk_cl_src}, targs, compileOpts);
-
-    int nblocks = n / nb;
-
-    if (nblocks == 0) return;
+        common::getKernel("swapdblk", {{swapdblk_cl_src}}, targs, compileOpts);
 
     int info = 0;
     if (n < 0) {
@@ -74,10 +74,11 @@ void swapdblk(int n, int nb, cl_mem dA, size_t dA_offset, int ldda, int inca,
     Buffer dAObj(dA, true);
     Buffer dBObj(dB, true);
 
-    CommandQueue q(queue);
+    CommandQueue q(queue, true);
     swapdblk(EnqueueArgs(q, global, local), nb, dAObj, dA_offset, ldda, inca,
              dBObj, dB_offset, lddb, incb);
     CL_DEBUG_FINISH(getQueue());
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -28,18 +29,17 @@ template<typename T>
 void moments(Param out, const Param in, af_moment_type moment) {
     constexpr int THREADS = 128;
 
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 2> targs = {
         TemplateTypename<T>(),
         TemplateArg(out.info.dims[0]),
     };
-    std::vector<std::string> options = {
+    std::array<std::string, 3> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
         DefineKeyValue(MOMENTS_SZ, out.info.dims[0]),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        getTypeBuildDefinition<T>()};
 
     auto momentsOp =
-        common::getKernel("moments", {moments_cl_src}, targs, options);
+        common::getKernel("moments", {{moments_cl_src}}, targs, options);
 
     cl::NDRange local(THREADS, 1, 1);
     cl::NDRange global(in.info.dims[1] * local[0],
@@ -54,3 +54,4 @@ void moments(Param out, const Param in, af_moment_type moment) {
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

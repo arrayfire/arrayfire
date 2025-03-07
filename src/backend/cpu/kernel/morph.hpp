@@ -13,6 +13,7 @@
 #include <utility.hpp>
 #include <limits>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 template<typename T>
@@ -143,3 +144,4 @@ void morph3d(Param<T> out, CParam<T> in, CParam<T> mask) {
 }
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

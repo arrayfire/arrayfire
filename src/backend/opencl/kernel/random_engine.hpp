@@ -30,6 +30,7 @@ static const int TABLE_SIZE = 16;
 static const int MAX_BLOCKS = 32;
 static const int STATE_SIZE = (256 * 3);
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 static const uint THREADS = 256;
@@ -56,7 +57,7 @@ static Kernel getRandomEngineKernel(const af_random_engine_type type,
         default:
             AF_ERROR("Random Engine Type Not Supported", AF_ERR_NOT_SUPPORTED);
     }
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 2> targs = {
         TemplateTypename<T>(),
         TemplateArg(kerIdx),
     };
@@ -163,9 +164,10 @@ void initMersenneState(cl::Buffer state, cl::Buffer table, const uintl &seed) {
     cl::NDRange global(local[0] * MAX_BLOCKS, 1);
 
     auto initOp = common::getKernel("mersenneInitState",
-                                    {random_engine_mersenne_init_cl_src}, {});
+                                    {{random_engine_mersenne_init_cl_src}}, {});
     initOp(cl::EnqueueArgs(getQueue(), global, local), state, table, seed);
     CL_DEBUG_FINISH(getQueue());
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

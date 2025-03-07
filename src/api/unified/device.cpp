@@ -14,16 +14,18 @@
 #include "symbol_manager.hpp"
 
 af_err af_set_backend(const af_backend bknd) {
-    return unified::setBackend(bknd);
+    return arrayfire::unified::setBackend(bknd);
 }
 
 af_err af_get_backend_count(unsigned *num_backends) {
-    *num_backends = unified::AFSymbolManager::getInstance().getBackendCount();
+    *num_backends =
+        arrayfire::unified::AFSymbolManager::getInstance().getBackendCount();
     return AF_SUCCESS;
 }
 
 af_err af_get_available_backends(int *result) {
-    *result = unified::AFSymbolManager::getInstance().getAvailableBackends();
+    *result = arrayfire::unified::AFSymbolManager::getInstance()
+                  .getAvailableBackends();
     return AF_SUCCESS;
 }
 
@@ -39,7 +41,7 @@ af_err af_get_device_id(int *device, const af_array in) {
 }
 
 af_err af_get_active_backend(af_backend *result) {
-    *result = unified::getActiveBackend();
+    *result = arrayfire::unified::getActiveBackend();
     return AF_SUCCESS;
 }
 

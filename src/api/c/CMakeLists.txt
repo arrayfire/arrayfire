@@ -88,6 +88,7 @@ target_sources(c_api_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/gaussian_kernel.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gradient.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/hamming.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/handle.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/handle.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/harris.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/hist.cpp
@@ -175,7 +176,7 @@ if(FreeImage_FOUND AND AF_WITH_IMAGEIO)
     target_compile_definitions(c_api_interface INTERFACE FREEIMAGE_STATIC)
     target_link_libraries(c_api_interface INTERFACE FreeImage::FreeImage_STATIC)
   else ()
-    target_include_directories(c_api_interface INTERFACE $<TARGET_PROPERTY:FreeImage::FreeImage,INTERFACE_INCLUDE_DIRECTORIES>)
+    target_include_directories(c_api_interface SYSTEM INTERFACE $<TARGET_PROPERTY:FreeImage::FreeImage,INTERFACE_INCLUDE_DIRECTORIES>)
     if (WIN32 AND AF_INSTALL_STANDALONE)
       install(FILES $<TARGET_FILE:FreeImage::FreeImage>
         DESTINATION ${AF_INSTALL_BIN_DIR}

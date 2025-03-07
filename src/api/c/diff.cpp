@@ -16,6 +16,8 @@
 #include <af/defines.h>
 
 using af::dim4;
+using arrayfire::getArray;
+using arrayfire::getHandle;
 using detail::cdouble;
 using detail::cfloat;
 using detail::intl;

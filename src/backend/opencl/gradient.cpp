@@ -13,6 +13,7 @@
 #include <math.hpp>
 #include <stdexcept>
 
+namespace arrayfire {
 namespace opencl {
 template<typename T>
 void gradient(Array<T> &grad0, Array<T> &grad1, const Array<T> &in) {
@@ -28,3 +29,4 @@ INSTANTIATE(double)
 INSTANTIATE(cfloat)
 INSTANTIATE(cdouble)
 }  // namespace opencl
+}  // namespace arrayfire

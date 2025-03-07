@@ -63,17 +63,17 @@ class FixedFAST : public ::testing::Test {
 typedef ::testing::Types<float, double> FloatTestTypes;
 typedef ::testing::Types<int, unsigned, short, ushort> FixedTestTypes;
 
-TYPED_TEST_CASE(FloatFAST, FloatTestTypes);
-TYPED_TEST_CASE(FixedFAST, FixedTestTypes);
+TYPED_TEST_SUITE(FloatFAST, FloatTestTypes);
+TYPED_TEST_SUITE(FixedFAST, FixedTestTypes);
 
 template<typename T>
 void fastTest(string pTestFile, bool nonmax) {
     SUPPORTED_TYPE_CHECK(T);
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
     vector<string> inFiles;
-    vector<vector<float> > gold;
+    vector<vector<float>> gold;
 
     readImageTests(pTestFile, inDims, inFiles, gold);
 
@@ -158,12 +158,14 @@ void fastTest(string pTestFile, bool nonmax) {
 
 #define FLOAT_FAST_INIT(desc, image, nonmax)                                \
     TYPED_TEST(FloatFAST, desc) {                                           \
+        UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);                             \
         fastTest<TypeParam>(string(TEST_DIR "/fast/" #image "_float.test"), \
                             nonmax);                                        \
     }
 
 #define FIXED_FAST_INIT(desc, image, nonmax)                                \
     TYPED_TEST(FixedFAST, desc) {                                           \
+        UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);                             \
         fastTest<TypeParam>(string(TEST_DIR "/fast/" #image "_fixed.test"), \
                             nonmax);                                        \
     }
@@ -180,11 +182,12 @@ using af::features;
 using af::loadImage;
 
 TEST(FloatFAST, CPP) {
-    if (noImageIOTests()) return;
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
     vector<string> inFiles;
-    vector<vector<float> > gold;
+    vector<vector<float>> gold;
 
     readImageTests(string(TEST_DIR "/fast/square_nonmax_float.test"), inDims,
                    inFiles, gold);

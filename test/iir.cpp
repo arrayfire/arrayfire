@@ -37,7 +37,7 @@ class filter : public ::testing::Test {
 
 // create a list of types to be tested
 typedef ::testing::Types<float, double, cfloat, cdouble> TestTypes;
-TYPED_TEST_CASE(filter, TestTypes);
+TYPED_TEST_SUITE(filter, TestTypes);
 
 template<typename T>
 void firTest(const int xrows, const int xcols, const int brows,
@@ -124,8 +124,8 @@ void iirTest(const char *testFile) {
     SUPPORTED_TYPE_CHECK(T);
     vector<dim4> inDims;
 
-    vector<vector<T> > inputs;
-    vector<vector<T> > outputs;
+    vector<vector<T>> inputs;
+    vector<vector<T>> outputs;
     readTests<T, T, float>(testFile, inDims, inputs, outputs);
 
     try {

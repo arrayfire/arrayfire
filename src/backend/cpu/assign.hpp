@@ -9,6 +9,7 @@
 
 #include <af/index.h>
 
+namespace arrayfire {
 namespace cpu {
 template<typename T>
 class Array;
@@ -17,3 +18,4 @@ template<typename T>
 void assign(Array<T>& out, const af_index_t idxrs[], const Array<T>& rhs);
 
 }  // namespace cpu
+}  // namespace arrayfire

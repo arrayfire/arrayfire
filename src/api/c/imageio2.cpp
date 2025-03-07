@@ -32,12 +32,23 @@
 #include <string>
 
 using af::dim4;
+using arrayfire::AFFI_GRAY;
+using arrayfire::AFFI_RGB;
+using arrayfire::AFFI_RGBA;
+using arrayfire::bitmap_ptr;
+using arrayfire::channel_split;
+using arrayfire::FI_CHANNELS;
+using arrayfire::FreeImage_Module;
+using arrayfire::FreeImageErrorHandler;
+using arrayfire::getFreeImagePlugin;
+using arrayfire::make_bitmap_ptr;
 using detail::pinnedAlloc;
 using detail::pinnedFree;
 using detail::uchar;
 using detail::uint;
 using detail::ushort;
 
+namespace {
 template<typename T, FI_CHANNELS fi_color>
 static af_err readImage_t(af_array* rImage, const uchar* pSrcLine,
                           const int nSrcPitch, const uint fi_w,
@@ -115,6 +126,8 @@ FREE_IMAGE_TYPE getFIT(FI_CHANNELS channels, af_dtype type) {
     }
     return FIT_BITMAP;
 }
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // File IO

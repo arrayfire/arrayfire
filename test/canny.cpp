@@ -32,15 +32,15 @@ typedef ::testing::Types<float, int, uint, short, ushort, uchar, double>
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(CannyEdgeDetector, TestTypes);
+TYPED_TEST_SUITE(CannyEdgeDetector, TestTypes);
 
 template<typename T>
 void cannyTest(string pTestFile) {
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<char> > tests;
+    vector<vector<T>> in;
+    vector<vector<char>> tests;
 
     readTests<T, char, int>(pTestFile, numDims, in, tests);
 
@@ -53,7 +53,7 @@ void cannyTest(string pTestFile) {
                                    (af_dtype)dtype_traits<T>::af_type));
 
     ASSERT_SUCCESS(af_canny(&outArray, sArray, AF_CANNY_THRESHOLD_MANUAL,
-                            0.4147f, 0.8454f, 3, true));
+                                        0.4147f, 0.8454f, 3, true));
 
     vector<char> outData(sDims.elements());
 
@@ -72,10 +72,12 @@ void cannyTest(string pTestFile) {
 }
 
 TYPED_TEST(CannyEdgeDetector, ArraySizeLessThanBlockSize10x10) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     cannyTest<TypeParam>(string(TEST_DIR "/CannyEdgeDetector/fast10x10.test"));
 }
 
 TYPED_TEST(CannyEdgeDetector, ArraySizeEqualBlockSize16x16) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     cannyTest<TypeParam>(string(TEST_DIR "/CannyEdgeDetector/fast16x16.test"));
 }
 
@@ -93,7 +95,7 @@ TEST(Canny, DISABLED_Exact) {
 template<typename T>
 void cannyImageOtsuTest(string pTestFile, bool isColor) {
     SUPPORTED_TYPE_CHECK(T);
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     using af::dim4;
 
@@ -129,8 +131,9 @@ void cannyImageOtsuTest(string pTestFile, bool isColor) {
             af_load_image_native(&goldArray, outFiles[testId].c_str()));
 
         ASSERT_SUCCESS(af_canny(&_outArray, inArray,
-                                AF_CANNY_THRESHOLD_AUTO_OTSU, 0.08, 0.32, 3,
-                                false));
+                                            AF_CANNY_THRESHOLD_AUTO_OTSU,
+                                            0.08, 0.32, 3, false));
+
         unsigned ndims = 0;
         dim_t dims[4];
 
@@ -156,6 +159,7 @@ void cannyImageOtsuTest(string pTestFile, bool isColor) {
 }
 
 TEST(CannyEdgeDetector, OtsuThreshold) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     cannyImageOtsuTest<float>(string(TEST_DIR "/CannyEdgeDetector/gray.test"),
                               false);
 }
@@ -220,7 +224,7 @@ TEST(CannyEdgeDetector, Sobel5x5_Invalid) {
 template<typename T>
 void cannyImageOtsuBatchTest(string pTestFile, const dim_t targetBatchCount) {
     SUPPORTED_TYPE_CHECK(T);
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     using af::array;
     using af::canny;
@@ -248,14 +252,15 @@ void cannyImageOtsuBatchTest(string pTestFile, const dim_t targetBatchCount) {
         array inputIm  = tile(readImg, 1, 1, targetBatchCount);
 
         array outIm =
-            canny(inputIm, AF_CANNY_THRESHOLD_AUTO_OTSU, 0.08, 0.32, 3, false);
+              canny(inputIm, AF_CANNY_THRESHOLD_AUTO_OTSU, 0.08, 0.32, 3, false);
         outIm *= 255.0;
 
-        ASSERT_IMAGES_NEAR(outIm.as(u8), goldIm, 1.0e-3);
+        ASSERT_IMAGES_NEAR(goldIm, outIm.as(u8), 1.0e-3);
     }
 }
 
 TEST(CannyEdgeDetector, BatchofImagesUsingCPPAPI) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     // DO NOT INCREASE BATCH COUNT BEYOND 4
     // This is a limitation on the test assert macro that is saving
     // images to disk which can't handle a batch of images.

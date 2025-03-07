@@ -36,33 +36,37 @@ struct convert_params {
 
 class HalfConvert : public ::testing::TestWithParam<convert_params> {};
 
-INSTANTIATE_TEST_CASE_P(ToF16, HalfConvert,
-                        ::testing::Values(convert_params(f32, f16, 10),
-                                          convert_params(f64, f16, 10),
-                                          convert_params(s32, f16, 10),
-                                          convert_params(u32, f16, 10),
-                                          convert_params(u8, f16, 10),
-                                          convert_params(s64, f16, 10),
-                                          convert_params(u64, f16, 10),
-                                          convert_params(s16, f16, 10),
-                                          convert_params(u16, f16, 10),
-                                          convert_params(f16, f16, 10)));
+INSTANTIATE_TEST_SUITE_P(ToF16, HalfConvert,
+                         ::testing::Values(convert_params(f32, f16, 10),
+                                           convert_params(f64, f16, 10),
+                                           convert_params(s32, f16, 10),
+                                           convert_params(u32, f16, 10),
+                                           convert_params(u8, f16, 10),
+                                           convert_params(s64, f16, 10),
+                                           convert_params(u64, f16, 10),
+                                           convert_params(s16, f16, 10),
+                                           convert_params(u16, f16, 10),
+                                           convert_params(f16, f16, 10)));
 
-INSTANTIATE_TEST_CASE_P(FromF16, HalfConvert,
-                        ::testing::Values(convert_params(f16, f32, 10),
-                                          convert_params(f16, f64, 10),
-                                          convert_params(f16, s32, 10),
-                                          convert_params(f16, u32, 10),
-                                          convert_params(f16, u8, 10),
-                                          convert_params(f16, s64, 10),
-                                          convert_params(f16, u64, 10),
-                                          convert_params(f16, s16, 10),
-                                          convert_params(f16, u16, 10),
-                                          convert_params(f16, f16, 10)));
+INSTANTIATE_TEST_SUITE_P(FromF16, HalfConvert,
+                         ::testing::Values(convert_params(f16, f32, 10),
+                                           convert_params(f16, f64, 10),
+                                           convert_params(f16, s32, 10),
+                                           convert_params(f16, u32, 10),
+                                           convert_params(f16, u8, 10),
+                                           convert_params(f16, s64, 10),
+                                           convert_params(f16, u64, 10),
+                                           convert_params(f16, s16, 10),
+                                           convert_params(f16, u16, 10),
+                                           convert_params(f16, f16, 10)));
 
 TEST_P(HalfConvert, convert) {
     SUPPORTED_TYPE_CHECK(af_half);
     convert_params params = GetParam();
+    if (noDoubleTests(params.to))
+        GTEST_SKIP() << "Double not supported on this device";
+    if (noDoubleTests(params.from))
+        GTEST_SKIP() << "Double not supported on this device";
 
     array from = af::constant(params.value, 3, 3, params.from);
     array to   = from.as(params.to);
@@ -87,6 +91,7 @@ TEST(Half, arith) {
 
 TEST(Half, isInf) {
     SUPPORTED_TYPE_CHECK(af_half);
+    SKIP_IF_FAST_MATH_ENABLED();
     half_float::half hinf = std::numeric_limits<half_float::half>::infinity();
 
     vector<half_float::half> input(2, half_float::half(0));
@@ -105,6 +110,7 @@ TEST(Half, isInf) {
 
 TEST(Half, isNan) {
     SUPPORTED_TYPE_CHECK(af_half);
+    SKIP_IF_FAST_MATH_ENABLED();
     half_float::half hnan = std::numeric_limits<half_float::half>::quiet_NaN();
 
     vector<half_float::half> input(2, half_float::half(0));

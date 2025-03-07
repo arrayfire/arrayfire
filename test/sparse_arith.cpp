@@ -91,41 +91,6 @@ struct arith_op<af_div_t> {
     array operator()(array v1, array v2) { return v1 / v2; }
 };
 
-template<typename T>
-void sparseCompare(array A, array B, const double eps) {
-// This macro is used to check if either value is finite and then call assert
-// If neither value is finite, then they can be assumed to be equal to either
-// inf or nan
-#define ASSERT_FINITE_EQ(V1, V2)                  \
-    if (std::isfinite(V1) || std::isfinite(V2)) { \
-        ASSERT_NEAR(V1, V2, eps) << "at : " << i; \
-    }
-
-    array AValues = sparseGetValues(A);
-    array ARowIdx = sparseGetRowIdx(A);
-    array AColIdx = sparseGetColIdx(A);
-
-    array BValues = sparseGetValues(B);
-    array BRowIdx = sparseGetRowIdx(B);
-    array BColIdx = sparseGetColIdx(B);
-
-    // Verify row and col indices
-    ASSERT_EQ(0, max<int>(ARowIdx - BRowIdx));
-    ASSERT_EQ(0, max<int>(AColIdx - BColIdx));
-
-    T* ptrA = AValues.host<T>();
-    T* ptrB = BValues.host<T>();
-    for (int i = 0; i < AValues.elements(); i++) {
-        ASSERT_FINITE_EQ(real(ptrA[i]), real(ptrB[i]));
-
-        if (A.iscomplex()) { ASSERT_FINITE_EQ(imag(ptrA[i]), imag(ptrB[i])); }
-    }
-    freeHost(ptrA);
-    freeHost(ptrB);
-
-#undef ASSERT_FINITE_EQ
-}
-
 template<typename T, af_op_t op>
 void sparseArithTester(const int m, const int n, int factor, const double eps) {
     deviceGC();
@@ -154,17 +119,10 @@ void sparseArithTester(const int m, const int n, int factor, const double eps) {
     array revO = arith_op<op>()(B, OA);
     array revD = arith_op<op>()(B, A);
 
-    ASSERT_NEAR(0, sum<double>(abs(real(resR - resD))) / (m * n), eps);
-    ASSERT_NEAR(0, sum<double>(abs(imag(resR - resD))) / (m * n), eps);
-
-    ASSERT_NEAR(0, sum<double>(abs(real(resO - resD))) / (m * n), eps);
-    ASSERT_NEAR(0, sum<double>(abs(imag(resO - resD))) / (m * n), eps);
-
-    ASSERT_NEAR(0, sum<double>(abs(real(revR - revD))) / (m * n), eps);
-    ASSERT_NEAR(0, sum<double>(abs(imag(revR - revD))) / (m * n), eps);
-
-    ASSERT_NEAR(0, sum<double>(abs(real(revO - revD))) / (m * n), eps);
-    ASSERT_NEAR(0, sum<double>(abs(imag(revO - revD))) / (m * n), eps);
+    ASSERT_ARRAYS_NEAR(resD, resR, eps);
+    ASSERT_ARRAYS_NEAR(resD, resO, eps);
+    ASSERT_ARRAYS_NEAR(revD, revR, eps);
+    ASSERT_ARRAYS_NEAR(revD, revO, eps);
 }
 
 // Mul
@@ -200,11 +158,11 @@ void sparseArithTesterMul(const int m, const int n, int factor,
 
         // Check resR against conR
         array conR = sparseConvertTo(resR, AF_STORAGE_CSR);
-        sparseCompare<T>(resR, conR, eps);
+        ASSERT_ARRAYS_NEAR(resR, conR, eps);
 
         // Check resO against conO
         array conO = sparseConvertTo(resR, AF_STORAGE_COO);
-        sparseCompare<T>(resO, conO, eps);
+        ASSERT_ARRAYS_NEAR(resO, conO, eps);
     }
 
     // Reverse
@@ -219,11 +177,11 @@ void sparseArithTesterMul(const int m, const int n, int factor,
 
         // Check resR against conR
         array conR = sparseConvertTo(resR, AF_STORAGE_CSR);
-        sparseCompare<T>(resR, conR, eps);
+        ASSERT_ARRAYS_NEAR(resR, conR, eps);
 
         // Check resO against conO
         array conO = sparseConvertTo(resR, AF_STORAGE_COO);
-        sparseCompare<T>(resO, conO, eps);
+        ASSERT_ARRAYS_NEAR(resO, conO, eps);
     }
 }
 
@@ -266,11 +224,11 @@ void sparseArithTesterDiv(const int m, const int n, int factor,
 
     // Check resR against conR
     array conR = sparseConvertTo(resR, AF_STORAGE_CSR);
-    sparseCompare<T>(resR, conR, eps);
+    ASSERT_ARRAYS_EQ(resR, conR);
 
     // Check resO against conO
     array conO = sparseConvertTo(resR, AF_STORAGE_COO);
-    sparseCompare<T>(resO, conO, eps);
+    ASSERT_ARRAYS_EQ(resO, conO);
 }
 
 #define ARITH_TESTS_OPS(T, M, N, F, EPS)              \
@@ -325,11 +283,11 @@ void ssArithmetic(const int m, const int n, int factor, const double eps) {
     // Arith Op
     array resS = binOp(spA, spB);
     array resD = binOp(A, B);
+    ASSERT_ARRAYS_NEAR(resD, resS, eps);
+
     array revS = binOp(spB, spA);
     array revD = binOp(B, A);
-
-    ASSERT_ARRAYS_NEAR(resD, dense(resS), eps);
-    ASSERT_ARRAYS_NEAR(revD, dense(revS), eps);
+    ASSERT_ARRAYS_NEAR(revD, revS, eps);
 }
 
 #define SP_SP_ARITH_TEST(type, m, n, factor, eps)           \

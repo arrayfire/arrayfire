@@ -26,8 +26,9 @@
 #include <cpu/cpu_blas.hpp>
 #include <magma/magma_blas.h>
 
-using common::half;
+using arrayfire::common::half;
 
+namespace arrayfire {
 namespace opencl {
 
 void initBlas() { gpu_blas_init(); }
@@ -164,3 +165,4 @@ INSTANTIATE_DOT(cdouble)
 INSTANTIATE_DOT(half)
 
 }  // namespace opencl
+}  // namespace arrayfire

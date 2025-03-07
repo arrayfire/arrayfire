@@ -24,6 +24,7 @@ AF_DEPRECATED_WARNINGS_ON
 
 namespace compute = boost::compute;
 
+namespace arrayfire {
 namespace opencl {
 using af::dim4;
 
@@ -152,3 +153,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(intl)
 INSTANTIATE(uintl)
 }  // namespace opencl
+}  // namespace arrayfire

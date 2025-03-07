@@ -9,9 +9,11 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace cpu {
 template<typename T>
 Array<T> meanshift(const Array<T> &in, const float &spatialSigma,
                    const float &chromaticSigma, const unsigned &numIterations,
                    const bool &isColor);
-}
+}  // namespace cpu
+}  // namespace arrayfire

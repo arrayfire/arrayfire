@@ -15,13 +15,17 @@
 #include <vector_field.hpp>
 
 using af::dim4;
+using arrayfire::common::ForgeManager;
+using arrayfire::common::ForgeModule;
+using arrayfire::common::forgePlugin;
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
 void copy_vector_field(const Array<T> &points, const Array<T> &directions,
                        fg_vector_field vfield) {
-    auto stream = cuda::getActiveStream();
+    auto stream = getActiveStream();
     if (DeviceManager::checkGraphicsInteropCapability()) {
         auto res = interopManager().getVectorFieldResources(vfield);
         cudaGraphicsResource_t resources[2] = {*res[0].get(), *res[1].get()};
@@ -54,7 +58,7 @@ void copy_vector_field(const Array<T> &points, const Array<T> &directions,
 
         POST_LAUNCH_CHECK();
     } else {
-        ForgeModule &_ = graphics::forgePlugin();
+        ForgeModule &_ = forgePlugin();
         CheckGL("Begin CUDA fallback-resource copy");
         unsigned size1 = 0, size2 = 0;
         unsigned buff1 = 0, buff2 = 0;
@@ -104,3 +108,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(uchar)
 
 }  // namespace cuda
+}  // namespace arrayfire

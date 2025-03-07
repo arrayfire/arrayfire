@@ -11,6 +11,7 @@
 
 #include <kernel/hsv_rgb.hpp>
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T>
@@ -35,3 +36,4 @@ INSTANTIATE(double)
 INSTANTIATE(float)
 
 }  // namespace opencl
+}  // namespace arrayfire

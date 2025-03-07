@@ -13,16 +13,18 @@
 
 #include <GraphicsResourceManager.hpp>
 #include <blas.hpp>
+#include <build_version.hpp>
 #include <clfft.hpp>
+#include <common/ArrayFireTypesIO.hpp>
 #include <common/DefaultMemoryManager.hpp>
 #include <common/Logger.hpp>
+#include <common/Version.hpp>
 #include <common/defines.hpp>
 #include <common/host_memory.hpp>
 #include <common/util.hpp>
 #include <device_manager.hpp>
 #include <err_opencl.hpp>
 #include <errorcodes.hpp>
-#include <version.hpp>
 #include <af/opencl.h>
 #include <af/version.h>
 #include <memory>
@@ -40,6 +42,7 @@
 #include <string>
 #include <vector>
 
+using arrayfire::common::getEnvVar;
 using cl::CommandQueue;
 using cl::Context;
 using cl::Device;
@@ -48,11 +51,14 @@ using std::begin;
 using std::end;
 using std::find;
 using std::make_unique;
+using std::ostringstream;
+using std::sort;
 using std::string;
 using std::stringstream;
 using std::unique_ptr;
 using std::vector;
 
+namespace arrayfire {
 namespace opencl {
 
 #if defined(OS_MAC)
@@ -96,13 +102,6 @@ static inline bool compare_default(const unique_ptr<Device>& ldev,
         if (is_l_curr_type && !is_r_curr_type) { return true; }
         if (!is_l_curr_type && is_r_curr_type) { return false; }
     }
-
-    // For GPUs, this ensures discrete > integrated
-    auto is_l_integrated = ldev->getInfo<CL_DEVICE_HOST_UNIFIED_MEMORY>();
-    auto is_r_integrated = rdev->getInfo<CL_DEVICE_HOST_UNIFIED_MEMORY>();
-
-    if (!is_l_integrated && is_r_integrated) { return true; }
-    if (is_l_integrated && !is_r_integrated) { return false; }
 
     // At this point, the devices are of same type.
     // Sort based on emperical evidence of preferred platforms
@@ -172,6 +171,14 @@ static inline bool compare_default(const unique_ptr<Device>& ldev,
     return l_mem > r_mem;
 }
 
+/// Class to compare two devices for sorting in a map
+class deviceLess {
+   public:
+    bool operator()(const cl::Device& lhs, const cl::Device& rhs) const {
+        return lhs() < rhs();
+    }
+};
+
 DeviceManager::DeviceManager()
     : logger(common::loggerFactory("platform"))
     , mUserDeviceOffset(0)
@@ -196,7 +203,7 @@ DeviceManager::DeviceManager()
         }
 #endif
     }
-    fgMngr = std::make_unique<graphics::ForgeManager>();
+    fgMngr = std::make_unique<arrayfire::common::ForgeManager>();
 
     // This is all we need because the sort takes care of the order of devices
 #ifdef OS_MAC
@@ -217,6 +224,7 @@ DeviceManager::DeviceManager()
 
     AF_TRACE("Found {} OpenCL platforms", platforms.size());
 
+    std::map<cl::Device, cl::Context, deviceLess> mDeviceContextMap;
     // Iterate through platforms, get all available devices and store them
     for (auto& platform : platforms) {
         vector<Device> current_devices;
@@ -228,11 +236,15 @@ DeviceManager::DeviceManager()
         }
         AF_TRACE("Found {} devices on platform {}", current_devices.size(),
                  platform.getInfo<CL_PLATFORM_NAME>());
-        for (auto& dev : current_devices) {
-            mDevices.emplace_back(make_unique<Device>(dev));
-            AF_TRACE("Found device {} on platform {}",
-                     dev.getInfo<CL_DEVICE_NAME>(),
-                     platform.getInfo<CL_PLATFORM_NAME>());
+        if (!current_devices.empty()) {
+            cl::Context ctx(current_devices);
+            for (auto& dev : current_devices) {
+                mDeviceContextMap[dev] = ctx;
+                mDevices.emplace_back(make_unique<Device>(dev));
+                AF_TRACE("Found device {} on platform {}",
+                         dev.getInfo<CL_DEVICE_NAME>(),
+                         platform.getInfo<CL_PLATFORM_NAME>());
+            }
         }
     }
 
@@ -244,20 +256,49 @@ DeviceManager::DeviceManager()
     // Sort OpenCL devices based on default criteria
     stable_sort(mDevices.begin(), mDevices.end(), compare_default);
 
+    auto devices = move(mDevices);
+    mDevices.clear();
+
     // Create contexts and queues once the sort is done
     for (int i = 0; i < nDevices; i++) {
-        cl_platform_id device_platform =
-            mDevices[i]->getInfo<CL_DEVICE_PLATFORM>();
-        cl_context_properties cps[3] = {
-            CL_CONTEXT_PLATFORM, (cl_context_properties)(device_platform), 0};
+        // For OpenCL-HPP >= v2023.12.14 type is cl::Platform instead of
+        // cl_platform_id
+        cl::Platform device_platform;
+        device_platform = devices[i]->getInfo<CL_DEVICE_PLATFORM>();
 
-        mContexts.push_back(make_unique<Context>(*mDevices[i], cps));
-        mQueues.push_back(make_unique<CommandQueue>(
-            *mContexts.back(), *mDevices[i], cl::QueueProperties::None));
-        mIsGLSharingOn.push_back(false);
-        mDeviceTypes.push_back(getDeviceTypeEnum(*mDevices[i]));
-        mPlatforms.push_back(getPlatformEnum(*mDevices[i]));
+        try {
+            mContexts.emplace_back(
+                make_unique<cl::Context>(mDeviceContextMap[*devices[i]]));
+            mQueues.push_back(make_unique<CommandQueue>(
+                *mContexts.back(), *devices[i], cl::QueueProperties::None));
+            mIsGLSharingOn.push_back(false);
+            mDeviceTypes.push_back(getDeviceTypeEnum(*devices[i]));
+            mPlatforms.push_back(
+                std::make_pair<std::unique_ptr<cl::Platform>, afcl_platform>(
+                    make_unique<cl::Platform>(device_platform(), true),
+                    getPlatformEnum(*devices[i])));
+            mDevices.emplace_back(std::move(devices[i]));
+
+            auto platform_version =
+                mPlatforms.back().first->getInfo<CL_PLATFORM_VERSION>();
+            string options;
+            common::Version version =
+                getOpenCLCDeviceVersion(*mDevices[i]).back();
+#ifdef AF_WITH_FAST_MATH
+            options = fmt::format(
+                " -cl-std=CL{:Mm} -D dim_t={} -cl-fast-relaxed-math", version,
+                dtype_traits<dim_t>::getName());
+#else
+            options = fmt::format(" -cl-std=CL{:Mm} -D dim_t={}", version,
+                                  dtype_traits<dim_t>::getName());
+#endif
+            mBaseBuildFlags.push_back(options);
+        } catch (const cl::Error& err) {
+            AF_TRACE("Error creating context for device {} with error {}\n",
+                     devices[i]->getInfo<CL_DEVICE_NAME>(), err.what());
+        }
     }
+    nDevices = mDevices.size();
 
     bool default_device_set = false;
     deviceENV               = getEnvVar("AF_OPENCL_DEFAULT_DEVICE");
@@ -533,3 +574,4 @@ void DeviceManager::markDeviceForInterop(const int device,
 }
 
 }  // namespace opencl
+}  // namespace arrayfire

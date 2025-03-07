@@ -12,18 +12,22 @@
 #include <cstddef>
 #include <string>
 
+namespace arrayfire {
 namespace common {
 
 /// Kernel Interface that should be implemented by each backend
-template<typename ModuleType, typename KernelType, typename EnqueuerType,
-         typename DevPtrType>
+template<typename TModuleType, typename TKernelType, typename TEnqueuerType,
+         typename TDevPtrType>
 class KernelInterface {
-   private:
-    ModuleType mModuleHandle;
-    KernelType mKernelHandle;
+    TModuleType mModuleHandle;
+    TKernelType mKernelHandle;
     std::string mName;
 
    public:
+    using ModuleType   = TModuleType;
+    using KernelType   = TKernelType;
+    using EnqueuerType = TEnqueuerType;
+    using DevPtrType   = TDevPtrType;
     KernelInterface(std::string name, ModuleType mod, KernelType ker)
         : mModuleHandle(mod), mKernelHandle(ker), mName(name) {}
 
@@ -101,3 +105,4 @@ class KernelInterface {
 };
 
 }  // namespace common
+}  // namespace arrayfire

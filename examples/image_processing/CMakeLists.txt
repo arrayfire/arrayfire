@@ -5,12 +5,12 @@
 # The complete license agreement can be obtained at:
 # http://arrayfire.com/licenses/BSD-3-Clause
 
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 project(ArrayFire-Example-Image-Processing
   VERSION 3.5.0
   LANGUAGES CXX)
 
-find_package(ArrayFire)
+find_package(ArrayFire REQUIRED)
 
 add_definitions("-DASSETS_DIR=\"${ASSETS_DIR}\"")
 
@@ -155,4 +155,48 @@ if(ArrayFire_OpenCL_FOUND)
   #Image Deconvolution Example
   add_executable(deconvolution_opencl deconvolution.cpp)
   target_link_libraries(deconvolution_opencl ArrayFire::afopencl)
+endif()
+
+if(ArrayFire_oneAPI_FOUND)
+  add_executable(adaptive_thresholding_oneapi adaptive_thresholding.cpp)
+  target_link_libraries(adaptive_thresholding_oneapi ArrayFire::afoneapi)
+
+  add_executable(binary_thresholding_oneapi binary_thresholding.cpp)
+  target_link_libraries(binary_thresholding_oneapi ArrayFire::afoneapi)
+
+  add_executable(brain_segmentation_oneapi brain_segmentation.cpp)
+  target_link_libraries(brain_segmentation_oneapi ArrayFire::afoneapi)
+
+  add_executable(confidence_connected_components_oneapi
+      confidence_connected_components.cpp)
+  target_link_libraries(confidence_connected_components_oneapi ArrayFire::afoneapi)
+
+  add_executable(edge_oneapi edge.cpp)
+  target_link_libraries(edge_oneapi ArrayFire::afoneapi)
+
+  add_executable(filters_oneapi filters.cpp)
+  target_link_libraries(filters_oneapi ArrayFire::afoneapi)
+
+  add_executable(image_demo_oneapi image_demo.cpp)
+  target_link_libraries(image_demo_oneapi ArrayFire::afoneapi)
+
+  add_executable(image_editing_oneapi image_editing.cpp)
+  target_link_libraries(image_editing_oneapi ArrayFire::afoneapi)
+
+  add_executable(morphing_oneapi morphing.cpp)
+  target_link_libraries(morphing_oneapi ArrayFire::afoneapi)
+
+  add_executable(optical_flow_oneapi optical_flow.cpp)
+  target_link_libraries(optical_flow_oneapi ArrayFire::afoneapi)
+
+  add_executable(pyramids_oneapi pyramids.cpp)
+  target_link_libraries(pyramids_oneapi ArrayFire::afoneapi)
+
+  # Gradient anisotropic diffusion example
+  add_executable(gradient_diffusion_oneapi gradient_diffusion.cpp)
+  target_link_libraries(gradient_diffusion_oneapi ArrayFire::afoneapi)
+
+  #Image Deconvolution Example
+  add_executable(deconvolution_oneapi deconvolution.cpp)
+  target_link_libraries(deconvolution_oneapi ArrayFire::afoneapi)
 endif()

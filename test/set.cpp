@@ -32,8 +32,8 @@ void uniqueTest(string pTestFile) {
 
     vector<dim4> numDims;
 
-    vector<vector<int> > data;
-    vector<vector<int> > tests;
+    vector<vector<int>> data;
+    vector<vector<int>> tests;
     readTests<int, int, int>(pTestFile, numDims, data, tests);
 
     // Compare result
@@ -92,8 +92,8 @@ void setTest(string pTestFile) {
 
     vector<dim4> numDims;
 
-    vector<vector<int> > data;
-    vector<vector<int> > tests;
+    vector<vector<int>> data;
+    vector<vector<int>> tests;
     readTests<int, int, int>(pTestFile, numDims, data, tests);
 
     // Compare result

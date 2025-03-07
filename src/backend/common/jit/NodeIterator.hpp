@@ -14,18 +14,22 @@
 #include <iterator>
 #include <vector>
 
+namespace arrayfire {
 namespace common {
 
 /// A node iterator that performs a breadth first traversal of the node tree
 template<typename Node = common::Node>
-class NodeIterator : public std::iterator<std::input_iterator_tag, Node> {
+class NodeIterator {
    public:
-    using pointer   = Node*;
-    using reference = Node&;
+    using iterator_category = std::input_iterator_tag;
+    using value_type        = Node;
+    using difference_type   = std::ptrdiff_t;
+    using pointer           = Node*;
+    using reference         = Node&;
 
    private:
     std::vector<pointer> tree;
-    size_t index;
+    size_t index = 0;
 
     /// Copies the children of the \p n Node to the end of the tree vector
     void copy_children_to_end(Node* n) {
@@ -42,7 +46,7 @@ class NodeIterator : public std::iterator<std::input_iterator_tag, Node> {
     /// NodeIterator Constructor
     ///
     /// \param[in] root The root node of the tree
-    NodeIterator(pointer root) : tree{root}, index(0) {
+    NodeIterator(pointer root) : tree{root} {
         tree.reserve(root->getHeight() * 8);
     }
 
@@ -89,12 +93,13 @@ class NodeIterator : public std::iterator<std::input_iterator_tag, Node> {
     pointer operator->() const noexcept { return tree[index]; }
 
     /// Creates a sentinel iterator. This is equivalent to the end iterator
-    NodeIterator()                              = default;
-    NodeIterator(const NodeIterator& other)     = default;
-    NodeIterator(NodeIterator&& other) noexcept = default;
-    ~NodeIterator() noexcept                    = default;
-    NodeIterator& operator=(const NodeIterator& other) = default;
+    NodeIterator()                                         = default;
+    NodeIterator(const NodeIterator& other)                = default;
+    NodeIterator(NodeIterator&& other) noexcept            = default;
+    ~NodeIterator() noexcept                               = default;
+    NodeIterator& operator=(const NodeIterator& other)     = default;
     NodeIterator& operator=(NodeIterator&& other) noexcept = default;
 };
 
 }  // namespace common
+}  // namespace arrayfire

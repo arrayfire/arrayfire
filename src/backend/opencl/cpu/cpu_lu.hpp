@@ -9,6 +9,7 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace opencl {
 namespace cpu {
 template<typename T>
@@ -19,3 +20,4 @@ template<typename T>
 Array<int> lu_inplace(Array<T> &in, const bool convert_pivot = true);
 }  // namespace cpu
 }  // namespace opencl
+}  // namespace arrayfire

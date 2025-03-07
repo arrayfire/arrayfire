@@ -13,6 +13,7 @@
 #include <backend.hpp>
 #include <af/defines.h>
 
+namespace arrayfire {
 namespace opencl {
 void initMersenneState(Array<uint> &state, const uintl seed,
                        const Array<uint> &tbl);
@@ -39,3 +40,4 @@ Array<T> normalDistribution(const af::dim4 &dims, Array<uint> pos,
                             Array<uint> recursion_table,
                             Array<uint> temper_table, Array<uint> state);
 }  // namespace opencl
+}  // namespace arrayfire

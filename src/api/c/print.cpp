@@ -30,7 +30,9 @@
 
 #include <af/index.h>
 
-using common::half;
+using arrayfire::getSparseArray;
+using arrayfire::common::half;
+using arrayfire::common::SparseArray;
 using detail::cdouble;
 using detail::cfloat;
 using detail::intl;
@@ -115,7 +117,7 @@ static void print(const char *exp, af_array arr, const int precision,
 template<typename T>
 static void printSparse(const char *exp, af_array arr, const int precision,
                         std::ostream &os = std::cout, bool transpose = true) {
-    common::SparseArray<T> sparse = getSparseArray<T>(arr);
+    SparseArray<T> sparse = getSparseArray<T>(arr);
     std::string name("No Name Sparse Array");
 
     if (exp != NULL) { name = std::string(exp); }
@@ -278,9 +280,10 @@ af_err af_array_to_string(char **output, const char *exp, const af_array arr,
                 default: TYPE_ERROR(1, type);
             }
         }
-        std::string str = ss.str();
-        af_alloc_host(reinterpret_cast<void **>(output),
-                      sizeof(char) * (str.size() + 1));
+        std::string str  = ss.str();
+        void *halloc_ptr = nullptr;
+        af_alloc_host(&halloc_ptr, sizeof(char) * (str.size() + 1));
+        memcpy(output, &halloc_ptr, sizeof(void *));
         str.copy(*output, str.size());
         (*output)[str.size()] = '\0';  // don't forget the terminating 0
     }

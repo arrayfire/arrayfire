@@ -12,6 +12,7 @@
 #include <math.hpp>
 #include <af/defines.h>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -289,3 +290,4 @@ void convolve2(Param<InT> out, CParam<InT> signal, CParam<AccT> c_filter,
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

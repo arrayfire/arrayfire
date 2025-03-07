@@ -52,7 +52,7 @@ typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned int,
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Tile, TestTypes);
+TYPED_TEST_SUITE(Tile, TestTypes);
 
 template<typename T>
 void tileTest(string pTestFile, const unsigned resultIdx, const uint x,
@@ -61,8 +61,8 @@ void tileTest(string pTestFile, const unsigned resultIdx, const uint x,
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
     readTests<T, T, int>(pTestFile, numDims, in, tests);
 
     dim4 idims = numDims[0];
@@ -128,8 +128,8 @@ TEST(Tile, CPP) {
     const unsigned w         = 1;
 
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
     readTests<float, float, int>(string(TEST_DIR "/tile/tile_large3D.test"),
                                  numDims, in, tests);
 

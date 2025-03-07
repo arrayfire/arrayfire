@@ -9,6 +9,7 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T>
@@ -18,4 +19,5 @@ int homography(Array<T> &H, const Array<float> &x_src,
                const af_homography_type htype, const float inlier_thr,
                const unsigned iterations);
 
-}
+}  // namespace opencl
+}  // namespace arrayfire

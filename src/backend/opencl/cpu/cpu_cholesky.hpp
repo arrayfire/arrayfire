@@ -9,6 +9,7 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace opencl {
 namespace cpu {
 template<typename T>
@@ -18,3 +19,4 @@ template<typename T>
 int cholesky_inplace(Array<T> &in, const bool is_upper);
 }  // namespace cpu
 }  // namespace opencl
+}  // namespace arrayfire

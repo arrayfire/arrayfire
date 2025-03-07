@@ -28,7 +28,8 @@ class ArrayInfo {
     // The devId variable stores information about the deviceId as well as the
     // backend. The 8 LSBs (0-7) are used to store the device ID. The 09th LSB
     // is set to 1 if backend is CPU The 10th LSB is set to 1 if backend is CUDA
-    // The 11th LSB is set to 1 if backend is OpenCL
+    // The 11th LSB is set to 1 if backend is OpenCL The 12th LSB is set to 1
+    // for oneAPI
     // This information can be retrieved directly from an af_array by doing
     //     int* devId = reinterpret_cast<int*>(a); // a is an af_array
     //     af_backend backendID = *devId >> 8;   // Returns 1, 2, 4 for CPU,
@@ -48,44 +49,10 @@ class ArrayInfo {
 
    public:
     ArrayInfo(unsigned id, af::dim4 size, dim_t offset_, af::dim4 stride,
-              af_dtype af_type)
-        : devId(id)
-        , type(af_type)
-        , dim_size(size)
-        , offset(offset_)
-        , dim_strides(stride)
-        , is_sparse(false) {
-        setId(id);
-        static_assert(std::is_move_assignable<ArrayInfo>::value,
-                      "ArrayInfo is not move assignable");
-        static_assert(std::is_move_constructible<ArrayInfo>::value,
-                      "ArrayInfo is not move constructible");
-        static_assert(
-            offsetof(ArrayInfo, devId) == 0,
-            "ArrayInfo::devId must be the first member variable of ArrayInfo. \
-                   devId is used to encode the backend into the integer. \
-                   This is then used in the unified backend to check mismatched arrays.");
-    }
+              af_dtype af_type);
 
     ArrayInfo(unsigned id, af::dim4 size, dim_t offset_, af::dim4 stride,
-              af_dtype af_type, bool sparse)
-        : devId(id)
-        , type(af_type)
-        , dim_size(size)
-        , offset(offset_)
-        , dim_strides(stride)
-        , is_sparse(sparse) {
-        setId(id);
-        static_assert(
-            offsetof(ArrayInfo, devId) == 0,
-            "ArrayInfo::devId must be the first member variable of ArrayInfo. \
-                   devId is used to encode the backend into the integer. \
-                   This is then used in the unified backend to check mismatched arrays.");
-        static_assert(std::is_nothrow_move_assignable<ArrayInfo>::value,
-                      "ArrayInfo is not nothrow move assignable");
-        static_assert(std::is_nothrow_move_constructible<ArrayInfo>::value,
-                      "ArrayInfo is not nothrow move constructible");
-    }
+              af_dtype af_type, bool sparse);
 
     ArrayInfo()                       = default;
     ArrayInfo(const ArrayInfo& other) = default;
@@ -169,8 +136,6 @@ class ArrayInfo {
 
     bool isSparse() const;
 };
-static_assert(std::is_standard_layout<ArrayInfo>::value,
-              "ArrayInfo must be a standard layout type");
 
 af::dim4 toDims(const std::vector<af_seq>& seqs, const af::dim4& parentDims);
 

@@ -34,13 +34,13 @@ using std::vector;
 
 ///////////////////////////////// CPP ////////////////////////////////////
 TEST(QRFactorized, CPP) {
-    if (noLAPACKTests()) return;
+    LAPACK_ENABLED_CHECK();
 
     int resultIdx = 0;
 
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
     readTests<float, float, float>(string(TEST_DIR "/lapack/qrfactorized.test"),
                                    numDims, in, tests);
 
@@ -90,7 +90,7 @@ template<typename T>
 void qrTester(const int m, const int n, double eps) {
     try {
         SUPPORTED_TYPE_CHECK(T);
-        if (noLAPACKTests()) return;
+        LAPACK_ENABLED_CHECK();
 
 #if 1
         array in = cpu_randu<T>(dim4(m, n));
@@ -162,7 +162,7 @@ template<typename T>
 class QR : public ::testing::Test {};
 
 typedef ::testing::Types<float, cfloat, double, cdouble> TestTypes;
-TYPED_TEST_CASE(QR, TestTypes);
+TYPED_TEST_SUITE(QR, TestTypes);
 
 TYPED_TEST(QR, RectangularLarge0) {
     qrTester<TypeParam>(1000, 500, eps<TypeParam>());
@@ -181,7 +181,7 @@ TYPED_TEST(QR, RectangularMultipleOfTwoLarge1) {
 }
 
 TEST(QR, InPlaceNullOutput) {
-    if (noLAPACKTests()) return;
+    LAPACK_ENABLED_CHECK();
     dim4 dims(3, 3);
     af_array in = 0;
     ASSERT_SUCCESS(af_randu(&in, dims.ndims(), dims.get(), f32));

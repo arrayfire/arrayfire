@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 template<typename T>
@@ -38,17 +39,18 @@ void coo2dense(Param out, const Param values, const Param rowIdx,
     };
     std::vector<std::string> compileOpts = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
-        DefineKeyValue(resp, REPEAT),
+        DefineKeyValue(reps, REPEAT),
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto coo2dense = common::getKernel("coo2Dense", {coo2dense_cl_src},
+    auto coo2dense = common::getKernel("coo2Dense", {{coo2dense_cl_src}},
                                        tmpltArgs, compileOpts);
 
     cl::NDRange local(THREADS_PER_GROUP, 1, 1);
 
     cl::NDRange global(
-        divup(out.info.dims[0], local[0] * REPEAT) * THREADS_PER_GROUP, 1, 1);
+        divup(values.info.dims[0], local[0] * REPEAT) * THREADS_PER_GROUP, 1,
+        1);
 
     coo2dense(cl::EnqueueArgs(getQueue(), global, local), *out.data, out.info,
               *values.data, values.info, *rowIdx.data, rowIdx.info,
@@ -75,7 +77,7 @@ void csr2dense(Param output, const Param values, const Param rowIdx,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto csr2dense = common::getKernel("csr2Dense", {csr2dense_cl_src},
+    auto csr2dense = common::getKernel("csr2Dense", {{csr2dense_cl_src}},
                                        tmpltArgs, compileOpts);
 
     cl::NDRange local(threads, 1);
@@ -83,7 +85,10 @@ void csr2dense(Param output, const Param values, const Param rowIdx,
     cl::NDRange global(local[0] * groups_x, 1);
 
     csr2dense(cl::EnqueueArgs(getQueue(), global, local), *output.data,
-              *values.data, *rowIdx.data, *colIdx.data, M);
+              *values.data, *rowIdx.data, *colIdx.data, M,
+	      static_cast<int>(values.info.offset),
+	      static_cast<int>(rowIdx.info.offset),
+	      static_cast<int>(colIdx.info.offset));
     CL_DEBUG_FINISH(getQueue());
 }
 
@@ -101,7 +106,7 @@ void dense2csr(Param values, Param rowIdx, Param colIdx, const Param dense) {
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto dense2Csr = common::getKernel("dense2Csr", {dense2csr_cl_src},
+    auto dense2Csr = common::getKernel("dense2Csr", {{dense2csr_cl_src}},
                                        tmpltArgs, compileOpts);
 
     int num_rows = dense.info.dims[0];
@@ -146,8 +151,8 @@ void swapIndex(Param ovalues, Param oindex, const Param ivalues,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto swapIndex = common::getKernel("swapIndex", {csr2coo_cl_src}, tmpltArgs,
-                                       compileOpts);
+    auto swapIndex = common::getKernel("swapIndex", {{csr2coo_cl_src}},
+                                       tmpltArgs, compileOpts);
 
     cl::NDRange global(ovalues.info.dims[0], 1, 1);
 
@@ -168,8 +173,8 @@ void csr2coo(Param ovalues, Param orowIdx, Param ocolIdx, const Param ivalues,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto csr2coo =
-        common::getKernel("csr2Coo", {csr2coo_cl_src}, tmpltArgs, compileOpts);
+    auto csr2coo = common::getKernel("csr2Coo", {{csr2coo_cl_src}}, tmpltArgs,
+                                     compileOpts);
 
     const int MAX_GROUPS = 4096;
     int M                = irowIdx.info.dims[0] - 1;
@@ -208,8 +213,8 @@ void coo2csr(Param ovalues, Param orowIdx, Param ocolIdx, const Param ivalues,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto csrReduce = common::getKernel("csrReduce", {csr2coo_cl_src}, tmpltArgs,
-                                       compileOpts);
+    auto csrReduce = common::getKernel("csrReduce", {{csr2coo_cl_src}},
+                                       tmpltArgs, compileOpts);
 
     // Now we need to sort this into column major
     kernel::sort0ByKeyIterative<int, int>(rowCopy, index, true);
@@ -227,3 +232,4 @@ void coo2csr(Param ovalues, Param orowIdx, Param ocolIdx, const Param ivalues,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

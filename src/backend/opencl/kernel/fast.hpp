@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -33,24 +34,23 @@ void fast(const unsigned arc_length, unsigned *out_feat, Param &x_out,
     constexpr int FAST_THREADS_NONMAX_X = 32;
     constexpr int FAST_THREADS_NONMAX_Y = 8;
 
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 3> targs = {
         TemplateTypename<T>(),
         TemplateArg(arc_length),
         TemplateArg(nonmax),
     };
-    std::vector<std::string> options = {
+    std::array<std::string, 4> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
         DefineKeyValue(ARC_LENGTH, arc_length),
         DefineKeyValue(NONMAX, static_cast<unsigned>(nonmax)),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        getTypeBuildDefinition<T>()};
 
     auto locate =
-        common::getKernel("locate_features", {fast_cl_src}, targs, options);
+        common::getKernel("locate_features", {{fast_cl_src}}, targs, options);
     auto nonMax =
-        common::getKernel("non_max_counts", {fast_cl_src}, targs, options);
+        common::getKernel("non_max_counts", {{fast_cl_src}}, targs, options);
     auto getFeat =
-        common::getKernel("get_features", {fast_cl_src}, targs, options);
+        common::getKernel("get_features", {{fast_cl_src}}, targs, options);
 
     const unsigned max_feat =
         ceil(in.info.dims[0] * in.info.dims[1] * feature_ratio);
@@ -146,3 +146,4 @@ void fast(const unsigned arc_length, unsigned *out_feat, Param &x_out,
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

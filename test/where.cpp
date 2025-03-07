@@ -36,7 +36,7 @@ class Where : public ::testing::Test {};
 typedef ::testing::Types<float, double, cfloat, cdouble, int, uint, intl, uintl,
                          char, uchar, short, ushort>
     TestTypes;
-TYPED_TEST_CASE(Where, TestTypes);
+TYPED_TEST_SUITE(Where, TestTypes);
 
 template<typename T>
 void whereTest(string pTestFile, bool isSubRef = false,
@@ -45,8 +45,8 @@ void whereTest(string pTestFile, bool isSubRef = false,
 
     vector<dim4> numDims;
 
-    vector<vector<int> > data;
-    vector<vector<int> > tests;
+    vector<vector<int>> data;
+    vector<vector<int>> tests;
     readTests<int, int, int>(pTestFile, numDims, data, tests);
     dim4 dims = numDims[0];
 
@@ -99,8 +99,8 @@ TYPED_TEST(Where, CPP) {
 
     vector<dim4> numDims;
 
-    vector<vector<int> > data;
-    vector<vector<int> > tests;
+    vector<vector<int>> data;
+    vector<vector<int>> tests;
     readTests<int, int, int>(string(TEST_DIR "/where/where.test"), numDims,
                              data, tests);
     dim4 dims = numDims[0];

@@ -16,8 +16,8 @@ void magmablas_swapdblk(magma_int_t n, magma_int_t nb, cl_mem dA,
                         magma_int_t inca, cl_mem dB, magma_int_t dB_offset,
                         magma_int_t lddb, magma_int_t incb,
                         magma_queue_t queue) {
-    opencl::kernel::swapdblk<T>(n, nb, dA, dA_offset, ldda, inca, dB, dB_offset,
-                                lddb, incb, queue);
+    arrayfire::opencl::kernel::swapdblk<T>(n, nb, dA, dA_offset, ldda, inca, dB,
+                                           dB_offset, lddb, incb, queue);
 }
 
 #define INSTANTIATE(T)                                                        \

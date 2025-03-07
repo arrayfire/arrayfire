@@ -19,6 +19,7 @@
 #include <complex>
 #include <vector>
 
+namespace arrayfire {
 namespace cpu {
 
 using af::dim4;
@@ -126,3 +127,4 @@ INSTANTIATE(intl)
 INSTANTIATE(uintl)
 
 }  // namespace cpu
+}  // namespace arrayfire

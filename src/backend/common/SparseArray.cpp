@@ -27,6 +27,7 @@ using detail::getActiveDeviceId;
 using detail::scalar;
 using detail::writeDeviceDataArray;
 
+namespace arrayfire {
 namespace common {
 ////////////////////////////////////////////////////////////////////////////
 // Sparse Array Base Implementations
@@ -170,6 +171,13 @@ void destroySparseArray(SparseArray<T> *sparse) {
     delete sparse;
 }
 
+template<typename T>
+void checkAndMigrate(const SparseArray<T> &arr) {
+    checkAndMigrate(const_cast<Array<int> &>(arr.getColIdx()));
+    checkAndMigrate(const_cast<Array<int> &>(arr.getRowIdx()));
+    checkAndMigrate(const_cast<Array<T> &>(arr.getValues()));
+}
+
 ////////////////////////////////////////////////////////////////////////////
 // Sparse Array Class Implementations
 ////////////////////////////////////////////////////////////////////////////
@@ -249,7 +257,8 @@ SparseArray<T>::SparseArray(const SparseArray<T> &other, bool copy)
     template SparseArray<T>::SparseArray(                                    \
         const af::dim4 &_dims, const Array<T> &_values,                      \
         const Array<int> &_rowIdx, const Array<int> &_colIdx,                \
-        const af::storage _storage, bool _copy)
+        const af::storage _storage, bool _copy);                             \
+    template void checkAndMigrate(const SparseArray<T> &arr)
 
 // Instantiate only floating types
 INSTANTIATE(float);
@@ -260,3 +269,4 @@ INSTANTIATE(cdouble);
 #undef INSTANTIATE
 
 }  // namespace common
+}  // namespace arrayfire

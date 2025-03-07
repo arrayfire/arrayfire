@@ -45,6 +45,7 @@ template<typename T>
 class Approx2 : public ::testing::Test {
    public:
     virtual void SetUp() {
+        SUPPORTED_TYPE_CHECK(T);
         subMat0.push_back(af_make_seq(0, 4, 1));
         subMat0.push_back(af_make_seq(2, 6, 1));
         subMat0.push_back(af_make_seq(0, 2, 1));
@@ -56,7 +57,7 @@ class Approx2 : public ::testing::Test {
 typedef ::testing::Types<float, double, cfloat, cdouble> TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Approx2, TestTypes);
+TYPED_TEST_SUITE(Approx2, TestTypes);
 
 template<typename T>
 void approx2Test(string pTestFile, const unsigned resultIdx,
@@ -65,8 +66,8 @@ void approx2Test(string pTestFile, const unsigned resultIdx,
     SUPPORTED_TYPE_CHECK(T);
     typedef typename dtype_traits<T>::base_type BT;
     vector<dim4> numDims;
-    vector<vector<BT> > in;
-    vector<vector<T> > tests;
+    vector<vector<BT>> in;
+    vector<vector<T>> tests;
     readTests<BT, T, float>(pTestFile, numDims, in, tests);
 
     dim4 idims = numDims[0];
@@ -152,8 +153,8 @@ void approx2ArgsTest(string pTestFile, const af_interp_type method,
     SUPPORTED_TYPE_CHECK(T);
     typedef typename dtype_traits<T>::base_type BT;
     vector<dim4> numDims;
-    vector<vector<BT> > in;
-    vector<vector<T> > tests;
+    vector<vector<BT>> in;
+    vector<vector<T>> tests;
     readTests<BT, T, float>(pTestFile, numDims, in, tests);
 
     dim4 idims = numDims[0];
@@ -208,8 +209,8 @@ void approx2ArgsTestPrecision(string pTestFile, const unsigned resultIdx,
     UNUSED(resultIdx);
     SUPPORTED_TYPE_CHECK(T);
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
     readTests<T, T, float>(pTestFile, numDims, in, tests);
 
     dim4 idims = numDims[0];
@@ -264,8 +265,8 @@ TEST(Approx2, CPP) {
     const unsigned resultIdx = 1;
 #define BT dtype_traits<float>::base_type
     vector<dim4> numDims;
-    vector<vector<BT> > in;
-    vector<vector<float> > tests;
+    vector<vector<BT>> in;
+    vector<vector<float>> tests;
     readTests<BT, float, float>(string(TEST_DIR "/approx/approx2.test"),
                                 numDims, in, tests);
 
@@ -301,8 +302,8 @@ TEST(Approx2Cubic, CPP) {
     const unsigned resultIdx = 0;
 #define BT dtype_traits<float>::base_type
     vector<dim4> numDims;
-    vector<vector<BT> > in;
-    vector<vector<float> > tests;
+    vector<vector<BT>> in;
+    vector<vector<float>> tests;
     readTests<BT, float, float>(string(TEST_DIR "/approx/approx2_cubic.test"),
                                 numDims, in, tests);
 
@@ -862,7 +863,7 @@ class Approx2V2 : public ::testing::Test {
     }
 };
 
-TYPED_TEST_CASE(Approx2V2, TestTypes);
+TYPED_TEST_SUITE(Approx2V2, TestTypes);
 
 class SimpleTestData {
    public:
@@ -903,6 +904,7 @@ template<typename T>
 class Approx2V2Simple : public Approx2V2<T> {
    protected:
     void SetUp() {
+        SUPPORTED_TYPE_CHECK(T);
         SimpleTestData data;
         this->setTestData(&data.h_gold.front(), data.gold_dims,
                           &data.h_in.front(), data.in_dims,
@@ -911,7 +913,7 @@ class Approx2V2Simple : public Approx2V2<T> {
     }
 };
 
-TYPED_TEST_CASE(Approx2V2Simple, TestTypes);
+TYPED_TEST_SUITE(Approx2V2Simple, TestTypes);
 
 TYPED_TEST(Approx2V2Simple, UseNullOutputArray) {
     this->testSpclOutArray(NULL_ARRAY);

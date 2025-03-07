@@ -13,16 +13,18 @@
 #include <common/half.hpp>
 #include <kernel/memcopy.hpp>
 
-using common::half;
+using arrayfire::common::half;
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename inType, typename outType>
 Array<outType> reshape(const Array<inType> &in, const dim4 &outDims,
                        outType defaultValue, double scale) {
     Array<outType> out = createEmptyArray<outType>(outDims);
-    kernel::copy<inType, outType>(out, in, in.ndims(), defaultValue, scale,
-                                  in.dims() == outDims);
+    if (out.elements() > 0) {
+        kernel::copy<inType, outType>(out, in, in.ndims(), defaultValue, scale);
+    }
     return out;
 }
 
@@ -76,3 +78,4 @@ INSTANTIATE_COMPLEX(cfloat)
 INSTANTIATE_COMPLEX(cdouble)
 
 }  // namespace opencl
+}  // namespace arrayfire

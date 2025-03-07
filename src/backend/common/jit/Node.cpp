@@ -7,7 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <build_version.hpp>
 #include <common/defines.hpp>
+#include <common/deterministicHash.hpp>
 #include <common/jit/Node.hpp>
 #include <common/util.hpp>
 
@@ -17,6 +19,7 @@
 
 using std::vector;
 
+namespace arrayfire {
 namespace common {
 
 int Node::getNodesMap(Node_map_t &node_map, vector<Node *> &full_nodes,
@@ -29,7 +32,7 @@ int Node::getNodesMap(Node_map_t &node_map, vector<Node *> &full_nodes,
             ids.child_ids[i] =
                 m_children[i]->getNodesMap(node_map, full_nodes, full_ids);
         }
-        ids.id         = node_map.size();
+        ids.id         = static_cast<int>(node_map.size());
         node_map[this] = ids.id;
         full_nodes.push_back(this);
         full_ids.push_back(ids);
@@ -39,15 +42,27 @@ int Node::getNodesMap(Node_map_t &node_map, vector<Node *> &full_nodes,
 }
 
 std::string getFuncName(const vector<Node *> &output_nodes,
+                        const vector<int> &output_ids,
                         const vector<Node *> &full_nodes,
-                        const vector<Node_ids> &full_ids, bool is_linear) {
+                        const vector<Node_ids> &full_ids, const bool is_linear,
+                        const bool loop0, const bool loop1, const bool loop2,
+                        const bool loop3) {
     std::string funcName;
     funcName.reserve(512);
     funcName = (is_linear ? 'L' : 'G');
+    funcName += (loop0 ? '0' : 'X');
+    funcName += (loop1 ? '1' : 'X');
+    funcName += (loop2 ? '2' : 'X');
+    funcName += (loop3 ? '3' : 'X');
 
     for (const auto &node : output_nodes) {
         funcName += '_';
         funcName += node->getNameStr();
+    }
+
+    for (const int id : output_ids) {
+        funcName += '-';
+        funcName += std::to_string(id);
     }
 
     for (int i = 0; i < static_cast<int>(full_nodes.size()); i++) {
@@ -65,13 +80,20 @@ auto isBuffer(const Node &ptr) -> bool { return ptr.isBuffer(); }
 
 auto isScalar(const Node &ptr) -> bool { return ptr.isScalar(); }
 
-/// Returns true if the buffer is linear
 bool Node::isLinear(const dim_t dims[4]) const { return true; }
 
-}  // namespace common
+/// This function returns true if the \p node is a Shift node or a Buffer node
+auto isBufferOrShift(const Node_ptr &node) -> bool {
+    return node->getNodeType() == kNodeType::Buffer ||
+           node->getNodeType() == kNodeType::Shift;
+}
 
-size_t std::hash<common::Node *>::operator()(
-    common::Node *const node) const noexcept {
-    common::Node *const node_ptr = static_cast<common::Node *const>(node);
+}  // namespace common
+}  // namespace arrayfire
+
+size_t std::hash<arrayfire::common::Node *>::operator()(
+    arrayfire::common::Node *const node) const noexcept {
+    arrayfire::common::Node *const node_ptr =
+        static_cast<arrayfire::common::Node *const>(node);
     return node_ptr->getHash();
 }

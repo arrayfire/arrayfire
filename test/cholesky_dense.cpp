@@ -34,7 +34,7 @@ using std::vector;
 template<typename T>
 void choleskyTester(const int n, double eps, bool is_upper) {
     SUPPORTED_TYPE_CHECK(T);
-    if (noLAPACKTests()) return;
+    LAPACK_ENABLED_CHECK();
 
     dtype ty = (dtype)dtype_traits<T>::af_type;
 
@@ -78,7 +78,7 @@ template<typename T>
 class Cholesky : public ::testing::Test {};
 
 typedef ::testing::Types<float, cfloat, double, cdouble> TestTypes;
-TYPED_TEST_CASE(Cholesky, TestTypes);
+TYPED_TEST_SUITE(Cholesky, TestTypes);
 
 template<typename T>
 double eps();

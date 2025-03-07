@@ -29,6 +29,7 @@ using spdlog::get;
 using spdlog::logger;
 using spdlog::stdout_logger_mt;
 
+namespace arrayfire {
 namespace common {
 
 shared_ptr<logger> loggerFactory(const string& name) {
@@ -62,3 +63,4 @@ string bytesToString(size_t bytes) {
     return fmt::format("{:.3g} {}", fbytes, units[count]);
 }
 }  // namespace common
+}  // namespace arrayfire

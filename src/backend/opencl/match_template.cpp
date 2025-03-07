@@ -11,6 +11,7 @@
 
 #include <kernel/match_template.hpp>
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename inType, typename outType>
@@ -41,3 +42,4 @@ INSTANTIATE(short, float)
 INSTANTIATE(ushort, float)
 
 }  // namespace opencl
+}  // namespace arrayfire

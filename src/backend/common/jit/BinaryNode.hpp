@@ -13,6 +13,7 @@
 
 #include <cmath>
 
+namespace arrayfire {
 namespace common {
 class BinaryNode : public NaryNode {
    public:
@@ -28,3 +29,4 @@ detail::Array<To> createBinaryNode(const detail::Array<Ti> &lhs,
                                    const af::dim4 &odims);
 
 }  // namespace common
+}  // namespace arrayfire

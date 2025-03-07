@@ -10,9 +10,11 @@
 #include <Array.hpp>
 #include <common/graphics_common.hpp>
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
 void copy_plot(const Array<T> &P, fg_plot plot);
 
-}
+}  // namespace cpu
+}  // namespace arrayfire

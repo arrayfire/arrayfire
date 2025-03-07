@@ -9,11 +9,13 @@
 
 #pragma once
 
+namespace arrayfire {
 namespace cuda {
 
 typedef struct {
     int offs[4];
     int strds[4];
+    int steps[4];
     bool isSeq[4];
     unsigned int* ptr[4];
 } AssignKernelParam;
@@ -21,3 +23,4 @@ typedef struct {
 using IndexKernelParam = AssignKernelParam;
 
 }  // namespace cuda
+}  // namespace arrayfire

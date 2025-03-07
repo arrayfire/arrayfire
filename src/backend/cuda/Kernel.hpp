@@ -14,10 +14,11 @@
 
 #include <EnqueueArgs.hpp>
 #include <backend.hpp>
-#include <cu_check_macro.hpp>
+#include <err_cuda.hpp>
 #include <cstdlib>
 #include <string>
 
+namespace arrayfire {
 namespace cuda {
 
 struct Enqueuer {
@@ -29,7 +30,7 @@ struct Enqueuer {
     template<typename... Args>
     void operator()(std::string name, void* ker, const EnqueueArgs& qArgs,
                     Args... args) {
-        void* params[] = {reinterpret_cast<void*>(&args)...};
+        void* params[] = {static_cast<void*>(&args)...};
         for (auto& event : qArgs.mEvents) {
             CU_CHECK(cuStreamWaitEvent(qArgs.mStream, event, 0));
         }
@@ -72,3 +73,4 @@ class Kernel
 };
 
 }  // namespace cuda
+}  // namespace arrayfire

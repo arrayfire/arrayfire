@@ -26,15 +26,17 @@
 #include <dlfcn.h>
 #endif
 
-using common::getErrorMessage;
-using common::getFunctionPointer;
-using common::loadLibrary;
-using common::loggerFactory;
-
+using arrayfire::common::getEnvVar;
+using arrayfire::common::getErrorMessage;
+using arrayfire::common::getFunctionPointer;
+using arrayfire::common::loadLibrary;
+using arrayfire::common::loggerFactory;
+using arrayfire::common::unloadLibrary;
 using std::extent;
 using std::function;
 using std::string;
 
+namespace arrayfire {
 namespace unified {
 
 #if defined(OS_WIN)
@@ -68,6 +70,9 @@ string getBkndLibName(const af_backend backend) {
         case AF_BACKEND_CPU:
             ret = string(LIB_AF_BKND_PREFIX) + "afcpu" + LIB_AF_BKND_SUFFIX;
             break;
+        case AF_BACKEND_ONEAPI:
+            ret = string(LIB_AF_BKND_PREFIX) + "afoneapi" + LIB_AF_BKND_SUFFIX;
+            break;
         default: assert(1 != 1 && "Invalid backend");
     }
     return ret;
@@ -78,6 +83,7 @@ string getBackendDirectoryName(const af_backend backend) {
         case AF_BACKEND_CUDA: ret = "cuda"; break;
         case AF_BACKEND_OPENCL: ret = "opencl"; break;
         case AF_BACKEND_CPU: ret = "cpu"; break;
+        case AF_BACKEND_ONEAPI: ret = "oneapi"; break;
         default: assert(1 != 1 && "Invalid backend");
     }
     return ret;
@@ -185,18 +191,17 @@ AFSymbolManager::AFSymbolManager()
     , backendsAvailable(0)
     , logger(loggerFactory("unified")) {
     // In order of priority.
-    static const af_backend order[] = {AF_BACKEND_CUDA, AF_BACKEND_OPENCL,
-                                       AF_BACKEND_CPU};
-
-    LibHandle handle    = nullptr;
-    af::Backend backend = AF_BACKEND_DEFAULT;
+    static const af_backend order[] = {AF_BACKEND_CUDA, AF_BACKEND_ONEAPI,
+                                       AF_BACKEND_OPENCL, AF_BACKEND_CPU};
+    LibHandle handle                = nullptr;
+    af::Backend backend             = AF_BACKEND_DEFAULT;
     // Decremeting loop. The last successful backend loaded will be the most
     // prefered one.
     for (int i = NUM_BACKENDS - 1; i >= 0; i--) {
-        int backend_index          = order[i] >> 1U;  // 2 4 1 -> 1 2 0
-        bkndHandles[backend_index] = openDynLibrary(order[i]);
-        if (bkndHandles[backend_index]) {
-            handle  = bkndHandles[backend_index];
+        int bknd_idx          = backend_index(order[i]);
+        bkndHandles[bknd_idx] = openDynLibrary(order[i]);
+        if (bkndHandles[bknd_idx]) {
+            handle  = bkndHandles[bknd_idx];
             backend = order[i];
             numBackends++;
             backendsAvailable += order[i];
@@ -217,7 +222,7 @@ AFSymbolManager::AFSymbolManager()
 
 AFSymbolManager::~AFSymbolManager() {
     for (auto& bkndHandle : bkndHandles) {
-        if (bkndHandle) { common::unloadLibrary(bkndHandle); }
+        if (bkndHandle) { unloadLibrary(bkndHandle); }
     }
 }
 
@@ -236,7 +241,7 @@ af_err setBackend(af::Backend bknd) {
             UNIFIED_ERROR_LOAD_LIB();
         }
     }
-    int idx = bknd >> 1U;  // Convert 1, 2, 4 -> 0, 1, 2
+    int idx = backend_index(bknd);
     if (instance.getHandle(idx)) {
         getActiveHandle()  = instance.getHandle(idx);
         getActiveBackend() = bknd;
@@ -247,3 +252,4 @@ af_err setBackend(af::Backend bknd) {
 }
 
 }  // namespace unified
+}  // namespace arrayfire

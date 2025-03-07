@@ -9,6 +9,7 @@
 #pragma once
 #include <utility>
 
+namespace arrayfire {
 namespace common {
 
 template<typename NativeEventPolicy>
@@ -36,7 +37,8 @@ class EventBase {
 
     /// \brief Event destructor. Calls the destroy event call on the native API
     ~EventBase() noexcept {
-        if (e_) NativeEventPolicy::destroyEvent(&e_);
+        // if (e_)
+        NativeEventPolicy::destroyEvent(&e_);
     }
 
     /// \brief Creates the event object by calling the native create API
@@ -80,3 +82,4 @@ class EventBase {
 };
 
 }  // namespace common
+}  // namespace arrayfire

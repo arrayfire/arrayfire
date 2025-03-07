@@ -141,7 +141,7 @@ typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned,
                          unsigned char, intl, uintl, short, ushort,
                          half_float::half>
     AllTypes;
-TYPED_TEST_CASE(Indexing1D, AllTypes);
+TYPED_TEST_SUITE(Indexing1D, AllTypes);
 
 TYPED_TEST(Indexing1D, Continious) {
     DimCheck<TypeParam>(this->continuous_seqs);
@@ -300,39 +300,39 @@ class Indexing2D : public ::testing::Test {
             make_vec(af_make_seq(3, 6, 4), af_make_seq(1, 9, 4)));
     }
 
-    vector<vector<af_seq> > column_continuous_seq;
-    vector<vector<af_seq> > column_continuous_reverse_seq;
-    vector<vector<af_seq> > column_strided_seq;
-    vector<vector<af_seq> > column_strided_reverse_seq;
+    vector<vector<af_seq>> column_continuous_seq;
+    vector<vector<af_seq>> column_continuous_reverse_seq;
+    vector<vector<af_seq>> column_strided_seq;
+    vector<vector<af_seq>> column_strided_reverse_seq;
 
-    vector<vector<af_seq> > row_continuous_seq;
-    vector<vector<af_seq> > row_continuous_reverse_seq;
-    vector<vector<af_seq> > row_strided_seq;
-    vector<vector<af_seq> > row_strided_reverse_seq;
+    vector<vector<af_seq>> row_continuous_seq;
+    vector<vector<af_seq>> row_continuous_reverse_seq;
+    vector<vector<af_seq>> row_strided_seq;
+    vector<vector<af_seq>> row_strided_reverse_seq;
 
-    vector<vector<af_seq> > continuous_continuous_seq;
-    vector<vector<af_seq> > continuous_strided_seq;
-    vector<vector<af_seq> > continuous_reverse_seq;
-    vector<vector<af_seq> > continuous_strided_reverse_seq;
+    vector<vector<af_seq>> continuous_continuous_seq;
+    vector<vector<af_seq>> continuous_strided_seq;
+    vector<vector<af_seq>> continuous_reverse_seq;
+    vector<vector<af_seq>> continuous_strided_reverse_seq;
 
-    vector<vector<af_seq> > reverse_continuous_seq;
-    vector<vector<af_seq> > reverse_reverse_seq;
-    vector<vector<af_seq> > reverse_strided_seq;
-    vector<vector<af_seq> > reverse_strided_reverse_seq;
+    vector<vector<af_seq>> reverse_continuous_seq;
+    vector<vector<af_seq>> reverse_reverse_seq;
+    vector<vector<af_seq>> reverse_strided_seq;
+    vector<vector<af_seq>> reverse_strided_reverse_seq;
 
-    vector<vector<af_seq> > strided_continuous_seq;
-    vector<vector<af_seq> > strided_strided_seq;
+    vector<vector<af_seq>> strided_continuous_seq;
+    vector<vector<af_seq>> strided_strided_seq;
 };
 
 template<typename T>
-void DimCheck2D(const vector<vector<af_seq> > &seqs, string TestFile,
+void DimCheck2D(const vector<vector<af_seq>> &seqs, string TestFile,
                 size_t NDims) {
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
 
-    vector<vector<T> > hData;
-    vector<vector<T> > tests;
+    vector<vector<T>> hData;
+    vector<vector<T>> tests;
     readTests<T, T, int>(TestFile, numDims, hData, tests);
     dim4 dimensions = numDims[0];
 
@@ -373,7 +373,7 @@ void DimCheck2D(const vector<vector<af_seq> > &seqs, string TestFile,
     }
 }
 
-TYPED_TEST_CASE(Indexing2D, AllTypes);
+TYPED_TEST_SUITE(Indexing2D, AllTypes);
 
 TYPED_TEST(Indexing2D, ColumnContinious) {
     DimCheck2D<TypeParam>(this->column_continuous_seq,
@@ -528,18 +528,18 @@ class Indexing : public ::testing::Test {
                       af_make_seq(0, 0, 1), af_make_seq(0, 0, 1)));
     }
 
-    vector<vector<af_seq> > continuous3d_to_3d;
-    vector<vector<af_seq> > continuous3d_to_2d;
-    vector<vector<af_seq> > continuous3d_to_1d;
+    vector<vector<af_seq>> continuous3d_to_3d;
+    vector<vector<af_seq>> continuous3d_to_2d;
+    vector<vector<af_seq>> continuous3d_to_1d;
 
-    vector<vector<af_seq> > continuous4d_to_4d;
-    vector<vector<af_seq> > continuous4d_to_3d;
-    vector<vector<af_seq> > continuous4d_to_2d;
-    vector<vector<af_seq> > continuous4d_to_1d;
+    vector<vector<af_seq>> continuous4d_to_4d;
+    vector<vector<af_seq>> continuous4d_to_3d;
+    vector<vector<af_seq>> continuous4d_to_2d;
+    vector<vector<af_seq>> continuous4d_to_1d;
 };
 
 template<typename T>
-void DimCheckND(const vector<vector<af_seq> > &seqs, string TestFile,
+void DimCheckND(const vector<vector<af_seq>> &seqs, string TestFile,
                 size_t NDims) {
     SUPPORTED_TYPE_CHECK(T);
 
@@ -548,7 +548,7 @@ void DimCheckND(const vector<vector<af_seq> > &seqs, string TestFile,
     DimCheck2D<T>(seqs, TestFile, NDims);
 }
 
-TYPED_TEST_CASE(Indexing, AllTypes);
+TYPED_TEST_SUITE(Indexing, AllTypes);
 
 TYPED_TEST(Indexing, 4D_to_4D) {
     DimCheckND<TypeParam>(this->continuous4d_to_4d,
@@ -586,12 +586,13 @@ TYPED_TEST(Indexing, 3D_to_1D) {
 }
 
 TEST(Index, Docs_Util_C_API) {
+    // clang-format off
+    ASSERT_EQ(0, ([]() -> int {
     //![ex_index_util_0]
     af_index_t *indexers = 0;
-    af_err err           = af_create_indexers(
-        &indexers);  // Memory is allocated on heap by the callee
-    // by default all the indexers span all the elements along the given
-    // dimension
+    af_err err = af_create_indexers(&indexers); // Memory is allocated on heap by the callee
+                                                // by default all the indexers span all the elements along
+                                                // the given dimension
 
     // Create array
     af_array a;
@@ -613,12 +614,11 @@ TEST(Index, Docs_Util_C_API) {
 
     // index with indexers
     af_array out;
-    af_index_gen(&out, a, 2,
-                 indexers);  // number of indexers should be two since
-                             // we have set only second af_index_t
+    err = af_index_gen(&out, a, 2, indexers);  // number of indexers should be two since
+                                               // we have set only second af_index_t
     if (err != AF_SUCCESS) {
         printf("Failed in af_index_gen: %d\n", err);
-        throw;
+        return 1;
     }
     af_print_array(out);
     af_release_array(out);
@@ -630,7 +630,7 @@ TEST(Index, Docs_Util_C_API) {
     err = af_index_gen(&out, a, 2, indexers);
     if (err != AF_SUCCESS) {
         printf("Failed in af_index_gen: %d\n", err);
-        throw;
+        return 1;
     }
     af_print_array(out);
 
@@ -638,7 +638,10 @@ TEST(Index, Docs_Util_C_API) {
     af_release_array(a);
     af_release_array(idx);
     af_release_array(out);
+    return 0;
     //![ex_index_util_0]
+    }()));
+    // clang-format on
 }
 
 //////////////////////////////// CPP ////////////////////////////////
@@ -658,7 +661,7 @@ using af::span;
 using af::where;
 
 TEST(Indexing2D, ColumnContiniousCPP) {
-    vector<vector<af_seq> > seqs;
+    vector<vector<af_seq>> seqs;
 
     seqs.push_back(make_vec(af_span, af_make_seq(0, 6, 1)));
     // seqs.push_back(make_vec(span, af_make_seq(  4,  9,  1)));
@@ -666,8 +669,8 @@ TEST(Indexing2D, ColumnContiniousCPP) {
 
     vector<dim4> numDims;
 
-    vector<vector<float> > hData;
-    vector<vector<float> > tests;
+    vector<vector<float>> hData;
+    vector<vector<float>> tests;
     readTests<float, float, int>(TEST_DIR "/index/ColumnContinious.test",
                                  numDims, hData, tests);
     dim4 dimensions = numDims[0];
@@ -710,15 +713,15 @@ class lookup : public ::testing::Test {
 typedef ::testing::Types<float, double, int, unsigned, unsigned char, short,
                          ushort, intl, uintl, half_float::half>
     ArrIdxTestTypes;
-TYPED_TEST_CASE(lookup, ArrIdxTestTypes);
+TYPED_TEST_SUITE(lookup, ArrIdxTestTypes);
 
 template<typename T>
 void arrayIndexTest(string pTestFile, int dim) {
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
 
     readTests<T, T, int>(pTestFile, numDims, in, tests);
 
@@ -767,8 +770,8 @@ TYPED_TEST(lookup, Dim3) {
 
 TEST(lookup, CPP) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTests<float, float, int>(string(TEST_DIR "/arrayindex/dim0.test"),
                                  numDims, in, tests);
@@ -978,8 +981,8 @@ TEST(SeqIndex, CPP_SCOPE_ARR) {
 
 TEST(SeqIndex, CPPLarge) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTests<float, float, int>(string(TEST_DIR "/arrayindex/dim0Large.test"),
                                  numDims, in, tests);
@@ -1249,7 +1252,7 @@ class IndexedMembers : public ::testing::Test {
     virtual void SetUp() {}
 };
 
-TYPED_TEST_CASE(IndexedMembers, AllTypes);
+TYPED_TEST_SUITE(IndexedMembers, AllTypes);
 
 TYPED_TEST(IndexedMembers, MemFuncs) {
     SUPPORTED_TYPE_CHECK(TypeParam);

@@ -10,8 +10,9 @@
 #include <common/half.hpp>
 #include "reduce_impl.hpp"
 
-using common::half;
+using arrayfire::common::half;
 
+namespace arrayfire {
 namespace opencl {
 // alltrue
 INSTANTIATE(af_and_t, float, char)
@@ -28,3 +29,4 @@ INSTANTIATE(af_and_t, short, char)
 INSTANTIATE(af_and_t, ushort, char)
 INSTANTIATE(af_and_t, half, char)
 }  // namespace opencl
+}  // namespace arrayfire

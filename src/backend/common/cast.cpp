@@ -10,7 +10,7 @@
 #include <common/cast.hpp>
 #include <handle.hpp>
 
-using common::half;
+using arrayfire::common::half;
 using detail::cdouble;
 using detail::cfloat;
 using detail::intl;
@@ -18,6 +18,9 @@ using detail::uchar;
 using detail::uint;
 using detail::uintl;
 using detail::ushort;
+
+namespace arrayfire {
+namespace common {
 
 template<typename To>
 detail::Array<To> castArray(const af_array &in) {
@@ -60,3 +63,6 @@ template detail::Array<uintl> castArray(const af_array &in);
 template detail::Array<short> castArray(const af_array &in);
 template detail::Array<ushort> castArray(const af_array &in);
 template detail::Array<half> castArray(const af_array &in);
+
+}  // namespace common
+}  // namespace arrayfire

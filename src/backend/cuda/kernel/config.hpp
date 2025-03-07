@@ -9,6 +9,7 @@
 
 #pragma once
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -18,3 +19,4 @@ static const uint THREADS_Y         = THREADS_PER_BLOCK / THREADS_X;
 static const uint REPEAT            = 32;
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

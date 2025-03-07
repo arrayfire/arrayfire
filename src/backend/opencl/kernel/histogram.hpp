@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -29,7 +30,7 @@ void histogram(Param out, const Param in, int nbins, float minval, float maxval,
     constexpr int THREADS_X = 256;
     constexpr int THRD_LOAD = 16;
 
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 2> targs = {
         TemplateTypename<T>(),
         TemplateArg(isLinear),
     };
@@ -42,7 +43,7 @@ void histogram(Param out, const Param in, int nbins, float minval, float maxval,
     if (isLinear) { options.emplace_back(DefineKey(IS_LINEAR)); }
 
     auto histogram =
-        common::getKernel("histogram", {histogram_cl_src}, targs, options);
+        common::getKernel("histogram", {{histogram_cl_src}}, targs, options);
 
     int nElems  = in.info.dims[0] * in.info.dims[1];
     int blk_x   = divup(nElems, THRD_LOAD * THREADS_X);
@@ -58,3 +59,4 @@ void histogram(Param out, const Param in, int nbins, float minval, float maxval,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

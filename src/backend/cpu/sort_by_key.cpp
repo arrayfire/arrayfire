@@ -17,6 +17,7 @@
 #include <reorder.hpp>
 #include <sort_by_key.hpp>
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename Tk, typename Tv>
@@ -88,3 +89,4 @@ INSTANTIATE1(intl)
 INSTANTIATE1(uintl)
 
 }  // namespace cpu
+}  // namespace arrayfire

@@ -14,6 +14,7 @@
 #include <queue.hpp>
 #include <af/dim4.hpp>
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
@@ -42,3 +43,4 @@ INSTANTIATE(double)
 INSTANTIATE(float)
 
 }  // namespace cpu
+}  // namespace arrayfire

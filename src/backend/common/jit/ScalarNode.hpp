@@ -16,6 +16,7 @@
 #include <types.hpp>
 #include <iomanip>
 
+namespace arrayfire {
 namespace common {
 
 template<typename T>
@@ -25,7 +26,8 @@ class ScalarNode : public common::Node {
 
    public:
     ScalarNode(T val)
-        : Node(static_cast<af::dtype>(af::dtype_traits<T>::af_type), 0, {})
+        : Node(static_cast<af::dtype>(af::dtype_traits<T>::af_type), 0, {},
+               kNodeType::Scalar)
         , m_val(val) {
         static_assert(std::is_nothrow_move_assignable<ScalarNode>::value,
                       "ScalarNode is not move assignable");
@@ -71,10 +73,11 @@ class ScalarNode : public common::Node {
     }
 
     int setArgs(int start_id, bool is_linear,
-                std::function<void(int id, const void* ptr, size_t arg_size)>
+                std::function<void(int id, const void* ptr, size_t arg_size,
+                                   bool is_buffer)>
                     setArg) const final {
         UNUSED(is_linear);
-        setArg(start_id, static_cast<const void*>(&m_val), sizeof(T));
+        setArg(start_id, static_cast<const void*>(&m_val), sizeof(T), false);
         return start_id + 1;
     }
 
@@ -84,9 +87,6 @@ class ScalarNode : public common::Node {
                   << ";\n";
     }
 
-    // Returns true if this node is a Buffer
-    virtual bool isScalar() const { return false; }
-
     std::string getNameStr() const final { return detail::shortname<T>(false); }
 
     // Return the info for the params and the size of the buffers
@@ -94,3 +94,4 @@ class ScalarNode : public common::Node {
 };
 
 }  // namespace common
+}  // namespace arrayfire

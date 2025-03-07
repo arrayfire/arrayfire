@@ -15,12 +15,16 @@
 #include <surface.hpp>
 
 using af::dim4;
+using arrayfire::common::ForgeManager;
+using arrayfire::common::ForgeModule;
+using arrayfire::common::forgePlugin;
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
 void copy_surface(const Array<T> &P, fg_surface surface) {
-    auto stream = cuda::getActiveStream();
+    auto stream = getActiveStream();
     if (DeviceManager::checkGraphicsInteropCapability()) {
         const T *d_P = P.get();
 
@@ -38,7 +42,7 @@ void copy_surface(const Array<T> &P, fg_surface surface) {
 
         POST_LAUNCH_CHECK();
     } else {
-        ForgeModule &_ = graphics::forgePlugin();
+        ForgeModule &_ = forgePlugin();
         unsigned bytes = 0, buffer = 0;
         FG_CHECK(_.fg_get_surface_vertex_buffer(&buffer, surface));
         FG_CHECK(_.fg_get_surface_vertex_buffer_size(&bytes, surface));
@@ -70,3 +74,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(uchar)
 
 }  // namespace cuda
+}  // namespace arrayfire

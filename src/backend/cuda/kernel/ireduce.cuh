@@ -13,6 +13,7 @@
 #include <common/Binary.hpp>
 #include <minmax_op.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T, af_op_t op, uint dim, bool is_first, uint DIMY>
@@ -176,7 +177,7 @@ __global__ static void ireduceFirst(Param<T> out, uint *olptr, CParam<T> in,
     const uint *rlenptr   = (rlen.ptr) ? rlen.ptr + wid * rlen.strides[3] +
                                            zid * rlen.strides[2] +
                                            yid * rlen.strides[1]
-                                     : nullptr;
+                                       : nullptr;
 
     iptr += wid * in.strides[3] + zid * in.strides[2] + yid * in.strides[1];
     optr += wid * out.strides[3] + zid * out.strides[2] + yid * out.strides[1];
@@ -251,3 +252,4 @@ __global__ static void ireduceFirst(Param<T> out, uint *olptr, CParam<T> in,
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

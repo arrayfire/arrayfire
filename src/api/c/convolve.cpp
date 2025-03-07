@@ -13,9 +13,9 @@
 #include <common/cast.hpp>
 #include <common/err_common.hpp>
 #include <common/half.hpp>
+#include <common/tile.hpp>
 #include <fftconvolve.hpp>
 #include <handle.hpp>
-#include <tile.hpp>
 #include <af/data.h>
 #include <af/defines.h>
 #include <af/dim4.hpp>
@@ -25,8 +25,8 @@
 #include <cstdio>
 
 using af::dim4;
-using common::cast;
-using common::half;
+using arrayfire::common::cast;
+using arrayfire::common::half;
 using detail::arithOp;
 using detail::Array;
 using detail::cdouble;
@@ -54,8 +54,10 @@ inline af_array convolve2(const af_array &s, const af_array &c_f,
     const Array<accT> signal    = castArray<accT>(s);
 
     if (colFilter.isScalar() && rowFilter.isScalar()) {
-        Array<accT> colArray = detail::tile(colFilter, signal.dims());
-        Array<accT> rowArray = detail::tile(rowFilter, signal.dims());
+        Array<accT> colArray =
+            arrayfire::common::tile(colFilter, signal.dims());
+        Array<accT> rowArray =
+            arrayfire::common::tile(rowFilter, signal.dims());
 
         Array<accT> filter =
             arithOp<accT, af_mul_t>(colArray, rowArray, signal.dims());
@@ -344,13 +346,16 @@ af_err af_convolve2_nn(af_array *out, const af_array signal,
 
         const af_dtype signalType = sInfo.getType();
 
-        ARG_ASSERT(3, stride_dims > 0 && stride_dims <= 2);
-        ARG_ASSERT(5, padding_dims > 0 && padding_dims <= 2);
-        ARG_ASSERT(7, dilation_dims > 0 && dilation_dims <= 2);
-
         dim4 stride(stride_dims, strides);
         dim4 padding(padding_dims, paddings);
         dim4 dilation(dilation_dims, dilations);
+
+        size_t stride_ndims   = stride.ndims();
+        size_t padding_ndims  = padding.ndims();
+        size_t dilation_ndims = dilation.ndims();
+        ARG_ASSERT(3, stride_ndims > 0 && stride_ndims <= 2);
+        ARG_ASSERT(5, padding_ndims >= 0 && padding_ndims <= 2);
+        ARG_ASSERT(7, dilation_ndims > 0 && dilation_ndims <= 2);
 
         // assert number of features matches between signal and filter
         DIM_ASSERT(1, sDims[2] == fDims[2]);
@@ -424,13 +429,16 @@ af_err af_convolve2_gradient_nn(
 
         af_array output;
 
-        ARG_ASSERT(3, stride_dims > 0 && stride_dims <= 2);
-        ARG_ASSERT(5, padding_dims > 0 && padding_dims <= 2);
-        ARG_ASSERT(7, dilation_dims > 0 && dilation_dims <= 2);
-
         af::dim4 stride(stride_dims, strides);
         af::dim4 padding(padding_dims, paddings);
         af::dim4 dilation(dilation_dims, dilations);
+
+        size_t stride_ndims   = stride.ndims();
+        size_t padding_ndims  = padding.ndims();
+        size_t dilation_ndims = dilation.ndims();
+        ARG_ASSERT(3, stride_ndims > 0 && stride_ndims <= 2);
+        ARG_ASSERT(5, padding_ndims >= 0 && padding_ndims <= 2);
+        ARG_ASSERT(7, dilation_ndims > 0 && dilation_ndims <= 2);
 
         af_dtype type = oinfo.getType();
         switch (type) {

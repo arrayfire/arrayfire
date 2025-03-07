@@ -8,12 +8,16 @@
  ********************************************************/
 
 #pragma once
-#include <backend.hpp>
 #include <common/jit/Node.hpp>
 #include <jit/kernel_generators.hpp>
 
+#include <backend.hpp>
+
+#include <cstring>
+#include <memory>
 #include <sstream>
 
+namespace arrayfire {
 namespace common {
 
 template<typename DataType, typename ParamType>
@@ -26,9 +30,9 @@ class BufferNodeBase : public common::Node {
    public:
     ParamType m_param;
     BufferNodeBase(af::dtype type)
-        : Node(type, 0, {}), m_bytes(0), m_linear_buffer(true) {}
-
-    bool isBuffer() const final { return true; }
+        : Node(type, 0, {}, kNodeType::Buffer)
+        , m_bytes(0)
+        , m_linear_buffer(true) {}
 
     std::unique_ptr<Node> clone() final {
         return std::make_unique<BufferNodeBase>(*this);
@@ -67,10 +71,11 @@ class BufferNodeBase : public common::Node {
     }
 
     int setArgs(int start_id, bool is_linear,
-                std::function<void(int id, const void *ptr, size_t arg_size)>
+                std::function<void(int id, const void *ptr, size_t arg_size,
+                                   bool is_buffer)>
                     setArg) const override {
-        return detail::setKernelArguments(start_id, is_linear, setArg, m_data,
-                                          m_param);
+        return detail::setBufferKernelArguments(start_id, is_linear, setArg,
+                                                m_data, m_param);
     }
 
     void genOffsets(std::stringstream &kerStream, int id,
@@ -92,10 +97,10 @@ class BufferNodeBase : public common::Node {
 
     size_t getBytes() const final { return m_bytes; }
 
-    size_t getHash() const noexcept {
+    size_t getHash() const noexcept override {
         size_t out = 0;
         auto ptr   = m_data.get();
-        memcpy(&out, &ptr, std::max(sizeof(Node *), sizeof(size_t)));
+        std::memcpy(&out, &ptr, std::max(sizeof(Node *), sizeof(size_t)));
         return out;
     }
 
@@ -117,3 +122,4 @@ class BufferNodeBase : public common::Node {
 };
 
 }  // namespace common
+}  // namespace arrayfire

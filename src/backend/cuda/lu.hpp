@@ -9,6 +9,7 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace cuda {
 template<typename T>
 void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot,
@@ -19,3 +20,4 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot = true);
 
 bool isLAPACKAvailable();
 }  // namespace cuda
+}  // namespace arrayfire

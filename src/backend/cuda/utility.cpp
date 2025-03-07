@@ -11,6 +11,7 @@
 
 #include <err_cuda.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 int interpOrder(const af_interp_type p) noexcept {
@@ -31,3 +32,4 @@ int interpOrder(const af_interp_type p) noexcept {
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

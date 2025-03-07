@@ -37,8 +37,8 @@ TEST(ycbcr_rgb, InvalidArray) {
 
 TEST(ycbcr2rgb, CPP) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTestsFromFile<float, float>(
         string(TEST_DIR "/ycbcr_rgb/ycbcr2rgb.test"), numDims, in, tests);
@@ -60,8 +60,8 @@ TEST(ycbcr2rgb, CPP) {
 
 TEST(ycbcr2rgb, MaxDim) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTestsFromFile<float, float>(
         string(TEST_DIR "/ycbcr_rgb/ycbcr2rgb.test"), numDims, in, tests);
@@ -98,8 +98,8 @@ TEST(ycbcr2rgb, MaxDim) {
 
 TEST(rgb2ycbcr, CPP) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTestsFromFile<float, float>(
         string(TEST_DIR "/ycbcr_rgb/rgb2ycbcr.test"), numDims, in, tests);
@@ -121,8 +121,8 @@ TEST(rgb2ycbcr, CPP) {
 
 TEST(rgb2ycbcr, MaxDim) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTestsFromFile<float, float>(
         string(TEST_DIR "/ycbcr_rgb/rgb2ycbcr.test"), numDims, in, tests);

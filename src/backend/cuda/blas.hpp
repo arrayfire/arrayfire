@@ -9,6 +9,7 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace cuda {
 template<typename T>
 void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
@@ -36,3 +37,4 @@ void trsm(const Array<T> &lhs, Array<T> &rhs, af_mat_prop trans = AF_MAT_NONE,
           bool is_upper = false, bool is_left = true, bool is_unit = false);
 
 }  // namespace cuda
+}  // namespace arrayfire

@@ -307,3 +307,17 @@ TEST(GettingStarted, SNIPPET_getting_started_constants) {
 
     ASSERT_LE(fabs(Pi - pi_est), 0.005);
 }
+
+TEST(GettingStarted, SNIPPET_JohnTest) {
+    array a = iota(dim4(2, 3));
+    array b = sum(a);     // sum across the first axis, same as sum(a, 0)
+    array c = sum(a, 1);  // sum across the second axis
+    array d = sum(a, 2);  // sum across the third axis
+    array e = sum(a, 3);  // sum acorss the fourth axis
+    // array f = sum(a, 4); fails due to stepping out of bounds
+    af_print(a);
+    af_print(b);
+    af_print(c);
+    af_print(d);
+    af_print(e);
+}

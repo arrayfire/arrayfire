@@ -9,15 +9,14 @@
 
 #pragma once
 
+#include <common/util.hpp>
+
+#include <array>
 #include <string>
 #include <utility>
 
-#include <optypes.hpp>
-
 template<typename T>
-std::string toString(T value);
-
-std::string getOpEnumStr(af_op_t val);
+struct TemplateTypename;
 
 struct TemplateArg {
     std::string _tparam;
@@ -25,10 +24,21 @@ struct TemplateArg {
     TemplateArg(std::string str) : _tparam(std::move(str)) {}
 
     template<typename T>
-    constexpr TemplateArg(T value) noexcept : _tparam(toString(value)) {}
+    constexpr TemplateArg(TemplateTypename<T> arg) noexcept : _tparam(arg) {}
+
+    template<typename T>
+    constexpr TemplateArg(T value) noexcept
+        : _tparam(arrayfire::common::toString(value)) {}
 };
 
+template<typename... Targs>
+std::array<TemplateArg, sizeof...(Targs)> TemplateArgs(Targs &&...args) {
+    return std::array<TemplateArg, sizeof...(Targs)>{
+        std::forward<Targs>(args)...};
+}
+
 #define DefineKey(arg) " -D " #arg
-#define DefineValue(arg) " -D " #arg "=" + toString(arg)
-#define DefineKeyValue(key, arg) " -D " #key "=" + toString(arg)
-#define DefineKeyFromStr(arg) toString(" -D " + std::string(arg))
+#define DefineValue(arg) " -D " #arg "=" + arrayfire::common::toString(arg)
+#define DefineKeyValue(key, arg) \
+    " -D " #key "=" + arrayfire::common::toString(arg)
+#define DefineKeyFromStr(arg) " -D " + std::string(arg)

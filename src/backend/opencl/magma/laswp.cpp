@@ -78,7 +78,8 @@ void magmablas_laswp(magma_int_t n, cl_mem dAT, size_t dAT_offset,
     }
 
     cl::CommandQueue q(queue, true);
-    opencl::kernel::laswp<T>(n, dAT, dAT_offset, ldda, k1, k2, ipiv, inci, q);
+    arrayfire::opencl::kernel::laswp<T>(n, dAT, dAT_offset, ldda, k1, k2, ipiv,
+                                        inci, q);
 }
 
 #define INSTANTIATE(T)                                                  \

@@ -48,16 +48,6 @@ endif()
 set(CUDA_architecture_build_targets "Auto" CACHE
   STRING "The compute architectures targeted by this build. (Options: Auto;3.0;Maxwell;All;Common)")
 
-cuda_select_nvcc_arch_flags(cuda_architecture_flags ${CUDA_architecture_build_targets})
-
-string(REGEX REPLACE "-gencodearch=compute_[0-9]+,code=sm_([0-9]+)" "\\1|" cuda_build_targets ${cuda_architecture_flags})
-string(REGEX REPLACE "-gencodearch=compute_[0-9]+,code=compute_([0-9]+)" "\\1+PTX|" cuda_build_targets ${cuda_build_targets})
-string(REGEX REPLACE "([0-9]+)([0-9])\\|" "\\1.\\2 " cuda_build_targets ${cuda_build_targets})
-string(REGEX REPLACE "([0-9]+)([0-9]\\+PTX)\\|" "\\1.\\2 " cuda_build_targets ${cuda_build_targets})
-message(STATUS "CUDA_architecture_build_targets: ${CUDA_architecture_build_targets} ( ${cuda_build_targets} )")
-
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};${cuda_architecture_flags})
-
 find_cuda_helper_libs(nvrtc)
 find_cuda_helper_libs(nvrtc-builtins)
 list(APPEND nvrtc_libs ${CUDA_nvrtc_LIBRARY})
@@ -109,7 +99,12 @@ if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
     # contains GPU accelerated stedc and bdsqr. The user has to link
     # libcusolver_static.a with liblapack_static.a in order to build
     # successfully.
-    af_find_static_cuda_libs(lapack_static)
+    # Cuda Versions >= 12.0 changed lib name to libcusolver_lapack_static.a
+    if (CUDA_VERSION VERSION_GREATER_EQUAL 12.0)
+      af_find_static_cuda_libs(cusolver_lapack_static)
+    else()
+      af_find_static_cuda_libs(lapack_static)
+    endif()
 
     set(af_cuda_static_flags "${af_cuda_static_flags};-lcusolver_static")
   else()
@@ -123,26 +118,16 @@ mark_as_advanced(
     CUDA_LIBRARIES_PATH
     CUDA_architecture_build_targets)
 
-get_target_property(COMMON_INTERFACE_DIRS afcommon_interface INTERFACE_INCLUDE_DIRECTORIES)
-
-cuda_include_directories(
-  ${CMAKE_CURRENT_BINARY_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${ArrayFire_SOURCE_DIR}/include
-  ${ArrayFire_BINARY_DIR}/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/kernel
-  ${CMAKE_CURRENT_SOURCE_DIR}/jit
-  ${ArrayFire_SOURCE_DIR}/src/api/c
-  ${ArrayFire_SOURCE_DIR}/src/backend
-  ${COMMON_INTERFACE_DIRS}
-  $<TARGET_PROPERTY:af_spdlog,INTERFACE_INCLUDE_DIRECTORIES>
-  )
 if(CUDA_VERSION_MAJOR VERSION_LESS 11)
-  af_dep_check_and_populate(${cub_prefix}
-    URI https://github.com/NVIDIA/cub.git
-    REF 1.10.0
-  )
-  cuda_include_directories(${${cub_prefix}_SOURCE_DIR})
+  find_package(CUB)
+  if(NOT TARGET CUB::CUB)
+    af_dep_check_and_populate(${cub_prefix}
+      URI https://github.com/NVIDIA/cub.git
+      REF 1.10.0
+    )
+    find_package(CUB REQUIRED
+      PATHS ${${cub_prefix}_SOURCE_DIR})
+  endif()
 endif()
 
 file(GLOB jit_src "kernel/jit.cuh")
@@ -153,7 +138,7 @@ file_to_string(
     EXTENSION "hpp"
     OUTPUT_DIR "kernel_headers"
     TARGETS jit_kernel_targets
-    NAMESPACE "cuda"
+    NAMESPACE "arrayfire cuda"
     WITH_EXTENSION
     )
 
@@ -162,6 +147,8 @@ set(nvrtc_src
   ${CUDA_INCLUDE_DIRS}/cuda_fp16.hpp
   ${CUDA_TOOLKIT_ROOT_DIR}/include/cuComplex.h
   ${CUDA_TOOLKIT_ROOT_DIR}/include/math_constants.h
+  ${CUDA_TOOLKIT_ROOT_DIR}/include/vector_types.h
+  ${CUDA_TOOLKIT_ROOT_DIR}/include/vector_functions.h
 
   ${PROJECT_SOURCE_DIR}/src/api/c/optypes.hpp
   ${PROJECT_SOURCE_DIR}/include/af/defines.h
@@ -208,7 +195,6 @@ set(nvrtc_src
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/index.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/iota.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/ireduce.cuh
-  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/join.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/lookup.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/lu_split.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/match_template.cuh
@@ -247,60 +233,19 @@ file_to_string(
     EXTENSION "hpp"
     OUTPUT_DIR "nvrtc_kernel_headers"
     TARGETS nvrtc_kernel_targets
-    NAMESPACE "cuda"
+    NAMESPACE "arrayfire cuda"
     WITH_EXTENSION
     NULLTERM
     )
 
-arrayfire_get_cuda_cxx_flags(cuda_cxx_flags)
-arrayfire_get_platform_definitions(platform_flags)
-
-get_property(boost_includes TARGET Boost::boost PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
-get_property(boost_definitions TARGET Boost::boost PROPERTY INTERFACE_COMPILE_DEFINITIONS)
-
-string(REPLACE ";" ";-I" boost_includes "-I${boost_includes}")
-string(REPLACE ";" ";-D" boost_definitions "-D${boost_definitions}")
-
-set(cuda_cxx_flags "${cuda_cxx_flags};${boost_includes}")
-set(cuda_cxx_flags "${cuda_cxx_flags};${boost_definitions}")
-
-# New API of cuSparse was introduced in 10.1.168 for Linux and the older
-# 10.1.105 fix version doesn't it. Unfortunately, the new API was introduced in
-# in a fix release of CUDA - unconventionally. As CMake's FindCUDA module
-# doesn't provide patch/fix version number, we use 10.2 as the minimum
-# CUDA version to enable this new cuSparse API.
-if(CUDA_VERSION_MAJOR VERSION_GREATER 10 OR
-   (UNIX AND
-    CUDA_VERSION_MAJOR VERSION_EQUAL 10 AND CUDA_VERSION_MINOR VERSION_GREATER 1))
-  list(APPEND cxx_definitions -DAF_USE_NEW_CUSPARSE_API)
-endif()
-
-# CUDA_NO_HALF prevents the inclusion of the half class in the global namespace
-# which conflicts with the half class in ArrayFire's common namespace. prefer
-# using __half class instead for CUDA
-list(APPEND cxx_definitions -DAF_CUDA;-DCUDA_NO_HALF)
-list(APPEND cuda_cxx_flags ${cxx_definitions})
-
 include(kernel/scan_by_key/CMakeLists.txt)
 include(kernel/thrust_sort_by_key/CMakeLists.txt)
 
-# CUDA static libraries require device linking to successfully link
-# against afcuda target. Device linking requires CUDA_SEPARABLE_COMPILATION
-# to be ON. Therefore, we turn on separable compilation for a subset of
-# source files while compiling af_cuda_static_cuda_library target. Once
-# this subset is compiled, separable compilation is reset to it's original
-# value.
-if(UNIX)
-  # Static linking cuda libs require device linking, which in turn
-  # requires separable compilation.
-  set(pior_val_CUDA_SEPARABLE_COMPILATION OFF)
-  if(DEFINED CUDA_SEPARABLE_COMPILATION)
-    set(pior_val_CUDA_SEPARABLE_COMPILATION ${CUDA_SEPARABLE_COMPILATION})
-  endif()
-  set(CUDA_SEPARABLE_COMPILATION ON)
-endif()
 
-cuda_add_library(af_cuda_static_cuda_library STATIC
+add_library(afcuda
+    $<$<PLATFORM_ID:Windows>:${af_cuda_ver_res_file}>
+    ${thrust_sort_sources}
+
     blas.cu
     blas.hpp
     cudaDataType.hpp
@@ -316,74 +261,6 @@ cuda_add_library(af_cuda_static_cuda_library STATIC
     sparse_blas.hpp
     solve.cu
     solve.hpp
-
-    OPTIONS
-    ${platform_flags} ${cuda_cxx_flags} ${af_cuda_static_flags}
-    -Xcudafe --display_error_number -Xcudafe \"--diag_suppress=1427\" -DAFDLL
-)
-
-set_target_properties(af_cuda_static_cuda_library
-  PROPERTIES
-  LINKER_LANGUAGE CXX
-  FOLDER "Generated Targets"
-)
-
-if(CUDA_VERSION_MAJOR VERSION_GREATER 10 OR
-   (UNIX AND
-    CUDA_VERSION_MAJOR VERSION_EQUAL 10 AND CUDA_VERSION_MINOR VERSION_GREATER 1))
-  target_compile_definitions(af_cuda_static_cuda_library PRIVATE AF_USE_NEW_CUSPARSE_API)
-endif()
-
-if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
-  check_cxx_compiler_flag("-Wl,--start-group -Werror" group_flags)
-  if(group_flags)
-    set(START_GROUP -Wl,--start-group)
-    set(END_GROUP -Wl,--end-group)
-  endif()
-
-  target_link_libraries(af_cuda_static_cuda_library
-    PRIVATE
-      af_spdlog
-      Boost::boost
-      ${CMAKE_DL_LIBS}
-      ${cusolver_lib}
-      ${START_GROUP}
-      ${CUDA_culibos_LIBRARY} #also a static libary
-      ${AF_CUDA_cublas_static_LIBRARY}
-      ${AF_CUDA_cublasLt_static_LIBRARY}
-      ${AF_CUDA_cufft_static_LIBRARY}
-      ${AF_CUDA_optionally_static_libraries}
-      ${nvrtc_libs}
-      ${cusolver_static_lib}
-      ${END_GROUP})
-
-  if(CUDA_VERSION VERSION_GREATER 10.0)
-    target_link_libraries(af_cuda_static_cuda_library
-      PRIVATE
-        ${AF_CUDA_cublasLt_static_LIBRARY})
-  endif()
-
-  if(CUDA_VERSION VERSION_GREATER 9.5)
-    target_link_libraries(af_cuda_static_cuda_library
-      PRIVATE
-        ${CUDA_lapack_static_LIBRARY})
-  endif()
-
-  set(CUDA_SEPARABLE_COMPILATION ${pior_val_CUDA_SEPARABLE_COMPILATION})
-else()
-  target_link_libraries(af_cuda_static_cuda_library
-    PUBLIC
-      Boost::boost
-      ${CUDA_CUBLAS_LIBRARIES}
-      ${CUDA_CUFFT_LIBRARIES}
-      ${CUDA_cusolver_LIBRARY}
-      ${nvrtc_libs}
-  )
-endif()
-
-cuda_add_library(afcuda
-    $<$<PLATFORM_ID:Windows>:${af_cuda_ver_res_file}>
-    ${thrust_sort_sources}
 
     EnqueueArgs.hpp
     all.cu
@@ -455,7 +332,6 @@ cuda_add_library(afcuda
     kernel/interp.hpp
     kernel/iota.hpp
     kernel/ireduce.hpp
-    kernel/join.hpp
     kernel/lookup.hpp
     kernel/lu_split.hpp
     kernel/match_template.hpp
@@ -537,9 +413,14 @@ cuda_add_library(afcuda
     convolveNN.cpp
     copy.cpp
     copy.hpp
-    cu_check_macro.hpp
     cublas.cpp
     cublas.hpp
+
+    $<$<BOOL:${AF_WITH_CUDNN}>: cudnn.cpp
+                             cudnn.hpp
+                             cudnnModule.cpp
+                             cudnnModule.hpp>
+
     cufft.hpp
     cusolverDn.cpp
     cusolverDn.hpp
@@ -656,6 +537,7 @@ cuda_add_library(afcuda
     svd.hpp
     tile.cpp
     tile.hpp
+    threadsMgt.hpp
     topk.hpp
     traits.hpp
     transform.hpp
@@ -676,30 +558,127 @@ cuda_add_library(afcuda
     wrap.hpp
 
     jit/BufferNode.hpp
+    jit/ShiftNode.hpp
     jit/kernel_generators.hpp
 
     ${scan_by_key_sources}
-
-    OPTIONS
-    ${platform_flags}
-    ${cuda_cxx_flags}
-    -Xcudafe --display_error_number
-    -Xcudafe \"--diag_suppress=1427\"
   )
 
-if(AF_WITH_CUDNN)
-  target_sources(afcuda PRIVATE
-    cudnn.cpp
-    cudnn.hpp
-    cudnnModule.cpp
-    cudnnModule.hpp)
-  target_compile_definitions(afcuda PRIVATE WITH_CUDNN)
 
-  target_include_directories (afcuda
+if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
+  check_cxx_compiler_flag("-Wl,--start-group -Werror" group_flags)
+  if(group_flags)
+    set(START_GROUP -Wl,--start-group)
+    set(END_GROUP -Wl,--end-group)
+  endif()
+
+  target_link_libraries(afcuda
     PRIVATE
-      ${cuDNN_INCLUDE_DIRS}
-    )
+      ${cusolver_lib}
+      ${START_GROUP}
+      ${CUDA_culibos_LIBRARY} #also a static libary
+      ${AF_CUDA_cublas_static_LIBRARY}
+      ${AF_CUDA_cublasLt_static_LIBRARY}
+      ${AF_CUDA_cufft_static_LIBRARY}
+      ${AF_CUDA_optionally_static_libraries}
+      ${nvrtc_libs}
+      ${cusolver_static_lib}
+      ${END_GROUP})
+
+  if(CUDA_VERSION VERSION_GREATER 10.0)
+    target_link_libraries(afcuda
+      PRIVATE
+        ${AF_CUDA_cublasLt_static_LIBRARY})
+  endif()
+
+  if(CUDA_VERSION VERSION_GREATER 9.5)
+    target_link_libraries(afcuda
+      PRIVATE
+        ${CUDA_lapack_static_LIBRARY})
+  endif()
+
+else()
+  target_link_libraries(afcuda
+    PRIVATE
+      ${CUDA_CUBLAS_LIBRARIES}
+      ${CUDA_CUFFT_LIBRARIES}
+      ${CUDA_cusolver_LIBRARY}
+      ${nvrtc_libs}
+  )
 endif()
+
+if(CUDA_VERSION_MAJOR VERSION_LESS 11)
+  target_link_libraries(afcuda
+    PRIVATE
+      CUB::CUB
+  )
+endif()
+
+af_detect_and_set_cuda_architectures(afcuda)
+
+if(CUDA_VERSION VERSION_LESS 11.0)
+  if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
+    set_target_properties(afcuda
+      PROPERTIES
+        CUDA_STANDARD 14
+        CUDA_STANDARD_REQUIRED ON)
+  else()
+    target_compile_options(afcuda
+      PRIVATE
+        $<$<COMPILE_LANGUAGE:CUDA>:--std=c++14>)
+  endif()
+else()
+  if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
+    set_target_properties(afcuda
+      PROPERTIES
+        CUDA_STANDARD 17
+        CUDA_STANDARD_REQUIRED ON)
+  else()
+    target_compile_options(afcuda
+      PRIVATE
+        $<$<COMPILE_LANGUAGE:CUDA>:--std=c++17>)
+  endif()
+endif()
+
+target_compile_definitions(afcuda
+  PRIVATE
+    AF_CUDA
+
+    # CUDA_NO_HALF prevents the inclusion of the half class in the global namespace
+    # which conflicts with the half class in ArrayFire's common namespace. prefer
+    # using __half class instead for CUDA
+    CUDA_NO_HALF
+
+    $<$<BOOL:${AF_WITH_CUDNN}>:WITH_CUDNN>
+)
+
+# New API of cuSparse was introduced in 10.1.168 for Linux and the older
+# 10.1.105 fix version doesn't it. Unfortunately, the new API was introduced in
+# in a fix release of CUDA - unconventionally. As CMake's FindCUDA module
+# doesn't provide patch/fix version number, we use 10.2 as the minimum
+# CUDA version to enable this new cuSparse API.
+if(CUDA_VERSION_MAJOR VERSION_GREATER 10 OR
+    (UNIX AND
+      CUDA_VERSION_MAJOR VERSION_EQUAL 10 AND CUDA_VERSION_MINOR VERSION_GREATER 1))
+  target_compile_definitions(afcuda
+    PRIVATE
+      AF_USE_NEW_CUSPARSE_API)
+endif()
+
+target_compile_options(afcuda
+  PRIVATE
+    $<$<BOOL:${AF_WITH_FAST_MATH}>:$<$<COMPILE_LANGUAGE:CUDA>:-use_fast_math>>
+    $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>
+    $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe --diag_suppress=unrecognized_gcc_pragma>
+    $<$<COMPILE_LANGUAGE:CUDA>: $<$<CXX_COMPILER_ID:MSVC>:  -Xcompiler=/wd4251
+                                                            -Xcompiler=/wd4068
+                                                            -Xcompiler=/wd4275
+                                                            -Xcompiler=/wd4668
+                                                            -Xcompiler=/wd4710
+                                                            -Xcompiler=/wd4505
+                                                            -Xcompiler=/bigobj>>
+)
+
 
 if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS AND AF_cusparse_LINK_LOADING STREQUAL "Static")
   target_compile_definitions(afcuda
@@ -707,19 +686,9 @@ if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS AND AF_cusparse_LINK_LOADING STREQU
       AF_cusparse_STATIC_LINKING)
 endif()
 
-
-arrayfire_set_default_cxx_flags(afcuda)
-
-# NOTE: Do not add additional CUDA specific definitions here. Add it to the
-# cxx_definitions variable above. cxx_definitions is used to propigate
-# definitions to the scan_by_key and thrust_sort_by_key targets as well as the
-# cuda library above.
-target_compile_options(afcuda PRIVATE ${cxx_definitions})
-
 add_library(ArrayFire::afcuda ALIAS afcuda)
 
 add_dependencies(afcuda ${jit_kernel_targets} ${nvrtc_kernel_targets})
-add_dependencies(af_cuda_static_cuda_library ${nvrtc_kernel_targets})
 
 if(UNIX AND AF_WITH_PRUNE_STATIC_CUDA_NUMERIC_LIBS)
   add_dependencies(afcuda ${cuda_pruned_library_targets})
@@ -731,12 +700,16 @@ target_include_directories (afcuda
     $<BUILD_INTERFACE:${ArrayFire_BINARY_DIR}/include>
     $<INSTALL_INTERFACE:${AF_INSTALL_INC_DIR}>
   PRIVATE
-    ${CUDA_INCLUDE_DIRS}
     ${ArrayFire_SOURCE_DIR}/src/api/c
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/kernel
     ${CMAKE_CURRENT_SOURCE_DIR}/jit
-    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR})
+
+target_include_directories (afcuda
+  SYSTEM PRIVATE
+    $<$<BOOL:${AF_WITH_CUDNN}>:${cuDNN_INCLUDE_DIRS}>
+    ${CUDA_INCLUDE_DIRS}
 )
 
 target_link_libraries(afcuda
@@ -745,7 +718,6 @@ target_link_libraries(afcuda
     cpp_api_interface
     afcommon_interface
     ${CMAKE_DL_LIBS}
-    af_cuda_static_cuda_library
   )
 
 # If the driver is not found the cuda driver api need to be linked against the
@@ -888,6 +860,9 @@ if(AF_INSTALL_STANDALONE)
     endif()
     afcu_collect_libs(cusolver)
     afcu_collect_libs(cusparse)
+    if(CUDA_VERSION VERSION_GREATER 12.0)
+      afcu_collect_libs(nvJitLink)
+    endif()
   elseif(NOT ${use_static_cuda_lapack})
     afcu_collect_libs(cusolver)
   endif()
@@ -924,7 +899,7 @@ source_group(api\\cpp REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/api/cpp/*)
 source_group(api\\c   REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/api/c/*)
 source_group(backend  REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/backend/common/*|${CMAKE_CURRENT_SOURCE_DIR}/*)
 source_group(backend\\kernel  REGULAR_EXPRESSION ${CMAKE_CURRENT_SOURCE_DIR}/kernel/*|${CMAKE_CURRENT_SOURCE_DIR}/kernel/thrust_sort_by_key/*|${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_by_key/*)
-source_group("generated files"  FILES ${ArrayFire_BINARY_DIR}/version.hpp ${ArrayFire_BINARY_DIR}/include/af/version.h
+source_group("generated files"  FILES ${ArrayFire_BINARY_DIR}/src/backend/build_version.hpp ${ArrayFire_BINARY_DIR}/include/af/version.h
                                 REGULAR_EXPRESSION ${CMAKE_CURRENT_BINARY_DIR}/${kernel_headers_dir}/*)
 source_group("" FILES CMakeLists.txt)
 

@@ -16,7 +16,9 @@
 // Below Class definition is found at the following URL
 // http://stackoverflow.com/questions/9007343/mix-custom-memory-managment-and-thrust-in-cuda
 
+namespace arrayfire {
 namespace cuda {
+
 template<typename T>
 struct ThrustAllocator : thrust::device_malloc_allocator<T> {
     // shorthand for the name of the base class
@@ -37,7 +39,8 @@ struct ThrustAllocator : thrust::device_malloc_allocator<T> {
 
     void deallocate(pointer p, size_type n) {
         UNUSED(n);
-        memFree<T>(p.get());  // delegate to ArrayFire allocator
+        memFree(p.get());  // delegate to ArrayFire allocator
     }
 };
 }  // namespace cuda
+}  // namespace arrayfire

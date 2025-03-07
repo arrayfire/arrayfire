@@ -25,6 +25,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -33,25 +34,24 @@ void ireduceDimLauncher(Param out, cl::Buffer *oidx, Param in, cl::Buffer *iidx,
                         const int dim, const int threads_y, const bool is_first,
                         const uint groups_all[4], Param rlen) {
     ToNumStr<T> toNumStr;
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 5> targs = {
         TemplateTypename<T>(), TemplateArg(dim),       TemplateArg(op),
         TemplateArg(is_first), TemplateArg(threads_y),
     };
-    std::vector<std::string> options = {
+    std::array<std::string, 9> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
         DefineKeyValue(kDim, dim),
         DefineKeyValue(DIMY, threads_y),
         DefineValue(THREADS_X),
         DefineKeyValue(init, toNumStr(common::Binary<T, op>::init())),
         DefineKeyFromStr(binOpName<op>()),
-        DefineKeyValue(CPLX, af::iscplx<T>()),
+        DefineKeyValue(CPLX, iscplx<T>()),
         DefineKeyValue(IS_FIRST, is_first),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        getTypeBuildDefinition<T>()};
 
     auto ireduceDim =
         common::getKernel("ireduce_dim_kernel",
-                          {iops_cl_src, ireduce_dim_cl_src}, targs, options);
+                          {{iops_cl_src, ireduce_dim_cl_src}}, targs, options);
 
     cl::NDRange local(THREADS_X, threads_y);
     cl::NDRange global(groups_all[0] * groups_all[2] * local[0],
@@ -109,26 +109,25 @@ void ireduceFirstLauncher(Param out, cl::Buffer *oidx, Param in,
                           const bool is_first, const uint groups_x,
                           const uint groups_y, Param rlen) {
     ToNumStr<T> toNumStr;
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 4> targs = {
         TemplateTypename<T>(),
         TemplateArg(op),
         TemplateArg(is_first),
         TemplateArg(threads_x),
     };
-    std::vector<std::string> options = {
+    std::array<std::string, 8> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
         DefineKeyValue(DIMX, threads_x),
         DefineValue(THREADS_PER_GROUP),
         DefineKeyValue(init, toNumStr(common::Binary<T, op>::init())),
         DefineKeyFromStr(binOpName<op>()),
-        DefineKeyValue(CPLX, af::iscplx<T>()),
+        DefineKeyValue(CPLX, iscplx<T>()),
         DefineKeyValue(IS_FIRST, is_first),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        getTypeBuildDefinition<T>()};
 
-    auto ireduceFirst =
-        common::getKernel("ireduce_first_kernel",
-                          {iops_cl_src, ireduce_first_cl_src}, targs, options);
+    auto ireduceFirst = common::getKernel("ireduce_first_kernel",
+                                          {{iops_cl_src, ireduce_first_cl_src}},
+                                          targs, options);
 
     cl::NDRange local(threads_x, THREADS_PER_GROUP / threads_x);
     cl::NDRange global(groups_x * in.info.dims[2] * local[0],
@@ -335,3 +334,4 @@ T ireduceAll(uint *loc, Param in) {
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

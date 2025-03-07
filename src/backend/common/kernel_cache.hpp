@@ -14,12 +14,15 @@
 #include <Kernel.hpp>
 #include <Module.hpp>
 #include <backend.hpp>
+#include <common/Source.hpp>
 #include <common/TemplateTypename.hpp>
 #include <common/util.hpp>
 
+#include <nonstd/span.hpp>
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace common {
 
 /// \brief Find/Create-Cache a Kernel that fits the given criteria
@@ -46,7 +49,8 @@ namespace common {
 /// Example Usage: transpose
 ///
 /// \code
-/// auto transpose = getKernel("cuda::transpose", {transpase_cuh_src},
+/// auto transpose = getKernel("arrayfire::cuda::transpose",
+/// {{transpase_cuh_src}},
 ///         {
 ///           TemplateTypename<T>(),
 ///           TemplateArg(conjugate),
@@ -70,9 +74,9 @@ namespace common {
 ///            the kernel compilation.
 ///
 detail::Kernel getKernel(const std::string& kernelName,
-                         const std::vector<common::Source>& sources,
-                         const std::vector<TemplateArg>& templateArgs,
-                         const std::vector<std::string>& options = {},
+                         nonstd::span<const common::Source> sources,
+                         nonstd::span<const TemplateArg> templateArgs,
+                         nonstd::span<const std::string> options = {},
                          const bool sourceIsJIT                  = false);
 
 /// \brief Lookup a Module that matches the given key
@@ -101,5 +105,6 @@ detail::Kernel getKernel(const detail::Module& mod, const std::string& name,
                          const bool sourceWasJIT);
 
 }  // namespace common
+}  // namespace arrayfire
 
 #endif

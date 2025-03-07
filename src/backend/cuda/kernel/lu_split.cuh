@@ -12,6 +12,7 @@
 #include <Param.hpp>
 #include <math.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T, bool same_dims>
@@ -62,3 +63,4 @@ __global__ void luSplit(Param<T> lower, Param<T> upper, Param<T> in,
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

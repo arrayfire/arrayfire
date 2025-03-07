@@ -17,6 +17,7 @@
 #endif
 
 #include <GraphicsResourceManager.hpp>
+#include <build_version.hpp>
 #include <common/DefaultMemoryManager.hpp>
 #include <common/Logger.hpp>
 #include <common/defines.hpp>
@@ -36,7 +37,6 @@
 #include <memory.hpp>
 #include <spdlog/spdlog.h>
 #include <utility.hpp>
-#include <version.hpp>
 #include <af/cuda.h>
 #include <af/device.h>
 #include <af/version.h>
@@ -49,6 +49,7 @@
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <type_traits>
 
 using std::call_once;
 using std::make_unique;
@@ -58,12 +59,16 @@ using std::runtime_error;
 using std::string;
 using std::to_string;
 using std::unique_ptr;
+using std::vector;
 
-using common::unique_handle;
-using common::memory::MemoryManagerBase;
-using cuda::Allocator;
-using cuda::AllocatorPinned;
+using arrayfire::common::getEnvVar;
+using arrayfire::common::int_version_to_string;
+using arrayfire::common::MemoryManagerBase;
+using arrayfire::common::unique_handle;
+using arrayfire::cuda::Allocator;
+using arrayfire::cuda::AllocatorPinned;
 
+namespace arrayfire {
 namespace cuda {
 
 static string get_system() {
@@ -89,8 +94,13 @@ unique_handle<cublasHandle_t> *cublasManager(const int deviceId) {
         // TODO(pradeep) When multiple streams per device
         // is added to CUDA backend, move the cublasSetStream
         // call outside of call_once scope.
+        CUBLAS_CHECK(cublasSetStream(handles[deviceId], getStream(deviceId)));
+#ifdef AF_WITH_FAST_MATH
         CUBLAS_CHECK(
-            cublasSetStream(handles[deviceId], cuda::getStream(deviceId)));
+            cublasSetMathMode(handles[deviceId], CUBLAS_TF32_TENSOR_OP_MATH));
+        CUBLAS_CHECK(
+            cublasSetAtomicsMode(handles[deviceId], CUBLAS_ATOMICS_ALLOWED));
+#endif
     });
 
     return &handles[deviceId];
@@ -114,12 +124,14 @@ unique_handle<cudnnHandle_t> *nnManager(const int deviceId) {
         if (!(*handle)) { getLogger()->error("Error initalizing cuDNN"); }
     });
     if (error) {
-        string error_msg = fmt::format("Error initializing cuDNN({}): {}.",
-                                       error, errorString(error));
+        string error_msg = fmt::format(
+            "Error initializing cuDNN({}): {}.",
+            static_cast<std::underlying_type<cudnnStatus_t>::type>(error),
+            errorString(error));
         AF_ERROR(error_msg, AF_ERR_RUNTIME);
     }
     CUDNN_CHECK(getCudnnPlugin().cudnnSetStream(cudnnHandles[deviceId],
-                                                cuda::getStream(deviceId)));
+                                                getStream(deviceId)));
 
     return handle;
 }
@@ -143,14 +155,14 @@ unique_handle<cusolverDnHandle_t> *cusolverManager(const int deviceId) {
         // is added to CUDA backend, move the cublasSetStream
         // call outside of call_once scope.
         CUSOLVER_CHECK(
-            cusolverDnSetStream(handles[deviceId], cuda::getStream(deviceId)));
+            cusolverDnSetStream(handles[deviceId], getStream(deviceId)));
     });
     // TODO(pradeep) prior to this change, stream was being synced in get solver
     // handle because of some cusolver bug. Re-enable that if this change
     // doesn't work and sovler tests fail.
     // https://gist.github.com/shehzan10/414c3d04a40e7c4a03ed3c2e1b9072e7
     // cuSolver Streams patch:
-    // CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(deviceId)));
+    // CUDA_CHECK(cudaStreamSynchronize(getStream(deviceId)));
 
     return &handles[deviceId];
 }
@@ -166,7 +178,7 @@ unique_handle<cusparseHandle_t> *cusparseManager(const int deviceId) {
         // is added to CUDA backend, move the cublasSetStream
         // call outside of call_once scope.
         CUSPARSE_CHECK(
-            _.cusparseSetStream(handles[deviceId], cuda::getStream(deviceId)));
+            _.cusparseSetStream(handles[deviceId], getStream(deviceId)));
     });
     return &handles[deviceId];
 }
@@ -199,15 +211,21 @@ DeviceManager::~DeviceManager() {
     }
 }
 
+bool isDeviceBufferAccessible(int buf_device_id, int execution_id) {
+    DeviceManager &mngr = DeviceManager::getInstance();
+    return buf_device_id == execution_id ||
+           mngr.device_peer_access_map[buf_device_id][execution_id];
+}
+
 int getBackend() { return AF_BACKEND_CUDA; }
 
 string getDeviceInfo(int device) noexcept {
-    cudaDeviceProp dev = getDeviceProp(device);
+    const cudaDeviceProp &dev = getDeviceProp(device);
 
     size_t mem_gpu_total = dev.totalGlobalMem;
     // double cc = double(dev.major) + double(dev.minor) / 10;
 
-    bool show_braces = getActiveDeviceId() == static_cast<unsigned>(device);
+    bool show_braces = getActiveDeviceId() == device;
 
     string id = (show_braces ? string("[") : "-") + to_string(device) +
                 (show_braces ? string("]") : "-");
@@ -244,19 +262,19 @@ string getPlatformInfo() noexcept {
     return platform;
 }
 
-bool isDoubleSupported(int device) {
+bool isDoubleSupported(int device) noexcept {
     UNUSED(device);
     return true;
 }
 
 bool isHalfSupported(int device) {
-    std::array<bool, DeviceManager::MAX_DEVICES> half_supported = []() {
+    static std::array<bool, DeviceManager::MAX_DEVICES> half_supported = []() {
         std::array<bool, DeviceManager::MAX_DEVICES> out{};
         int count = getDeviceCount();
         for (int i = 0; i < count; i++) {
-            auto prop   = getDeviceProp(i);
-            int compute = prop.major * 1000 + prop.minor * 10;
-            out[i]      = compute >= 5030;
+            const auto &prop = getDeviceProp(i);
+            int compute      = prop.major * 1000 + prop.minor * 10;
+            out[i]           = compute >= 5030;
         }
         return out;
     }();
@@ -266,7 +284,7 @@ bool isHalfSupported(int device) {
 void devprop(char *d_name, char *d_platform, char *d_toolkit, char *d_compute) {
     if (getDeviceCount() <= 0) { return; }
 
-    cudaDeviceProp dev = getDeviceProp(getActiveDeviceId());
+    const cudaDeviceProp &dev = getDeviceProp(getActiveDeviceId());
 
     // Name
     snprintf(d_name, 256, "%s", dev.name);
@@ -348,7 +366,15 @@ int getDeviceCount() {
     }
 }
 
-unsigned getActiveDeviceId() { return tlocalActiveDeviceId(); }
+void init() {
+    thread_local auto err =
+        cudaSetDevice(getDeviceNativeId(getActiveDeviceId()));
+    thread_local auto queue2 = getActiveStream();
+    UNUSED(err);
+    UNUSED(queue2);
+}
+
+int getActiveDeviceId() { return tlocalActiveDeviceId(); }
 
 int getDeviceNativeId(int device) {
     if (device <
@@ -381,6 +407,8 @@ cudaStream_t getStream(int device) {
 
 cudaStream_t getActiveStream() { return getStream(getActiveDeviceId()); }
 
+cudaStream_t getQueueHandle(int device) { return getStream(device); }
+
 size_t getDeviceMemorySize(int device) {
     return getDeviceProp(device).totalGlobalMem;
 }
@@ -391,12 +419,31 @@ int setDevice(int device) {
     return DeviceManager::getInstance().setActiveDevice(device);
 }
 
-cudaDeviceProp getDeviceProp(int device) {
-    if (device <
-        static_cast<int>(DeviceManager::getInstance().cuDevices.size())) {
-        return DeviceManager::getInstance().cuDevices[device].prop;
-    }
-    return DeviceManager::getInstance().cuDevices[0].prop;
+size_t getL2CacheSize(const int device) {
+    return getDeviceProp(device).l2CacheSize;
+}
+
+const int *getMaxGridSize(const int device) {
+    return getDeviceProp(device).maxGridSize;
+}
+
+unsigned getMemoryBusWidth(const int device) {
+    return getDeviceProp(device).memoryBusWidth;
+}
+
+unsigned getMultiProcessorCount(const int device) {
+    return getDeviceProp(device).multiProcessorCount;
+}
+
+unsigned getMaxParallelThreads(const int device) {
+    const cudaDeviceProp &prop{getDeviceProp(device)};
+    return prop.multiProcessorCount * prop.maxThreadsPerMultiProcessor;
+}
+
+const cudaDeviceProp &getDeviceProp(const int device) {
+    const vector<cudaDevice_t> &devs = DeviceManager::getInstance().cuDevices;
+    if (device < static_cast<int>(devs.size())) { return devs[device].prop; }
+    return devs[0].prop;
 }
 
 MemoryManagerBase &memoryManager() {
@@ -452,7 +499,7 @@ void resetMemoryManagerPinned() {
     return DeviceManager::getInstance().resetMemoryManagerPinned();
 }
 
-graphics::ForgeManager &forgeManager() {
+arrayfire::common::ForgeManager &forgeManager() {
     return *(DeviceManager::getInstance().fgMngr);
 }
 
@@ -470,11 +517,9 @@ GraphicsResourceManager &interopManager() {
     return *(inst.gfxManagers[id].get());
 }
 
-PlanCache &fftManager() {
-    return *(cufftManager(cuda::getActiveDeviceId()).get());
-}
+PlanCache &fftManager() { return *(cufftManager(getActiveDeviceId()).get()); }
 
-BlasHandle blasHandle() { return *cublasManager(cuda::getActiveDeviceId()); }
+BlasHandle blasHandle() { return *cublasManager(getActiveDeviceId()); }
 
 #ifdef WITH_CUDNN
 cudnnHandle_t nnHandle() {
@@ -485,7 +530,7 @@ cudnnHandle_t nnHandle() {
     static cudnnModule keep_me_to_avoid_exceptions_exceptions =
         getCudnnPlugin();
     static unique_handle<cudnnHandle_t> *handle =
-        nnManager(cuda::getActiveDeviceId());
+        nnManager(getActiveDeviceId());
     if (*handle) {
         return *handle;
     } else {
@@ -494,13 +539,9 @@ cudnnHandle_t nnHandle() {
 }
 #endif
 
-SolveHandle solverDnHandle() {
-    return *cusolverManager(cuda::getActiveDeviceId());
-}
+SolveHandle solverDnHandle() { return *cusolverManager(getActiveDeviceId()); }
 
-SparseHandle sparseHandle() {
-    return *cusparseManager(cuda::getActiveDeviceId());
-}
+SparseHandle sparseHandle() { return *cusparseManager(getActiveDeviceId()); }
 
 void sync(int device) {
     int currDevice = getActiveDeviceId();
@@ -520,10 +561,11 @@ bool &evalFlag() {
 }
 
 }  // namespace cuda
+}  // namespace arrayfire
 
 af_err afcu_get_stream(cudaStream_t *stream, int id) {
     try {
-        *stream = cuda::getStream(id);
+        *stream = arrayfire::cuda::getStream(id);
     }
     CATCHALL;
     return AF_SUCCESS;
@@ -531,7 +573,7 @@ af_err afcu_get_stream(cudaStream_t *stream, int id) {
 
 af_err afcu_get_native_id(int *nativeid, int id) {
     try {
-        *nativeid = cuda::getDeviceNativeId(id);
+        *nativeid = arrayfire::cuda::getDeviceNativeId(id);
     }
     CATCHALL;
     return AF_SUCCESS;
@@ -539,7 +581,8 @@ af_err afcu_get_native_id(int *nativeid, int id) {
 
 af_err afcu_set_native_id(int nativeid) {
     try {
-        cuda::setDevice(cuda::getDeviceIdFromNativeId(nativeid));
+        arrayfire::cuda::setDevice(
+            arrayfire::cuda::getDeviceIdFromNativeId(nativeid));
     }
     CATCHALL;
     return AF_SUCCESS;
@@ -547,7 +590,7 @@ af_err afcu_set_native_id(int nativeid) {
 
 af_err afcu_cublasSetMathMode(cublasMath_t mode) {
     try {
-        CUBLAS_CHECK(cublasSetMathMode(cuda::blasHandle(), mode));
+        CUBLAS_CHECK(cublasSetMathMode(arrayfire::cuda::blasHandle(), mode));
     }
     CATCHALL;
     return AF_SUCCESS;

@@ -26,8 +26,8 @@
 #include <tuple>
 
 using af::dim4;
-using common::cast;
-using common::half;
+using arrayfire::common::cast;
+using arrayfire::common::half;
 using detail::arithOp;
 using detail::Array;
 using detail::cdouble;

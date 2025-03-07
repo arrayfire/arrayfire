@@ -38,21 +38,24 @@
 #include <utility>
 
 using af::dim4;
-using common::half;
-using common::Node;
-using common::Node_map_t;
-using common::Node_ptr;
-using common::NodeIterator;
-using cpu::jit::BufferNode;
+using arrayfire::common::half;
+using arrayfire::common::Node;
+using arrayfire::common::Node_map_t;
+using arrayfire::common::Node_ptr;
+using arrayfire::common::NodeIterator;
+using arrayfire::cpu::jit::BufferNode;
 
 using nonstd::span;
+using std::accumulate;
 using std::adjacent_find;
 using std::copy;
+using std::find_if;
 using std::is_standard_layout;
 using std::make_shared;
 using std::move;
 using std::vector;
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
@@ -64,7 +67,7 @@ template<typename T>
 Array<T>::Array(dim4 dims)
     : info(getActiveDeviceId(), dims, 0, calcStrides(dims),
            static_cast<af_dtype>(dtype_traits<T>::af_type))
-    , data(memAlloc<T>(dims.elements()).release(), memFree<T>)
+    , data(memAlloc<T>(dims.elements()).release(), memFree)
     , data_dims(dims)
     , node()
     , owner(true) {}
@@ -76,7 +79,7 @@ Array<T>::Array(const dim4 &dims, T *const in_data, bool is_device,
            static_cast<af_dtype>(dtype_traits<T>::af_type))
     , data((is_device & !copy_device) ? in_data
                                       : memAlloc<T>(dims.elements()).release(),
-           memFree<T>)
+           memFree)
     , data_dims(dims)
     , node()
     , owner(true) {
@@ -120,8 +123,7 @@ Array<T>::Array(const dim4 &dims, const dim4 &strides, dim_t offset_,
                 T *const in_data, bool is_device)
     : info(getActiveDeviceId(), dims, offset_, strides,
            static_cast<af_dtype>(dtype_traits<T>::af_type))
-    , data(is_device ? in_data : memAlloc<T>(info.total()).release(),
-           memFree<T>)
+    , data(is_device ? in_data : memAlloc<T>(info.total()).release(), memFree)
     , data_dims(dims)
     , node()
     , owner(true) {
@@ -130,6 +132,11 @@ Array<T>::Array(const dim4 &dims, const dim4 &strides, dim_t offset_,
         getQueue().sync();
         copy(in_data, in_data + info.total(), data.get());
     }
+}
+
+template<typename T>
+void checkAndMigrate(const Array<T> &arr) {
+    return;
 }
 
 template<typename T>
@@ -177,7 +184,7 @@ void evalMultiple(vector<Array<T> *> array_ptrs) {
 
         array->setId(getActiveDeviceId());
         array->data =
-            shared_ptr<T>(memAlloc<T>(array->elements()).release(), memFree<T>);
+            shared_ptr<T>(memAlloc<T>(array->elements()).release(), memFree);
 
         outputs.push_back(array);
         params.emplace_back(array->getData().get(), array->dims(),
@@ -214,8 +221,9 @@ Array<T> createHostDataArray(const dim4 &dims, const T *const data) {
 }
 
 template<typename T>
-Array<T> createDeviceDataArray(const dim4 &dims, void *data) {
-    return Array<T>(dims, static_cast<T *>(data), true);
+Array<T> createDeviceDataArray(const dim4 &dims, void *data, bool copy) {
+    bool is_device = true;
+    return Array<T>(dims, static_cast<T *>(data), is_device, copy);
 }
 
 template<typename T>
@@ -327,7 +335,8 @@ void Array<T>::setDataDims(const dim4 &new_dims) {
 #define INSTANTIATE(T)                                                        \
     template Array<T> createHostDataArray<T>(const dim4 &dims,                \
                                              const T *const data);            \
-    template Array<T> createDeviceDataArray<T>(const dim4 &dims, void *data); \
+    template Array<T> createDeviceDataArray<T>(const dim4 &dims, void *data,  \
+                                               bool copy);                    \
     template Array<T> createValueArray<T>(const dim4 &dims, const T &value);  \
     template Array<T> createEmptyArray<T>(const dim4 &dims);                  \
     template Array<T> createSubArray<T>(                                      \
@@ -349,7 +358,8 @@ void Array<T>::setDataDims(const dim4 &new_dims) {
         Array<T> & arr, const void *const data, const size_t bytes);          \
     template void evalMultiple<T>(vector<Array<T> *> arrays);                 \
     template kJITHeuristics passesJitHeuristics<T>(span<Node *> n);           \
-    template void Array<T>::setDataDims(const dim4 &new_dims);
+    template void Array<T>::setDataDims(const dim4 &new_dims);                \
+    template void checkAndMigrate<T>(const Array<T> &arr);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
@@ -366,3 +376,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(half)
 
 }  // namespace cpu
+}  // namespace arrayfire

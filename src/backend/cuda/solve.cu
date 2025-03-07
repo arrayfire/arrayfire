@@ -23,6 +23,7 @@
 #include <qr.hpp>
 #include <transpose.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 // cublasStatus_t cublas<>getrsBatched( cublasHandle_t handle,
@@ -163,6 +164,13 @@ struct mqr_solve_func_def_t {
         const T *, int, const T *, T *, int, T *, int, int *);
 };
 
+template<typename T>
+struct mqr_solve_buf_func_def_t {
+    typedef cusolverStatus_t (*mqr_solve_buf_func_def)(
+	cusolverDnHandle_t, cublasSideMode_t, cublasOperation_t, int, int, int,
+        const T *, int, const T *, T *, int, int *);
+};
+
 #define QR_FUNC_DEF(FUNC)                                                     \
     template<typename T>                                                      \
     static typename FUNC##_solve_func_def_t<T>::FUNC##_solve_func_def         \
@@ -194,17 +202,28 @@ QR_FUNC(geqrf, double, D)
 QR_FUNC(geqrf, cfloat, C)
 QR_FUNC(geqrf, cdouble, Z)
 
-#define MQR_FUNC_DEF(FUNC)                                            \
-    template<typename T>                                              \
-    static typename FUNC##_solve_func_def_t<T>::FUNC##_solve_func_def \
-        FUNC##_solve_func();
+#define MQR_FUNC_DEF(FUNC)                                                    \
+    template<typename T>                                                      \
+    static typename FUNC##_solve_func_def_t<T>::FUNC##_solve_func_def         \
+        FUNC##_solve_func();                                                  \
+	                                                                      \
+    template<typename T>                                                      \
+    static typename FUNC##_solve_buf_func_def_t<T>::FUNC##_solve_buf_func_def \
+       	FUNC##_solve_buf_func();
 
-#define MQR_FUNC(FUNC, TYPE, PREFIX)                                    \
-    template<>                                                          \
-    typename FUNC##_solve_func_def_t<TYPE>::FUNC##_solve_func_def       \
-        FUNC##_solve_func<TYPE>() {                                     \
-        return (FUNC##_solve_func_def_t<TYPE>::FUNC##_solve_func_def) & \
-               cusolverDn##PREFIX;                                      \
+#define MQR_FUNC(FUNC, TYPE, PREFIX)                                            \
+    template<>                                                                  \
+    typename FUNC##_solve_func_def_t<TYPE>::FUNC##_solve_func_def               \
+        FUNC##_solve_func<TYPE>() {                                             \
+        return (FUNC##_solve_func_def_t<TYPE>::FUNC##_solve_func_def) &         \
+               cusolverDn##PREFIX;                                              \
+    }                                                                           \
+                                                                                \
+    template<>                                                                  \
+    typename FUNC##_solve_buf_func_def_t<TYPE>::FUNC##_solve_buf_func_def       \
+        FUNC##_solve_buf_func<TYPE>() {                                         \
+        return (FUNC##_solve_buf_func_def_t<TYPE>::FUNC##_solve_buf_func_def) & \
+               cusolverDn##PREFIX##_bufferSize;                                 \
     }
 
 MQR_FUNC_DEF(mqr)
@@ -250,12 +269,12 @@ Array<T> generalSolveBatched(const Array<T> &a, const Array<T> &b) {
     int batch  = batchz * batchw;
 
     size_t bytes         = batch * sizeof(T *);
-    using unique_mem_ptr = std::unique_ptr<char, void (*)(char *)>;
+    using unique_mem_ptr = std::unique_ptr<char, void (*)(void *)>;
 
     unique_mem_ptr aBatched_host_mem(pinnedAlloc<char>(bytes),
-                                     pinnedFree<char>);
+                                     pinnedFree);
     unique_mem_ptr bBatched_host_mem(pinnedAlloc<char>(bytes),
-                                     pinnedFree<char>);
+                                     pinnedFree);
 
     T *a_ptr               = A.get();
     T *b_ptr               = B.get();
@@ -271,8 +290,8 @@ Array<T> generalSolveBatched(const Array<T> &a, const Array<T> &b) {
         }
     }
 
-    unique_mem_ptr aBatched_device_mem(pinnedAlloc<char>(bytes), pinnedFree<char>);
-    unique_mem_ptr bBatched_device_mem(pinnedAlloc<char>(bytes), pinnedFree<char>);
+    unique_mem_ptr aBatched_device_mem(pinnedAlloc<char>(bytes), pinnedFree);
+    unique_mem_ptr bBatched_device_mem(pinnedAlloc<char>(bytes), pinnedFree);
 
     T **aBatched_device_ptrs = (T **)aBatched_device_mem.get();
     T **bBatched_device_ptrs = (T **)bBatched_device_mem.get();
@@ -296,7 +315,7 @@ Array<T> generalSolveBatched(const Array<T> &a, const Array<T> &b) {
 
     // getrs requires info to be host pointer
     unique_mem_ptr info_host_mem(pinnedAlloc<char>(batch * sizeof(int)),
-                                 pinnedFree<char>);
+                                 pinnedFree);
     CUBLAS_CHECK(getrsBatched_func<T>()(
         blasHandle(), CUBLAS_OP_N, N, NRHS, (const T **)aBatched_device_ptrs,
         A.strides()[1], pivots.get(), bBatched_device_ptrs, B.strides()[1],
@@ -392,6 +411,13 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b) {
         B.resetDims(dim4(N, K));
 
         // matmul(Q, Bpad)
+        CUSOLVER_CHECK(mqr_solve_buf_func<T>()(
+            solverDnHandle(), CUBLAS_SIDE_LEFT, CUBLAS_OP_N, B.dims()[0],
+    	    B.dims()[1], A.dims()[0], A.get(), A.strides()[1], t.get(), B.get(),
+	    B.strides()[1], &lwork));
+    
+        workspace = memAlloc<T>(lwork);
+
         CUSOLVER_CHECK(mqr_solve_func<T>()(
             solverDnHandle(), CUBLAS_SIDE_LEFT, CUBLAS_OP_N, B.dims()[0],
             B.dims()[1], A.dims()[0], A.get(), A.strides()[1], t.get(), B.get(),
@@ -426,10 +452,17 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b) {
             t.get(), workspace.get(), lwork, info.get()));
 
         // matmul(Q1, B)
+        CUSOLVER_CHECK(mqr_solve_buf_func<T>()(
+            solverDnHandle(), CUBLAS_SIDE_LEFT, trans<T>(), M, K, N, A.get(),
+	    A.strides()[1], t.get(), B.get(), B.strides()[1], &lwork));
+    
+        workspace = memAlloc<T>(lwork);
+
         CUSOLVER_CHECK(mqr_solve_func<T>()(
             solverDnHandle(), CUBLAS_SIDE_LEFT, trans<T>(), M, K, N, A.get(),
             A.strides()[1], t.get(), B.get(), B.strides()[1], workspace.get(),
             lwork, info.get()));
+
         // tri_solve(R1, Bt)
         A.resetDims(dim4(N, N));
         B.resetDims(dim4(N, K));
@@ -477,3 +510,4 @@ INSTANTIATE_SOLVE(double)
 INSTANTIATE_SOLVE(cdouble)
 
 }  // namespace cuda
+}  // namespace arrayfire

@@ -28,11 +28,12 @@
 #include <mutex>
 
 using af::dim4;
-using common::bytesToString;
-using common::half;
+using arrayfire::common::bytesToString;
+using arrayfire::common::half;
 
 using std::move;
 
+namespace arrayfire {
 namespace cuda {
 float getMemoryPressure() { return memoryManager().getMemoryPressure(); }
 float getMemoryPressureThreshold() {
@@ -64,7 +65,7 @@ uptr<T> memAlloc(const size_t &elements) {
     // TODO: make memAlloc aware of array shapes
     dim4 dims(elements);
     void *ptr = memoryManager().alloc(false, 1, dims.get(), sizeof(T));
-    return uptr<T>(static_cast<T *>(ptr), memFree<T>);
+    return uptr<T>(static_cast<T *>(ptr), memFree);
 }
 
 void *memAllocUser(const size_t &bytes) {
@@ -73,10 +74,7 @@ void *memAllocUser(const size_t &bytes) {
     return ptr;
 }
 
-template<typename T>
-void memFree(T *ptr) {
-    memoryManager().unlock(static_cast<void *>(ptr), false);
-}
+void memFree(void *ptr) { memoryManager().unlock(ptr, false); }
 
 void memFreeUser(void *ptr) { memoryManager().unlock(ptr, true); }
 
@@ -106,16 +104,11 @@ T *pinnedAlloc(const size_t &elements) {
     return static_cast<T *>(ptr);
 }
 
-template<typename T>
-void pinnedFree(T *ptr) {
-    pinnedMemoryManager().unlock(static_cast<void *>(ptr), false);
-}
+void pinnedFree(void *ptr) { pinnedMemoryManager().unlock(ptr, false); }
 
 #define INSTANTIATE(T)                                 \
     template uptr<T> memAlloc(const size_t &elements); \
-    template void memFree(T *ptr);                     \
-    template T *pinnedAlloc(const size_t &elements);   \
-    template void pinnedFree(T *ptr);
+    template T *pinnedAlloc(const size_t &elements);
 
 INSTANTIATE(float)
 INSTANTIATE(cfloat)
@@ -131,14 +124,20 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 INSTANTIATE(half)
 
-template void memFree(void *ptr);
+template<>
+void *pinnedAlloc<void>(const size_t &elements) {
+    // TODO: make pinnedAlloc aware of array shapes
+    dim4 dims(elements);
+    void *ptr = pinnedMemoryManager().alloc(false, 1, dims.get(), 1);
+    return ptr;
+}
 
 Allocator::Allocator() { logger = common::loggerFactory("mem"); }
 
 void Allocator::shutdown() {
-    for (int n = 0; n < cuda::getDeviceCount(); n++) {
+    for (int n = 0; n < getDeviceCount(); n++) {
         try {
-            cuda::setDevice(n);
+            setDevice(n);
             shutdownMemoryManager();
         } catch (const AfError &err) {
             continue;  // Do not throw any errors while shutting down
@@ -148,9 +147,7 @@ void Allocator::shutdown() {
 
 int Allocator::getActiveDeviceId() { return cuda::getActiveDeviceId(); }
 
-size_t Allocator::getMaxMemorySize(int id) {
-    return cuda::getDeviceMemorySize(id);
-}
+size_t Allocator::getMaxMemorySize(int id) { return getDeviceMemorySize(id); }
 
 void *Allocator::nativeAlloc(const size_t bytes) {
     void *ptr = NULL;
@@ -175,7 +172,7 @@ int AllocatorPinned::getActiveDeviceId() {
 
 size_t AllocatorPinned::getMaxMemorySize(int id) {
     UNUSED(id);
-    return cuda::getHostMemorySize();
+    return getHostMemorySize();
 }
 
 void *AllocatorPinned::nativeAlloc(const size_t bytes) {
@@ -191,3 +188,4 @@ void AllocatorPinned::nativeFree(void *ptr) {
     if (err != cudaErrorCudartUnloading) { CUDA_CHECK(err); }
 }
 }  // namespace cuda
+}  // namespace arrayfire

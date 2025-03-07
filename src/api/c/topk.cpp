@@ -17,7 +17,7 @@
 #include <handle.hpp>
 #include <topk.hpp>
 
-using common::half;
+using arrayfire::common::half;
 using detail::createEmptyArray;
 using detail::uint;
 

@@ -11,6 +11,7 @@
 #include <backend.hpp>
 #include <ostream>
 
+namespace arrayfire {
 namespace opencl {
 static std::ostream& operator<<(std::ostream& out, const cfloat& var) {
     out << "(" << var.s[0] << "," << var.s[1] << ")";
@@ -22,3 +23,4 @@ static std::ostream& operator<<(std::ostream& out, const cdouble& var) {
     return out;
 }
 }  // namespace opencl
+}  // namespace arrayfire

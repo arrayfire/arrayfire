@@ -21,11 +21,12 @@
 #include <functional>
 
 using af::dim4;
-using common::Binary;
-using common::half;
-using common::Transform;
-using cpu::cdouble;
+using arrayfire::common::Binary;
+using arrayfire::common::half;
+using arrayfire::common::Transform;
+using arrayfire::cpu::cdouble;
 
+namespace arrayfire {
 namespace common {
 
 template<>
@@ -38,7 +39,6 @@ struct Binary<cdouble, af_add_t> {
 };
 
 }  // namespace common
-
 namespace cpu {
 
 template<af_op_t op, typename Ti, typename To>
@@ -250,3 +250,4 @@ INSTANTIATE(af_and_t, ushort, char)
 INSTANTIATE(af_and_t, half, char)
 
 }  // namespace cpu
+}  // namespace arrayfire

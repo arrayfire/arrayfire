@@ -13,6 +13,7 @@
 
 using af::dim4;
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -48,3 +49,4 @@ void range(Param<T> output) {
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

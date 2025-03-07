@@ -14,6 +14,7 @@
 
 #include <algorithm>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 namespace {
@@ -130,3 +131,4 @@ void padBorders(Param<T> out, CParam<T> in, const dim4 lBoundPadSize,
 }
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

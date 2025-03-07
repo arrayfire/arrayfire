@@ -16,19 +16,24 @@
 # define AF_COMPILER_IS_HP 0
 # define AF_COMPILER_IS_Compaq 0
 # define AF_COMPILER_IS_zOS 0
+# define AF_COMPILER_IS_IBMClang 0
 # define AF_COMPILER_IS_XLClang 0
 # define AF_COMPILER_IS_XL 0
 # define AF_COMPILER_IS_VisualAge 0
+# define AF_COMPILER_IS_NVHPC 0
 # define AF_COMPILER_IS_PGI 0
 # define AF_COMPILER_IS_Cray 0
 # define AF_COMPILER_IS_TI 0
+# define AF_COMPILER_IS_FujitsuClang 0
 # define AF_COMPILER_IS_Fujitsu 0
 # define AF_COMPILER_IS_GHS 0
+# define AF_COMPILER_IS_Tasking 0
 # define AF_COMPILER_IS_SCO 0
 # define AF_COMPILER_IS_ARMCC 0
 # define AF_COMPILER_IS_AppleClang 0
 # define AF_COMPILER_IS_ARMClang 0
 # define AF_COMPILER_IS_Clang 0
+# define AF_COMPILER_IS_LCC 0
 # define AF_COMPILER_IS_GNU 0
 # define AF_COMPILER_IS_MSVC 0
 # define AF_COMPILER_IS_ADSP 0
@@ -79,6 +84,10 @@
 # undef AF_COMPILER_IS_zOS
 # define AF_COMPILER_IS_zOS 1
 
+#elif defined(__open_xl__) && defined(__clang__)
+# undef AF_COMPILER_IS_IBMClang
+# define AF_COMPILER_IS_IBMClang 1
+
 #elif defined(__ibmxl__) && defined(__clang__)
 # undef AF_COMPILER_IS_XLClang
 # define AF_COMPILER_IS_XLClang 1
@@ -90,6 +99,10 @@
 #elif defined(__IBMCPP__) && !defined(__COMPILER_VER__) && __IBMCPP__ < 800
 # undef AF_COMPILER_IS_VisualAge
 # define AF_COMPILER_IS_VisualAge 1
+
+#elif defined(__NVCOMPILER)
+# undef AF_COMPILER_IS_NVHPC
+# define AF_COMPILER_IS_NVHPC 1
 
 #elif defined(__PGI)
 # undef AF_COMPILER_IS_PGI
@@ -103,13 +116,21 @@
 # undef AF_COMPILER_IS_TI
 # define AF_COMPILER_IS_TI 1
 
-#elif defined(__FUJITSU) || defined(__FCC_VERSION) || defined(__fcc_version)
+#elif defined(__CLANG_FUJITSU)
+# undef AF_COMPILER_IS_FujitsuClang
+# define AF_COMPILER_IS_FujitsuClang 1
+
+#elif defined(__FUJITSU)
 # undef AF_COMPILER_IS_Fujitsu
 # define AF_COMPILER_IS_Fujitsu 1
 
 #elif defined(__ghs__)
 # undef AF_COMPILER_IS_GHS
 # define AF_COMPILER_IS_GHS 1
+
+#elif defined(__TASKING__)
+# undef AF_COMPILER_IS_Tasking
+# define AF_COMPILER_IS_Tasking 1
 
 #elif defined(__SCO_VERSION__)
 # undef AF_COMPILER_IS_SCO
@@ -131,6 +152,10 @@
 # undef AF_COMPILER_IS_Clang
 # define AF_COMPILER_IS_Clang 1
 
+#elif defined(__LCC__) && (defined(__GNUC__) || defined(__GNUG__) || defined(__MCST__))
+# undef AF_COMPILER_IS_LCC
+# define AF_COMPILER_IS_LCC 1
+
 #elif defined(__GNUC__) || defined(__GNUG__)
 # undef AF_COMPILER_IS_GNU
 # define AF_COMPILER_IS_GNU 1
@@ -139,7 +164,7 @@
 # undef AF_COMPILER_IS_MSVC
 # define AF_COMPILER_IS_MSVC 1
 
-#elif defined(__VISUALDSPVERSION__) || defined(__ADSPBLACKFIN__) || defined(__ADSPTS__) || defined(__ADSP21000__)
+#elif defined(_ADI_COMPILER)
 # undef AF_COMPILER_IS_ADSP
 # define AF_COMPILER_IS_ADSP 1
 
@@ -202,12 +227,11 @@
 #      define AF_COMPILER_CXX_GENERALIZED_INITIALIZERS 0
 #    endif
 
-#if ((__clang_major__ * 100) + __clang_minor__) >= 400 &&                      \
-    __has_feature(cxx_relaxed_constexpr)
-#define AF_COMPILER_CXX_RELAXED_CONSTEXPR 1
-#else
-#define AF_COMPILER_CXX_RELAXED_CONSTEXPR 0
-#endif
+#    if ((__clang_major__ * 100) + __clang_minor__) >= 400 && __has_feature(cxx_relaxed_constexpr)
+#      define AF_COMPILER_CXX_RELAXED_CONSTEXPR 1
+#    else
+#      define AF_COMPILER_CXX_RELAXED_CONSTEXPR 0
+#    endif
 
 #  elif AF_COMPILER_IS_Clang
 
@@ -260,12 +284,11 @@
 #      define AF_COMPILER_CXX_GENERALIZED_INITIALIZERS 0
 #    endif
 
-#if ((__clang_major__ * 100) + __clang_minor__) >= 301 &&                      \
-    __has_feature(cxx_relaxed_constexpr)
-#define AF_COMPILER_CXX_RELAXED_CONSTEXPR 1
-#else
-#define AF_COMPILER_CXX_RELAXED_CONSTEXPR 0
-#endif
+#    if ((__clang_major__ * 100) + __clang_minor__) >= 301 && __has_feature(cxx_relaxed_constexpr)
+#      define AF_COMPILER_CXX_RELAXED_CONSTEXPR 1
+#    else
+#      define AF_COMPILER_CXX_RELAXED_CONSTEXPR 0
+#    endif
 
 #  elif AF_COMPILER_IS_GNU
 
@@ -321,11 +344,11 @@
 #      define AF_COMPILER_CXX_GENERALIZED_INITIALIZERS 0
 #    endif
 
-#if (__GNUC__ * 100 + __GNUC_MINOR__) >= 500 && __cplusplus >= 201402L
-#define AF_COMPILER_CXX_RELAXED_CONSTEXPR 1
-#else
-#define AF_COMPILER_CXX_RELAXED_CONSTEXPR 0
-#endif
+#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 500 && __cplusplus >= 201402L
+#      define AF_COMPILER_CXX_RELAXED_CONSTEXPR 1
+#    else
+#      define AF_COMPILER_CXX_RELAXED_CONSTEXPR 0
+#    endif
 
 #  elif AF_COMPILER_IS_Intel
 
@@ -333,16 +356,25 @@
 #      error Unsupported compiler version
 #    endif
 
-  /* __INTEL_COMPILER = VRP */
-# define AF_COMPILER_VERSION_MAJOR (__INTEL_COMPILER/100)
-# define AF_COMPILER_VERSION_MINOR (__INTEL_COMPILER/10 % 10)
-# if defined(__INTEL_COMPILER_UPDATE)
-#  define AF_COMPILER_VERSION_PATCH (__INTEL_COMPILER_UPDATE)
+  /* __INTEL_COMPILER = VRP prior to 2021, and then VVVV for 2021 and later,
+     except that a few beta releases use the old format with V=2021.  */
+# if __INTEL_COMPILER < 2021 || __INTEL_COMPILER == 202110 || __INTEL_COMPILER == 202111
+#  define AF_COMPILER_VERSION_MAJOR (__INTEL_COMPILER/100)
+#  define AF_COMPILER_VERSION_MINOR (__INTEL_COMPILER/10 % 10)
+#  if defined(__INTEL_COMPILER_UPDATE)
+#   define AF_COMPILER_VERSION_PATCH (__INTEL_COMPILER_UPDATE)
+#  else
+#   define AF_COMPILER_VERSION_PATCH (__INTEL_COMPILER   % 10)
+#  endif
 # else
-#  define AF_COMPILER_VERSION_PATCH (__INTEL_COMPILER   % 10)
+#  define AF_COMPILER_VERSION_MAJOR (__INTEL_COMPILER)
+#  define AF_COMPILER_VERSION_MINOR (__INTEL_COMPILER_UPDATE)
+   /* The third version component from --version is an update index,
+      but no macro is provided for it.  */
+#  define AF_COMPILER_VERSION_PATCH (0)
 # endif
 # if defined(__INTEL_COMPILER_BUILD_DATE)
-  /* __INTEL_COMPILER_BUILD_DATE = YYYYMMDD */
+   /* __INTEL_COMPILER_BUILD_DATE = YYYYMMDD */
 #  define AF_COMPILER_VERSION_TWEAK (__INTEL_COMPILER_BUILD_DATE)
 # endif
 # if defined(_MSC_VER)
@@ -398,19 +430,11 @@
 #      define AF_COMPILER_CXX_GENERALIZED_INITIALIZERS 0
 #    endif
 
-#if __cpp_constexpr >= 201304 ||                                               \
-    (__INTEL_COMPILER >= 1700 &&                                               \
-     ((__cplusplus >= 201300L) ||                                              \
-      ((__cplusplus == 201103L) && !defined(__INTEL_CXX11_MODE__)) ||          \
-      ((((__INTEL_COMPILER == 1500) && (__INTEL_COMPILER_UPDATE == 1))) &&     \
-       defined(__GXX_EXPERIMENTAL_CXX0X__) &&                                  \
-       !defined(__INTEL_CXX11_MODE__)) ||                                      \
-      (defined(__INTEL_CXX11_MODE__) && defined(__cpp_aggregate_nsdmi))) &&    \
-     !defined(_MSC_VER))
-#define AF_COMPILER_CXX_RELAXED_CONSTEXPR 1
-#else
-#define AF_COMPILER_CXX_RELAXED_CONSTEXPR 0
-#endif
+#    if __cpp_constexpr >= 201304 || (__INTEL_COMPILER >= 1700 && ((__cplusplus >= 201300L) || ((__cplusplus == 201103L) && !defined(__INTEL_CXX11_MODE__)) || ((((__INTEL_COMPILER == 1500) && (__INTEL_COMPILER_UPDATE == 1))) && defined(__GXX_EXPERIMENTAL_CXX0X__) && !defined(__INTEL_CXX11_MODE__) ) || (defined(__INTEL_CXX11_MODE__) && defined(__cpp_aggregate_nsdmi)) ) && !defined(_MSC_VER))
+#      define AF_COMPILER_CXX_RELAXED_CONSTEXPR 1
+#    else
+#      define AF_COMPILER_CXX_RELAXED_CONSTEXPR 0
+#    endif
 
 #  elif AF_COMPILER_IS_MSVC
 
@@ -470,11 +494,11 @@
 #      define AF_COMPILER_CXX_GENERALIZED_INITIALIZERS 0
 #    endif
 
-#if _MSC_VER >= 1911
-#define AF_COMPILER_CXX_RELAXED_CONSTEXPR 1
-#else
-#define AF_COMPILER_CXX_RELAXED_CONSTEXPR 0
-#endif
+#    if _MSC_VER >= 1911
+#      define AF_COMPILER_CXX_RELAXED_CONSTEXPR 1
+#    else
+#      define AF_COMPILER_CXX_RELAXED_CONSTEXPR 0
+#    endif
 
 #  endif
 
@@ -511,11 +535,16 @@ template<> struct AFStaticAssert<true>{};
 
 #endif
 
-#if defined(AF_COMPILER_CXX_RELAXED_CONSTEXPR) &&                              \
-    AF_COMPILER_CXX_RELAXED_CONSTEXPR
-#define AF_CONSTEXPR constexpr
-#else
-#define AF_CONSTEXPR
-#endif
+  #if defined(AF_COMPILER_CXX_RELAXED_CONSTEXPR) && AF_COMPILER_CXX_RELAXED_CONSTEXPR
+  #define AF_CONSTEXPR constexpr
+  #else
+  #define AF_CONSTEXPR
+  #endif
+  #if defined(__cpp_if_constexpr) || __cplusplus >= 201606L
+  #define AF_IF_CONSTEXPR if constexpr
+  #else
+  #define AF_IF_CONSTEXPR if
+  #endif
+
 
 #endif

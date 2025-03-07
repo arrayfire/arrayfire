@@ -16,6 +16,7 @@
 #include <scan_by_key.hpp>
 #include <complex>
 
+namespace arrayfire {
 namespace cuda {
 template<af_op_t op, typename Ti, typename Tk, typename To>
 Array<To> scan(const Array<Tk>& key, const Array<Ti>& in, const int dim,
@@ -57,3 +58,4 @@ INSTANTIATE_SCAN_OP(af_mul_t)
 INSTANTIATE_SCAN_OP(af_min_t)
 INSTANTIATE_SCAN_OP(af_max_t)
 }  // namespace cuda
+}  // namespace arrayfire

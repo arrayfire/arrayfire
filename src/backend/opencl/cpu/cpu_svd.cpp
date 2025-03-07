@@ -12,6 +12,7 @@
 #include <cpu/cpu_helper.hpp>
 #include <cpu/cpu_svd.hpp>
 
+namespace arrayfire {
 namespace opencl {
 namespace cpu {
 
@@ -93,4 +94,5 @@ INSTANTIATE_SVD(cfloat, float)
 INSTANTIATE_SVD(cdouble, double)
 }  // namespace cpu
 }  // namespace opencl
+}  // namespace arrayfire
 #endif  // WITH_LINEAR_ALGEBRA

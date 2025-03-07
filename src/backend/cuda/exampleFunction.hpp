@@ -9,8 +9,10 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace cuda {
 template<typename T>
 Array<T> exampleFunction(const Array<T> &a, const Array<T> &b,
                          const af_someenum_t method);
-}
+}  // namespace cuda
+}  // namespace arrayfire

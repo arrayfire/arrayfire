@@ -40,13 +40,13 @@ template<typename T>
 class Det : public ::testing::Test {};
 
 typedef ::testing::Types<float, double, cfloat, cdouble> TestTypes;
-TYPED_TEST_CASE(Rank, TestTypes);
-TYPED_TEST_CASE(Det, TestTypes);
+TYPED_TEST_SUITE(Rank, TestTypes);
+TYPED_TEST_SUITE(Det, TestTypes);
 
 template<typename T>
 void rankSmall() {
     SUPPORTED_TYPE_CHECK(T);
-    if (noLAPACKTests()) return;
+    LAPACK_ENABLED_CHECK();
 
     T ha[] = {1, 4, 7, 2, 5, 8, 3, 6, 20};
     array a(3, 3, ha);
@@ -57,7 +57,7 @@ void rankSmall() {
 template<typename T>
 void rankBig(const int num) {
     SUPPORTED_TYPE_CHECK(T);
-    if (noLAPACKTests()) return;
+    LAPACK_ENABLED_CHECK();
 
     dtype dt = (dtype)dtype_traits<T>::af_type;
     array a  = randu(num, num, dt);
@@ -71,7 +71,7 @@ void rankBig(const int num) {
 template<typename T>
 void rankLow(const int num) {
     SUPPORTED_TYPE_CHECK(T);
-    if (noLAPACKTests()) return;
+    LAPACK_ENABLED_CHECK();
 
     dtype dt = (dtype)dtype_traits<T>::af_type;
 
@@ -93,14 +93,14 @@ TYPED_TEST(Rank, low) { rankBig<TypeParam>(512); }
 template<typename T>
 void detTest() {
     SUPPORTED_TYPE_CHECK(T);
-    if (noLAPACKTests()) return;
+    LAPACK_ENABLED_CHECK();
 
     dtype dt = (dtype)dtype_traits<T>::af_type;
 
     vector<dim4> numDims;
 
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
     readTests<float, float, float>(string(TEST_DIR "/lapack/detSmall.test"),
                                    numDims, in, tests);
     dim4 dims = numDims[0];
@@ -114,7 +114,7 @@ void detTest() {
 TYPED_TEST(Det, Small) { detTest<TypeParam>(); }
 
 TEST(Rank, NullOutput) {
-    if (noLAPACKTests()) return;
+    LAPACK_ENABLED_CHECK();
     dim4 dims(3, 3);
     af_array in = 0;
     af_randu(&in, dims.ndims(), dims.get(), f32);

@@ -13,6 +13,7 @@
 #include <queue.hpp>
 #include <shift.hpp>
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
@@ -42,3 +43,4 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 
 }  // namespace cpu
+}  // namespace arrayfire

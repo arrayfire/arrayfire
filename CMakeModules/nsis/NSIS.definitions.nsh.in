@@ -3,7 +3,7 @@
 !define MUI_WELCOMEPAGE_TEXT    \
 "ArrayFire is a high performance software library for parallel computing with an easy-to-use API.\r\n\r\n\
 Its array based function set makes parallel programming simple.\r\n\r\n\
-ArrayFire's multiple backends (CUDA, OpenCL and native CPU) make it platform independent and highly portable.\r\n\r\n\
+ArrayFire's multiple backends (CUDA, OneAPI, OpenCL, and native CPU) make it platform independent and highly portable.\r\n\r\n\
 A few lines of code in ArrayFire can replace dozens of lines of parallel compute code, \
 saving you valuable time and lowering development costs.\r\n\r\n\
 Follow these steps to install the ArrayFire libraries."

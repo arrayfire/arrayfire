@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -45,7 +46,7 @@ void allDistances(Param dist, Param query, Param train, const dim_t dist_dim,
     unsigned unroll_len = nextpow2(feat_len);
     if (unroll_len != feat_len) unroll_len = 0;
 
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 4> targs = {
         TemplateTypename<T>(),
         TemplateArg(dist_type),
         TemplateArg(use_lmem),
@@ -70,8 +71,8 @@ void allDistances(Param dist, Param query, Param train, const dim_t dist_dim,
         options.emplace_back(DefineKeyValue(DISTOP, "_shd_"));
         options.emplace_back(DefineKey(__SHD__));
     }
-    auto hmOp = common::getKernel("knnAllDistances", {nearest_neighbour_cl_src},
-                                  targs, options);
+    auto hmOp = common::getKernel("knnAllDistances",
+                                  {{nearest_neighbour_cl_src}}, targs, options);
 
     const dim_t sample_dim = (dist_dim == 0) ? 1 : 0;
 
@@ -93,3 +94,4 @@ void allDistances(Param dist, Param query, Param train, const dim_t dist_dim,
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

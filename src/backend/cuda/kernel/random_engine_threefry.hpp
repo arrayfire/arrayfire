@@ -46,6 +46,7 @@
 
 #pragma once
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 // Utils
@@ -160,3 +161,4 @@ __device__ void threefry(uint k[2], uint c[2], uint X[2]) {
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

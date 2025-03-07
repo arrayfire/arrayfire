@@ -17,6 +17,7 @@
 #include <cuda_runtime_api.h>
 #include <jit/BufferNode.hpp>
 #include <memory.hpp>
+#include <platform.hpp>
 #include <traits.hpp>
 #include <types.hpp>
 #include <af/dim4.hpp>
@@ -25,11 +26,20 @@
 #include <nonstd/span.hpp>
 #include <vector>
 
+namespace arrayfire {
 namespace cuda {
+
 using af::dim4;
 
 template<typename T>
 class Array;
+
+/// Checks if the Array object can be migrated to the current device and if not,
+/// an error is thrown
+///
+/// \param[in] arr The Array that will be checked.
+template<typename T>
+void checkAndMigrate(Array<T> &arr);
 
 template<typename T>
 void evalNodes(Param<T> out, common::Node *node);
@@ -54,8 +64,17 @@ Array<T> createValueArray(const af::dim4 &dims, const T &value);
 template<typename T>
 Array<T> createHostDataArray(const af::dim4 &dims, const T *const data);
 
+/// Creates an Array<T> object from a device pointer.
+///
+/// \param[in] dims The shape of the resulting Array.
+/// \param[in] data The device pointer to the data
+/// \param[in] copy If true, memory will be allocated and the data will be
+///                 copied to the device. If false the data will be used
+///                 directly
+/// \returns The new Array<T> object based on the device pointer.
 template<typename T>
-Array<T> createDeviceDataArray(const af::dim4 &dims, void *data);
+Array<T> createDeviceDataArray(const af::dim4 &dims, void *data,
+                               bool copy = false);
 
 template<typename T>
 Array<T> createStridedArray(const af::dim4 &dims, const af::dim4 &strides,
@@ -144,6 +163,8 @@ class Array {
     Array(Param<T> &tmp, bool owner);
     Array(const af::dim4 &dims, common::Node_ptr n);
 
+    std::shared_ptr<T> getData() const { return data; }
+
    public:
     Array(const Array<T> &other) = default;
 
@@ -215,7 +236,6 @@ class Array {
     void eval() const;
 
     dim_t getOffset() const { return info.getOffset(); }
-    std::shared_ptr<T> getData() const { return data; }
 
     dim4 getDataDims() const { return data_dims; }
 
@@ -266,7 +286,8 @@ class Array {
     friend Array<T> createValueArray<T>(const af::dim4 &size, const T &value);
     friend Array<T> createHostDataArray<T>(const af::dim4 &dims,
                                            const T *const data);
-    friend Array<T> createDeviceDataArray<T>(const af::dim4 &dims, void *data);
+    friend Array<T> createDeviceDataArray<T>(const af::dim4 &dims, void *data,
+                                             bool copy);
     friend Array<T> createStridedArray<T>(const af::dim4 &dims,
                                           const af::dim4 &strides, dim_t offset,
                                           const T *const in_data,
@@ -284,6 +305,8 @@ class Array {
     friend void destroyArray<T>(Array<T> *arr);
     friend void *getDevicePtr<T>(const Array<T> &arr);
     friend void *getRawPtr<T>(const Array<T> &arr);
+    friend void checkAndMigrate<T>(Array<T> &arr);
 };
 
 }  // namespace cuda
+}  // namespace arrayfire

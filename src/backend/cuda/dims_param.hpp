@@ -9,6 +9,7 @@
 
 #pragma once
 
+namespace arrayfire {
 namespace cuda {
 
 typedef struct {
@@ -16,3 +17,4 @@ typedef struct {
 } dims_t;
 
 }  // namespace cuda
+}  // namespace arrayfire

@@ -12,6 +12,7 @@
 #include <Param.hpp>
 #include <math.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
@@ -56,3 +57,4 @@ __global__ void range(Param<T> out, const int dim, const int blocksPerMatX,
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

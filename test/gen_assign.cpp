@@ -38,8 +38,8 @@ using std::vector;
 void testGeneralAssignOneArray(string pTestFile, const dim_t ndims,
                                af_index_t *indexs, int arrayDim) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTestsFromFile<float, float>(pTestFile, numDims, in, tests);
 
@@ -105,8 +105,8 @@ TEST(GeneralAssign, SASS) {
 
 TEST(GeneralAssign, SSSS) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTestsFromFile<float, float>(
         string(TEST_DIR "/gen_assign/s10_14s0_9s0_ns0_n.test"), numDims, in,
@@ -152,8 +152,8 @@ TEST(GeneralAssign, SSSS) {
 
 TEST(GeneralAssign, AAAA) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTestsFromFile<float, float>(string(TEST_DIR "/gen_assign/aaaa.test"),
                                     numDims, in, tests);
@@ -454,4 +454,47 @@ TEST(GeneralAssign, CPP_AANN) {
     freeHost(hB);
     freeHost(hIdx0);
     freeHost(hIdx1);
+}
+
+TEST(GeneralAssign, NDimsDoesNotMatchLDims) {
+    af_err err;
+    af_array zeros, l1, l2, sevens;
+    dim_t sevens_size[3] = {5, 1, 1};
+    short hsevens[5]     = {7, 7, 7, 7, 7};
+
+    dim_t zeros_size[3] = {5, 6, 1};
+    short hzeros[5 * 6] = {0};
+
+    dim_t hone[1] = {1};
+
+    ASSERT_SUCCESS(af_create_array(&zeros, hzeros, 3, zeros_size, s16));
+    ASSERT_SUCCESS(af_create_array(&sevens, hsevens, 3, sevens_size, s16));
+    ASSERT_SUCCESS(af_create_array(&l2, hone, 1, hone, s64));
+
+    af_index_t *ix;
+    ASSERT_SUCCESS(af_create_indexers(&ix));
+    ASSERT_SUCCESS(af_set_array_indexer(ix, l2, 1));
+
+    // clang-format off
+    vector<short> gold = {
+            0, 0, 0, 0, 0,
+            7, 7, 7, 7, 7,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+        };
+    // clang-format on
+    for (int number_of_indices = 2; number_of_indices < 4;
+         number_of_indices++) {
+        af_array result = 0;
+        ASSERT_SUCCESS(
+            af_assign_gen(&result, zeros, number_of_indices, ix, sevens));
+
+        ASSERT_VEC_ARRAY_EQ(gold, dim4(3, zeros_size), af::array(result));
+    }
+    ASSERT_SUCCESS(af_release_array(zeros));
+    ASSERT_SUCCESS(af_release_array(sevens));
+    ASSERT_SUCCESS(af_release_array(l2));
+    ASSERT_SUCCESS(af_release_indexers(ix));
 }

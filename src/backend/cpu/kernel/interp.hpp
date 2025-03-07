@@ -13,6 +13,7 @@
 #include <af/constants.h>
 #include <type_traits>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -349,3 +350,4 @@ struct Interp2<InT, LocT, 3> {
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

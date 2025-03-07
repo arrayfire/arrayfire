@@ -11,25 +11,24 @@
 #include <common/jit/ShiftNodeBase.hpp>
 #include <err_cuda.hpp>
 #include <jit/BufferNode.hpp>
+#include <jit/ShiftNode.hpp>
 #include <shift.hpp>
 
 #include <memory>
 
 using af::dim4;
 
-using common::Node_ptr;
-using common::ShiftNodeBase;
-
-using cuda::jit::BufferNode;
+using arrayfire::common::Node_ptr;
+using arrayfire::cuda::jit::BufferNode;
+using arrayfire::cuda::jit::ShiftNode;
 
 using std::array;
 using std::make_shared;
 using std::static_pointer_cast;
 using std::string;
 
+namespace arrayfire {
 namespace cuda {
-template<typename T>
-using ShiftNode = ShiftNodeBase<BufferNode<T>>;
 
 template<typename T>
 Array<T> shift(const Array<T> &in, const int sdims[4]) {
@@ -74,3 +73,4 @@ INSTANTIATE(char)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 }  // namespace cuda
+}  // namespace arrayfire

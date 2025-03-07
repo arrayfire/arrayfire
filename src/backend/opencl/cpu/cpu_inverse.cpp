@@ -13,6 +13,7 @@
 #include <cpu/cpu_inverse.hpp>
 #include <cpu/cpu_lu.hpp>
 
+namespace arrayfire {
 namespace opencl {
 namespace cpu {
 
@@ -68,4 +69,5 @@ INSTANTIATE(cdouble)
 
 }  // namespace cpu
 }  // namespace opencl
+}  // namespace arrayfire
 #endif  // WITH_LINEAR_ALGEBRA

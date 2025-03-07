@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <vector>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -202,3 +203,4 @@ void medfilt2(Param<T> out, CParam<T> in, dim_t w_len, dim_t w_wid) {
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

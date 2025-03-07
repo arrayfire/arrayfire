@@ -17,7 +17,7 @@
 #include <cctype>
 #include <sstream>
 
-using common::memory::MemoryManagerBase;
+using arrayfire::common::MemoryManagerBase;
 using std::string;
 
 #ifdef CPUID_CAPABLE
@@ -119,11 +119,12 @@ CPUInfo::CPUInfo()
 
 #endif
 
+namespace arrayfire {
 namespace cpu {
 
 DeviceManager::DeviceManager()
     : queues(MAX_QUEUES)
-    , fgMngr(new graphics::ForgeManager())
+    , fgMngr(new common::ForgeManager())
     , memManager(new common::DefaultMemoryManager(
           getDeviceCount(), common::MAX_BUFFERS,
           AF_MEM_DEBUG || AF_CPU_MEM_DEBUG)) {
@@ -180,3 +181,4 @@ void DeviceManager::resetMemoryManagerPinned() {
 }
 
 }  // namespace cpu
+}  // namespace arrayfire

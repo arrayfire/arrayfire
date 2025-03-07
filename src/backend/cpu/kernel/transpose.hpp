@@ -12,6 +12,7 @@
 #include <err_cpu.hpp>
 #include <utility.hpp>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -178,3 +179,4 @@ void transpose_inplace(Param<T> in, const bool conjugate) {
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

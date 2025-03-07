@@ -22,11 +22,12 @@ using std::make_shared;
 using std::shared_ptr;
 using std::vector;
 
+namespace arrayfire {
 namespace common {
 template<typename T>
 Array<T> moddimOp(const Array<T> &in, af::dim4 outDim) {
-    using common::Node;
-    using common::Node_ptr;
+    using arrayfire::common::Node;
+    using arrayfire::common::Node_ptr;
     using std::array;
 
     auto createModdim = [outDim](array<Node_ptr, 1> &operands) {
@@ -80,18 +81,19 @@ detail::Array<T> flat(const detail::Array<T> &in) {
 }
 
 }  // namespace common
+}  // namespace arrayfire
 
-#define INSTANTIATE(TYPE)                                        \
-    template detail::Array<TYPE> common::modDims<TYPE>(          \
-        const detail::Array<TYPE> &in, const af::dim4 &newDims); \
-    template detail::Array<TYPE> common::flat<TYPE>(             \
+#define INSTANTIATE(TYPE)                                          \
+    template detail::Array<TYPE> arrayfire::common::modDims<TYPE>( \
+        const detail::Array<TYPE> &in, const af::dim4 &newDims);   \
+    template detail::Array<TYPE> arrayfire::common::flat<TYPE>(    \
         const detail::Array<TYPE> &in)
 
 INSTANTIATE(float);
 INSTANTIATE(double);
 INSTANTIATE(detail::cfloat);
 INSTANTIATE(detail::cdouble);
-INSTANTIATE(common::half);
+INSTANTIATE(arrayfire::common::half);
 INSTANTIATE(unsigned char);
 INSTANTIATE(char);
 INSTANTIATE(unsigned short);

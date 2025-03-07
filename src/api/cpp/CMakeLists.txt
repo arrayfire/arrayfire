@@ -90,7 +90,9 @@ target_sources(cpp_api_interface
 )
 
 target_include_directories(cpp_api_interface
+  SYSTEM INTERFACE
+    ${ArrayFire_SOURCE_DIR}/extern/half/include)
+
+target_include_directories(cpp_api_interface
   INTERFACE
-    ${CMAKE_SOURCE_DIR}/src/api/c
-    ${ArrayFire_SOURCE_DIR}/extern/half/include
-)
+    ${CMAKE_SOURCE_DIR}/src/api/c)

@@ -44,8 +44,8 @@ typedef ::testing::Types<float, double> TestTypesF;
 typedef ::testing::Types<cfloat, cdouble> TestTypesC;
 
 // register the type list
-TYPED_TEST_CASE(DotF, TestTypesF);
-TYPED_TEST_CASE(DotC, TestTypesC);
+TYPED_TEST_SUITE(DotF, TestTypesF);
+TYPED_TEST_SUITE(DotC, TestTypesC);
 
 bool isinf(af::af_cfloat val) {
     using std::isinf;
@@ -63,8 +63,8 @@ void dotTest(string pTestFile, const int resultIdx,
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
 
     readTests<T, T, T>(pTestFile, numDims, in, tests);
 
@@ -118,8 +118,8 @@ void dotAllTest(string pTestFile, const int resultIdx,
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
 
     readTests<T, T, T>(pTestFile, numDims, in, tests);
 
@@ -194,8 +194,8 @@ INSTANTIATEC(25600, dot_c_25600);
 //
 TEST(DotF, CPP) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTests<float, float, float>(TEST_DIR "/blas/dot_f_1000.test", numDims,
                                    in, tests);
@@ -215,8 +215,8 @@ TEST(DotF, CPP) {
 
 TEST(DotCCU, CPP) {
     vector<dim4> numDims;
-    vector<vector<cfloat> > in;
-    vector<vector<cfloat> > tests;
+    vector<vector<cfloat>> in;
+    vector<vector<cfloat>> tests;
 
     readTests<cfloat, cfloat, cfloat>(TEST_DIR "/blas/dot_c_1000.test", numDims,
                                       in, tests);
@@ -236,8 +236,8 @@ TEST(DotCCU, CPP) {
 
 TEST(DotAllF, CPP) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTests<float, float, float>(TEST_DIR "/blas/dot_f_1000.test", numDims,
                                    in, tests);
@@ -257,8 +257,8 @@ TEST(DotAllF, CPP) {
 
 TEST(DotAllCCU, CPP) {
     vector<dim4> numDims;
-    vector<vector<cfloat> > in;
-    vector<vector<cfloat> > tests;
+    vector<vector<cfloat>> in;
+    vector<vector<cfloat>> tests;
 
     readTests<cfloat, cfloat, cfloat>(TEST_DIR "/blas/dot_c_1000.test", numDims,
                                       in, tests);
@@ -301,11 +301,11 @@ std::string print_dot(const ::testing::TestParamInfo<Dot::ParamType> info) {
     return ss.str();
 }
 
-INSTANTIATE_TEST_CASE_P(Small, Dot,
-                        ::testing::Values(2, 4, 5, 10, 31, 32, 33, 100, 127,
-                                          128, 129, 200, 500, 511, 512, 513,
-                                          1000),
-                        print_dot);
+INSTANTIATE_TEST_SUITE_P(Small, Dot,
+                         ::testing::Values(2, 4, 5, 10, 31, 32, 33, 100, 127,
+                                           128, 129, 200, 500, 511, 512, 513,
+                                           1000),
+                         print_dot);
 
 TEST_P(Dot, Half) {
     SUPPORTED_TYPE_CHECK(half_float::half);

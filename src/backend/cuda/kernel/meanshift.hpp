@@ -13,8 +13,10 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/meanshift_cuh.hpp>
 
+#include <array>
 #include <type_traits>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -27,11 +29,10 @@ void meanshift(Param<T> out, CParam<T> in, const float spatialSigma,
     typedef typename std::conditional<std::is_same<T, double>::value, double,
                                       float>::type AccType;
     auto meanshift = common::getKernel(
-        "cuda::meanshift", {meanshift_cuh_src},
-        {
-            TemplateTypename<AccType>(), TemplateTypename<T>(),
-            TemplateArg((IsColor ? 3 : 1))  // channels
-        });
+        "arrayfire::cuda::meanshift", {{meanshift_cuh_src}},
+        TemplateArgs(TemplateTypename<AccType>(), TemplateTypename<T>(),
+                     TemplateArg((IsColor ? 3 : 1))  // channels
+                     ));
 
     static dim3 threads(kernel::THREADS_X, kernel::THREADS_Y);
 
@@ -52,3 +53,4 @@ void meanshift(Param<T> out, CParam<T> in, const float spatialSigma,
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

@@ -15,7 +15,7 @@
 #include <mutex>
 #include <string>
 
-using common::memory::MemoryManagerBase;
+using arrayfire::common::MemoryManagerBase;
 
 #ifndef AF_CPU_MEM_DEBUG
 #define AF_CPU_MEM_DEBUG 0
@@ -86,6 +86,7 @@ class CPUInfo {
     bool mIsHTT;
 };
 
+namespace arrayfire {
 namespace cpu {
 
 class DeviceManager {
@@ -117,7 +118,7 @@ class DeviceManager {
 
     void resetMemoryManagerPinned();
 
-    friend graphics::ForgeManager& forgeManager();
+    friend arrayfire::common::ForgeManager& forgeManager();
 
     void setMemoryManager(std::unique_ptr<MemoryManagerBase> mgr);
 
@@ -131,15 +132,16 @@ class DeviceManager {
     // avoid copying accidental copy/assignment
     // of instance returned by getInstance to other
     // variables
-    DeviceManager(DeviceManager const&) = delete;
+    DeviceManager(DeviceManager const&)  = delete;
     void operator=(DeviceManager const&) = delete;
 
     // Attributes
     std::vector<queue> queues;
-    std::unique_ptr<graphics::ForgeManager> fgMngr;
+    std::unique_ptr<arrayfire::common::ForgeManager> fgMngr;
     const CPUInfo cinfo;
     std::unique_ptr<MemoryManagerBase> memManager;
     std::mutex mutex;
 };
 
 }  // namespace cpu
+}  // namespace arrayfire

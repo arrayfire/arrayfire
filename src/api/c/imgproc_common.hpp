@@ -19,6 +19,7 @@
 
 #include <cmath>
 
+namespace arrayfire {
 namespace common {
 
 template<typename To, typename Ti = To>
@@ -78,3 +79,4 @@ detail::Array<To> convRange(const detail::Array<Ti>& in,
 }
 
 }  // namespace common
+}  // namespace arrayfire

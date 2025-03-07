@@ -10,6 +10,7 @@
 #pragma once
 #include <Param.hpp>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -17,6 +18,7 @@ namespace kernel {
 
 #include <intrin.h>
 #define __builtin_popcount __popcnt
+#define __builtin_popcountll __popcnt64
 
 #endif
 
@@ -44,7 +46,7 @@ struct dist_op<uint, To, AF_SHD> {
 
 template<typename To>
 struct dist_op<uintl, To, AF_SHD> {
-    To operator()(uintl v1, uintl v2) { return __builtin_popcount(v1 ^ v2); }
+    To operator()(uintl v1, uintl v2) { return __builtin_popcountll(v1 ^ v2); }
 };
 
 template<typename To>
@@ -97,3 +99,4 @@ void nearest_neighbour(Param<To> dists, CParam<T> query, CParam<T> train,
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

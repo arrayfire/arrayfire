@@ -13,17 +13,19 @@
 
 #include <GraphicsResourceManager.hpp>
 #include <blas.hpp>
+#include <build_version.hpp>
 #include <clfft.hpp>
+#include <common/ArrayFireTypesIO.hpp>
 #include <common/DefaultMemoryManager.hpp>
 #include <common/Logger.hpp>
+#include <common/Version.hpp>
 #include <common/host_memory.hpp>
 #include <common/util.hpp>
 #include <device_manager.hpp>
 #include <err_opencl.hpp>
 #include <errorcodes.hpp>
-#include <version.hpp>
+#include <platform.hpp>
 #include <af/version.h>
-#include <memory>
 
 #ifdef OS_MAC
 #include <OpenGL/CGLCurrent.h>
@@ -36,6 +38,7 @@
 #include <cstdlib>
 #include <functional>
 #include <map>
+#include <memory>
 #include <mutex>
 #include <sstream>
 #include <string>
@@ -65,10 +68,14 @@ using std::to_string;
 using std::unique_ptr;
 using std::vector;
 
-using common::memory::MemoryManagerBase;
-using opencl::Allocator;
-using opencl::AllocatorPinned;
+using arrayfire::common::getEnvVar;
+using arrayfire::common::ltrim;
+using arrayfire::common::MemoryManagerBase;
+using arrayfire::common::Version;
+using arrayfire::opencl::Allocator;
+using arrayfire::opencl::AllocatorPinned;
 
+namespace arrayfire {
 namespace opencl {
 
 static string get_system() {
@@ -117,7 +124,7 @@ static string platformMap(string& platStr) {
     }
 }
 
-afcl::platform getPlatformEnum(cl::Device dev) {
+afcl::platform getPlatformEnum(Device dev) {
     string pname = getPlatformName(dev);
     if (verify_present(pname, "AMD"))
         return AFCL_PLATFORM_AMD;
@@ -170,8 +177,6 @@ string getDeviceInfo() noexcept {
                             0
                         ? "True"
                         : "False");
-            info << " -- Unified Memory ("
-                 << (isHostUnifiedMemory(*device) ? "True" : "False") << ")";
 #endif
             info << endl;
 
@@ -186,7 +191,7 @@ string getDeviceInfo() noexcept {
     return info.str();
 }
 
-string getPlatformName(const cl::Device& device) {
+string getPlatformName(const Device& device) {
     const Platform platform(device.getInfo<CL_DEVICE_PLATFORM>());
     string platStr = platform.getInfo<CL_PLATFORM_NAME>();
     return platformMap(platStr);
@@ -218,7 +223,12 @@ int getDeviceCount() noexcept try {
     return 0;
 }
 
-unsigned getActiveDeviceId() {
+void init() {
+    thread_local const DeviceManager& devMngr = DeviceManager::getInstance();
+    UNUSED(devMngr);
+}
+
+int getActiveDeviceId() {
     // Second element is the queue id, which is
     // what we mean by active device id in opencl backend
     return get<1>(tlocalActiveDeviceId());
@@ -248,15 +258,36 @@ int getActiveDeviceType() {
     return devMngr.mDeviceTypes[get<1>(devId)];
 }
 
-int getActivePlatform() {
+cl::Platform& getActivePlatform() {
     device_id_t& devId = tlocalActiveDeviceId();
 
     DeviceManager& devMngr = DeviceManager::getInstance();
 
     common::lock_guard_t lock(devMngr.deviceMutex);
 
-    return devMngr.mPlatforms[get<1>(devId)];
+    return *devMngr.mPlatforms[get<1>(devId)].first;
 }
+
+afcl::platform getActivePlatformVendor() {
+    device_id_t& devId = tlocalActiveDeviceId();
+
+    DeviceManager& devMngr = DeviceManager::getInstance();
+
+    common::lock_guard_t lock(devMngr.deviceMutex);
+
+    return devMngr.mPlatforms[get<1>(devId)].second;
+}
+
+bool isDeviceBufferAccessible(int buf_device_id, int execution_id) {
+    DeviceManager& devMngr = DeviceManager::getInstance();
+
+    common::lock_guard_t lock(devMngr.deviceMutex);
+
+    return buf_device_id == execution_id ||
+           *devMngr.mContexts[buf_device_id] ==
+               *devMngr.mContexts[execution_id];
+}
+
 const Context& getContext() {
     device_id_t& devId = tlocalActiveDeviceId();
 
@@ -267,9 +298,18 @@ const Context& getContext() {
     return *(devMngr.mContexts[get<0>(devId)]);
 }
 
-CommandQueue& getQueue() {
-    device_id_t& devId = tlocalActiveDeviceId();
+cl_command_queue getQueueHandle(int device_id) {
+    DeviceManager& devMngr = DeviceManager::getInstance();
 
+    common::lock_guard_t lock(devMngr.deviceMutex);
+
+    return (*(devMngr.mQueues[device_id]))();
+}
+
+CommandQueue& getQueue(int device_id) {
+    device_id_t devId =
+        (device_id = -1) ? tlocalActiveDeviceId()
+                         : make_pair<unsigned, unsigned>(device_id, device_id);
     DeviceManager& devMngr = DeviceManager::getInstance();
 
     common::lock_guard_t lock(devMngr.deviceMutex);
@@ -277,7 +317,7 @@ CommandQueue& getQueue() {
     return *(devMngr.mQueues[get<1>(devId)]);
 }
 
-const cl::Device& getDevice(int id) {
+const Device& getDevice(int id) {
     device_id_t& devId = tlocalActiveDeviceId();
 
     if (id == -1) { id = get<1>(devId); }
@@ -286,6 +326,52 @@ const cl::Device& getDevice(int id) {
 
     common::lock_guard_t lock(devMngr.deviceMutex);
     return *(devMngr.mDevices[id]);
+}
+
+const std::string& getActiveDeviceBaseBuildFlags() {
+    device_id_t& devId     = tlocalActiveDeviceId();
+    DeviceManager& devMngr = DeviceManager::getInstance();
+
+    common::lock_guard_t lock(devMngr.deviceMutex);
+    return devMngr.mBaseBuildFlags[get<1>(devId)];
+}
+
+vector<Version> getOpenCLCDeviceVersion(const Device& device) {
+    // For OpenCL-HPP >= v2023.12.14 type is cl::Platform instead of
+    // cl_platform_id
+    Platform device_platform;
+    device_platform = device.getInfo<CL_DEVICE_PLATFORM>();
+
+    auto platform_version = device_platform.getInfo<CL_PLATFORM_VERSION>();
+    vector<Version> out;
+
+    /// The ifdef allows us to support BUILDING ArrayFire with older
+    /// versions of OpenCL where as the if condition in the ifdef allows us
+    /// to support older versions of OpenCL at runtime
+#ifdef CL_DEVICE_OPENCL_C_ALL_VERSIONS
+    if (platform_version.substr(7).c_str()[0] >= '3') {
+        vector<cl_name_version> device_versions =
+            device.getInfo<CL_DEVICE_OPENCL_C_ALL_VERSIONS>();
+        sort(begin(device_versions), end(device_versions),
+             [](const auto& lhs, const auto& rhs) {
+                 return lhs.version < rhs.version;
+             });
+        transform(begin(device_versions), end(device_versions),
+                  std::back_inserter(out), [](const cl_name_version& version) {
+                      return Version(CL_VERSION_MAJOR(version.version),
+                                     CL_VERSION_MINOR(version.version),
+                                     CL_VERSION_PATCH(version.version));
+                  });
+    } else {
+#endif
+        auto device_version = device.getInfo<CL_DEVICE_OPENCL_C_VERSION>();
+        int major           = atoi(device_version.substr(9, 1).c_str());
+        int minor           = atoi(device_version.substr(11, 1).c_str());
+        out.emplace_back(major, minor);
+#ifdef CL_DEVICE_OPENCL_C_ALL_VERSIONS
+    }
+#endif
+    return out;
 }
 
 size_t getDeviceMemorySize(int device) {
@@ -309,14 +395,10 @@ cl_device_type getDeviceType() {
     return type;
 }
 
-bool isHostUnifiedMemory(const cl::Device& device) {
-    return device.getInfo<CL_DEVICE_HOST_UNIFIED_MEMORY>();
-}
-
 bool OpenCLCPUOffload(bool forceOffloadOSX) {
     static const bool offloadEnv = getEnvVar("AF_OPENCL_CPU_OFFLOAD") != "0";
     bool offload                 = false;
-    if (offloadEnv) { offload = isHostUnifiedMemory(getDevice()); }
+    if (offloadEnv) { offload = getDeviceType() == CL_DEVICE_TYPE_CPU; }
 #if OS_MAC
     // FORCED OFFLOAD FOR LAPACK FUNCTIONS ON OSX UNIFIED MEMORY DEVICES
     //
@@ -326,11 +408,9 @@ bool OpenCLCPUOffload(bool forceOffloadOSX) {
     // variable inconsequential to the returned result.
     //
     // Issue https://github.com/arrayfire/arrayfire/issues/662
-    //
-    // Make sure device has unified memory
-    bool osx_offload = isHostUnifiedMemory(getDevice());
     // Force condition
-    offload = osx_offload && (offload || forceOffloadOSX);
+    bool osx_offload = getDeviceType() == CL_DEVICE_TYPE_CPU;
+    offload          = osx_offload && (offload || forceOffloadOSX);
 #else
     UNUSED(forceOffloadOSX);
 #endif
@@ -355,9 +435,7 @@ bool isDoubleSupported(unsigned device) {
         common::lock_guard_t lock(devMngr.deviceMutex);
         dev = *devMngr.mDevices[device];
     }
-    // 64bit fp is an optional extension
-    return (dev.getInfo<CL_DEVICE_EXTENSIONS>().find("cl_khr_fp64") !=
-            string::npos);
+    return isDoubleSupported(dev);
 }
 
 bool isHalfSupported(unsigned device) {
@@ -368,9 +446,7 @@ bool isHalfSupported(unsigned device) {
         common::lock_guard_t lock(devMngr.deviceMutex);
         dev = *devMngr.mDevices[device];
     }
-    // 16bit fp is an option extension
-    return (dev.getInfo<CL_DEVICE_EXTENSIONS>().find("cl_khr_fp16") !=
-            string::npos);
+    return isHalfSupported(dev);
 }
 
 void devprop(char* d_name, char* d_platform, char* d_toolkit, char* d_compute) {
@@ -458,21 +534,42 @@ void addDeviceContext(cl_device_id dev, cl_context ctx, cl_command_queue que) {
     {
         common::lock_guard_t lock(devMngr.deviceMutex);
 
-        auto tDevice  = make_unique<cl::Device>(dev, true);
-        auto tContext = make_unique<cl::Context>(ctx, true);
+        cl::Device tDevice(dev, true);
+        cl::Context tContext(ctx, true);
         auto tQueue =
-            (que == NULL ? make_unique<cl::CommandQueue>(*tContext, *tDevice)
+            (que == NULL ? make_unique<cl::CommandQueue>(tContext, tDevice)
                          : make_unique<cl::CommandQueue>(que, true));
-        devMngr.mPlatforms.push_back(getPlatformEnum(*tDevice));
         // FIXME: add OpenGL Interop for user provided contexts later
         devMngr.mIsGLSharingOn.push_back(false);
         devMngr.mDeviceTypes.push_back(
-            static_cast<int>(tDevice->getInfo<CL_DEVICE_TYPE>()));
+            static_cast<int>(tDevice.getInfo<CL_DEVICE_TYPE>()));
 
-        devMngr.mDevices.push_back(move(tDevice));
-        devMngr.mContexts.push_back(move(tContext));
+        // For OpenCL-HPP >= v2023.12.14 type is cl::Platform instead of
+        // cl_platform_id
+        cl::Platform device_platform;
+        device_platform = tDevice.getInfo<CL_DEVICE_PLATFORM>();
+        devMngr.mPlatforms.push_back(
+            std::make_pair<std::unique_ptr<cl::Platform>, afcl_platform>(
+                make_unique<cl::Platform>(device_platform(), true),
+                getPlatformEnum(tDevice)));
+
+        devMngr.mDevices.emplace_back(make_unique<cl::Device>(move(tDevice)));
+        devMngr.mContexts.emplace_back(
+            make_unique<cl::Context>(move(tContext)));
         devMngr.mQueues.push_back(move(tQueue));
         nDevices = static_cast<int>(devMngr.mDevices.size()) - 1;
+
+        auto versions = getOpenCLCDeviceVersion(*(devMngr.mDevices.back()));
+#ifdef AF_WITH_FAST_MATH
+        std::string options =
+            fmt::format(" -cl-std=CL{:Mm} -D dim_t={} -cl-fast-relaxed-math",
+                        versions.back(), dtype_traits<dim_t>::getName());
+#else
+        std::string options =
+            fmt::format(" -cl-std=CL{:Mm} -D dim_t={}", versions.back(),
+                        dtype_traits<dim_t>::getName());
+#endif
+        devMngr.mBaseBuildFlags.push_back(options);
 
         // cache the boost program_cache object, clean up done on program exit
         // not during removeDeviceContext
@@ -516,7 +613,8 @@ void removeDeviceContext(cl_device_id dev, cl_context ctx) {
         common::lock_guard_t lock(devMngr.deviceMutex);
 
         const int dCount = static_cast<int>(devMngr.mDevices.size());
-        for (int i = 0; i < dCount; ++i) {
+        for (int i = static_cast<int>(devMngr.mUserDeviceOffset); i < dCount;
+             ++i) {
             if (devMngr.mDevices[i]->operator()() == dev &&
                 devMngr.mContexts[i]->operator()() == ctx) {
                 deleteIdx = i;
@@ -645,7 +743,7 @@ void resetMemoryManagerPinned() {
     return DeviceManager::getInstance().resetMemoryManagerPinned();
 }
 
-graphics::ForgeManager& forgeManager() {
+arrayfire::common::ForgeManager& forgeManager() {
     return *(DeviceManager::getInstance().fgMngr);
 }
 
@@ -670,8 +768,9 @@ PlanCache& fftManager() {
 }
 
 }  // namespace opencl
+}  // namespace arrayfire
 
-using namespace opencl;
+using namespace arrayfire::opencl;
 
 af_err afcl_get_device_type(afcl_device_type* res) {
     try {
@@ -683,7 +782,7 @@ af_err afcl_get_device_type(afcl_device_type* res) {
 
 af_err afcl_get_platform(afcl_platform* res) {
     try {
-        *res = static_cast<afcl_platform>(getActivePlatform());
+        *res = static_cast<afcl_platform>(getActivePlatformVendor());
     }
     CATCHALL;
     return AF_SUCCESS;

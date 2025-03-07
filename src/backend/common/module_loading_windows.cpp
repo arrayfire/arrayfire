@@ -15,6 +15,7 @@
 
 using std::string;
 
+namespace arrayfire {
 namespace common {
 
 void* getFunctionPointer(LibHandle handle, const char* symbolName) {
@@ -40,3 +41,4 @@ string getErrorMessage() {
 }
 
 }  // namespace common
+}  // namespace arrayfire

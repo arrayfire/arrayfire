@@ -9,7 +9,9 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace cuda {
 template<typename T>
 Array<float> moments(const Array<T> &in, const af_moment_type moment);
-}
+}  // namespace cuda
+}  // namespace arrayfire

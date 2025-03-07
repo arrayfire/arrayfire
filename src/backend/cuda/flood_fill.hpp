@@ -12,6 +12,7 @@
 #include <Array.hpp>
 #include <af/defines.h>
 
+namespace arrayfire {
 namespace cuda {
 template<typename T>
 Array<T> floodFill(const Array<T>& image, const Array<uint>& seedsX,
@@ -19,3 +20,4 @@ Array<T> floodFill(const Array<T>& image, const Array<uint>& seedsX,
                    const T lowValue, const T highValue,
                    const af::connectivity nlookup = AF_CONNECTIVITY_8);
 }  // namespace cuda
+}  // namespace arrayfire

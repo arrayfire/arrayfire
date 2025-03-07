@@ -22,7 +22,7 @@ int main(int, char**) {
         af::info();
         af::Window myWindow(1024, 1024, "2D Vector Field example: ArrayFire");
 
-        myWindow.grid(1, 2);
+        myWindow.grid(2, 2);
 
         array dataRange = seq(MINIMUM, MAXIMUM, STEP);
 
@@ -38,12 +38,21 @@ int main(int, char**) {
             array saddle = join(1, flat(x), -1.0f * flat(y));
 
             array bvals = sin(scale * (x * x + y * y));
-            array hbowl = join(1, constant(1, x.elements()), flat(bvals));
+            array hbowl = join(1, constant(1., x.elements()), flat(bvals));
             hbowl.eval();
 
+            // 2D points
             myWindow(0, 0).vectorField(points, saddle, "Saddle point");
             myWindow(0, 1).vectorField(
                 points, hbowl, "hilly bowl (in a loop with varying amplitude)");
+
+            // 2D coordinates
+            myWindow(1, 0).vectorField(2.0 * flat(x), flat(y), flat(x),
+                                       -flat(y), "Saddle point");
+            myWindow(1, 1).vectorField(
+                2.0 * flat(x), flat(y), constant(1., x.elements()), flat(bvals),
+                "hilly bowl (in a loop with varying amplitude)");
+
             myWindow.show();
 
             scale -= 0.0010f;

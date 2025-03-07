@@ -10,6 +10,7 @@
 #pragma once
 #include <Param.hpp>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -202,8 +203,9 @@ void reorderHelper(To* out_ptr, const af::dim4& od, const af::dim4& os,
                                 (float)((in_ptr[iidx1] + in_ptr[iidx2]) /
                                         fftScale));
                         else
-                            out_ptr[oidx] = (To)(
-                                (in_ptr[iidx1] + in_ptr[iidx2]) / fftScale);
+                            out_ptr[oidx] =
+                                (To)((in_ptr[iidx1] + in_ptr[iidx2]) /
+                                     fftScale);
                     } else {
                         // Copy bottom elements
                         const int iidx =
@@ -250,3 +252,4 @@ void reorder(Param<T> out, Param<convT> packed, CParam<T> filter,
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

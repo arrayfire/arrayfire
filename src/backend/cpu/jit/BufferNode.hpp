@@ -18,6 +18,7 @@
 #include <sstream>
 #include <string>
 
+namespace arrayfire {
 namespace cpu {
 
 namespace jit {
@@ -34,7 +35,7 @@ class BufferNode : public TNode<T> {
 
    public:
     BufferNode()
-        : TNode<T>(T(0), 0, {})
+        : TNode<T>(T(0), 0, {}, common::kNodeType::Buffer)
         , m_bytes(0)
         , m_strides{0, 0, 0, 0}
         , m_dims{0, 0, 0, 0}
@@ -118,7 +119,8 @@ class BufferNode : public TNode<T> {
     }
 
     int setArgs(int start_id, bool is_linear,
-                std::function<void(int id, const void *ptr, size_t arg_size)>
+                std::function<void(int id, const void *ptr, size_t arg_size,
+                                   bool is_buffer)>
                     setArg) const override {
         UNUSED(is_linear);
         UNUSED(setArg);
@@ -143,8 +145,6 @@ class BufferNode : public TNode<T> {
                dims[1] == m_dims[1] && dims[2] == m_dims[2] &&
                dims[3] == m_dims[3];
     }
-
-    bool isBuffer() const final { return true; }
 
     size_t getHash() const noexcept final {
         std::hash<const void *> ptr_hash;
@@ -179,3 +179,4 @@ class BufferNode : public TNode<T> {
 
 }  // namespace jit
 }  // namespace cpu
+}  // namespace arrayfire

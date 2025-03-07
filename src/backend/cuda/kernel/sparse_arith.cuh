@@ -13,6 +13,7 @@
 #include <math.hpp>
 #include <optypes.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T, af_op_t op>
@@ -152,3 +153,4 @@ __global__ void cooArithSSD(Param<T> values, Param<int> rowIdx,
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

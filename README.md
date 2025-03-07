@@ -1,14 +1,15 @@
-
 <p align="center"><a href="http://arrayfire.com/"><img src="http://arrayfire.com/logos/arrayfire_logo_whitebkgnd.png" width="800"></a></p>
 
-ArrayFire is a general-purpose tensor library that simplifies the process of
-software development for the parallel architectures found in CPUs, GPUs, and
-other hardware acceleration devices. The library serves users in every technical
-computing market.
+ArrayFire is a general-purpose tensor library that simplifies the software
+development process for the parallel architectures found in CPUs, GPUs, and
+other hardware acceleration devices. The library serves users in every
+technical computing market.
 
 Several of ArrayFire's benefits include:
 
-* Hundreds of accelerated [tensor computing functions](https://arrayfire.org/docs/group__arrayfire__func.htm), in the following areas:
+* Hundreds of accelerated [tensor computing
+  functions](https://arrayfire.org/docs/group__arrayfire__func.htm), in the
+  following areas:
     * Array handling
     * Computer vision
     * Image processing
@@ -21,8 +22,10 @@ Several of ArrayFire's benefits include:
 * [Easy to use](http://arrayfire.org/docs/gettingstarted.htm), stable,
   [well-documented](http://arrayfire.org/docs) API
 * Rigorous benchmarks and tests ensuring top performance and numerical accuracy
-* Cross-platform compatibility with support for CUDA, OpenCL, and native CPU on Windows, Mac, and Linux
-* Built-in visualization functions through [Forge](https://github.com/arrayfire/forge)
+* Cross-platform compatibility with support for CUDA, oneAPI, OpenCL, and
+  native CPU on Windows, Mac, and Linux
+* Built-in visualization functions through
+  [Forge](https://github.com/arrayfire/forge)
 * Commercially friendly open-source licensing
 * Enterprise support from [ArrayFire](http://arrayfire.com)
 
@@ -33,19 +36,22 @@ translated into near-optimal kernels that execute on the computational device.
 
 ArrayFire runs on devices ranging from low-power mobile phones to high-power
 GPU-enabled supercomputers. ArrayFire runs on CPUs from all major vendors
-(Intel, AMD, ARM), GPUs from the prominent manufacturers (NVIDIA, AMD, and
-Qualcomm), as well as a variety of other accelerator devices on Windows, Mac,
-and Linux.
+(Intel, AMD, ARM), GPUs from the prominent manufacturers (AMD, Intel, NVIDIA,
+and Qualcomm), as well as a variety of other accelerator devices on Windows,
+Mac, and Linux.
 
 # Getting ArrayFire
 
-Instructions to [install][32] or to build ArrayFire from source can be found on the [wiki][1].
+Instructions to [install][32] or to build ArrayFire from source can be found on
+the [wiki][1].
 
 ### Conway's Game of Life Using ArrayFire
 
 Visit the [Wikipedia page][2] for a description of Conway's Game of Life.
 
-<img align="left" src="https://github.com/arrayfire/assets/blob/master/gifs/conway.gif" alt="Conway's Game of Life" height="256" width="256">
+<img align="left"
+src="https://github.com/arrayfire/assets/blob/master/gifs/conway.gif"
+alt="Conway's Game of Life" height="256" width="256">
 
 ```cpp
 static const float h_kernel[] = { 1, 1, 1, 1, 0, 1, 1, 1, 1 };
@@ -65,7 +71,9 @@ The complete source code can be found [here][3].
 
 ### Perceptron
 
-<img align="left" src="https://github.com/arrayfire/assets/blob/imgs_readme_improv/gifs/perceptron.gif" alt="Perceptron" height="400" width="300">
+<img align="left"
+src="https://github.com/arrayfire/assets/blob/imgs_readme_improv/gifs/perceptron.gif"
+alt="Perceptron" height="400" width="300">
 
 ```cpp
 array predict(const array &X, const array &W) {
@@ -131,9 +139,10 @@ Mission](https://github.com/arrayfire/arrayfire/wiki/The-ArrayFire-Mission-State
 for fast scientific computing for all.
 
 Contributions of any kind are welcome! Please refer to [the
-wiki](https://github.com/arrayfire/arrayfire/wiki) and our [Code of Conduct](33)
-to learn more about how you can get involved with the ArrayFire Community
-through [Sponsorship](https://github.com/arrayfire/arrayfire/wiki/Sponsorship),
+wiki](https://github.com/arrayfire/arrayfire/wiki) and our [Code of
+Conduct](33) to learn more about how you can get involved with the ArrayFire
+Community through
+[Sponsorship](https://github.com/arrayfire/arrayfire/wiki/Sponsorship),
 [Developer
 Commits](https://github.com/arrayfire/arrayfire/wiki/Contributing-Code-to-ArrayFire),
 or [Governance](https://github.com/arrayfire/arrayfire/wiki/Governance).
@@ -145,8 +154,8 @@ license](LICENSE). If you wish to cite ArrayFire in an academic publication,
 please use the following [citation document](.github/CITATION.md).
 
 ArrayFire development is funded by AccelerEyes LLC and several third parties,
-please see the list of [acknowledgements](ACKNOWLEDGEMENTS.md) for an expression
-of our gratitude.
+please see the list of [acknowledgements](ACKNOWLEDGEMENTS.md) for an
+expression of our gratitude.
 
 # Support and Contact Info
 
@@ -156,10 +165,10 @@ of our gratitude.
 
 # Trademark Policy
 
-The literal mark "ArrayFire" and ArrayFire logos are trademarks of
-AccelerEyes LLC (dba ArrayFire).
-If you wish to use either of these marks in your own project, please consult
-[ArrayFire's Trademark Policy](http://arrayfire.com/trademark-policy/)
+The literal mark "ArrayFire" and ArrayFire logos are trademarks of AccelerEyes
+LLC (dba ArrayFire). If you wish to use either of these marks in your own
+project, please consult [ArrayFire's Trademark
+Policy](http://arrayfire.com/trademark-policy/)
 
 [1]: https://github.com/arrayfire/arrayfire/wiki
 [2]: https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life

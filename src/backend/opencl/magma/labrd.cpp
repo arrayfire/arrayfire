@@ -203,7 +203,7 @@ magma_int_t magma_labrd_gpu(magma_int_t m, magma_int_t n, magma_int_t nb, Ty *a,
 
     using Tr = typename af::dtype_traits<Ty>::base_type;
 
-    constexpr bool is_cplx = common::is_complex<Ty>::value;
+    constexpr bool is_cplx = arrayfire::common::is_complex<Ty>::value;
 
     Tr *d = (Tr *)_d;
     Tr *e = (Tr *)_e;

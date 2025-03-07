@@ -13,6 +13,7 @@
 #include <type_traits>
 #include <vector>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 template<typename T, bool IsColor>
@@ -139,3 +140,4 @@ void meanShift(Param<T> out, CParam<T> in, const float spatialSigma,
 }
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

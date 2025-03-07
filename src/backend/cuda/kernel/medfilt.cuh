@@ -10,6 +10,7 @@
 #include <Param.hpp>
 #include <shared.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 // Exchange trick: Morgan McGuire, ShaderX 2008
@@ -20,16 +21,14 @@ namespace cuda {
         b     = max(tmp, b); \
     }
 
-__forceinline__ __device__
-int lIdx(int x, int y, int stride1, int stride0) {
+__forceinline__ __device__ int lIdx(int x, int y, int stride1, int stride0) {
     return (y * stride1 + x * stride0);
 }
 
 template<typename T, af::borderType pad>
-__device__
-void load2ShrdMem(T* shrd, const T* in, int lx, int ly,
-                  int shrdStride, int dim0, int dim1, int gx, int gy,
-                  int inStride1, int inStride0) {
+__device__ void load2ShrdMem(T* shrd, const T* in, int lx, int ly,
+                             int shrdStride, int dim0, int dim1, int gx, int gy,
+                             int inStride1, int inStride0) {
     switch (pad) {
         case AF_PAD_ZERO: {
             if (gx < 0 || gx >= dim0 || gy < 0 || gy >= dim1)
@@ -51,9 +50,8 @@ void load2ShrdMem(T* shrd, const T* in, int lx, int ly,
 }
 
 template<typename T, af::borderType pad>
-__device__
-void load2ShrdMem_1d(T* shrd, const T* in, int lx, int dim0, int gx,
-                     int inStride0) {
+__device__ void load2ShrdMem_1d(T* shrd, const T* in, int lx, int dim0, int gx,
+                                int inStride0) {
     switch (pad) {
         case AF_PAD_ZERO: {
             if (gx < 0 || gx >= dim0)
@@ -71,8 +69,7 @@ void load2ShrdMem_1d(T* shrd, const T* in, int lx, int dim0, int gx,
 }
 
 template<typename T, af::borderType pad, unsigned w_len, unsigned w_wid>
-__global__
-void medfilt2(Param<T> out, CParam<T> in, int nBBS0, int nBBS1) {
+__global__ void medfilt2(Param<T> out, CParam<T> in, int nBBS0, int nBBS1) {
     __shared__ T shrdMem[(THREADS_X + w_len - 1) * (THREADS_Y + w_wid - 1)];
 
     // calculate necessary offset and window parameters
@@ -182,8 +179,8 @@ void medfilt2(Param<T> out, CParam<T> in, int nBBS0, int nBBS1) {
 }
 
 template<typename T, af::borderType pad, unsigned ARR_SIZE>
-__global__
-void medfilt1(Param<T> out, CParam<T> in, unsigned w_wid, int nBBS0) {
+__global__ void medfilt1(Param<T> out, CParam<T> in, unsigned w_wid,
+                         int nBBS0) {
     SharedMemory<T> shared;
     T* shrdMem = shared.getPointer();
 
@@ -285,4 +282,5 @@ void medfilt1(Param<T> out, CParam<T> in, unsigned w_wid, int nBBS0) {
     }
 }
 
-} // namespace cuda
+}  // namespace cuda
+}  // namespace arrayfire

@@ -12,6 +12,7 @@
 
 using af::features;
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
@@ -21,4 +22,5 @@ unsigned susan(Array<float> &x_out, Array<float> &y_out,
                const float geom_thr, const float feature_ratio,
                const unsigned edge);
 
-}
+}  // namespace cpu
+}  // namespace arrayfire

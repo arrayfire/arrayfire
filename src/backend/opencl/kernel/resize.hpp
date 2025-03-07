@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -40,7 +41,7 @@ void resize(Param out, const Param in, const af_interp_type method) {
     constexpr bool IsComplex =
         std::is_same<T, cfloat>::value || std::is_same<T, cdouble>::value;
 
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 2> targs = {
         TemplateTypename<T>(),
         TemplateArg(method),
     };
@@ -48,12 +49,10 @@ void resize(Param out, const Param in, const af_interp_type method) {
         DefineKeyValue(T, dtype_traits<T>::getName()),
         DefineKeyValue(VT, dtype_traits<vtype_t<T>>::getName()),
         DefineKeyValue(WT, dtype_traits<wtype_t<BT>>::getName()),
-        DefineKeyValue(CPLX, (IsComplex ? 1 : 0)),
-    };
+        DefineKeyValue(CPLX, (IsComplex ? 1 : 0)), getTypeBuildDefinition<T>()};
     if (IsComplex) {
         options.emplace_back(DefineKeyValue(TB, dtype_traits<BT>::getName()));
     }
-    options.emplace_back(getTypeBuildDefinition<T>());
 
     switch (method) {
         case AF_INTERP_NEAREST:
@@ -69,7 +68,7 @@ void resize(Param out, const Param in, const af_interp_type method) {
     }
 
     auto resizeOp =
-        common::getKernel("resize_kernel", {resize_cl_src}, targs, options);
+        common::getKernel("resize_kernel", {{resize_cl_src}}, targs, options);
 
     cl::NDRange local(RESIZE_TX, RESIZE_TY, 1);
 
@@ -89,3 +88,4 @@ void resize(Param out, const Param in, const af_interp_type method) {
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -29,17 +30,15 @@ void lookup(Param out, const Param in, const Param indices,
     constexpr int THREADS_X = 32;
     constexpr int THREADS_Y = 8;
 
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 3> targs = {
         TemplateTypename<in_t>(),
         TemplateTypename<idx_t>(),
         TemplateArg(dim),
     };
-    std::vector<std::string> options = {
+    std::array<std::string, 4> options = {
         DefineKeyValue(in_t, dtype_traits<in_t>::getName()),
         DefineKeyValue(idx_t, dtype_traits<idx_t>::getName()),
-        DefineKeyValue(DIM, dim),
-    };
-    options.emplace_back(getTypeBuildDefinition<in_t, idx_t>());
+        DefineKeyValue(DIM, dim), getTypeBuildDefinition<in_t, idx_t>()};
 
     cl::NDRange local(THREADS_X, THREADS_Y);
 
@@ -50,7 +49,7 @@ void lookup(Param out, const Param in, const Param indices,
                        blk_y * out.info.dims[3] * THREADS_Y);
 
     auto arrIdxOp =
-        common::getKernel("lookupND", {lookup_cl_src}, targs, options);
+        common::getKernel("lookupND", {{lookup_cl_src}}, targs, options);
 
     arrIdxOp(cl::EnqueueArgs(getQueue(), global, local), *out.data, out.info,
              *in.data, in.info, *indices.data, indices.info, blk_x, blk_y);
@@ -59,3 +58,4 @@ void lookup(Param out, const Param in, const Param indices,
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

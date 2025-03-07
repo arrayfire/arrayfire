@@ -246,6 +246,7 @@ namespace af
                        (default is f32)
 
         */
+        explicit
         array(dim_t dim0, dtype ty = f32);
 
         /**
@@ -271,6 +272,7 @@ namespace af
                        (default is f32)
 
         */
+        explicit
         array(dim_t dim0, dim_t dim1, dtype ty = f32);
 
         /**
@@ -297,6 +299,7 @@ namespace af
                        (default is f32)
 
         */
+        explicit
         array(dim_t dim0, dim_t dim1, dim_t dim2, dtype ty = f32);
 
         /**
@@ -324,6 +327,7 @@ namespace af
                        (default is f32)
 
         */
+        explicit
         array(dim_t dim0, dim_t dim1, dim_t dim2, dim_t dim3, dtype ty = f32);
 
         /**
@@ -368,10 +372,10 @@ namespace af
 
             array A(4, h_buffer);   // copy host data to device
                                     //
-                                    // A = 23
-                                    //   = 34
-                                    //   = 18
-                                    //   = 99
+                                    // A = [23]
+                                    //     [34]
+                                    //     [18]
+                                    //     [99]
 
             \endcode
 
@@ -382,6 +386,7 @@ namespace af
 
         */
         template<typename T>
+        explicit
         array(dim_t dim0,
               const T *pointer, af::source src=afHost);
 
@@ -409,6 +414,7 @@ namespace af
                   format when performing linear algebra operations.
         */
         template<typename T>
+        explicit
         array(dim_t dim0, dim_t dim1,
               const T *pointer, af::source src=afHost);
 
@@ -440,6 +446,7 @@ namespace af
             \image html 3dArray.png
         */
         template<typename T>
+        explicit
         array(dim_t dim0, dim_t dim1, dim_t dim2,
               const T *pointer, af::source src=afHost);
 
@@ -473,6 +480,7 @@ namespace af
 
         */
         template<typename T>
+        explicit
         array(dim_t dim0, dim_t dim1, dim_t dim2, dim_t dim3,
               const T *pointer, af::source src=afHost);
 
@@ -522,7 +530,9 @@ namespace af
 #if AF_API_VERSION >= 38
 #if AF_COMPILER_CXX_GENERALIZED_INITIALIZERS
         /// \brief Initializer list constructor
-        template <typename T> array(std::initializer_list<T> list)
+        template <typename T, typename = typename std::enable_if<
+                                  std::is_fundamental<T>::value, void>::type>
+        array(std::initializer_list<T> list)
         : arr(nullptr) {
           dim_t size = list.size();
           if (af_err __aferr = af_create_array(&arr, list.begin(), 1, &size,
@@ -537,7 +547,8 @@ namespace af
         }
 
         /// \brief Initializer list constructor
-        template <typename T>
+        template <typename T, typename = typename std::enable_if<
+                                  std::is_fundamental<T>::value, void>::type>
         array(const af::dim4 &dims, std::initializer_list<T> list)
             : arr(nullptr) {
           const dim_t *size = dims.get();
@@ -644,6 +655,7 @@ namespace af
 
         /**
            Perform deep copy from host/device pointer to an existing array
+           \note Unlike all other assignment operations, this does NOT result in a copy on write.
         */
         template<typename T> void write(const T *ptr, const size_t bytes, af::source src = afHost);
 

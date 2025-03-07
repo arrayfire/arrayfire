@@ -14,6 +14,7 @@
 
 #include <vector>
 
+namespace arrayfire {
 namespace cuda {
 
 ///
@@ -51,3 +52,4 @@ struct EnqueueArgs {
 };
 
 }  // namespace cuda
+}  // namespace arrayfire

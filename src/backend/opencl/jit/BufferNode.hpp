@@ -13,10 +13,11 @@
 
 #include <memory>
 
+namespace arrayfire {
 namespace opencl {
 namespace jit {
 using BufferNode = common::BufferNodeBase<std::shared_ptr<cl::Buffer>, KParam>;
-}
+}  // namespace jit
 }  // namespace opencl
 
 namespace common {
@@ -32,3 +33,4 @@ bool BufferNodeBase<DataType, ParamType>::operator==(
 }
 
 }  // namespace common
+}  // namespace arrayfire

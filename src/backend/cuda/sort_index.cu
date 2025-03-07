@@ -17,6 +17,7 @@
 #include <sort_index.hpp>
 #include <stdexcept>
 
+namespace arrayfire {
 namespace cuda {
 template<typename T>
 void sort_index(Array<T> &okey, Array<uint> &oval, const Array<T> &in,
@@ -69,3 +70,4 @@ INSTANTIATE(intl)
 INSTANTIATE(uintl)
 
 }  // namespace cuda
+}  // namespace arrayfire

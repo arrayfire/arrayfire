@@ -15,6 +15,7 @@
 
 #include <array>
 
+namespace arrayfire {
 namespace common {
 
 // will generate indexes to flip input array
@@ -34,3 +35,4 @@ static detail::Array<T> flip(const detail::Array<T>& in,
 }
 
 }  // namespace common
+}  // namespace arrayfire

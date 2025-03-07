@@ -3,12 +3,8 @@
 # Usage:
 #   FIND_PACKAGE(LAPACKE [REQUIRED] [QUIET] )
 #
-# It sets the following variables:
-#   LAPACK_FOUND               ... true if LAPACKE is found on the system
-#   LAPACK_LIBRARIES           ... full path to LAPACKE library
-#   LAPACK_INCLUDES            ... LAPACKE include directory
-#
 
+INCLUDE(FindPackageHandleStandardArgs)
 SET(LAPACKE_ROOT_DIR CACHE STRING
   "Root directory for custom LAPACK implementation")
 
@@ -77,14 +73,6 @@ ELSE(PC_LAPACKE_FOUND)
             DOC "LAPACKE Library"
             NO_DEFAULT_PATH
             )
-        FIND_LIBRARY(
-            LAPACK_LIB
-            NAMES "lapack" "LAPACK" "liblapack" "mkl_rt"
-            PATHS ${LAPACKE_ROOT_DIR}
-            PATH_SUFFIXES "lib" "lib64" "lib/${MKL_LIB_DIR_SUFFIX}"
-            DOC "LAPACK Library"
-            NO_DEFAULT_PATH
-            )
         FIND_PATH(
             LAPACKE_INCLUDES
             NAMES "lapacke.h" "mkl_lapacke.h"
@@ -109,21 +97,6 @@ ELSE(PC_LAPACKE_FOUND)
             /opt/local/lib
             DOC "LAPACKE Library"
             )
-        FIND_LIBRARY(
-           LAPACK_LIB
-            NAMES "lapack" "liblapack" "openblas" "mkl_rt"
-            PATHS
-            ${PC_LAPACKE_LIBRARY_DIRS}
-            ${LIB_INSTALL_DIR}
-            /opt/intel/mkl/lib/${MKL_LIB_DIR_SUFFIX}
-            /usr/lib64
-            /usr/lib
-            /usr/local/lib64
-            /usr/local/lib
-            /sw/lib
-            /opt/local/lib
-            DOC "LAPACK Library"
-            )
         FIND_PATH(
             LAPACKE_INCLUDES
             NAMES "lapacke.h" "mkl_lapacke.h"
@@ -140,34 +113,20 @@ ELSE(PC_LAPACKE_FOUND)
             lapacke
             )
     ENDIF(LAPACKE_ROOT_DIR)
+    find_package_handle_standard_args(LAPACKE DEFAULT_MSG LAPACKE_LIB LAPACKE_INCLUDES)
 ENDIF(PC_LAPACKE_FOUND)
-
-IF(PC_LAPACKE_FOUND OR (LAPACKE_LIB AND LAPACK_LIB))
-    SET(LAPACK_LIBRARIES ${LAPACKE_LIB} ${LAPACK_LIB})
-ENDIF()
-IF(LAPACKE_INCLUDES)
-    SET(LAPACK_INCLUDE_DIR ${LAPACKE_INCLUDES})
-ENDIF()
-
-INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(LAPACK DEFAULT_MSG
-  LAPACK_INCLUDE_DIR LAPACK_LIBRARIES)
 
 MARK_AS_ADVANCED(
   LAPACKE_ROOT_DIR
-  LAPACK_INCLUDES
-  LAPACK_LIBRARIES
-  LAPACK_LIB
   LAPACKE_INCLUDES
   LAPACKE_LIB
-  lapack_LIBRARY
   lapacke_LIBRARY)
 
-if(LAPACK_FOUND)
+if(PC_LAPACKE_FOUND OR (LAPACKE_LIB AND LAPACKE_INCLUDES))
   add_library(LAPACKE::LAPACKE UNKNOWN IMPORTED)
   set_target_properties(LAPACKE::LAPACKE PROPERTIES
       IMPORTED_LINK_INTERFACE_LANGUAGE "C"
-      IMPORTED_LOCATION "${LAPACK_LIBRARIES}"
-      INTERFACE_INCLUDE_DIRECTORIES "${LAPACK_INCLUDE_DIR}"
+      IMPORTED_LOCATION "${LAPACKE_LIB}"
+      INTERFACE_INCLUDE_DIRECTORIES "${LAPACKE_INCLUDES}"
     )
-endif(LAPACK_FOUND)
+endif()

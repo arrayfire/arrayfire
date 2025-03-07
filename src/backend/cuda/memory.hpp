@@ -14,12 +14,12 @@
 #include <functional>
 #include <memory>
 
+namespace arrayfire {
 namespace cuda {
 float getMemoryPressure();
 float getMemoryPressureThreshold();
 
-template<typename T>
-void memFree(T *ptr);
+void memFree(void *ptr);
 
 template<typename T>
 using uptr = std::unique_ptr<T[], std::function<void(T[])>>;
@@ -41,8 +41,7 @@ bool isLocked(const void *ptr);
 
 template<typename T>
 T *pinnedAlloc(const size_t &elements);
-template<typename T>
-void pinnedFree(T *ptr);
+void pinnedFree(void *ptr);
 
 void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
                       size_t *lock_bytes, size_t *lock_buffers);
@@ -58,7 +57,7 @@ bool jitTreeExceedsMemoryPressure(size_t bytes);
 void setMemStepSize(size_t step_bytes);
 size_t getMemStepSize(void);
 
-class Allocator final : public common::memory::AllocatorInterface {
+class Allocator final : public arrayfire::common::AllocatorInterface {
    public:
     Allocator();
     ~Allocator() = default;
@@ -73,7 +72,7 @@ class Allocator final : public common::memory::AllocatorInterface {
 // So we pass 1 as numDevices to the constructor so that it creates 1 vector
 // of memory_info
 // When allocating and freeing, it doesn't really matter which device is active
-class AllocatorPinned final : public common::memory::AllocatorInterface {
+class AllocatorPinned final : public arrayfire::common::AllocatorInterface {
    public:
     AllocatorPinned();
     ~AllocatorPinned() = default;
@@ -85,3 +84,4 @@ class AllocatorPinned final : public common::memory::AllocatorInterface {
 };
 
 }  // namespace cuda
+}  // namespace arrayfire

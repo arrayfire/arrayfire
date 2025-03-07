@@ -14,9 +14,11 @@
 #include <Module.hpp>
 #include <backend.hpp>
 
+#include <nonstd/span.hpp>
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace common {
 
 /// \brief Backend specific source compilation implementation
@@ -43,9 +45,9 @@ namespace common {
 ///
 /// \returns Backend specific binary module that contains associated kernel
 detail::Module compileModule(const std::string& moduleKey,
-                             const std::vector<std::string>& sources,
-                             const std::vector<std::string>& options,
-                             const std::vector<std::string>& kInstances,
+                             nonstd::span<const std::string> sources,
+                             nonstd::span<const std::string> options,
+                             nonstd::span<const std::string> kInstances,
                              const bool isJIT);
 
 /// \brief Load module binary from disk cache
@@ -62,5 +64,6 @@ detail::Module loadModuleFromDisk(const int device,
                                   const bool isJIT);
 
 }  // namespace common
+}  // namespace arrayfire
 
 #endif

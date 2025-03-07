@@ -16,6 +16,7 @@
 #include <sstream>
 #include <string>
 
+namespace arrayfire {
 namespace cuda {
 
 namespace {
@@ -32,15 +33,17 @@ void generateParamDeclaration(std::stringstream& kerStream, int id,
 
 /// Calls the setArg function to set the arguments for a kernel call
 template<typename T>
-int setKernelArguments(
+int setBufferKernelArguments(
     int start_id, bool is_linear,
-    std::function<void(int id, const void* ptr, size_t arg_size)>& setArg,
+    std::function<void(int id, const void* ptr, size_t arg_size,
+                       bool is_buffer)>& setArg,
     const std::shared_ptr<T>& ptr, const Param<T>& info) {
     UNUSED(ptr);
     if (is_linear) {
-        setArg(start_id, static_cast<const void*>(&info.ptr), sizeof(T*));
+        setArg(start_id, static_cast<const void*>(&info.ptr), sizeof(T*), true);
     } else {
-        setArg(start_id, static_cast<const void*>(&info), sizeof(Param<T>));
+        setArg(start_id, static_cast<const void*>(&info), sizeof(Param<T>),
+               true);
     }
     return start_id + 1;
 }
@@ -48,18 +51,18 @@ int setKernelArguments(
 /// Generates the code to calculate the offsets for a buffer
 void generateBufferOffsets(std::stringstream& kerStream, int id, bool is_linear,
                            const std::string& type_str) {
-    std::string idx_str = std::string("int idx") + std::to_string(id);
+    const std::string idx_str  = std::string("idx") + std::to_string(id);
+    const std::string info_str = std::string("in") + std::to_string(id);
 
     if (is_linear) {
-        kerStream << idx_str << " = idx;\n";
+        kerStream << "#define " << idx_str << " idx\n";
     } else {
-        std::string info_str = std::string("in") + std::to_string(id);
-        kerStream << idx_str << " = (id3 < " << info_str << ".dims[3]) * "
-                  << info_str << ".strides[3] * id3 + (id2 < " << info_str
-                  << ".dims[2]) * " << info_str << ".strides[2] * id2 + (id1 < "
-                  << info_str << ".dims[1]) * " << info_str
-                  << ".strides[1] * id1 + (id0 < " << info_str
-                  << ".dims[0]) * id0;\n";
+        kerStream << "int " << idx_str << " = id0*(id0<" << info_str
+                  << ".dims[0])*" << info_str << ".strides[0] + id1*(id1<"
+                  << info_str << ".dims[1])*" << info_str
+                  << ".strides[1] + id2*(id2<" << info_str << ".dims[2])*"
+                  << info_str << ".strides[2] + id3*(id3<" << info_str
+                  << ".dims[3])*" << info_str << ".strides[3];\n";
         kerStream << type_str << " *in" << id << "_ptr = in" << id << ".ptr;\n";
     }
 }
@@ -75,28 +78,24 @@ inline void generateShiftNodeOffsets(std::stringstream& kerStream, int id,
                                      bool is_linear,
                                      const std::string& type_str) {
     UNUSED(is_linear);
-    std::string idx_str   = std::string("idx") + std::to_string(id);
-    std::string info_str  = std::string("in") + std::to_string(id);
-    std::string id_str    = std::string("sh_id_") + std::to_string(id) + "_";
-    std::string shift_str = std::string("shift") + std::to_string(id) + "_";
+    const std::string idx_str  = std::string("idx") + std::to_string(id);
+    const std::string info_str = std::string("in") + std::to_string(id);
+    const std::string id_str = std::string("sh_id_") + std::to_string(id) + '_';
+    const std::string shift_str =
+        std::string("shift") + std::to_string(id) + '_';
 
     for (int i = 0; i < 4; i++) {
         kerStream << "int " << id_str << i << " = __circular_mod(id" << i
                   << " + " << shift_str << i << ", " << info_str << ".dims["
                   << i << "]);\n";
     }
-
-    kerStream << "int " << idx_str << " = (" << id_str << "3 < " << info_str
-              << ".dims[3]) * " << info_str << ".strides[3] * " << id_str
-              << "3;\n";
-    kerStream << idx_str << " += (" << id_str << "2 < " << info_str
-              << ".dims[2]) * " << info_str << ".strides[2] * " << id_str
-              << "2;\n";
-    kerStream << idx_str << " += (" << id_str << "1 < " << info_str
-              << ".dims[1]) * " << info_str << ".strides[1] * " << id_str
-              << "1;\n";
-    kerStream << idx_str << " += (" << id_str << "0 < " << info_str
-              << ".dims[0]) * " << id_str << "0;\n";
+    kerStream << "int " << idx_str << " = " << id_str << "0*(" << id_str << "0<"
+              << info_str << ".dims[0])*" << info_str << ".strides[0] + "
+              << id_str << "1*(" << id_str << "1<" << info_str << ".dims[1])*"
+              << info_str << ".strides[1] + " << id_str << "2*(" << id_str
+              << "2<" << info_str << ".dims[2])*" << info_str
+              << ".strides[2] + " << id_str << "3*(" << id_str << "3<"
+              << info_str << ".dims[3])*" << info_str << ".strides[3];\n";
     kerStream << type_str << " *in" << id << "_ptr = in" << id << ".ptr;\n";
 }
 
@@ -108,3 +107,4 @@ inline void generateShiftNodeRead(std::stringstream& kerStream, int id,
 
 }  // namespace
 }  // namespace cuda
+}  // namespace arrayfire

@@ -20,17 +20,17 @@ class RandomEngine : public ::testing::Test {
     virtual void SetUp() {
         // Ensure all unlocked buffers are freed
         deviceGC();
+        SUPPORTED_TYPE_CHECK(T);
     }
 };
 
 // create a list of types to be tested
 typedef ::testing::Types<float, double> TestTypesEngine;
 // register the type list
-TYPED_TEST_CASE(RandomEngine, TestTypesEngine);
+TYPED_TEST_SUITE(RandomEngine, TestTypesEngine);
 
 template<typename T>
 void testRandomEnginePeriod(randomEngineType type) {
-    SUPPORTED_TYPE_CHECK(T);
     dtype ty = (dtype)dtype_traits<T>::af_type;
 
     int elem  = 1024 * 1024;
@@ -88,7 +88,6 @@ double chi2_statistic<half_float::half>(array input, array expected,
 
 template<typename T>
 void testRandomEngineUniformChi2(randomEngineType type) {
-    SUPPORTED_TYPE_CHECK(T);
     dtype ty = (dtype)dtype_traits<T>::af_type;
 
     int elem  = 256 * 1024 * 1024;

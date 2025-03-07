@@ -9,7 +9,9 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace cuda {
 template<typename T>
 Array<uint> where(const Array<T>& in);
-}
+}  // namespace cuda
+}  // namespace arrayfire

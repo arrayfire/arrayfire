@@ -11,6 +11,7 @@
 #include <Array.hpp>
 #include <kernel/pad_array_borders.hpp>
 
+namespace arrayfire {
 namespace opencl {
 template<typename T>
 void copyData(T *data, const Array<T> &A);
@@ -65,3 +66,4 @@ void multiply_inplace(Array<T> &in, double val);
 template<typename T>
 T getScalar(const Array<T> &in);
 }  // namespace opencl
+}  // namespace arrayfire

@@ -14,6 +14,7 @@
 #include <types.hpp>
 #include <af/dim4.hpp>
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T, af_op_t op>
@@ -28,3 +29,4 @@ Array<T> bitOp(const Array<T> &lhs, const Array<T> &rhs,
     return common::createBinaryNode<T, T, op>(lhs, rhs, odims);
 }
 }  // namespace cpu
+}  // namespace arrayfire

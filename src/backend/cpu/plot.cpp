@@ -15,12 +15,16 @@
 #include <queue.hpp>
 
 using af::dim4;
+using arrayfire::common::ForgeManager;
+using arrayfire::common::ForgeModule;
+using arrayfire::common::forgePlugin;
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
 void copy_plot(const Array<T> &P, fg_plot plot) {
-    ForgeModule &_ = graphics::forgePlugin();
+    ForgeModule &_ = forgePlugin();
     P.eval();
     getQueue().sync();
 
@@ -47,3 +51,4 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 
 }  // namespace cpu
+}  // namespace arrayfire

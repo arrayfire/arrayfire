@@ -12,6 +12,7 @@
 #include <err_opencl.hpp>
 #include <kernel/moments.hpp>
 
+namespace arrayfire {
 namespace opencl {
 
 static inline unsigned bitCount(unsigned v) {
@@ -52,3 +53,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(short)
 
 }  // namespace opencl
+}  // namespace arrayfire

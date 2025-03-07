@@ -17,6 +17,7 @@
 
 using af::dim4;
 
+namespace arrayfire {
 namespace cpu {
 template<af_op_t op, typename Ti, typename Tk, typename To>
 Array<To> scan(const Array<Tk>& key, const Array<Ti>& in, const int dim,
@@ -64,3 +65,4 @@ INSTANTIATE_SCAN_BY_KEY_ALL_OP(af_mul_t)
 INSTANTIATE_SCAN_BY_KEY_ALL_OP(af_min_t)
 INSTANTIATE_SCAN_BY_KEY_ALL_OP(af_max_t)
 }  // namespace cpu
+}  // namespace arrayfire

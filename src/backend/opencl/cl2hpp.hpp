@@ -19,6 +19,14 @@ AF_DEPRECATED_WARNINGS_OFF
 #if __GNUC__ >= 8
 #pragma GCC diagnostic ignored "-Wcatch-value="
 #endif
+#ifdef __has_include
+#if __has_include(<CL/opencl.hpp>)
+#include <CL/opencl.hpp>
+#else
 #include <CL/cl2.hpp>
+#endif
+#else
+#include <CL/cl2.hpp>
+#endif
 AF_DEPRECATED_WARNINGS_ON
 #pragma GCC diagnostic pop

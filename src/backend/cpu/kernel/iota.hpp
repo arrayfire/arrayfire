@@ -10,6 +10,7 @@
 #pragma once
 #include <Param.hpp>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -39,3 +40,4 @@ void iota(Param<T> output, const af::dim4& sdims) {
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

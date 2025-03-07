@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 constexpr unsigned SUSAN_THREADS_X = 16;
@@ -48,7 +49,7 @@ void susan(cl::Buffer* out, const cl::Buffer* in, const unsigned in_off,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto susan = common::getKernel("susan_responses", {susan_cl_src}, targs,
+    auto susan = common::getKernel("susan_responses", {{susan_cl_src}}, targs,
                                    compileOpts);
 
     cl::NDRange local(SUSAN_THREADS_X, SUSAN_THREADS_Y);
@@ -75,7 +76,7 @@ unsigned nonMaximal(cl::Buffer* x_out, cl::Buffer* y_out, cl::Buffer* resp_out,
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
     auto nonMax =
-        common::getKernel("non_maximal", {susan_cl_src}, targs, compileOpts);
+        common::getKernel("non_maximal", {{susan_cl_src}}, targs, compileOpts);
 
     unsigned corners_found = 0;
     auto d_corners_found   = memAlloc<unsigned>(1);
@@ -95,3 +96,4 @@ unsigned nonMaximal(cl::Buffer* x_out, cl::Buffer* y_out, cl::Buffer* resp_out,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

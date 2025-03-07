@@ -16,6 +16,7 @@
 using af::dim4;
 using af::features;
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T, typename convAccT>
@@ -53,3 +54,4 @@ INSTANTIATE(double, double)
 INSTANTIATE(float, float)
 
 }  // namespace opencl
+}  // namespace arrayfire

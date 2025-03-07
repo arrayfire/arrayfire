@@ -12,6 +12,7 @@
 #include <vector>
 #include "Node.hpp"
 
+namespace arrayfire {
 namespace cpu {
 
 namespace jit {
@@ -19,7 +20,7 @@ namespace jit {
 template<typename T>
 class ScalarNode : public TNode<T> {
    public:
-    ScalarNode(T val) : TNode<T>(val, 0, {}) {}
+    ScalarNode(T val) : TNode<T>(val, 0, {}, common::kNodeType::Scalar) {}
 
     std::unique_ptr<common::Node> clone() final {
         return std::make_unique<ScalarNode>(*this);
@@ -39,7 +40,8 @@ class ScalarNode : public TNode<T> {
     }
 
     int setArgs(int start_id, bool is_linear,
-                std::function<void(int id, const void *ptr, size_t arg_size)>
+                std::function<void(int id, const void *ptr, size_t arg_size,
+                                   bool is_buffer)>
                     setArg) const override {
         UNUSED(is_linear);
         UNUSED(setArg);
@@ -58,9 +60,7 @@ class ScalarNode : public TNode<T> {
         UNUSED(kerStream);
         UNUSED(ids);
     }
-
-    bool isScalar() const final { return true; }
 };
 }  // namespace jit
-
 }  // namespace cpu
+}  // namespace arrayfire

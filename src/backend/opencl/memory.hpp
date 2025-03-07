@@ -20,20 +20,22 @@ namespace cl {
 class Buffer;  // Forward declaration of cl::Buffer from CL/cl2.hpp
 }
 
+namespace arrayfire {
 namespace opencl {
 cl::Buffer *bufferAlloc(const size_t &bytes);
 void bufferFree(cl::Buffer *buf);
 
+using bufptr = std::unique_ptr<cl::Buffer, std::function<void(cl::Buffer *)>>;
+
 template<typename T>
-std::unique_ptr<cl::Buffer, std::function<void(cl::Buffer *)>> memAlloc(
-    const size_t &elements);
+bufptr memAlloc(const size_t &elements);
 void *memAllocUser(const size_t &bytes);
 
 // Need these as 2 separate function and not a default argument
 // This is because it is used as the deleter in shared pointer
 // which cannot support default arguments
-template<typename T>
-void memFree(T *ptr);
+void memFree(cl::Buffer *ptr);
+void memFree(cl_mem ptr);
 void memFreeUser(void *ptr);
 
 void memLock(const cl::Buffer *ptr);
@@ -59,7 +61,7 @@ bool jitTreeExceedsMemoryPressure(size_t bytes);
 void setMemStepSize(size_t step_bytes);
 size_t getMemStepSize(void);
 
-class Allocator final : public common::memory::AllocatorInterface {
+class Allocator final : public common::AllocatorInterface {
    public:
     Allocator();
     ~Allocator() = default;
@@ -70,7 +72,7 @@ class Allocator final : public common::memory::AllocatorInterface {
     void nativeFree(void *ptr) override;
 };
 
-class AllocatorPinned final : public common::memory::AllocatorInterface {
+class AllocatorPinned final : public common::AllocatorInterface {
    public:
     AllocatorPinned();
     ~AllocatorPinned() = default;
@@ -85,3 +87,4 @@ class AllocatorPinned final : public common::memory::AllocatorInterface {
 };
 
 }  // namespace opencl
+}  // namespace arrayfire

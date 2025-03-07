@@ -9,8 +9,10 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace opencl {
 template<typename Tk, typename Tv>
 void sort_by_key(Array<Tk> &okey, Array<Tv> &oval, const Array<Tk> &ikey,
                  const Array<Tv> &ival, const unsigned dim, bool isAscending);
-}
+}  // namespace opencl
+}  // namespace arrayfire

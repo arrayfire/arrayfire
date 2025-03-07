@@ -39,20 +39,20 @@ typedef ::testing::Types<uchar, ushort> TestTypes8;
 typedef ::testing::Types<uint, uintl> TestTypes32;
 
 // register the type list
-TYPED_TEST_CASE(HammingMatcher8, TestTypes8);
-TYPED_TEST_CASE(HammingMatcher32, TestTypes32);
+TYPED_TEST_SUITE(HammingMatcher8, TestTypes8);
+TYPED_TEST_SUITE(HammingMatcher32, TestTypes32);
 
 template<typename T>
 void hammingMatcherTest(string pTestFile, int feat_dim) {
     using af::dim4;
 
     vector<dim4> numDims;
-    vector<vector<uint> > in32;
-    vector<vector<uint> > tests;
+    vector<vector<uint>> in32;
+    vector<vector<uint>> tests;
 
     readTests<uint, uint, int>(pTestFile, numDims, in32, tests);
 
-    vector<vector<T> > in(in32.size());
+    vector<vector<T>> in(in32.size());
     for (size_t i = 0; i < in32[0].size(); i++) in[0].push_back((T)in32[0][i]);
     for (size_t i = 0; i < in32[1].size(); i++) in[1].push_back((T)in32[1][i]);
 
@@ -95,21 +95,25 @@ void hammingMatcherTest(string pTestFile, int feat_dim) {
 }
 
 TYPED_TEST(HammingMatcher8, Hamming_500_5000_Dim0) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     hammingMatcherTest<TypeParam>(
         string(TEST_DIR "/hamming/hamming_500_5000_dim0_u8.test"), 0);
 }
 
 TYPED_TEST(HammingMatcher8, Hamming_500_5000_Dim1) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     hammingMatcherTest<TypeParam>(
         string(TEST_DIR "/hamming/hamming_500_5000_dim1_u8.test"), 1);
 }
 
 TYPED_TEST(HammingMatcher32, Hamming_500_5000_Dim0) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     hammingMatcherTest<TypeParam>(
         string(TEST_DIR "/hamming/hamming_500_5000_dim0_u32.test"), 0);
 }
 
 TYPED_TEST(HammingMatcher32, Hamming_500_5000_Dim1) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     hammingMatcherTest<TypeParam>(
         string(TEST_DIR "/hamming/hamming_500_5000_dim1_u32.test"), 1);
 }
@@ -117,12 +121,13 @@ TYPED_TEST(HammingMatcher32, Hamming_500_5000_Dim1) {
 ///////////////////////////////////// CPP ////////////////////////////////
 //
 TEST(HammingMatcher, CPP) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     using af::array;
     using af::dim4;
 
     vector<dim4> numDims;
-    vector<vector<uint> > in;
-    vector<vector<uint> > tests;
+    vector<vector<uint>> in;
+    vector<vector<uint>> tests;
 
     readTests<uint, uint, int>(
         TEST_DIR "/hamming/hamming_500_5000_dim0_u32.test", numDims, in, tests);
@@ -141,6 +146,45 @@ TEST(HammingMatcher, CPP) {
     size_t nElems         = goldIdx.size();
     uint *outIdx          = new uint[nElems];
     uint *outDist         = new uint[nElems];
+
+    idx.host(outIdx);
+    dist.host(outDist);
+
+    for (size_t elIter = 0; elIter < nElems; ++elIter) {
+        ASSERT_EQ(goldDist[elIter], outDist[elIter])
+            << "at: " << elIter << endl;
+    }
+
+    delete[] outIdx;
+    delete[] outDist;
+}
+
+TEST(HammingMatcher64bit, CPP) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
+    using af::array;
+    using af::dim4;
+
+    vector<dim4> numDims;
+    vector<vector<unsigned long long>> in;
+    vector<vector<unsigned long long>> tests;
+
+    readTests<unsigned long long, unsigned long long, int>(
+        TEST_DIR "/hamming/hamming_500_5000_dim0_u32.test", numDims, in, tests);
+
+    dim4 qDims = numDims[0];
+    dim4 tDims = numDims[1];
+
+    array query(qDims, &(in[0].front()));
+    array train(tDims, &(in[1].front()));
+
+    array idx, dist;
+    hammingMatcher(idx, dist, query, train, 0, 1);
+
+    vector<unsigned long long> goldIdx  = tests[0];
+    vector<unsigned long long> goldDist = tests[1];
+    size_t nElems                       = goldIdx.size();
+    uint *outIdx                        = new uint[nElems];
+    uint *outDist                       = new uint[nElems];
 
     idx.host(outIdx);
     dist.host(outDist);

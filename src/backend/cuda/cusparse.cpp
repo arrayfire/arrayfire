@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <string>
 
+namespace arrayfire {
 namespace cuda {
 const char* errorString(cusparseStatus_t err) {
     switch (err) {
@@ -38,3 +39,4 @@ const char* errorString(cusparseStatus_t err) {
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

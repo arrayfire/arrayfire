@@ -26,7 +26,7 @@
 #include "stats.h"
 
 using af::dim4;
-using common::cast;
+using arrayfire::common::cast;
 using detail::Array;
 using detail::cdouble;
 using detail::cfloat;

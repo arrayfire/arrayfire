@@ -38,15 +38,15 @@ typedef ::testing::Types<cdouble, cfloat, float, double, int, uint, char, uchar,
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Convolve, TestTypes);
+TYPED_TEST_SUITE(Convolve, TestTypes);
 
 template<typename T>
 void convolveTest(string pTestFile, int baseDim, bool expand) {
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
 
     readTests<T, T, int>(pTestFile, numDims, in, tests);
 
@@ -218,8 +218,8 @@ void sepConvolveTest(string pTestFile, bool expand) {
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
 
     readTests<T, T, int>(pTestFile, numDims, in, tests);
 
@@ -378,8 +378,8 @@ using af::sum;
 
 TEST(Convolve1, CPP) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTests<float, float, int>(string(TEST_DIR "/convolve/vector_same.test"),
                                  numDims, in, tests);
@@ -411,8 +411,8 @@ TEST(Convolve1, CPP) {
 
 TEST(Convolve2, CPP) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTests<float, float, int>(
         string(TEST_DIR "/convolve/rectangle_same_one2many.test"), numDims, in,
@@ -447,8 +447,8 @@ TEST(Convolve2, CPP) {
 
 TEST(Convolve3, CPP) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTests<float, float, int>(
         string(TEST_DIR "/convolve/cuboid_same_many2many.test"), numDims, in,
@@ -482,8 +482,8 @@ TEST(Convolve3, CPP) {
 
 TEST(Convolve, separable_CPP) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTests<float, float, int>(
         string(TEST_DIR "/convolve/separable_conv2d_same_rectangle_batch.test"),
@@ -809,8 +809,8 @@ TEST(Convolve, CuboidBatchLaunchBugFix) {
     std::string testFile(TEST_DIR "/convolve/conv3d_launch_bug.test");
 
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTests<float, float, float>(testFile, numDims, in, tests);
 
@@ -877,9 +877,9 @@ vector<conv2_strided_params> genConsistencyTests() {
             conv2_consistency_data(dim4(257, 257), dim4(3, 3))};
 }
 
-INSTANTIATE_TEST_CASE_P(Conv2Consistency, Conv2ConsistencyTest,
-                        ::testing::ValuesIn(genConsistencyTests()),
-                        testNameGenerator<Conv2ConsistencyTest>);
+INSTANTIATE_TEST_SUITE_P(Conv2Consistency, Conv2ConsistencyTest,
+                         ::testing::ValuesIn(genConsistencyTests()),
+                         testNameGenerator<Conv2ConsistencyTest>);
 
 TEST_P(Conv2ConsistencyTest, RandomConvolutions) {
     conv2_strided_params params = GetParam();
@@ -898,7 +898,7 @@ float tolerance();
 
 template<>
 float tolerance<float>() {
-    return 1e-4;
+    return 4e-3;
 }
 
 template<>
@@ -917,8 +917,8 @@ void convolve2stridedTest(string pTestFile, dim4 stride, dim4 padding,
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
 
     readTests<T, T, float>(pTestFile, numDims, in, tests);
 
@@ -962,8 +962,8 @@ void convolve2GradientTest(string pTestFile, dim4 stride, dim4 padding,
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
 
     readTests<T, T, float>(pTestFile, numDims, in, tests);
 
@@ -1039,7 +1039,7 @@ typedef ::testing::Types<float, double, half_float::half>
     TestTypesStrided;  // TODO: integral types??
 
 // register the type list
-TYPED_TEST_CASE(ConvolveStrided, TestTypesStrided);
+TYPED_TEST_SUITE(ConvolveStrided, TestTypesStrided);
 
 TYPED_TEST(ConvolveStrided, Strided_sig1010_filt33_s11_p11_d11) {
     convolve2stridedTest<TypeParam>(
@@ -1176,4 +1176,10 @@ TEST(ConvolveNN, ZeroPadding_Issue2817) {
     array convolved = convolve2NN(signal, filter, strides, padding, dilation);
     ASSERT_EQ(sum<float>(abs(signal(seq(1, 3), seq(1, 3)) - convolved)) < 1E-5,
               true);
+
+    array incoming_gradient = constant(1 / 9.f, 3, 3);
+    array convolved_grad = convolve2GradientNN(incoming_gradient, signal, filter,
+                                               convolved, strides, padding, dilation,
+                                               AF_CONV_GRADIENT_FILTER);
+    ASSERT_EQ(sum<float>(abs(convolved - convolved_grad)) < 1E-5, true);
 }

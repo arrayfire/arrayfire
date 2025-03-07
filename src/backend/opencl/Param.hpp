@@ -12,6 +12,7 @@
 #include <cl2hpp.hpp>
 #include <kernel/KParam.hpp>
 
+namespace arrayfire {
 namespace opencl {
 
 struct Param {
@@ -20,6 +21,9 @@ struct Param {
     Param& operator=(const Param& other) = default;
     Param(const Param& other)            = default;
     Param(Param&& other)                 = default;
+
+    dim_t* dims_ptr() { return info.dims; }
+    dim_t* strides_ptr() { return info.strides; }
 
     // AF_DEPRECATED("Use Array<T>")
     Param();
@@ -32,3 +36,4 @@ struct Param {
 Param makeParam(cl::Buffer& mem, int off, const int dims[4],
                 const int strides[4]);
 }  // namespace opencl
+}  // namespace arrayfire

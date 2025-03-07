@@ -7,6 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
+
 #include <Array.hpp>
 #include <binary.hpp>
 #include <common/jit/BinaryNode.hpp>
@@ -14,6 +16,7 @@
 #include <optypes.hpp>
 #include <af/dim4.hpp>
 
+namespace arrayfire {
 namespace cuda {
 template<typename To, typename Ti>
 Array<To> cplx(const Array<Ti> &lhs, const Array<Ti> &rhs,
@@ -46,11 +49,11 @@ static const char *abs_name() {
     return "fabs";
 }
 template<>
-STATIC_ const char *abs_name<cfloat>() {
+inline const char *abs_name<cfloat>() {
     return "__cabsf";
 }
 template<>
-STATIC_ const char *abs_name<cdouble>() {
+inline const char *abs_name<cdouble>() {
     return "__cabs";
 }
 
@@ -69,11 +72,11 @@ static const char *conj_name() {
     return "__noop";
 }
 template<>
-STATIC_ const char *conj_name<cfloat>() {
+inline const char *conj_name<cfloat>() {
     return "__cconjf";
 }
 template<>
-STATIC_ const char *conj_name<cdouble>() {
+inline const char *conj_name<cdouble>() {
     return "__cconj";
 }
 
@@ -87,3 +90,4 @@ Array<T> conj(const Array<T> &in) {
     return createNodeArray<T>(in.dims(), common::Node_ptr(node));
 }
 }  // namespace cuda
+}  // namespace arrayfire

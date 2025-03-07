@@ -18,6 +18,7 @@
 
 using af::dim4;
 
+namespace arrayfire {
 namespace opencl {
 
 void setFFTPlanCacheSize(size_t numPlans) {
@@ -167,3 +168,4 @@ INSTANTIATE(cdouble)
 INSTANTIATE_REAL(float, cfloat)
 INSTANTIATE_REAL(double, cdouble)
 }  // namespace opencl
+}  // namespace arrayfire

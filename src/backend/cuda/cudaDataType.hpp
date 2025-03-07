@@ -13,6 +13,7 @@
 #include <library_types.h>  // cudaDataType enum
 #include <types.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
@@ -66,3 +67,4 @@ inline cudaDataType_t getComputeType<common::half>() {
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

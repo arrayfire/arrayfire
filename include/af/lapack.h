@@ -16,12 +16,13 @@ namespace af
 {
 #if AF_API_VERSION >= 31
     /**
-       C++ Interface for SVD decomposition
+       C++ Interface to perform singular value decomposition.
 
-       \param[out] u is the output array containing U
-       \param[out] s is the output array containing the diagonal values of sigma, (singular values of the input matrix))
-       \param[out] vt is the output array containing V^H
-       \param[in] in is the input matrix
+       \param[out] u  U
+       \param[out] s  diagonal values of sigma (singular values of the input 
+                      matrix)
+       \param[out] vt V^H
+       \param[in]  in input array
 
        \ingroup lapack_factor_func_svd
     */
@@ -30,18 +31,16 @@ namespace af
 
 #if AF_API_VERSION >= 31
     /**
-       C++ Interface for SVD decomposition (in-place)
+       C++ Interface to perform in-place singular value decomposition.
 
-       \param[out]    u is the output array containing U
-       \param[out]    s is the output array containing the diagonal values of sigma,
-                        (singular values of the input matrix))
-       \param[out]    vt is the output array containing V^H
-       \param[in,out] in is the input matrix and will contain random data after
-                         this operation
+       This function minimizes memory usage if `in` is dispensable. Input array
+       `in` is limited to arrays where `dim0` \f$\geq\f$ `dim1`.
 
-       \note Currently, \p in is limited to arrays where `dim0` \f$\geq\f$ `dim1`
-       \note This is best used when minimizing memory usage and \p in is
-             dispensable
+       \param[out]   u  U
+       \param[out]   s  diagonal values of sigma (singular values of the input
+                        matrix)
+       \param[out]   vt V^H
+       \param[inout] in input array; contains random data after the operation                       this operation
 
        \ingroup lapack_factor_func_svd
     */
@@ -49,158 +48,176 @@ namespace af
 #endif
 
     /**
-       C++ Interface for LU decomposition in packed format
+       C++ Interface to perform LU decomposition in packed format.
 
-       \param[out] out is the output array containing the packed LU decomposition
-       \param[out] pivot will contain the permutation indices to map the input to the decomposition
-       \param[in] in is the input matrix
-       \param[in] is_lapack_piv specifies if the pivot is returned in original LAPACK compliant format
+       This function is not supported in GFOR.
 
-       \note This function is not supported in GFOR
+       \param[out] out           packed LU decomposition
+       \param[out] pivot         permutation indices mapping the input to the
+                                 decomposition
+       \param[in]  in            input array
+       \param[in]  is_lapack_piv specifies if the pivot is returned in original
+                                 LAPACK compliant format
 
        \ingroup lapack_factor_func_lu
     */
     AFAPI void lu(array &out, array &pivot, const array &in, const bool is_lapack_piv=true);
 
     /**
-       C++ Interface for LU decomposition
+       C++ Interface to perform LU decomposition.
 
-       \param[out] lower will contain the lower triangular matrix of the LU decomposition
-       \param[out] upper will contain the upper triangular matrix of the LU decomposition
-       \param[out] pivot will contain the permutation indices to map the input to the decomposition
-       \param[in] in is the input matrix
+       This function is not supported in GFOR.
 
-       \note This function is not supported in GFOR
+       \param[out] lower lower triangular matrix of the LU decomposition
+       \param[out] upper upper triangular matrix of the LU decomposition
+       \param[out] pivot permutation indices mapping the input to the
+                         decomposition
+       \param[in]  in    input array
 
        \ingroup lapack_factor_func_lu
     */
     AFAPI void lu(array &lower, array &upper, array &pivot, const array &in);
 
     /**
-      C++ Interface for in place LU decomposition
+       C++ Interface to perform in-place LU decomposition.
 
-      \param[out] pivot will contain the permutation indices to map the input to the decomposition
-      \param[inout] in contains the input on entry, the packed LU decomposition on exit
-      \param[in] is_lapack_piv specifies if the pivot is returned in original LAPACK compliant format
+       This function is not supported in GFOR.
 
-      \note This function is not supported in GFOR
+       \param[out]   pivot         permutation indices mapping the input to the
+                                   decomposition
+       \param[inout] in            input array on entry; packed LU
+                                   decomposition on exit
+       \param[in]    is_lapack_piv specifies if the pivot is returned in
+                                   original LAPACK-compliant format
 
-      \ingroup lapack_factor_func_lu
+       \ingroup lapack_factor_func_lu
     */
     AFAPI void luInPlace(array &pivot, array &in, const bool is_lapack_piv=true);
 
     /**
-       C++ Interface for QR decomposition in packed format
+       C++ Interface to perform QR decomposition in packed format.
 
-       \param[out] out is the output array containing the packed QR decomposition
-       \param[out] tau will contain additional information needed for unpacking the data
-       \param[in] in is the input matrix
+       This function is not supported in GFOR.
 
-       \note This function is not supported in GFOR
+       \param[out] out packed QR decomposition
+       \param[out] tau additional information needed for unpacking the data
+       \param[in]  in  input array
 
        \ingroup lapack_factor_func_qr
     */
     AFAPI void qr(array &out, array &tau, const array &in);
 
     /**
-       C++ Interface for QR decomposition
+       C++ Interface to perform QR decomposition.
 
-       \param[out] q is the orthogonal matrix from QR decomposition
-       \param[out] r is the upper triangular matrix from QR decomposition
-       \param[out] tau will contain additional information needed for solving a least squares problem using \p q and \p r
-       \param[in] in is the input matrix
+       This function is not supported in GFOR.
 
-       \note This function is not supported in GFOR
+       \param[out] q   orthogonal matrix from QR decomposition
+       \param[out] r   upper triangular matrix from QR decomposition
+       \param[out] tau additional information needed for solving a
+                       least-squares problem using `q` and `r`
+       \param[in]  in  input array
 
        \ingroup lapack_factor_func_qr
     */
     AFAPI void qr(array &q, array &r, array &tau, const array &in);
 
     /**
-       C++ Interface for QR decomposition
+       C++ Interface to perform QR decomposition.
 
-       \param[out] tau will contain additional information needed for unpacking the data
-       \param[inout] in is the input matrix on entry. It contains packed QR decomposition on exit
+       This function is not supported in GFOR.
 
-       \note This function is not supported in GFOR
+       \param[out]   tau additional information needed for unpacking the data
+       \param[inout] in  input array on entry; packed QR decomposition on exit
 
        \ingroup lapack_factor_func_qr
     */
     AFAPI void qrInPlace(array &tau, array &in);
 
     /**
-       C++ Interface for cholesky decomposition
+       C++ Interface to perform Cholesky decomposition.
 
-       \param[out] out contains the triangular matrix. Multiply \p out with its conjugate transpose reproduces the input \p in.
-       \param[in] in is the input matrix
-       \param[in] is_upper a boolean determining if \p out is upper or lower triangular
+       Multiplying `out` with its conjugate transpose reproduces the input
+       `in`.
+       
+       The input must be positive definite.
+       
+       This function is not supported in GFOR.
 
-       \returns \p 0 if cholesky decomposition passes, if not it returns the rank at which the decomposition failed.
-
-       \note The input matrix \b has to be a positive definite matrix, if it is not zero, the cholesky decomposition functions return a non-zero output.
-       \note This function is not supported in GFOR
+       \param[out] out      triangular matrix; 
+       \param[in]  in       input matrix
+       \param[in]  is_upper boolean determining if `out` is upper or lower
+                            triangular
+       \returns    `0` if cholesky decomposition passes; if not, it returns the
+                   rank at which the decomposition fails
 
        \ingroup lapack_factor_func_cholesky
     */
     AFAPI int cholesky(array &out, const array &in, const bool is_upper = true);
 
     /**
-       C++ Interface for in place cholesky decomposition
+       C++ Interface to perform in-place Cholesky decomposition.
 
-       \param[inout] in is the input matrix on entry. It contains the triangular matrix on exit.
-       \param[in] is_upper a boolean determining if \p in is upper or lower triangular
+       The input must be positive definite.
 
-       \returns \p 0 if cholesky decomposition passes, if not it returns the rank at which the decomposition failed.
+       This function is not supported in GFOR.
 
-       \note The input matrix \b has to be a positive definite matrix, if it is not zero, the cholesky decomposition functions return a non-zero output.
-       \note This function is not supported in GFOR
+       \param[inout] in       input matrix on entry; triangular matrix on exit
+       \param[in]    is_upper boolean determining if `in` is upper or lower
+                              triangular
+       \returns      `0` if cholesky decomposition passes; if not, it returns
+                     the rank at which the decomposition fails
 
        \ingroup lapack_factor_func_cholesky
     */
     AFAPI int choleskyInPlace(array &in, const bool is_upper = true);
 
     /**
-       C++ Interface for solving a system of equations
+       C++ Interface to solve a system of equations.
 
-       \param[in] a is the coefficient matrix
-       \param[in] b is the measured values
-       \param[in] options determining various properties of matrix \p a
-       \returns \p x, the matrix of unknown variables
+       The `options` parameter must be one of \ref AF_MAT_NONE,
+       \ref AF_MAT_LOWER or \ref AF_MAT_UPPER.
 
-       \note \p options needs to be one of \ref AF_MAT_NONE, \ref AF_MAT_LOWER or \ref AF_MAT_UPPER
-       \note This function is not supported in GFOR
+       This function is not supported in GFOR.
+
+       \param[in] a       coefficient matrix
+       \param[in] b       measured values
+       \param[in] options determines various properties of matrix `a`
+       \returns   `x`, the matrix of unknown variables
 
        \ingroup lapack_solve_func_gen
     */
     AFAPI array solve(const array &a, const array &b, const matProp options = AF_MAT_NONE);
 
-
     /**
-       C++ Interface for solving a system of equations
+       C++ Interface to solve a system of equations.
 
-       \param[in] a is the output matrix from packed LU decomposition of the coefficient matrix
-       \param[in] piv is the pivot array from packed LU decomposition of the coefficient matrix
-       \param[in] b is the matrix of measured values
-       \param[in] options determining various properties of matrix \p a
-       \returns \p x, the matrix of unknown variables
+       The `options` parameter currently must be \ref AF_MAT_NONE.
+
+       This function is not supported in GFOR.
+
+       \param[in] a       packed LU decomposition of the coefficient matrix
+       \param[in] piv     pivot array from the packed LU decomposition of the
+                          coefficient matrix
+       \param[in] b       measured values
+       \param[in] options determines various properties of matrix `a`
+       \returns   `x`, the matrix of unknown variables
 
        \ingroup lapack_solve_lu_func_gen
-
-       \note \p options currently needs to be \ref AF_MAT_NONE
-       \note This function is not supported in GFOR
     */
     AFAPI array solveLU(const array &a, const array &piv,
                         const array &b, const matProp options = AF_MAT_NONE);
 
     /**
-       C++ Interface for inverting a matrix
+       C++ Interface to invert a matrix.
 
-       \param[in] in is input matrix
-       \param[in] options determining various properties of matrix \p in
-       \returns \p x, the inverse of the input matrix
+       The `options` parameter currently must be \ref AF_MAT_NONE.
 
-       \note \p options currently needs to be \ref AF_MAT_NONE
-       \note This function is not supported in GFOR
+       This function is not supported in GFOR.
+
+       \param[in] in      input matrix
+       \param[in] options determines various properties of matrix `in`
+       \returns   inverse matrix
 
        \ingroup lapack_ops_func_inv
     */
@@ -208,19 +225,22 @@ namespace af
 
 #if AF_API_VERSION >= 37
     /**
-       C++ Interface for pseudo-inverting (Moore-Penrose) a matrix.
+       C++ Interface to pseudo-invert (Moore-Penrose) a matrix.
+
        Currently uses the SVD-based approach.
 
-       \param[in] in is the input matrix
-       \param[in] tol defines the lower threshold for singular values from SVD
-       \param[in] options must be AF_MAT_NONE (more options might be supported
-                  in the future)
-       \returns the pseudo-inverse of the input matrix
+       Parameter `tol` is not the actual lower threshold, but it is passed in
+       as a parameter to the calculation of the actual threshold relative to
+       the shape and contents of `in`.
+       
+       This function is not supported in GFOR.
 
-       \note \p tol is not the actual lower threshold, but it is passed in as
-             a parameter to the calculation of the actual threshold relative to
-             the shape and contents of \p in.
-       \note This function is not supported in GFOR
+       \param[in] in      input matrix
+       \param[in] tol     defines the lower threshold for singular values from
+                          SVD
+       \param[in] options must be AF_MAT_NONE (more options might be supported
+                          in the future)
+       \returns   pseudo-inverse matrix
 
        \ingroup lapack_ops_func_pinv
     */
@@ -229,37 +249,36 @@ namespace af
 #endif
 
     /**
-       C++ Interface for finding the rank of a matrix
+       C++ Interface to find the rank of a matrix.
 
-       \param[in] in is input matrix
-       \param[in] tol is the tolerance value
-
-       \returns the rank of the matrix
+       \param[in] in  input matrix
+       \param[in] tol tolerance value
+       \returns   rank
 
        \ingroup lapack_ops_func_rank
     */
     AFAPI unsigned rank(const array &in, const double tol=1E-5);
 
     /**
-       C++ Interface for finding the determinant of a matrix
+       C++ Interface to find the determinant of a matrix.
 
-       \param[in] in is input matrix
-
-       \returns the determinant of the matrix
+       \param[in] in input matrix
+       \returns   determinant
 
        \ingroup lapack_ops_func_det
     */
     template<typename T> T det(const array &in);
 
     /**
-       C++ Interface for norm of a matrix
+       C++ Interface to find the norm of a matrix.
 
-       \param[in] in is the input matrix
-       \param[in] type specifies the \ref af::normType. Default: \ref AF_NORM_VECTOR_1
-       \param[in] p specifies the value of P when \p type is one of \ref AF_NORM_VECTOR_P, AF_NORM_MATRIX_L_PQ is used. It is ignored for other values of \p type
-       \param[in] q specifies the value of Q when \p type is AF_NORM_MATRIX_L_PQ. This parameter is ignored if \p type is anything else
-
-       \returns the norm of \p inbased on \p type
+       \param[in] in   input matrix
+       \param[in] type \ref af::normType. Default: \ref AF_NORM_VECTOR_1
+       \param[in] p    value of P when `type` is \ref AF_NORM_VECTOR_P or
+                       \ref AF_NORM_MATRIX_L_PQ, else ignored
+       \param[in] q    value of Q when `type` is \ref AF_NORM_MATRIX_L_PQ, else
+                       ignored
+       \returns   norm
 
        \ingroup lapack_ops_func_norm
     */
@@ -268,9 +287,9 @@ namespace af
 
 #if AF_API_VERSION >= 33
     /**
-       Returns true is ArrayFire is compiled with LAPACK support
+       Returns true if ArrayFire is compiled with LAPACK support.
 
-       \returns true is LAPACK support is available, false otherwise
+       \returns true if LAPACK support is available; false otherwise
 
        \ingroup lapack_helper_func_available
     */
@@ -286,12 +305,15 @@ extern "C" {
 
 #if AF_API_VERSION >= 31
     /**
-       C Interface for SVD decomposition
+       C Interface to perform singular value decomposition.
 
-       \param[out] u is the output array containing U
-       \param[out] s is the output array containing the diagonal values of sigma, (singular values of the input matrix))
-       \param[out] vt is the output array containing V^H
-       \param[in] in is the input matrix
+       \param[out] u  U
+       \param[out] s  diagonal values of sigma (singular values of the input
+                      matrix)
+       \param[out] vt V^H
+       \param[in]  in input array
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup lapack_factor_func_svd
     */
@@ -300,18 +322,18 @@ extern "C" {
 
 #if AF_API_VERSION >= 31
     /**
-       C Interface for SVD decomposition (in-place)
+       C Interface to perform in-place singular value decomposition.
 
-       \param[out]    u  is the output array containing U
-       \param[out]    s  is the output array containing the diagonal values of
-                         sigma, (singular values of the input matrix))
-       \param[out]    vt is the output array containing V^H
-       \param[in,out] in is the input matrix that will contain random data after
-                         this operation
+       This function minimizes memory usage if `in` is dispensable. Input array
+       `in` is limited to arrays where `dim0` \f$\geq\f$ `dim1`.
 
-       \note Currently, \p in is limited to arrays where `dim0` \f$\geq\f$ `dim1`
-       \note This is best used when minimizing memory usage and \p in is
-             dispensable
+       \param[out]   u  U
+       \param[out]   s  diagonal values of sigma (singular values of the input
+                        matrix)
+       \param[out]   vt V^H
+       \param[inout] in input array; contains random data after the operation                       this operation
+       \return       \ref AF_SUCCESS, if function returns successfully, else
+                     an \ref af_err code is given
 
        \ingroup lapack_factor_func_svd
     */
@@ -319,139 +341,182 @@ extern "C" {
 #endif
 
     /**
-       C Interface for LU decomposition
+       C Interface to perform LU decomposition.
 
-       \param[out] lower will contain the lower triangular matrix of the LU decomposition
-       \param[out] upper will contain the upper triangular matrix of the LU decomposition
-       \param[out] pivot will contain the permutation indices to map the input to the decomposition
-       \param[in] in is the input matrix
+       \param[out] lower lower triangular matrix of the LU decomposition
+       \param[out] upper upper triangular matrix of the LU decomposition
+       \param[out] pivot permutation indices mapping the input to the
+                         decomposition
+       \param[in]  in    input array
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup lapack_factor_func_lu
     */
     AFAPI af_err af_lu(af_array *lower, af_array *upper, af_array *pivot, const af_array in);
 
     /**
-       C Interface for in place LU decomposition
+       C Interface to perform in-place LU decomposition.
 
-       \param[out] pivot will contain the permutation indices to map the input to the decomposition
-       \param[inout] in contains the input on entry, the packed LU decomposition on exit
-       \param[in] is_lapack_piv specifies if the pivot is returned in original LAPACK compliant format
+       This function is not supported in GFOR.
+
+       \param[out]   pivot         permutation indices mapping the input to the
+                                   decomposition
+       \param[inout] in            input array on entry; packed LU
+                                   decomposition on exit
+       \param[in]    is_lapack_piv specifies if the pivot is returned in
+                                   original LAPACK-compliant format
+       \return       \ref AF_SUCCESS, if function returns successfully, else
+                     an \ref af_err code is given
 
        \ingroup lapack_factor_func_lu
     */
     AFAPI af_err af_lu_inplace(af_array *pivot, af_array in, const bool is_lapack_piv);
 
     /**
-       C Interface for QR decomposition
+       C Interface to perform QR decomposition.
 
-       \param[out] q is the orthogonal matrix from QR decomposition
-       \param[out] r is the upper triangular matrix from QR decomposition
-       \param[out] tau will contain additional information needed for solving a least squares problem using \p q and \p r
-       \param[in] in is the input matrix
+       This function is not supported in GFOR.
+
+       \param[out] q   orthogonal matrix from QR decomposition
+       \param[out] r   upper triangular matrix from QR decomposition
+       \param[out] tau additional information needed for solving a
+                       least-squares problem using `q` and `r`
+       \param[in]  in  input array
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup lapack_factor_func_qr
     */
     AFAPI af_err af_qr(af_array *q, af_array *r, af_array *tau, const af_array in);
 
     /**
-       C Interface for QR decomposition
+       C Interface to perform QR decomposition.
 
-       \param[out] tau will contain additional information needed for unpacking the data
-       \param[inout] in is the input matrix on entry. It contains packed QR decomposition on exit
+       This function is not supported in GFOR.
+
+       \param[out]   tau additional information needed for unpacking the data
+       \param[inout] in  input array on entry; packed QR decomposition on exit
+       \return       \ref AF_SUCCESS, if function returns successfully, else
+                     an \ref af_err code is given
 
        \ingroup lapack_factor_func_qr
     */
     AFAPI af_err af_qr_inplace(af_array *tau, af_array in);
 
     /**
-       C++ Interface for cholesky decomposition
+       C Interface to perform Cholesky decomposition.
 
-       \param[out] out contains the triangular matrix. Multiply \p out with it conjugate transpose reproduces the input \p in.
-       \param[out] info is \p 0 if cholesky decomposition passes, if not it returns the rank at which the decomposition failed.
-       \param[in] in is the input matrix
-       \param[in] is_upper a boolean determining if \p out is upper or lower triangular
+       Multiplying `out` with its conjugate transpose reproduces the input
+       `in`.
 
-       \note The input matrix \b has to be a positive definite matrix, if it is not zero, the cholesky decomposition functions return a non zero output.
+       The input must be positive definite.
+
+       \param[out] out      triangular matrix;
+       \param[out] info     `0` if cholesky decomposition passes; if not, it
+                            returns the rank at which the decomposition fails
+       \param[in]  in       input matrix
+       \param[in]  is_upper boolean determining if `out` is upper or lower
+                            triangular
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup lapack_factor_func_cholesky
     */
     AFAPI af_err af_cholesky(af_array *out, int *info, const af_array in, const bool is_upper);
 
     /**
-       C Interface for in place cholesky decomposition
+       C Interface to perform in-place Cholesky decomposition.
 
-       \param[out] info is \p 0 if cholesky decomposition passes, if not it returns the rank at which the decomposition failed.
-       \param[inout] in is the input matrix on entry. It contains the triangular matrix on exit.
-       \param[in] is_upper a boolean determining if \p in is upper or lower triangular
+       The input must be positive definite.
 
-       \note The input matrix \b has to be a positive definite matrix, if it is not zero, the cholesky decomposition functions return a non zero output.
+       \param[out]   info     `0` if cholesky decomposition passes; if not, it
+                              returns the rank at which the decomposition fails
+       \param[inout] in       input matrix on entry; triangular matrix on exit
+       \param[in]    is_upper boolean determining if `in` is upper or lower
+                              triangular
+       \return       \ref AF_SUCCESS, if function returns successfully, else
+                     an \ref af_err code is given
 
        \ingroup lapack_factor_func_cholesky
     */
     AFAPI af_err af_cholesky_inplace(int *info, af_array in, const bool is_upper);
 
     /**
-       C Interface for solving a system of equations
+       C Interface to solve a system of equations.
 
-       \param[out] x is the matrix of unknown variables
-       \param[in] a is the coefficient matrix
-       \param[in] b is the measured values
-       \param[in] options determining various properties of matrix \p a
+       The `options` parameter must be one of \ref AF_MAT_NONE,
+       \ref AF_MAT_LOWER or \ref AF_MAT_UPPER.
+
+       This function is not supported in GFOR.
+
+       \param[out] x       matrix of unknown variables
+       \param[in]  a       coefficient matrix
+       \param[in]  b       measured values
+       \param[in]  options determines various properties of matrix `a`
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup lapack_solve_func_gen
-
-       \note \p options needs to be one of \ref AF_MAT_NONE, \ref AF_MAT_LOWER or \ref AF_MAT_UPPER
     */
     AFAPI af_err af_solve(af_array *x, const af_array a, const af_array b,
                           const af_mat_prop options);
 
     /**
-       C Interface for solving a system of equations
+       C Interface to solve a system of equations.
 
-       \param[out] x will contain the matrix of unknown variables
-       \param[in] a is the output matrix from packed LU decomposition of the coefficient matrix
-       \param[in] piv is the pivot array from packed LU decomposition of the coefficient matrix
-       \param[in] b is the matrix of measured values
-       \param[in] options determining various properties of matrix \p a
+       The `options` parameter currently must be \ref AF_MAT_NONE.
+
+       \param[out] x       matrix of unknown variables
+       \param[in]  a       packed LU decomposition of the coefficient matrix
+       \param[in]  piv     pivot array from the packed LU decomposition of the
+                           coefficient matrix
+       \param[in]  b       measured values
+       \param[in]  options determines various properties of matrix `a`
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup lapack_solve_lu_func_gen
-
-       \note \p options currently needs to be \ref AF_MAT_NONE
-       \note This function is not supported in GFOR
     */
     AFAPI af_err af_solve_lu(af_array *x, const af_array a, const af_array piv,
                              const af_array b, const af_mat_prop options);
 
     /**
-       C Interface for inverting a matrix
+       C Interface to invert a matrix.
 
-       \param[out] out will contain the inverse of matrix \p in
-       \param[in] in is input matrix
-       \param[in] options determining various properties of matrix \p in
+       The `options` parameter currently must be \ref AF_MAT_NONE.
+
+       \param[out] out     inverse matrix
+       \param[in]  in      input matrix
+       \param[in]  options determines various properties of matrix `in`
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup lapack_ops_func_inv
-
-       \note currently options needs to be \ref AF_MAT_NONE
     */
     AFAPI af_err af_inverse(af_array *out, const af_array in, const af_mat_prop options);
 
 #if AF_API_VERSION >= 37
     /**
-       C Interface for pseudo-inverting (Moore-Penrose) a matrix.
+       C Interface to pseudo-invert (Moore-Penrose) a matrix.
+
        Currently uses the SVD-based approach.
 
-       \param[out] out will contain the pseudo-inverse of matrix \p in
-       \param[in] in is the input matrix
-       \param[in] tol defines the lower threshold for singular values from SVD
-       \param[in] options must be AF_MAT_NONE (more options might be supported
-       in the future)
+       Parameter `tol` is not the actual lower threshold, but it is passed in
+       as a parameter to the calculation of the actual threshold relative to
+       the shape and contents of `in`.
 
-       \note \p tol is not the actual lower threshold, but it is passed in as a
-             parameter to the calculation of the actual threshold relative to the
-             shape and contents of \p in.
-       \note At first, try setting \p tol to 1e-6 for single precision and 1e-12
-             for double.
-       \note This function is not supported in GFOR
+       Suggested parameters for `tol`:  1e-6 for single precision and 1e-12 for
+       double precision.
+
+       \param[out] out     pseudo-inverse matrix
+       \param[in]  in      input matrix
+       \param[in]  tol     defines the lower threshold for singular values from
+                           SVD
+       \param[in]  options must be AF_MAT_NONE (more options might be supported
+                           in the future)
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup lapack_ops_func_pinv
     */
@@ -460,36 +525,43 @@ extern "C" {
 #endif
 
     /**
-       C Interface for finding the rank of a matrix
+       C Interface to find the rank of a matrix.
 
-       \param[out] rank will contain the rank of \p in
-       \param[in] in is input matrix
-       \param[in] tol is the tolerance value
+       \param[out] rank rank
+       \param[in]  in   input matrix
+       \param[in]  tol  tolerance value
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup lapack_ops_func_rank
     */
     AFAPI af_err af_rank(unsigned *rank, const af_array in, const double tol);
 
     /**
-       C Interface for finding the determinant of a matrix
+       C Interface to find the determinant of a matrix.
 
-       \param[out] det_real will contain the real part of the determinant of \p in
-       \param[out] det_imag will contain the imaginary part of the determinant of \p in
-       \param[in] in is input matrix
+       \param[out] det_real real part of the determinant
+       \param[out] det_imag imaginary part of the determinant
+       \param[in]  in       input matrix
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup lapack_ops_func_det
     */
     AFAPI af_err af_det(double *det_real, double *det_imag, const af_array in);
 
     /**
-       C Interface for norm of a matrix
+       C Interface to find the norm of a matrix.
 
-       \param[out] out will contain the norm of \p in
-       \param[in] in is the input matrix
-       \param[in] type specifies the \ref af::normType. Default: \ref AF_NORM_VECTOR_1
-       \param[in] p specifies the value of P when \p type is one of \ref AF_NORM_VECTOR_P,  AF_NORM_MATRIX_L_PQ is used. It is ignored for other values of \p type
-       \param[in] q specifies the value of Q when \p type is AF_NORM_MATRIX_L_PQ. This parameter is ignored if \p type is anything else
-
+       \param[out] out  norm
+       \param[in]  in   input matrix
+       \param[in]  type \ref af::normType. Default: \ref AF_NORM_VECTOR_1
+       \param[in]  p    value of P when `type` is \ref AF_NORM_VECTOR_P or
+                        \ref AF_NORM_MATRIX_L_PQ, else ignored
+       \param[in]  q    value of Q when `type` is \ref AF_NORM_MATRIX_L_PQ, else
+                        ignored
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup lapack_ops_func_norm
     */
@@ -497,11 +569,12 @@ extern "C" {
 
 #if AF_API_VERSION >= 33
     /**
-       Returns true is ArrayFire is compiled with LAPACK support
+       Returns true if ArrayFire is compiled with LAPACK support.
 
-       \param[out] out is true if LAPACK support is available, false otherwise
-
-       \returns AF_SUCCESS if successful (does not depend on the value of out)
+       \param[out] out true if LAPACK support is available; false otherwise
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given; does not depend on the value
+                   of `out`
 
        \ingroup lapack_helper_func_available
     */

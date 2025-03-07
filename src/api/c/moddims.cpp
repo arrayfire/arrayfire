@@ -18,7 +18,7 @@
 #include <af/dim4.hpp>
 
 using af::dim4;
-using common::half;
+using arrayfire::common::half;
 using detail::cdouble;
 using detail::cfloat;
 using detail::intl;
@@ -30,11 +30,11 @@ using detail::ushort;
 namespace {
 template<typename T>
 af_array modDims(const af_array in, const dim4& newDims) {
-    return getHandle(common::modDims(getArray<T>(in), newDims));
+    return getHandle(arrayfire::common::modDims(getArray<T>(in), newDims));
 }
 template<typename T>
 af_array flat(const af_array in) {
-    return getHandle(common::flat(getArray<T>(in)));
+    return getHandle(arrayfire::common::flat(getArray<T>(in)));
 }
 }  // namespace
 

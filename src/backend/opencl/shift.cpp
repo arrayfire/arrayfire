@@ -9,21 +9,22 @@
 
 #include <shift.hpp>
 
-#include <common/jit/ShiftNodeBase.hpp>
 #include <err_opencl.hpp>
+#include <jit/ShiftNode.hpp>
 #include <traits.hpp>
 
 using af::dim4;
-using common::Node_ptr;
-using common::ShiftNodeBase;
-using opencl::jit::BufferNode;
+using arrayfire::common::Node_ptr;
+using arrayfire::common::ShiftNodeBase;
+using arrayfire::opencl::jit::BufferNode;
+using arrayfire::opencl::jit::ShiftNode;
 using std::array;
 using std::make_shared;
 using std::static_pointer_cast;
 using std::string;
 
+namespace arrayfire {
 namespace opencl {
-using ShiftNode = ShiftNodeBase<BufferNode>;
 
 template<typename T>
 Array<T> shift(const Array<T> &in, const int sdims[4]) {
@@ -68,3 +69,4 @@ INSTANTIATE(char)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 }  // namespace opencl
+}  // namespace arrayfire

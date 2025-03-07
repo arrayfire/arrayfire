@@ -10,7 +10,9 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace cuda {
 template<typename T>
 Array<T> range(const dim4& dim, const int seq_dim = -1);
-}
+}  // namespace cuda
+}  // namespace arrayfire

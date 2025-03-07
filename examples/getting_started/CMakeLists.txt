@@ -5,12 +5,12 @@
 # The complete license agreement can be obtained at:
 # http://arrayfire.com/licenses/BSD-3-Clause
 
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 project(ArrayFire-Example-Getting-Started
   VERSION 3.5.0
   LANGUAGES CXX)
 
-find_package(ArrayFire)
+find_package(ArrayFire REQUIRED)
 
 if(ArrayFire_CPU_FOUND)
   # Convolve examples
@@ -56,4 +56,18 @@ if(ArrayFire_OpenCL_FOUND)
 
   add_executable(vectorize_opencl vectorize.cpp)
   target_link_libraries(vectorize_opencl ArrayFire::afopencl)
+endif()
+
+if(ArrayFire_oneAPI_FOUND)
+  add_executable(convolve_oneapi convolve.cpp)
+  target_link_libraries(convolve_oneapi ArrayFire::afoneapi)
+
+  add_executable(integer_oneapi integer.cpp)
+  target_link_libraries(integer_oneapi ArrayFire::afoneapi)
+
+  add_executable(rainfall_oneapi rainfall.cpp)
+  target_link_libraries(rainfall_oneapi ArrayFire::afoneapi)
+
+  add_executable(vectorize_oneapi vectorize.cpp)
+  target_link_libraries(vectorize_oneapi ArrayFire::afoneapi)
 endif()

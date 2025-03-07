@@ -17,6 +17,7 @@
 
 #include <memory>
 
+namespace arrayfire {
 namespace cuda {
 /// \brief Creates a new event and marks it in the queue
 Event makeEvent(cudaStream_t queue) {
@@ -69,3 +70,4 @@ af_event createAndMarkEvent() {
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

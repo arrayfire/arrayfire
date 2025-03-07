@@ -27,6 +27,7 @@
 using af::dim4;
 using std::swap;
 
+namespace arrayfire {
 namespace cuda {
 template<af_op_t op, typename Ti, typename To>
 Array<To> reduce(const Array<Ti> &in, const int dim, bool change_nan,
@@ -171,8 +172,8 @@ void reduce_by_key_dim(Array<Tk> &keys_out, Array<To> &vals_out,
                         t_reduced_keys, t_reduced_vals, dim, folded_dim_sz);
             POST_LAUNCH_CHECK();
 
-            swap(t_reduced_keys, reduced_keys);
-            swap(t_reduced_vals, reduced_vals);
+            std::swap(t_reduced_keys, reduced_keys);
+            std::swap(t_reduced_vals, reduced_vals);
             reduce_host_event.block();
         }
     } while (needs_another_reduction_host ||
@@ -318,8 +319,8 @@ void reduce_by_key_first(Array<Tk> &keys_out, Array<To> &vals_out,
                         t_reduced_keys, t_reduced_vals, odims[2]);
             POST_LAUNCH_CHECK();
 
-            swap(t_reduced_keys, reduced_keys);
-            swap(t_reduced_vals, reduced_vals);
+            std::swap(t_reduced_keys, reduced_keys);
+            std::swap(t_reduced_vals, reduced_vals);
             reduce_host_event.block();
         }
     } while (needs_another_reduction_host ||
@@ -360,6 +361,7 @@ Array<To> reduce_all(const Array<Ti> &in, bool change_nan, double nanval) {
 }
 
 }  // namespace cuda
+}  // namespace arrayfire
 
 #define INSTANTIATE(Op, Ti, To)                                                \
     template Array<To> reduce<Op, Ti, To>(const Array<Ti> &in, const int dim,  \

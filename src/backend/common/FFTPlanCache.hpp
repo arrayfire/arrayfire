@@ -13,6 +13,7 @@
 #include <string>
 #include <utility>
 
+namespace arrayfire {
 namespace common {
 // FFTPlanCache caches backend specific fft plans in FIFO order
 //
@@ -70,3 +71,4 @@ class FFTPlanCache {
     plan_cache_t mCache;
 };
 }  // namespace common
+}  // namespace arrayfire

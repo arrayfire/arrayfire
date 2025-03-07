@@ -20,8 +20,8 @@
 //********************************************************/
 #if defined(WITH_LINEAR_ALGEBRA)
 
-#define lapack_complex_float opencl::cfloat
-#define lapack_complex_double opencl::cdouble
+#define lapack_complex_float arrayfire::opencl::cfloat
+#define lapack_complex_double arrayfire::opencl::cdouble
 #define LAPACK_PREFIX LAPACKE_
 #define ORDER_TYPE int
 #define AF_LAPACK_COL_MAJOR LAPACK_COL_MAJOR

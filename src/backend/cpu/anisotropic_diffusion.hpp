@@ -9,6 +9,7 @@
 
 #include "af/defines.h"
 
+namespace arrayfire {
 namespace cpu {
 template<typename T>
 class Array;
@@ -18,3 +19,4 @@ void anisotropicDiffusion(Array<T>& inout, const float dt, const float mct,
                           const af::fluxFunction fftype,
                           const af::diffusionEq eq);
 }  // namespace cpu
+}  // namespace arrayfire

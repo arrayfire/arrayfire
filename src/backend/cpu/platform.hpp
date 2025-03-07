@@ -12,18 +12,16 @@
 #include <queue.hpp>
 #include <string>
 
-namespace graphics {
-class ForgeManager;
-}
-
+namespace arrayfire {
 namespace common {
-namespace memory {
+class ForgeManager;
 class MemoryManagerBase;
-}
 }  // namespace common
+}  // namespace arrayfire
 
-using common::memory::MemoryManagerBase;
+using arrayfire::common::MemoryManagerBase;
 
+namespace arrayfire {
 namespace cpu {
 
 int getBackend();
@@ -40,6 +38,8 @@ int& getMaxJitSize();
 
 int getDeviceCount();
 
+void init();
+
 unsigned getActiveDeviceId();
 
 size_t getDeviceMemorySize(int device);
@@ -49,6 +49,12 @@ size_t getHostMemorySize();
 int setDevice(int device);
 
 queue& getQueue(int device = 0);
+
+/// Return a handle to the queue for the device.
+///
+/// \param[in] device The device of the returned queue
+/// \returns The handle to the queue
+queue* getQueueHandle(int device);
 
 void sync(int device);
 
@@ -65,6 +71,7 @@ void setMemoryManagerPinned(std::unique_ptr<MemoryManagerBase> mgr);
 
 void resetMemoryManagerPinned();
 
-graphics::ForgeManager& forgeManager();
+arrayfire::common::ForgeManager& forgeManager();
 
 }  // namespace cpu
+}  // namespace arrayfire

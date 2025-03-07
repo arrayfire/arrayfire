@@ -10,6 +10,7 @@
 #include <Param.hpp>
 #include <math.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
@@ -34,4 +35,5 @@ __global__ void exampleFunc(Param<T> c, CParam<T> a, CParam<T> b,
     }
 }
 
-} //namespace cuda
+}  // namespace cuda
+}  // namespace arrayfire

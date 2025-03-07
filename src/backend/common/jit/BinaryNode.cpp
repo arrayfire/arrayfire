@@ -4,6 +4,7 @@
 #include <common/jit/BinaryNode.hpp>
 #include <complex.hpp>
 #include <types.hpp>
+#include <af/traits.hpp>
 
 #include <memory>
 
@@ -17,6 +18,7 @@ using detail::createNodeArray;
 
 using std::make_shared;
 
+namespace arrayfire {
 namespace common {
 #ifdef AF_CPU
 template<typename To, typename Ti, af_op_t op>
@@ -151,3 +153,4 @@ INSTANTIATE_LOGIC(af_ge_t);
 #undef INSTANTIATE
 
 }  // namespace common
+}  // namespace arrayfire

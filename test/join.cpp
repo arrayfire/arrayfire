@@ -15,6 +15,7 @@
 #include <af/index.h>
 #include <af/traits.hpp>
 
+#include <array>
 #include <complex>
 #include <iostream>
 #include <numeric>
@@ -52,7 +53,7 @@ typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned int,
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Join, TestTypes);
+TYPED_TEST_SUITE(Join, TestTypes);
 
 template<typename T>
 void joinTest(string pTestFile, const unsigned dim, const unsigned in0,
@@ -61,8 +62,8 @@ void joinTest(string pTestFile, const unsigned dim, const unsigned in0,
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
     readTests<T, T, int>(pTestFile, numDims, in, tests);
 
     dim4 i0dims = numDims[in0];
@@ -161,8 +162,8 @@ TEST(Join, CPP) {
     const unsigned dim       = 2;
 
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
     readTests<float, float, int>(string(TEST_DIR "/join/join_big.test"),
                                  numDims, in, tests);
 
@@ -265,4 +266,49 @@ TEST(Join, ManyEmpty) {
     ASSERT_ARRAYS_EQ(gold, eeac);
     ASSERT_ARRAYS_EQ(gold, eace);
     ASSERT_ARRAYS_EQ(gold, acee);
+}
+
+TEST(Join, respect_parameters_order_ISSUE3511) {
+    const float column_host1[] = {1., 2., 3.};
+    const float column_host2[] = {4., 5., 6.};
+    const af::array buf1(3, 1, column_host1);
+    const af::array buf2(3, 1, column_host2);
+
+    // We need to avoid that JIT arrays are evaluated during whatever call,
+    // so we will have to work with copies for single use
+    const af::array jit1{buf1 + 1.0};
+    const af::array jit2{buf2 + 2.0};
+    const std::array<af::array, 8> cases{jit1,  -jit1,       jit1 + 1.0, jit2,
+                                         -jit2, jit1 + jit2, buf1,       buf2};
+    const std::array<char*, 8> cases_name{"JIT1", "-JIT1", "JIT1+1.0",
+                                          "JIT2", "-JIT2", "JIT1+JIT2",
+                                          "BUF1", "BUF2"};
+    assert(cases.size() == cases_name.size());
+    for (size_t cl0{0}; cl0 < cases.size(); ++cl0) {
+        for (size_t cl1{0}; cl1 < cases.size(); ++cl1) {
+            printf("Testing: af::join(1,%s,%s)\n", cases_name[cl0],
+                   cases_name[cl1]);
+            const array col0{cases[cl0]};
+            const array col1{cases[cl1]};
+            const array result{af::join(1, col0, col1)};
+            ASSERT_ARRAYS_EQ(result(af::span, 0), col0);
+            ASSERT_ARRAYS_EQ(result(af::span, 1), col1);
+        }
+    }
+    // Join of 3 arrays
+    for (size_t cl0{0}; cl0 < cases.size(); ++cl0) {
+        for (size_t cl1{0}; cl1 < cases.size(); ++cl1) {
+            for (size_t cl2{0}; cl2 < cases.size(); ++cl2) {
+                printf("Testing: af::join(1,%s,%s,%s)\n", cases_name[cl0],
+                       cases_name[cl1], cases_name[cl2]);
+                const array col0{cases[cl0]};
+                const array col1{cases[cl1]};
+                const array col2{cases[cl2]};
+                const array result{af::join(1, col0, col1, col2)};
+                ASSERT_ARRAYS_EQ(result(af::span, 0), col0);
+                ASSERT_ARRAYS_EQ(result(af::span, 1), col1);
+                ASSERT_ARRAYS_EQ(result(af::span, 2), col2);
+            }
+        }
+    }
 }

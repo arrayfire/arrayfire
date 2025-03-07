@@ -11,6 +11,7 @@
 #include <common/err_common.hpp>
 #include <common/traits.hpp>
 #include <algorithm>
+#include <cstring>
 #include <functional>
 #include <numeric>
 
@@ -31,6 +32,48 @@ dim4 calcStrides(const dim4 &parentDim) {
     return out;
 }
 
+ArrayInfo::ArrayInfo(unsigned id, af::dim4 size, dim_t offset_, af::dim4 stride,
+                     af_dtype af_type)
+    : devId(id)
+    , type(af_type)
+    , dim_size(size)
+    , offset(offset_)
+    , dim_strides(stride)
+    , is_sparse(false) {
+    setId(id);
+    static_assert(std::is_move_assignable<ArrayInfo>::value,
+                  "ArrayInfo is not move assignable");
+    static_assert(std::is_move_constructible<ArrayInfo>::value,
+                  "ArrayInfo is not move constructible");
+    static_assert(
+        offsetof(ArrayInfo, devId) == 0,
+        "ArrayInfo::devId must be the first member variable of ArrayInfo. \
+                   devId is used to encode the backend into the integer. \
+                   This is then used in the unified backend to check mismatched arrays.");
+    static_assert(std::is_standard_layout<ArrayInfo>::value,
+                  "ArrayInfo must be a standard layout type");
+}
+
+ArrayInfo::ArrayInfo(unsigned id, af::dim4 size, dim_t offset_, af::dim4 stride,
+                     af_dtype af_type, bool sparse)
+    : devId(id)
+    , type(af_type)
+    , dim_size(size)
+    , offset(offset_)
+    , dim_strides(stride)
+    , is_sparse(sparse) {
+    setId(id);
+    static_assert(
+        offsetof(ArrayInfo, devId) == 0,
+        "ArrayInfo::devId must be the first member variable of ArrayInfo. \
+                   devId is used to encode the backend into the integer. \
+                   This is then used in the unified backend to check mismatched arrays.");
+    static_assert(std::is_nothrow_move_assignable<ArrayInfo>::value,
+                  "ArrayInfo is not nothrow move assignable");
+    static_assert(std::is_nothrow_move_constructible<ArrayInfo>::value,
+                  "ArrayInfo is not nothrow move constructible");
+}
+
 unsigned ArrayInfo::getDevId() const {
     // The actual device ID is only stored in the first 8 bits of devId
     // See ArrayInfo.hpp for more
@@ -38,26 +81,18 @@ unsigned ArrayInfo::getDevId() const {
 }
 
 void ArrayInfo::setId(int id) const {
-    // 1 << (backendId + 8) sets the 9th, 10th or 11th bit of devId to 1
-    // for CPU, CUDA and OpenCL respectively
-    // See ArrayInfo.hpp for more
-    unsigned backendId =
-        detail::getBackend() >> 1U;  // Convert enums 1, 2, 4 to ints 0, 1, 2
-    const_cast<ArrayInfo *>(this)->setId(id | 1 << (backendId + 8U));
+    const_cast<ArrayInfo *>(this)->setId(id);
 }
 
 void ArrayInfo::setId(int id) {
-    // 1 << (backendId + 8) sets the 9th, 10th or 11th bit of devId to 1
-    // for CPU, CUDA and OpenCL respectively
-    // See ArrayInfo.hpp for more
-    unsigned backendId =
-        detail::getBackend() >> 1U;  // Convert enums 1, 2, 4 to ints 0, 1, 2
-    devId = id | 1U << (backendId + 8U);
+    /// Shift the backend flag to the end of the devId integer
+    unsigned backendId = detail::getBackend();
+    devId              = id | backendId << 8U;
 }
 
 af_backend ArrayInfo::getBackendId() const {
     // devId >> 8 converts the backend info to 1, 2, 4 which are enums
-    // for CPU, CUDA and OpenCL respectively
+    // for CPU, CUDA, OpenCL, and oneAPI respectively
     // See ArrayInfo.hpp for more
     unsigned backendId = devId >> 8U;
     return static_cast<af_backend>(backendId);
@@ -94,23 +129,27 @@ bool ArrayInfo::isVector() const {
     return singular_dims == AF_MAX_DIMS - 1 && non_singular_dims == 1;
 }
 
-bool ArrayInfo::isComplex() const { return common::isComplex(type); }
+bool ArrayInfo::isComplex() const { return arrayfire::common::isComplex(type); }
 
-bool ArrayInfo::isReal() const { return common::isReal(type); }
+bool ArrayInfo::isReal() const { return arrayfire::common::isReal(type); }
 
-bool ArrayInfo::isDouble() const { return common::isDouble(type); }
+bool ArrayInfo::isDouble() const { return arrayfire::common::isDouble(type); }
 
-bool ArrayInfo::isSingle() const { return common::isSingle(type); }
+bool ArrayInfo::isSingle() const { return arrayfire::common::isSingle(type); }
 
-bool ArrayInfo::isHalf() const { return common::isHalf(type); }
+bool ArrayInfo::isHalf() const { return arrayfire::common::isHalf(type); }
 
-bool ArrayInfo::isRealFloating() const { return common::isRealFloating(type); }
+bool ArrayInfo::isRealFloating() const {
+    return arrayfire::common::isRealFloating(type);
+}
 
-bool ArrayInfo::isFloating() const { return common::isFloating(type); }
+bool ArrayInfo::isFloating() const {
+    return arrayfire::common::isFloating(type);
+}
 
-bool ArrayInfo::isInteger() const { return common::isInteger(type); }
+bool ArrayInfo::isInteger() const { return arrayfire::common::isInteger(type); }
 
-bool ArrayInfo::isBool() const { return common::isBool(type); }
+bool ArrayInfo::isBool() const { return arrayfire::common::isBool(type); }
 
 bool ArrayInfo::isLinear() const {
     if (ndims() == 1) { return dim_strides[0] == 1; }
@@ -179,18 +218,19 @@ dim4 toStride(const vector<af_seq> &seqs, const af::dim4 &parentDims) {
     return out;
 }
 
-const ArrayInfo &getInfo(const af_array arr, bool sparse_check,
-                         bool device_check) {
-    const ArrayInfo *info =
-        static_cast<ArrayInfo *>(reinterpret_cast<void *>(arr));
+namespace arrayfire {
+namespace common {
+
+const ArrayInfo &getInfo(const af_array arr, bool sparse_check) {
+    const ArrayInfo *info = nullptr;
+    memcpy(&info, &arr, sizeof(af_array));
 
     // Check Sparse -> If false, then both standard Array<T> and SparseArray<T>
     // are accepted Otherwise only regular Array<T> is accepted
     if (sparse_check) { ARG_ASSERT(0, info->isSparse() == false); }
 
-    if (device_check && info->getDevId() != detail::getActiveDeviceId()) {
-        AF_ERROR("Input Array not created on current device", AF_ERR_DEVICE);
-    }
-
     return *info;
 }
+
+}  // namespace common
+}  // namespace arrayfire

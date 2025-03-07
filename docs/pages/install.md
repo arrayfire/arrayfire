@@ -1,24 +1,15 @@
 # ArrayFire Installer {#installing}
 
 Installing ArrayFire couldn't be easier. Navigate to
-https://arrayfire.com/download and download the installer for your architecture
-and operating system. Although you could [build ArrayFire from
-source](https://github.com/arrayfire/arrayfire), we recommend using our
-installers as we have packaged together all of the necessary dependencies to
-give you the best performance.
+https://arrayfire.com/download and download the appropriate installer for the
+target architecture and operating system. Although ArrayFire can be [built
+from source](https://github.com/arrayfire/arrayfire), the installers
+conveniently package necessary dependencies.
 
-We provide installers for Windows, Linux, and macOS. There are two installers
-for each operating system: one with graphics support and the other without
-graphics support. Download the installer with graphics support if you would like
-to be able to do high performance visualizations using our
-[Forge](https://github.com/arrayfire/forge) library. Otherwise, download the
-installer without graphics support.
-
-Make sure you have the latest device drivers installed on your system before
-using ArrayFire. If you are going to be targeting the CPU using ArrayFire’s
-OpenCL backend, you will need to have the OpenCL **runtime** installed on your
-system. Drivers and runtimes should be downloaded and installed from your device
-vendor’s website.
+Install the latest device drivers before using ArrayFire. If you are going to
+target the CPU using ArrayFire’s OpenCL backend, install the OpenCL
+runtime. Drivers and runtimes should be downloaded and installed from the
+device vendor’s website.
 
 # Install Instructions {#InstallInstructions}
 
@@ -29,14 +20,14 @@ vendor’s website.
 ## Windows {#Windows}
 
 Prior to installing ArrayFire on Windows,
-[download](https://www.microsoft.com/en-in/download/details.aspx?id=48145)
+[download](https://www.microsoft.com/download/details.aspx?id=48145)
 install the Visual Studio 2015 (x64) runtime libraries.
 
-Once you have downloaded the ArrayFire installer, execute the installer as you
-normally would on Windows. If you choose not to modify the path during the
-installation procedure, you'll need to manually add ArrayFire to the path for
-all users. Simply append `%%AF_PATH%/lib` to the PATH variable so that the loader
-can find ArrayFire DLLs.
+Once the ArrayFire installer has been downloaded, run the installer. If you
+choose not to modify the path during the installation procedure, you'll need
+to manually add ArrayFire to the path for all users. Simply append
+`%%AF_PATH%/lib` to the PATH variable so that the loader can find ArrayFire
+DLLs.
 
 For more information on using ArrayFire on Windows, visit the following
 [page](http://arrayfire.org/docs/using_on_windows.htm).
@@ -47,13 +38,14 @@ There are two ways to install ArrayFire on Linux.
 1. Package Manager
 2. Using ArrayFire Linux Installer
 
-As of today, approach (1) is only supported for Ubuntu 18.04 and 20.04. Please go
-through [our GitHub wiki page](https://github.com/arrayfire/arrayfire/wiki/Install-ArrayFire-From-Linux-Package-Managers)
+As of today, approach (1) is only supported for Ubuntu 18.04 and 20.04. Please
+go through [our GitHub wiki
+page](https://github.com/arrayfire/arrayfire/wiki/Install-ArrayFire-From-Linux-Package-Managers)
 for the detailed instructions.
 
-For approach (2), once you have downloaded the ArrayFire installer, execute the
-installer from the terminal as shown below. Set the `--prefix` argument to the
-directory you would like to install ArrayFire to - we recommend `/opt`.
+For approach (2), once you have downloaded the ArrayFire installer, execute
+the installer from the terminal as shown below. Set the `--prefix` argument to
+the directory you would like to install ArrayFire to - we recommend `/opt`.
 
     ./Arrayfire_*_Linux_x86_64.sh --include-subdir --prefix=/opt
 
@@ -131,8 +123,9 @@ On Unix-like systems:
     ./helloworld/helloworld_{cpu,cuda,opencl}
 
 On Windows, open the CMakeLists.txt file from CMake-GUI and set `ASSETS_DIR`
-variable to the parent folder of examples folder. Once the project is configured
-and generated, you can build and run the examples from Visual Studio.
+variable to the parent folder of examples folder. Once the project is
+configured and generated, you can build and run the examples from Visual
+Studio.
 
 ## <a name="GettingHelp"></a> Getting help
 

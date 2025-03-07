@@ -95,8 +95,9 @@ static inline af_array solve_lu(const af_array a, const af_array pivot,
 af_err af_solve_lu(af_array* out, const af_array a, const af_array piv,
                    const af_array b, const af_mat_prop options) {
     try {
-        const ArrayInfo& a_info = getInfo(a);
-        const ArrayInfo& b_info = getInfo(b);
+        const ArrayInfo& a_info   = getInfo(a);
+        const ArrayInfo& b_info   = getInfo(b);
+        const ArrayInfo& piv_info = getInfo(piv);
 
         if (a_info.ndims() > 2 || b_info.ndims() > 2) {
             AF_ERROR("solveLU can not be used in batch mode", AF_ERR_BATCH);
@@ -115,6 +116,9 @@ af_err af_solve_lu(af_array* out, const af_array a, const af_array piv,
         ARG_ASSERT(2, b_info.isFloating());  // Only floating and complex types
 
         TYPE_ASSERT(a_type == b_type);
+
+        af_dtype piv_type = piv_info.getType();
+        TYPE_ASSERT(piv_type == s32);  // TODO: add support for 64 bit types
 
         DIM_ASSERT(1, adims[0] == adims[1]);
         DIM_ASSERT(1, bdims[0] == adims[0]);

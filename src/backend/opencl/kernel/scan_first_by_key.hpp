@@ -11,6 +11,7 @@
 
 #include <Param.hpp>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 template<typename Ti, typename Tk, typename To, af_op_t op>
@@ -18,3 +19,4 @@ void scanFirstByKey(Param &out, const Param &in, const Param &key,
                     const bool inclusive_scan);
 }
 }  // namespace opencl
+}  // namespace arrayfire

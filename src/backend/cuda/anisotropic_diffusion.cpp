@@ -12,6 +12,7 @@
 #include <kernel/anisotropic_diffusion.hpp>
 #include <af/dim4.hpp>
 
+namespace arrayfire {
 namespace cuda {
 template<typename T>
 void anisotropicDiffusion(Array<T>& inout, const float dt, const float mct,
@@ -29,3 +30,4 @@ void anisotropicDiffusion(Array<T>& inout, const float dt, const float mct,
 INSTANTIATE(double)
 INSTANTIATE(float)
 }  // namespace cuda
+}  // namespace arrayfire

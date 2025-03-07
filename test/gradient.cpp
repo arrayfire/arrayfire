@@ -41,7 +41,7 @@ class Grad : public ::testing::Test {
 typedef ::testing::Types<float, double, cfloat, cdouble> TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Grad, TestTypes);
+TYPED_TEST_SUITE(Grad, TestTypes);
 
 template<typename T>
 void gradTest(string pTestFile, const unsigned resultIdx0,
@@ -50,8 +50,8 @@ void gradTest(string pTestFile, const unsigned resultIdx0,
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
     readTests<T, T, float>(pTestFile, numDims, in, tests);
 
     dim4 idims = numDims[0];
@@ -128,8 +128,8 @@ TEST(Grad, CPP) {
     const unsigned resultIdx1 = 1;
 
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
     readTests<float, float, float>(string(TEST_DIR "/grad/grad3D.test"),
                                    numDims, in, tests);
 

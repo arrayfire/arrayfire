@@ -35,7 +35,7 @@ typedef ::testing::Types<float, double, int, uint, intl, uintl, char, uchar>
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(CorrelationCoefficient, TestTypes);
+TYPED_TEST_SUITE(CorrelationCoefficient, TestTypes);
 
 template<typename T>
 struct f32HelperType {
@@ -73,8 +73,8 @@ TYPED_TEST(CorrelationCoefficient, All) {
     SUPPORTED_TYPE_CHECK(outType);
 
     vector<dim4> numDims;
-    vector<vector<int> > in;
-    vector<vector<float> > tests;
+    vector<vector<int>> in;
+    vector<vector<float>> tests;
 
     readTestsFromFile<int, float>(
         string(TEST_DIR "/corrcoef/mat_10x10_scalar.test"), numDims, in, tests);

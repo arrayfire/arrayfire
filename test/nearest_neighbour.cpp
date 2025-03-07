@@ -59,7 +59,7 @@ struct otype_t<uchar> {
 };
 
 // register the type list
-TYPED_TEST_CASE(NearestNeighbour, TestTypes);
+TYPED_TEST_SUITE(NearestNeighbour, TestTypes);
 
 template<typename T>
 void nearestNeighbourTest(string pTestFile, int feat_dim,
@@ -69,8 +69,8 @@ void nearestNeighbourTest(string pTestFile, int feat_dim,
     typedef typename otype_t<T>::otype To;
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<uint> > tests;
+    vector<vector<T>> in;
+    vector<vector<uint>> tests;
 
     readTests<T, uint, uint>(pTestFile, numDims, in, tests);
 
@@ -117,24 +117,28 @@ void nearestNeighbourTest(string pTestFile, int feat_dim,
 // SSD
 /////////////////////////////////////////////////
 TYPED_TEST(NearestNeighbour, NN_SSD_100_1000_Dim0) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     nearestNeighbourTest<TypeParam>(
         string(TEST_DIR "/nearest_neighbour/ssd_100_1000_dim0.test"), 0,
         AF_SSD);
 }
 
 TYPED_TEST(NearestNeighbour, NN_SSD_100_1000_Dim1) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     nearestNeighbourTest<TypeParam>(
         string(TEST_DIR "/nearest_neighbour/ssd_100_1000_dim1.test"), 1,
         AF_SSD);
 }
 
 TYPED_TEST(NearestNeighbour, NN_SSD_500_5000_Dim0) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     nearestNeighbourTest<TypeParam>(
         string(TEST_DIR "/nearest_neighbour/ssd_500_5000_dim0.test"), 0,
         AF_SSD);
 }
 
 TYPED_TEST(NearestNeighbour, NN_SSD_500_5000_Dim1) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     nearestNeighbourTest<TypeParam>(
         string(TEST_DIR "/nearest_neighbour/ssd_500_5000_dim1.test"), 1,
         AF_SSD);
@@ -144,24 +148,28 @@ TYPED_TEST(NearestNeighbour, NN_SSD_500_5000_Dim1) {
 // SAD
 /////////////////////////////////////////////////
 TYPED_TEST(NearestNeighbour, NN_SAD_100_1000_Dim0) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     nearestNeighbourTest<TypeParam>(
         string(TEST_DIR "/nearest_neighbour/sad_100_1000_dim0.test"), 0,
         AF_SAD);
 }
 
 TYPED_TEST(NearestNeighbour, NN_SAD_100_1000_Dim1) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     nearestNeighbourTest<TypeParam>(
         string(TEST_DIR "/nearest_neighbour/sad_100_1000_dim1.test"), 1,
         AF_SAD);
 }
 
 TYPED_TEST(NearestNeighbour, NN_SAD_500_5000_Dim0) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     nearestNeighbourTest<TypeParam>(
         string(TEST_DIR "/nearest_neighbour/sad_500_5000_dim0.test"), 0,
         AF_SAD);
 }
 
 TYPED_TEST(NearestNeighbour, NN_SAD_500_5000_Dim1) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     nearestNeighbourTest<TypeParam>(
         string(TEST_DIR "/nearest_neighbour/sad_500_5000_dim1.test"), 1,
         AF_SAD);
@@ -170,9 +178,10 @@ TYPED_TEST(NearestNeighbour, NN_SAD_500_5000_Dim1) {
 ///////////////////////////////////// CPP ////////////////////////////////
 //
 TEST(NearestNeighbourSSD, CPP) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     vector<dim4> numDims;
-    vector<vector<uint> > in;
-    vector<vector<uint> > tests;
+    vector<vector<uint>> in;
+    vector<vector<uint>> tests;
 
     readTests<uint, uint, uint>(TEST_DIR
                                 "/nearest_neighbour/ssd_500_5000_dim0.test",
@@ -206,9 +215,10 @@ TEST(NearestNeighbourSSD, CPP) {
 }
 
 TEST(NearestNeighbourSAD, CPP) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     vector<dim4> numDims;
-    vector<vector<uint> > in;
-    vector<vector<uint> > tests;
+    vector<vector<uint>> in;
+    vector<vector<uint>> tests;
 
     readTests<uint, uint, uint>(TEST_DIR
                                 "/nearest_neighbour/sad_100_1000_dim1.test",
@@ -242,6 +252,7 @@ TEST(NearestNeighbourSAD, CPP) {
 }
 
 TEST(NearestNeighbourSSD, small) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     const int ntrain            = 1;
     const int nquery            = 5;
     const int nfeat             = 2;
@@ -272,6 +283,7 @@ TEST(NearestNeighbourSSD, small) {
 }
 
 TEST(KNearestNeighbourSSD, small) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     const int ntrain = 5;
     const int nquery = 3;
     const int nfeat  = 2;
@@ -426,15 +438,16 @@ vector<nearest_neighbors_params> genKNNTests() {
             knn_data("1q1000t256k", 1, 1000, 1, 256, 0)};
 }
 
-INSTANTIATE_TEST_CASE_P(KNearestNeighborsSSD, NearestNeighborsTest,
-                        ::testing::ValuesIn(genNNTests()),
-                        testNameGenerator<NearestNeighborsTest>);
+INSTANTIATE_TEST_SUITE_P(KNearestNeighborsSSD, NearestNeighborsTest,
+                         ::testing::ValuesIn(genNNTests()),
+                         testNameGenerator<NearestNeighborsTest>);
 
-INSTANTIATE_TEST_CASE_P(KNearestNeighborsSSD, KNearestNeighborsTest,
-                        ::testing::ValuesIn(genKNNTests()),
-                        testNameGenerator<KNearestNeighborsTest>);
+INSTANTIATE_TEST_SUITE_P(KNearestNeighborsSSD, KNearestNeighborsTest,
+                         ::testing::ValuesIn(genKNNTests()),
+                         testNameGenerator<KNearestNeighborsTest>);
 
 TEST_P(NearestNeighborsTest, SingleQTests) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     nearest_neighbors_params params = GetParam();
     array query = array(params.qdims_, params.query_.data());
     array train = array(params.tdims_, params.train_.data());
@@ -454,6 +467,7 @@ TEST_P(NearestNeighborsTest, SingleQTests) {
 }
 
 TEST_P(KNearestNeighborsTest, SingleQTests) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     nearest_neighbors_params params = GetParam();
 
     array query = array(params.qdims_, params.query_.data());
@@ -504,6 +518,7 @@ TEST(KNearestNeighbours, InvalidLargeK) {
 }
 
 TEST(NearestNeighbour, DocSnippet1) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     //! [ex_nearest_1]
     float h_pts[6] = {1.f, 2.f, 3.f, 8.f, 9.f, 10.f};
     array pts(dim4(1, 6), h_pts);
@@ -537,6 +552,7 @@ TEST(NearestNeighbour, DocSnippet1) {
 }
 
 TEST(NearestNeighbour, DocSnippet2) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     //! [ex_nearest_2]
     float h_pts[18] = {0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, 0.f,
                        8.f, 9.f, 1.f, 9.f, 8.f, 1.f, 9.f, 9.f, 1.f};

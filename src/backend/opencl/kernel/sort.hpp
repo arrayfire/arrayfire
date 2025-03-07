@@ -26,6 +26,7 @@ AF_DEPRECATED_WARNINGS_ON
 
 namespace compute = boost::compute;
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 template<typename T>
@@ -128,3 +129,4 @@ void sort0(Param val, bool isAscending) {
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

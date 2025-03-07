@@ -64,8 +64,7 @@ static void array_to_feat_desc(vector<feat_desc_t>& feat, float* x, float* y,
 
 static void array_to_feat_desc(vector<feat_desc_t>& feat, float* x, float* y,
                                float* score, float* ori, float* size,
-                               vector<vector<unsigned> >& desc,
-                               unsigned nfeat) {
+                               vector<vector<unsigned>>& desc, unsigned nfeat) {
     feat.resize(nfeat);
     for (size_t i = 0; i < feat.size(); i++) {
         feat[i].f[0] = x[i];
@@ -125,17 +124,17 @@ class ORB : public ::testing::Test {
 
 typedef ::testing::Types<float, double> TestTypes;
 
-TYPED_TEST_CASE(ORB, TestTypes);
+TYPED_TEST_SUITE(ORB, TestTypes);
 
 template<typename T>
 void orbTest(string pTestFile) {
     SUPPORTED_TYPE_CHECK(T);
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
     vector<string> inFiles;
-    vector<vector<float> > goldFeat;
-    vector<vector<unsigned> > goldDesc;
+    vector<vector<float>> goldFeat;
+    vector<vector<unsigned>> goldDesc;
 
     readImageFeaturesDescriptors<unsigned>(pTestFile, inDims, inFiles, goldFeat,
                                            goldDesc);
@@ -239,20 +238,25 @@ void orbTest(string pTestFile) {
 }
 
 TYPED_TEST(ORB, Square) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     orbTest<TypeParam>(string(TEST_DIR "/orb/square.test"));
 }
 
-TYPED_TEST(ORB, Lena) { orbTest<TypeParam>(string(TEST_DIR "/orb/lena.test")); }
+TYPED_TEST(ORB, Lena) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
+    orbTest<TypeParam>(string(TEST_DIR "/orb/lena.test"));
+}
 
 ///////////////////////////////////// CPP ////////////////////////////////
 //
 TEST(ORB, CPP) {
-    if (noImageIOTests()) return;
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
     vector<string> inFiles;
-    vector<vector<float> > goldFeat;
-    vector<vector<unsigned> > goldDesc;
+    vector<vector<float>> goldFeat;
+    vector<vector<unsigned>> goldDesc;
 
     readImageFeaturesDescriptors<unsigned>(string(TEST_DIR "/orb/square.test"),
                                            inDims, inFiles, goldFeat, goldDesc);

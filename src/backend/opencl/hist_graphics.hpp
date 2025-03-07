@@ -10,9 +10,11 @@
 #include <Array.hpp>
 #include <common/graphics_common.hpp>
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T>
 void copy_histogram(const Array<T> &data, fg_histogram hist);
 
-}
+}  // namespace opencl
+}  // namespace arrayfire

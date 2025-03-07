@@ -10,6 +10,7 @@
 #pragma once
 #include <Param.hpp>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -52,3 +53,4 @@ void iir(Param<T> y, Param<T> c, CParam<T> a) {
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

@@ -23,7 +23,7 @@
 #include "stats.h"
 
 using af::dim4;
-using common::half;
+using arrayfire::common::half;
 using detail::Array;
 using detail::cdouble;
 using detail::cfloat;
@@ -160,7 +160,9 @@ af_err af_mean_all(double *realVal, double *imagVal, const af_array in) {
             case u16: *realVal = mean<ushort, float>(in); break;
             case u8: *realVal = mean<uchar, float>(in); break;
             case b8: *realVal = mean<char, float>(in); break;
-            case f16: *realVal = mean<common::half, float>(in); break;
+            case f16:
+                *realVal = mean<arrayfire::common::half, float>(in);
+                break;
             case c32: {
                 cfloat tmp = mean<cfloat, cfloat>(in);
                 *realVal   = real(tmp);

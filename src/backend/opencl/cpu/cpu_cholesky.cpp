@@ -13,6 +13,7 @@
 #include <cpu/cpu_helper.hpp>
 #include <cpu/cpu_triangle.hpp>
 
+namespace arrayfire {
 namespace opencl {
 namespace cpu {
 
@@ -81,4 +82,5 @@ INSTANTIATE_CH(cdouble)
 
 }  // namespace cpu
 }  // namespace opencl
+}  // namespace arrayfire
 #endif  // WITH_LINEAR_ALGEBRA

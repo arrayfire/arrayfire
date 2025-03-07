@@ -14,19 +14,20 @@
 #include <functional>
 #include <memory>
 
+namespace arrayfire {
 namespace cpu {
 template<typename T>
 using uptr = std::unique_ptr<T[], std::function<void(T[])>>;
 
 template<typename T>
-std::unique_ptr<T[], std::function<void(T *)>> memAlloc(const size_t &elements);
+std::unique_ptr<T[], std::function<void(void *)>> memAlloc(
+    const size_t &elements);
 void *memAllocUser(const size_t &bytes);
 
 // Need these as 2 separate function and not a default argument
 // This is because it is used as the deleter in shared pointer
 // which cannot support default arguments
-template<typename T>
-void memFree(T *ptr);
+void memFree(void *ptr);
 void memFreeUser(void *ptr);
 
 void memLock(const void *ptr);
@@ -35,8 +36,7 @@ bool isLocked(const void *ptr);
 
 template<typename T>
 T *pinnedAlloc(const size_t &elements);
-template<typename T>
-void pinnedFree(T *ptr);
+void pinnedFree(void *ptr);
 
 void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
                       size_t *lock_bytes, size_t *lock_buffers);
@@ -52,7 +52,7 @@ bool jitTreeExceedsMemoryPressure(size_t bytes);
 void setMemStepSize(size_t step_bytes);
 size_t getMemStepSize(void);
 
-class Allocator final : public common::memory::AllocatorInterface {
+class Allocator final : public common::AllocatorInterface {
    public:
     Allocator();
     ~Allocator() = default;
@@ -64,3 +64,4 @@ class Allocator final : public common::memory::AllocatorInterface {
 };
 
 }  // namespace cpu
+}  // namespace arrayfire

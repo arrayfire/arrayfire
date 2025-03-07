@@ -11,30 +11,29 @@
 #include <math.hpp>
 #include <utility.hpp>
 
-namespace  cuda {
+namespace arrayfire {
+namespace cuda {
 
 template<af::borderType BType>
-__device__
-int idxByndEdge(const int i, const int lb, const int len) {
+__device__ int idxByndEdge(const int i, const int lb, const int len) {
     uint retVal;
     switch (BType) {
-        case AF_PAD_SYM: retVal = trimIndex(i-lb, len); break;
+        case AF_PAD_SYM: retVal = trimIndex(i - lb, len); break;
         case AF_PAD_CLAMP_TO_EDGE: retVal = clamp(i - lb, 0, len - 1); break;
         case AF_PAD_PERIODIC: {
             int rem   = (i - lb) % len;
             bool cond = rem < 0;
             retVal    = cond * (rem + len) + (1 - cond) * rem;
         } break;
-        default: retVal = 0; break; // AF_PAD_ZERO
+        default: retVal = 0; break;  // AF_PAD_ZERO
     }
     return retVal;
 }
 
 template<typename T, af::borderType BType>
-__global__
-void padBorders(Param<T> out, CParam<T> in, const int l0,
-               const int l1, const int l2, const int l3,
-               unsigned blk_x, unsigned blk_y) {
+__global__ void padBorders(Param<T> out, CParam<T> in, const int l0,
+                           const int l1, const int l2, const int l3,
+                           unsigned blk_x, unsigned blk_y) {
     const int lx = threadIdx.x;
     const int ly = threadIdx.y;
     const int k  = blockIdx.x / blk_x;
@@ -86,4 +85,5 @@ void padBorders(Param<T> out, CParam<T> in, const int l0,
     }
 }
 
-}
+}  // namespace cuda
+}  // namespace arrayfire

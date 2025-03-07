@@ -15,17 +15,17 @@
 // the breath first search algorithm
 __device__ int hasChanged = 0;
 
+namespace arrayfire {
 namespace cuda {
 
-__forceinline__ __device__
-int lIdx(int x, int y, int stride0, int stride1) {
+__forceinline__ __device__ int lIdx(int x, int y, int stride0, int stride1) {
     return (x * stride0 + y * stride1);
 }
 
 template<typename T>
-__global__
-void nonMaxSuppression(Param<float> output, CParam<T> in, CParam<T> dx,
-                       CParam<T> dy, unsigned nBBS0, unsigned nBBS1) {
+__global__ void nonMaxSuppression(Param<float> output, CParam<T> in,
+                                  CParam<T> dx, CParam<T> dy, unsigned nBBS0,
+                                  unsigned nBBS1) {
     const unsigned SHRD_MEM_WIDTH  = THREADS_X + 2;  // Coloumns
     const unsigned SHRD_MEM_HEIGHT = THREADS_Y + 2;  // Rows
 
@@ -46,8 +46,7 @@ void nonMaxSuppression(Param<float> output, CParam<T> in, CParam<T> dx,
 
     // Offset input and output pointers to second pixel of second coloumn/row
     // to skip the border
-    const T* mag = (const T*)in.ptr +
-                   (b2 * in.strides[2] + b3 * in.strides[3]);
+    const T* mag = (const T*)in.ptr + (b2 * in.strides[2] + b3 * in.strides[3]);
     const T* dX = (const T*)dx.ptr + (b2 * dx.strides[2] + b3 * dx.strides[3]) +
                   dx.strides[1] + 1;
     const T* dY = (const T*)dy.ptr + (b2 * dy.strides[2] + b3 * dy.strides[3]) +
@@ -63,8 +62,7 @@ void nonMaxSuppression(Param<float> output, CParam<T> in, CParam<T> dx,
 #pragma unroll
         for (int a = lx, gx2 = gx; a < SHRD_MEM_WIDTH && gx2 < in.dims[0];
              a += blockDim.x, gx2 += blockDim.x)
-            shrdMem[b][a] =
-                mag[lIdx(gx2, gy2, in.strides[0], in.strides[1])];
+            shrdMem[b][a] = mag[lIdx(gx2, gy2, in.strides[0], in.strides[1])];
 
     int i = lx + 1;
     int j = ly + 1;
@@ -143,9 +141,8 @@ void nonMaxSuppression(Param<float> output, CParam<T> in, CParam<T> dx,
 }
 
 template<typename T>
-__global__
-void initEdgeOut(Param<T> output, CParam<T> strong, CParam<T> weak,
-                 unsigned nBBS0, unsigned nBBS1) {
+__global__ void initEdgeOut(Param<T> output, CParam<T> strong, CParam<T> weak,
+                            unsigned nBBS0, unsigned nBBS1) {
     // batch offsets for 3rd and 4th dimension
     const unsigned b2 = blockIdx.x / nBBS0;
     const unsigned b3 = blockIdx.y / nBBS1;
@@ -175,8 +172,7 @@ void initEdgeOut(Param<T> output, CParam<T> strong, CParam<T> weak,
      (i) < (SHRD_MEM_WIDTH - 1))
 
 template<typename T>
-__global__
-void edgeTrack(Param<T> output, unsigned nBBS0, unsigned nBBS1) {
+__global__ void edgeTrack(Param<T> output, unsigned nBBS0, unsigned nBBS1) {
     const unsigned SHRD_MEM_WIDTH  = THREADS_X + 2;  // Cols
     const unsigned SHRD_MEM_HEIGHT = THREADS_Y + 2;  // Rows
 
@@ -226,25 +222,24 @@ void edgeTrack(Param<T> output, unsigned nBBS0, unsigned nBBS1) {
     int continueIter = 1;
 
     while (continueIter) {
+        int nw, no, ne, we, ea, sw, so, se;
 
-      int nw ,no ,ne ,we ,ea ,sw ,so ,se;
+        if (outMem[j][i] == WEAK) {
+            nw = outMem[j - 1][i - 1];
+            no = outMem[j - 1][i];
+            ne = outMem[j - 1][i + 1];
+            we = outMem[j][i - 1];
+            ea = outMem[j][i + 1];
+            sw = outMem[j + 1][i - 1];
+            so = outMem[j + 1][i];
+            se = outMem[j + 1][i + 1];
 
-      if(outMem[j][i] == WEAK) {
-        nw = outMem[j - 1][i - 1];
-        no = outMem[j - 1][i];
-        ne = outMem[j - 1][i + 1];
-        we = outMem[j    ][i - 1];
-        ea = outMem[j    ][i + 1];
-        sw = outMem[j + 1][i - 1];
-        so = outMem[j + 1][i];
-        se = outMem[j + 1][i + 1];
+            bool hasStrongNeighbour =
+                nw == STRONG || no == STRONG || ne == STRONG || ea == STRONG ||
+                se == STRONG || so == STRONG || sw == STRONG || we == STRONG;
 
-        bool hasStrongNeighbour =
-            nw == STRONG || no == STRONG || ne == STRONG || ea == STRONG ||
-            se == STRONG || so == STRONG || sw == STRONG || we == STRONG;
-
-        if (hasStrongNeighbour) outMem[j][i] = STRONG;
-      }
+            if (hasStrongNeighbour) outMem[j][i] = STRONG;
+        }
 
         __syncthreads();
 
@@ -252,17 +247,17 @@ void edgeTrack(Param<T> output, unsigned nBBS0, unsigned nBBS1) {
         // This search however ignores 1-pixel border encompassing the
         // shared memory tile region.
         bool hasWeakNeighbour = false;
-        if(outMem[j][i] == STRONG) {
-          nw = outMem[j - 1][i - 1] == WEAK && VALID_BLOCK_IDX(j - 1, i - 1);
-          no = outMem[j - 1][i    ] == WEAK && VALID_BLOCK_IDX(j - 1, i);
-          ne = outMem[j - 1][i + 1] == WEAK && VALID_BLOCK_IDX(j - 1, i + 1);
-          we = outMem[j    ][i - 1] == WEAK && VALID_BLOCK_IDX(j, i - 1);
-          ea = outMem[j    ][i + 1] == WEAK && VALID_BLOCK_IDX(j, i + 1);
-          sw = outMem[j + 1][i - 1] == WEAK && VALID_BLOCK_IDX(j + 1, i - 1);
-          so = outMem[j + 1][i    ] == WEAK && VALID_BLOCK_IDX(j + 1, i);
-          se = outMem[j + 1][i + 1] == WEAK && VALID_BLOCK_IDX(j + 1, i + 1);
+        if (outMem[j][i] == STRONG) {
+            nw = outMem[j - 1][i - 1] == WEAK && VALID_BLOCK_IDX(j - 1, i - 1);
+            no = outMem[j - 1][i] == WEAK && VALID_BLOCK_IDX(j - 1, i);
+            ne = outMem[j - 1][i + 1] == WEAK && VALID_BLOCK_IDX(j - 1, i + 1);
+            we = outMem[j][i - 1] == WEAK && VALID_BLOCK_IDX(j, i - 1);
+            ea = outMem[j][i + 1] == WEAK && VALID_BLOCK_IDX(j, i + 1);
+            sw = outMem[j + 1][i - 1] == WEAK && VALID_BLOCK_IDX(j + 1, i - 1);
+            so = outMem[j + 1][i] == WEAK && VALID_BLOCK_IDX(j + 1, i);
+            se = outMem[j + 1][i + 1] == WEAK && VALID_BLOCK_IDX(j + 1, i + 1);
 
-          hasWeakNeighbour = nw || no || ne || ea || se || so || sw || we;
+            hasWeakNeighbour = nw || no || ne || ea || se || so || sw || we;
         }
 
         continueIter = __syncthreads_or(hasWeakNeighbour);
@@ -291,12 +286,13 @@ void edgeTrack(Param<T> output, unsigned nBBS0, unsigned nBBS1) {
 
     // Update output with shared memory result
     if (gx < (output.dims[0] - 2) && gy < (output.dims[1] - 2))
-        oPtr[lIdx(gx, gy, output.strides[0], output.strides[1]) + output.strides[1] + 1] = outMem[j][i];
+        oPtr[lIdx(gx, gy, output.strides[0], output.strides[1]) +
+             output.strides[1] + 1] = outMem[j][i];
 }
 
 template<typename T>
-__global__
-void suppressLeftOver(Param<T> output, unsigned nBBS0, unsigned nBBS1) {
+__global__ void suppressLeftOver(Param<T> output, unsigned nBBS0,
+                                 unsigned nBBS1) {
     // batch offsets for 3rd and 4th dimension
     const unsigned b2 = blockIdx.x / nBBS0;
     const unsigned b3 = blockIdx.y / nBBS1;
@@ -317,4 +313,5 @@ void suppressLeftOver(Param<T> output, unsigned nBBS0, unsigned nBBS1) {
     }
 }
 
-} // namespace cuda
+}  // namespace cuda
+}  // namespace arrayfire

@@ -37,7 +37,7 @@ template<typename T>
 class FFT_REAL : public ::testing::Test {};
 
 typedef ::testing::Types<cfloat, cdouble> TestTypes;
-TYPED_TEST_CASE(FFT_REAL, TestTypes);
+TYPED_TEST_SUITE(FFT_REAL, TestTypes);
 
 template<int rank>
 array fft(const array &in, double norm) {

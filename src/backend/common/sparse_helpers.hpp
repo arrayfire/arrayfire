@@ -10,6 +10,7 @@
 #pragma once
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace common {
 
 class SparseArrayBase;
@@ -60,3 +61,4 @@ template<typename T>
 SparseArray<T> copySparseArray(const SparseArray<T> &other);
 
 }  // namespace common
+}  // namespace arrayfire

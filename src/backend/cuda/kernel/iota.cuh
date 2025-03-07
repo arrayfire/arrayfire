@@ -12,6 +12,7 @@
 #include <Param.hpp>
 #include <math.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
@@ -51,3 +52,4 @@ __global__ void iota(Param<T> out, const int s0, const int s1, const int s2,
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

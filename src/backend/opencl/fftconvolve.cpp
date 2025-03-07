@@ -25,6 +25,7 @@ using std::is_integral;
 using std::is_same;
 using std::vector;
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T>
@@ -57,10 +58,11 @@ dim4 calcPackedSize(Array<T> const& i1, Array<T> const& i2, const dim_t rank) {
 template<typename T>
 Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
                      const bool expand, AF_BATCH_KIND kind, const int rank) {
-    using convT =
-        typename conditional<is_integral<T>::value || is_same<T, float>::value,
-                             float, double>::type;
-    using cT = typename conditional<is_same<convT, float>::value, cfloat,
+    using convT = typename conditional<is_integral<T>::value ||
+                                           is_same<T, float>::value ||
+                                           is_same<T, cfloat>::value,
+                                       float, double>::type;
+    using cT    = typename conditional<is_same<convT, float>::value, cfloat,
                                     cdouble>::type;
 
     const dim4& sDims = signal.dims();
@@ -143,3 +145,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(short)
 
 }  // namespace opencl
+}  // namespace arrayfire

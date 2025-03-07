@@ -10,6 +10,7 @@
 #include <Param.hpp>
 #include <math.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T, bool conjugate>
@@ -117,4 +118,5 @@ __global__ void transposeIP(Param<T> in, const int blocksPerMatX,
     }
 }
 
-} //namespace cuda
+}  // namespace cuda
+}  // namespace arrayfire

@@ -10,6 +10,7 @@
 #include <Param.hpp>
 #include <interp.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 typedef struct {
@@ -68,4 +69,5 @@ __global__ void rotate(Param<T> out, CParam<T> in, const tmat_t t,
     interp(out, loco, in, inoff, xidi, yidi, method, limages, clamp);
 }
 
-} // namespace cuda
+}  // namespace cuda
+}  // namespace arrayfire

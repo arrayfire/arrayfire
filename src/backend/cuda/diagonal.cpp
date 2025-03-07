@@ -15,8 +15,9 @@
 #include <math.hpp>
 #include <af/dim4.hpp>
 
-using common::half;
+using arrayfire::common::half;
 
+namespace arrayfire {
 namespace cuda {
 template<typename T>
 Array<T> diagCreate(const Array<T> &in, const int num) {
@@ -59,3 +60,4 @@ INSTANTIATE_DIAGONAL(ushort)
 INSTANTIATE_DIAGONAL(half)
 
 }  // namespace cuda
+}  // namespace arrayfire

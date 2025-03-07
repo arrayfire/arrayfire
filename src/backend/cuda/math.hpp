@@ -9,11 +9,7 @@
 
 #pragma once
 
-#ifdef __CUDACC_RTC__
-
-#define STATIC_ inline
-
-#else  //__CUDACC_RTC__
+#ifndef __CUDACC_RTC__
 
 #include <common/defines.hpp>
 
@@ -22,6 +18,7 @@
 #endif  //__CUDACC__
 
 #include <algorithm>
+#include <climits>
 #include <limits>
 
 #endif  //__CUDACC_RTC__
@@ -34,7 +31,14 @@
 #include <cuda_fp16.h>
 #include <math_constants.h>
 
+namespace arrayfire {
 namespace cuda {
+
+#ifdef AF_WITH_FAST_MATH
+constexpr bool fast_math = true;
+#else
+constexpr bool fast_math = false;
+#endif
 
 template<typename T>
 static inline __DH__ T abs(T val) {
@@ -99,22 +103,22 @@ static inline __DH__ T max(T lhs, T rhs) {
 #endif
 
 template<>
-__DH__ STATIC_ cfloat max<cfloat>(cfloat lhs, cfloat rhs) {
+__DH__ inline cfloat max<cfloat>(cfloat lhs, cfloat rhs) {
     return abs(lhs) > abs(rhs) ? lhs : rhs;
 }
 
 template<>
-__DH__ STATIC_ cdouble max<cdouble>(cdouble lhs, cdouble rhs) {
+__DH__ inline cdouble max<cdouble>(cdouble lhs, cdouble rhs) {
     return abs(lhs) > abs(rhs) ? lhs : rhs;
 }
 
 template<>
-__DH__ STATIC_ cfloat min<cfloat>(cfloat lhs, cfloat rhs) {
+__DH__ inline cfloat min<cfloat>(cfloat lhs, cfloat rhs) {
     return abs(lhs) < abs(rhs) ? lhs : rhs;
 }
 
 template<>
-__DH__ STATIC_ cdouble min<cdouble>(cdouble lhs, cdouble rhs) {
+__DH__ inline cdouble min<cdouble>(cdouble lhs, cdouble rhs) {
     return abs(lhs) < abs(rhs) ? lhs : rhs;
 }
 
@@ -124,13 +128,13 @@ __DH__ static T scalar(double val) {
 }
 
 template<>
-__DH__ STATIC_ cfloat scalar<cfloat>(double val) {
+__DH__ inline cfloat scalar<cfloat>(double val) {
     cfloat cval = {(float)val, 0};
     return cval;
 }
 
 template<>
-__DH__ STATIC_ cdouble scalar<cdouble>(double val) {
+__DH__ inline cdouble scalar<cdouble>(double val) {
     cdouble cval = {val, 0};
     return cval;
 }
@@ -142,110 +146,101 @@ __DH__ static To scalar(Ti real, Ti imag) {
 }
 
 #ifndef __CUDA_ARCH__
+
 template<typename T>
-STATIC_ T maxval() {
-    return std::numeric_limits<T>::max();
+inline T maxval() {
+    AF_IF_CONSTEXPR(std::is_floating_point<T>::value && !fast_math) {
+        return std::numeric_limits<T>::infinity();
+    }
+    else { return std::numeric_limits<T>::max(); }
 }
 template<typename T>
-STATIC_ T minval() {
-    return std::numeric_limits<T>::min();
-}
-template<>
-STATIC_ float maxval() {
-    return std::numeric_limits<float>::infinity();
-}
-template<>
-STATIC_ double maxval() {
-    return std::numeric_limits<double>::infinity();
-}
-template<>
-STATIC_ float minval() {
-    return -std::numeric_limits<float>::infinity();
-}
-template<>
-STATIC_ double minval() {
-    return -std::numeric_limits<double>::infinity();
+inline T minval() {
+    AF_IF_CONSTEXPR(std::is_floating_point<T>::value && !fast_math) {
+        return -std::numeric_limits<T>::infinity();
+    }
+    else { return std::numeric_limits<T>::lowest(); }
 }
 #else
 template<typename T>
-STATIC_ __device__ T maxval() {
+inline __device__ T maxval() {
     return 1u << (8 * sizeof(T) - 1);
 }
 template<typename T>
-STATIC_ __device__ T minval() {
+inline __device__ T minval() {
     return scalar<T>(0);
 }
 
 template<>
-STATIC_ __device__ int maxval<int>() {
+inline __device__ int maxval<int>() {
     return 0x7fffffff;
 }
 template<>
-STATIC_ __device__ int minval<int>() {
+inline __device__ int minval<int>() {
     return 0x80000000;
 }
 template<>
-STATIC_ __device__ intl maxval<intl>() {
+inline __device__ intl maxval<intl>() {
     return 0x7fffffffffffffff;
 }
 template<>
-STATIC_ __device__ intl minval<intl>() {
+inline __device__ intl minval<intl>() {
     return 0x8000000000000000;
 }
 template<>
-STATIC_ __device__ uintl maxval<uintl>() {
+inline __device__ uintl maxval<uintl>() {
     return 1ULL << (8 * sizeof(uintl) - 1);
 }
 template<>
-STATIC_ __device__ char maxval<char>() {
+inline __device__ char maxval<char>() {
     return 0x7f;
 }
 template<>
-STATIC_ __device__ char minval<char>() {
+inline __device__ char minval<char>() {
     return 0x80;
 }
 template<>
-STATIC_ __device__ float maxval<float>() {
+inline __device__ float maxval<float>() {
     return CUDART_INF_F;
 }
 template<>
-STATIC_ __device__ float minval<float>() {
+inline __device__ float minval<float>() {
     return -CUDART_INF_F;
 }
 template<>
-STATIC_ __device__ double maxval<double>() {
+inline __device__ double maxval<double>() {
     return CUDART_INF;
 }
 template<>
-STATIC_ __device__ double minval<double>() {
+inline __device__ double minval<double>() {
     return -CUDART_INF;
 }
 template<>
-STATIC_ __device__ short maxval<short>() {
+inline __device__ short maxval<short>() {
     return 0x7fff;
 }
 template<>
-STATIC_ __device__ short minval<short>() {
+inline __device__ short minval<short>() {
     return 0x8000;
 }
 template<>
-STATIC_ __device__ ushort maxval<ushort>() {
+inline __device__ ushort maxval<ushort>() {
     return ((ushort)1) << (8 * sizeof(ushort) - 1);
 }
 template<>
-STATIC_ __device__ common::half maxval<common::half>() {
+inline __device__ common::half maxval<common::half>() {
     return common::half(65537.f);
 }
 template<>
-STATIC_ __device__ common::half minval<common::half>() {
+inline __device__ common::half minval<common::half>() {
     return common::half(-65537.f);
 }
 template<>
-STATIC_ __device__ __half maxval<__half>() {
+inline __device__ __half maxval<__half>() {
     return __float2half(CUDART_INF);
 }
 template<>
-STATIC_ __device__ __half minval<__half>() {
+inline __device__ __half minval<__half>() {
     return __float2half(-CUDART_INF);
 }
 #endif
@@ -265,6 +260,42 @@ __SDH__ double real(cdouble c) { return cuCreal(c); }
 
 __SDH__ float imag(cfloat c) { return cuCimagf(c); }
 __SDH__ double imag(cdouble c) { return cuCimag(c); }
+
+template<typename T>
+static inline __DH__ auto is_nan(const T &val) -> bool {
+    return false;
+}
+
+template<>
+inline __DH__ auto is_nan<float>(const float &val) -> bool {
+    return ::isnan(val);
+}
+
+template<>
+inline __DH__ auto is_nan<double>(const double &val) -> bool {
+    return ::isnan(val);
+}
+
+#ifdef __CUDA_ARCH__
+template<>
+inline __device__ auto is_nan<__half>(const __half &val) -> bool {
+#if __CUDA_ARCH__ >= 530
+    return __hisnan(val);
+#else
+    return ::isnan(__half2float(val));
+#endif
+}
+#endif
+
+template<>
+inline auto is_nan<cfloat>(const cfloat &in) -> bool {
+    return ::isnan(real(in)) || ::isnan(imag(in));
+}
+
+template<>
+inline auto is_nan<cdouble>(const cdouble &in) -> bool {
+    return ::isnan(real(in)) || ::isnan(imag(in));
+}
 
 template<typename T>
 T __SDH__ conj(T x) {
@@ -388,18 +419,43 @@ static inline cdouble division(cdouble lhs, double rhs) {
     return retVal;
 }
 
-template<typename T>
-static inline __DH__ T clamp(const T value, const T lo, const T hi) {
-    return max(lo, min(value, hi));
+template<typename T, typename Compare>
+constexpr const __DH__ T clamp(const T value, const T lo, const T hi,
+                               Compare comp) {
+    return comp(value, lo) ? lo : comp(hi, value) ? hi : value;
 }
+
+template<typename T>
+constexpr const __DH__ T clamp(const T value, const T lo, const T hi) {
+    return clamp(value, lo, hi, [](auto lhs, auto rhs) { return lhs < rhs; });
+}
+
+#ifdef AF_WITH_FAST_MATH
+/// The pow function with fast math is constantly wrong with fast math
+/// so this function converts the operation to double when fast-math
+/// is used
+__device__ inline double afpowf(double x, double y) { return pow(x, y); }
+#else
+/// The pow function with fast math is constantly wrong with fast math
+/// so this function converts the operation to double when fast-math
+/// is used
+__device__ inline float afpowf(float x, float y) { return powf(x, y); }
+#endif
 
 }  // namespace cuda
+}  // namespace arrayfire
 
-__SDH__ bool operator==(cuda::cfloat a, cuda::cfloat b) {
+__SDH__ bool operator==(arrayfire::cuda::cfloat a, arrayfire::cuda::cfloat b) {
     return (a.x == b.x) && (a.y == b.y);
 }
-__SDH__ bool operator!=(cuda::cfloat a, cuda::cfloat b) { return !(a == b); }
-__SDH__ bool operator==(cuda::cdouble a, cuda::cdouble b) {
+__SDH__ bool operator!=(arrayfire::cuda::cfloat a, arrayfire::cuda::cfloat b) {
+    return !(a == b);
+}
+__SDH__ bool operator==(arrayfire::cuda::cdouble a,
+                        arrayfire::cuda::cdouble b) {
     return (a.x == b.x) && (a.y == b.y);
 }
-__SDH__ bool operator!=(cuda::cdouble a, cuda::cdouble b) { return !(a == b); }
+__SDH__ bool operator!=(arrayfire::cuda::cdouble a,
+                        arrayfire::cuda::cdouble b) {
+    return !(a == b);
+}

@@ -13,6 +13,7 @@
 #include <common/Transform.hpp>
 #include <math.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename Ti, typename To, af_op_t op, int dim, bool isFinalPass,
@@ -168,3 +169,4 @@ __global__ void scan_dim_bcast(Param<To> out, CParam<To> tmp, uint blocks_x,
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

@@ -16,8 +16,9 @@
 
 #include <algorithm>
 
-using common::half;
+using arrayfire::common::half;
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
@@ -97,3 +98,4 @@ INSTANTIATE(half)
 
 #undef INSTANTIATE
 }  // namespace cpu
+}  // namespace arrayfire

@@ -14,6 +14,7 @@
 #include <af/image.h>
 
 using af::dim4;
+using arrayfire::common::integralImage;
 using detail::cdouble;
 using detail::cfloat;
 using detail::intl;
@@ -24,7 +25,7 @@ using detail::ushort;
 
 template<typename To, typename Ti>
 inline af_array sat(const af_array& in) {
-    return getHandle<To>(common::integralImage<To, Ti>(getArray<Ti>(in)));
+    return getHandle<To>(integralImage<To, Ti>(getArray<Ti>(in)));
 }
 
 af_err af_sat(af_array* out, const af_array in) {

@@ -6,6 +6,34 @@
 # http://arrayfire.com/licenses/BSD-3-Clause
 
 find_program(NVPRUNE NAMES nvprune)
+cuda_select_nvcc_arch_flags(cuda_architecture_flags ${CUDA_architecture_build_targets})
+set(cuda_architecture_flags ${cuda_architecture_flags} CACHE INTERNAL "CUDA compute flags" FORCE)
+set(cuda_architecture_flags_readable ${cuda_architecture_flags_readable} CACHE INTERNAL "Readable CUDA compute flags" FORCE)
+
+function(af_detect_and_set_cuda_architectures target)
+  if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
+    string(REGEX REPLACE "sm_([0-9]+)[ ]*" "\\1-real|" cuda_build_targets ${cuda_architecture_flags_readable})
+    string(REGEX REPLACE "compute_([0-9]+)[ ]*" "\\1-virtual|" cuda_build_targets ${cuda_build_targets})
+    string(REPLACE "|" ";" cuda_build_targets ${cuda_build_targets})
+
+    set_target_properties(${target}
+      PROPERTIES
+        CUDA_ARCHITECTURES "${cuda_build_targets}")
+  else()
+    # CMake 3.12 adds deduplication of compile options. This breaks the way the
+    # gencode flags are passed into the compiler. these replace instructions add
+    # the SHELL: prefix to each of the gencode options so that it is not removed
+    # from the command
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.12")
+      string(REPLACE ";" "|" cuda_architecture_flags "${cuda_architecture_flags}")
+      string(REGEX REPLACE "(-gencode)\\|" "SHELL:\\1 " cuda_architecture_flags2 "${cuda_architecture_flags}")
+      string(REPLACE "|" ";" cuda_architecture_flags ${cuda_architecture_flags2})
+    endif()
+    target_compile_options(${target}
+      PRIVATE
+        $<$<COMPILE_LANGUAGE:CUDA>:${cuda_architecture_flags}>)
+  endif()
+endfunction()
 
 # The following macro uses a macro defined by
 # FindCUDA module from cmake.
@@ -39,45 +67,3 @@ function(af_find_static_cuda_libs libname)
   mark_as_advanced(CUDA_${libname}_LIBRARY)
 endfunction()
 
-## Copied from FindCUDA.cmake
-## The target_link_library needs to link with the cuda libraries using
-## PRIVATE
-function(cuda_add_library cuda_target)
-  cuda_add_cuda_include_once()
-
-  # Separate the sources from the options
-  cuda_get_sources_and_options(_sources _cmake_options _options ${ARGN})
-  cuda_build_shared_library(_cuda_shared_flag ${ARGN})
-  # Create custom commands and targets for each file.
-  cuda_wrap_srcs( ${cuda_target} OBJ _generated_files ${_sources}
-    ${_cmake_options} ${_cuda_shared_flag}
-    OPTIONS ${_options} )
-
-  # Compute the file name of the intermedate link file used for separable
-  # compilation.
-  cuda_compute_separable_compilation_object_file_name(link_file ${cuda_target} "${${cuda_target}_SEPARABLE_COMPILATION_OBJECTS}")
-
-  # Add the library.
-  add_library(${cuda_target} ${_cmake_options}
-    ${_generated_files}
-    ${_sources}
-    ${link_file}
-    )
-
-  # Add a link phase for the separable compilation if it has been enabled.  If
-  # it has been enabled then the ${cuda_target}_SEPARABLE_COMPILATION_OBJECTS
-  # variable will have been defined.
-  cuda_link_separable_compilation_objects("${link_file}" ${cuda_target} "${_options}" "${${cuda_target}_SEPARABLE_COMPILATION_OBJECTS}")
-
-  target_link_libraries(${cuda_target}
-      PRIVATE ${CUDA_LIBRARIES}
-    )
-
-  # We need to set the linker language based on what the expected generated file
-  # would be. CUDA_C_OR_CXX is computed based on CUDA_HOST_COMPILATION_CPP.
-  set_target_properties(${cuda_target}
-    PROPERTIES
-    LINKER_LANGUAGE ${CUDA_C_OR_CXX}
-    POSITION_INDEPENDENT_CODE ON
-  )
-endfunction()

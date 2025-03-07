@@ -34,15 +34,15 @@ typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort>
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Morph, TestTypes);
+TYPED_TEST_SUITE(Morph, TestTypes);
 
 template<typename inType, bool isDilation, bool isVolume>
 void morphTest(string pTestFile) {
     SUPPORTED_TYPE_CHECK(inType);
 
     vector<dim4> numDims;
-    vector<vector<inType> > in;
-    vector<vector<inType> > tests;
+    vector<vector<inType>> in;
+    vector<vector<inType>> tests;
 
     readTests<inType, inType, int>(pTestFile, numDims, in, tests);
 
@@ -59,16 +59,19 @@ void morphTest(string pTestFile) {
                                    maskDims.ndims(), maskDims.get(),
                                    (af_dtype)dtype_traits<inType>::af_type));
 
+    af_err af_stat;
     if (isDilation) {
-        if (isVolume)
+        if (isVolume) {
             ASSERT_SUCCESS(af_dilate3(&outArray, inArray, maskArray));
-        else
+        } else {
             ASSERT_SUCCESS(af_dilate(&outArray, inArray, maskArray));
+        }
     } else {
-        if (isVolume)
+        if (isVolume) {
             ASSERT_SUCCESS(af_erode3(&outArray, inArray, maskArray));
-        else
+        } else {
             ASSERT_SUCCESS(af_erode(&outArray, inArray, maskArray));
+        }
     }
 
     for (size_t testIter = 0; testIter < tests.size(); ++testIter) {
@@ -83,52 +86,63 @@ void morphTest(string pTestFile) {
 }
 
 TYPED_TEST(Morph, Dilate3x3) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     morphTest<TypeParam, true, false>(string(TEST_DIR "/morph/dilate3x3.test"));
 }
 
 TYPED_TEST(Morph, Erode3x3) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     morphTest<TypeParam, false, false>(string(TEST_DIR "/morph/erode3x3.test"));
 }
 
 TYPED_TEST(Morph, Dilate4x4) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     morphTest<TypeParam, true, false>(string(TEST_DIR "/morph/dilate4x4.test"));
 }
 
 TYPED_TEST(Morph, Dilate12x12) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     morphTest<TypeParam, true, false>(
         string(TEST_DIR "/morph/dilate12x12.test"));
 }
 
 TYPED_TEST(Morph, Erode4x4) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     morphTest<TypeParam, false, false>(string(TEST_DIR "/morph/erode4x4.test"));
 }
 
 TYPED_TEST(Morph, Dilate3x3_Batch) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     morphTest<TypeParam, true, false>(
         string(TEST_DIR "/morph/dilate3x3_batch.test"));
 }
 
 TYPED_TEST(Morph, Erode3x3_Batch) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     morphTest<TypeParam, false, false>(
         string(TEST_DIR "/morph/erode3x3_batch.test"));
 }
 
 TYPED_TEST(Morph, Dilate3x3x3) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     morphTest<TypeParam, true, true>(
         string(TEST_DIR "/morph/dilate3x3x3.test"));
 }
 
 TYPED_TEST(Morph, Erode3x3x3) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     morphTest<TypeParam, false, true>(
         string(TEST_DIR "/morph/erode3x3x3.test"));
 }
 
 TYPED_TEST(Morph, Dilate4x4x4) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     morphTest<TypeParam, true, true>(
         string(TEST_DIR "/morph/dilate4x4x4.test"));
 }
 
 TYPED_TEST(Morph, Erode4x4x4) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     morphTest<TypeParam, false, true>(
         string(TEST_DIR "/morph/erode4x4x4.test"));
 }
@@ -136,7 +150,7 @@ TYPED_TEST(Morph, Erode4x4x4) {
 template<typename T, bool isDilation, bool isColor>
 void morphImageTest(string pTestFile, dim_t seLen) {
     SUPPORTED_TYPE_CHECK(T);
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
     vector<string> inFiles;
@@ -186,10 +200,10 @@ void morphImageTest(string pTestFile, dim_t seLen) {
         ASSERT_SUCCESS(error_code);
         ASSERT_IMAGES_NEAR(goldArray, outArray, 0.018f);
 #else
-        ASSERT_EQ(error_code,
-                  (targetType != b8 && seLen > 19 ? AF_ERR_NOT_SUPPORTED
-                                                  : AF_SUCCESS));
-        if (!(targetType != b8 && seLen > 19)) {
+        if (targetType != b8 && seLen > 19) {
+            ASSERT_EQ(error_code, AF_ERR_NOT_SUPPORTED);
+        } else {
+            ASSERT_SUCCESS(error_code);
             ASSERT_IMAGES_NEAR(goldArray, outArray, 0.018f);
         }
 #endif
@@ -204,10 +218,12 @@ void morphImageTest(string pTestFile, dim_t seLen) {
 }
 
 TEST(Morph, GrayscaleDilation3x3StructuringElement) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     morphImageTest<float, true, false>(string(TEST_DIR "/morph/gray.test"), 3);
 }
 
 TEST(Morph, ColorImageErosion3x3StructuringElement) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     morphImageTest<float, false, true>(string(TEST_DIR "/morph/color.test"), 3);
 }
 
@@ -390,7 +406,7 @@ using af::span;
 template<typename T, bool isDilation, bool isColor>
 void cppMorphImageTest(string pTestFile) {
     SUPPORTED_TYPE_CHECK(T);
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
     vector<string> inFiles;
@@ -428,14 +444,17 @@ void cppMorphImageTest(string pTestFile) {
 }
 
 TEST(Morph, Grayscale_CPP) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     cppMorphImageTest<float, true, false>(string(TEST_DIR "/morph/gray.test"));
 }
 
 TEST(Morph, ColorImage_CPP) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     cppMorphImageTest<float, false, true>(string(TEST_DIR "/morph/color.test"));
 }
 
 TEST(Morph, GFOR) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     dim4 dims  = dim4(10, 10, 3);
     array A    = iota(dims);
     array B    = constant(0, dims);
@@ -451,6 +470,7 @@ TEST(Morph, GFOR) {
 }
 
 TEST(Morph, EdgeIssue1564) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     int inputData[10 * 10] = {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -458,20 +478,21 @@ TEST(Morph, EdgeIssue1564) {
                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0,
                               0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1};
     int goldData[10 * 10]  = {0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0,
-                             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                             0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0,
-                             0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1,
-                             1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1,
-                             1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1};
+                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                              0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+                              0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1,
+                              1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1,
+                              1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1};
     array input(10, 10, inputData);
     int maskData[3 * 3] = {1, 1, 1, 1, 0, 1, 1, 1, 1};
     array mask(3, 3, maskData);
+    
     array dilated = dilate(input.as(b8), mask.as(b8));
 
     size_t nElems = dilated.elements();
     vector<char> outData(nElems);
     dilated.host((void*)outData.data());
-
+    
     for (size_t i = 0; i < nElems; ++i) {
         ASSERT_EQ((int)outData[i], goldData[i]);
     }

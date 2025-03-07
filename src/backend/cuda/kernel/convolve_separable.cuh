@@ -14,11 +14,12 @@ __constant__ char sFilter[2 * SCONV_THREADS_Y *
                           (2 * (MAX_SCONV_FILTER_LEN - 1) + SCONV_THREADS_X) *
                           sizeof(double)];
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T, typename accType, int conv_dim, bool expand, int fLen>
-__global__
-void convolve2_separable(Param<T> out, CParam<T> signal, int nBBS0, int nBBS1) {
+__global__ void convolve2_separable(Param<T> out, CParam<T> signal, int nBBS0,
+                                    int nBBS1) {
     const int smem_len =
         (conv_dim == 0 ? (SCONV_THREADS_X + 2 * (fLen - 1)) * SCONV_THREADS_Y
                        : (SCONV_THREADS_Y + 2 * (fLen - 1)) * SCONV_THREADS_X);
@@ -96,4 +97,5 @@ void convolve2_separable(Param<T> out, CParam<T> signal, int nBBS0, int nBBS1) {
     }
 }
 
-}
+}  // namespace cuda
+}  // namespace arrayfire

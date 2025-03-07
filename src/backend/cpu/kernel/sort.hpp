@@ -15,6 +15,7 @@
 #include <functional>
 #include <numeric>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -45,3 +46,4 @@ void sort0Iterative(Param<T> val, bool isAscending) {
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 template<typename T>
@@ -28,16 +29,15 @@ void reorder(Param out, const Param in, const dim_t* rdims) {
     constexpr int TILEX = 512;
     constexpr int TILEY = 32;
 
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 1> targs = {
         TemplateTypename<T>(),
     };
-    std::vector<std::string> options = {
+    std::array<std::string, 2> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        getTypeBuildDefinition<T>()};
 
     auto reorderOp =
-        common::getKernel("reorder_kernel", {reorder_cl_src}, targs, options);
+        common::getKernel("reorder_kernel", {{reorder_cl_src}}, targs, options);
 
     cl::NDRange local(TX, TY, 1);
 
@@ -54,3 +54,4 @@ void reorder(Param out, const Param in, const dim_t* rdims) {
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

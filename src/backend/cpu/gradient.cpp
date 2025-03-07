@@ -16,6 +16,7 @@
 #include <queue.hpp>
 #include <stdexcept>
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
@@ -33,3 +34,4 @@ INSTANTIATE(cfloat)
 INSTANTIATE(cdouble)
 
 }  // namespace cpu
+}  // namespace arrayfire

@@ -10,7 +10,9 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace cpu {
 template<typename T>
 Array<T> range(const dim4& dim, const int seq_dim = -1);
-}
+}  // namespace cpu
+}  // namespace arrayfire

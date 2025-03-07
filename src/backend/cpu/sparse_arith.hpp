@@ -14,6 +14,7 @@
 #include <optypes.hpp>
 #include <sparse.hpp>
 
+namespace arrayfire {
 namespace cpu {
 // These two functions cannot be overloaded by return type.
 // So have to give them separate names.
@@ -29,3 +30,4 @@ template<typename T, af_op_t op>
 common::SparseArray<T> arithOp(const common::SparseArray<T> &lhs,
                                const common::SparseArray<T> &rhs);
 }  // namespace cpu
+}  // namespace arrayfire

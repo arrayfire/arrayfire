@@ -14,8 +14,9 @@
 #include <err_cuda.hpp>
 #include <kernel/lookup.hpp>
 
-using common::half;
+using arrayfire::common::half;
 
+namespace arrayfire {
 namespace cuda {
 template<typename in_t, typename idx_t>
 Array<in_t> lookup(const Array<in_t> &input, const Array<idx_t> &indices,
@@ -72,3 +73,4 @@ INSTANTIATE(short);
 INSTANTIATE(ushort);
 INSTANTIATE(half);
 }  // namespace cuda
+}  // namespace arrayfire

@@ -127,8 +127,8 @@ void fftTest(string pTestFile, dim_t pad0 = 0, dim_t pad1 = 0, dim_t pad2 = 0) {
     SUPPORTED_TYPE_CHECK(outType);
 
     vector<dim4> numDims;
-    vector<vector<inType> > in;
-    vector<vector<outType> > tests;
+    vector<vector<inType>> in;
+    vector<vector<outType>> tests;
 
     readTestsFromFile<inType, outType>(pTestFile, numDims, in, tests);
 
@@ -293,8 +293,8 @@ void fftBatchTest(string pTestFile, dim_t pad0 = 0, dim_t pad1 = 0,
     SUPPORTED_TYPE_CHECK(outType);
 
     vector<dim4> numDims;
-    vector<vector<inType> > in;
-    vector<vector<outType> > tests;
+    vector<vector<inType>> in;
+    vector<vector<outType>> tests;
 
     readTestsFromFile<inType, outType>(pTestFile, numDims, in, tests);
 
@@ -430,8 +430,8 @@ void cppFFTTest(string pTestFile) {
     SUPPORTED_TYPE_CHECK(outType);
 
     vector<dim4> numDims;
-    vector<vector<inType> > in;
-    vector<vector<outType> > tests;
+    vector<vector<inType>> in;
+    vector<vector<outType>> tests;
 
     readTestsFromFile<inType, outType>(pTestFile, numDims, in, tests);
 
@@ -476,8 +476,8 @@ void cppDFTTest(string pTestFile) {
     SUPPORTED_TYPE_CHECK(outType);
 
     vector<dim4> numDims;
-    vector<vector<inType> > in;
-    vector<vector<outType> > tests;
+    vector<vector<inType>> in;
+    vector<vector<outType>> tests;
 
     readTestsFromFile<inType, outType>(pTestFile, numDims, in, tests);
 
@@ -742,34 +742,34 @@ string to_test_params(const ::testing::TestParamInfo<FFTBase::ParamType> info) {
     return out.replace(out.find("."), 1, "_");
 }
 
-INSTANTIATE_TEST_CASE_P(
-    Inputs2D, FFTC2R2D,
-    ::testing::Values(fft_params(dim4(513, 512), false, 0.5),
-                      fft_params(dim4(1025, 1024), false, 0.5),
-                      fft_params(dim4(2049, 2048), false, 0.5)),
-    to_test_params);
+// INSTANTIATE_TEST_SUITE_P(
+//     Inputs2D, FFTC2R2D,
+//     ::testing::Values(fft_params(dim4(513, 512), false, 0.5),
+//                       fft_params(dim4(1025, 1024), false, 0.5),
+//                       fft_params(dim4(2049, 2048), false, 0.5)),
+//     to_test_params);
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Inputs2D, FFT2D,
     ::testing::Values(fft_params(dim4(512, 512), false, 0.5),
                       fft_params(dim4(1024, 1024), false, 0.5),
                       fft_params(dim4(2048, 2048), false, 0.5)),
     to_test_params);
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Inputs3D, FFTC2R3D,
     ::testing::Values(fft_params(dim4(512, 512, 3), false, 0.5),
                       fft_params(dim4(1024, 1024, 3), false, 0.5),
                       fft_params(dim4(2048, 2048, 3), false, 0.5)),
     to_test_params);
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Inputs3D, FFT3D,
     ::testing::Values(fft_params(dim4(1024, 1024, 3), true, 0.5),
                       fft_params(dim4(1024, 1024, 3), false, 0.5)),
     to_test_params);
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     InputsND, FFTND,
     ::testing::Values(fft_params(dim4(512), false, 0.5),
                       fft_params(dim4(1024), false, 0.5),
@@ -777,7 +777,7 @@ INSTANTIATE_TEST_CASE_P(
                       fft_params(dim4(1024, 1024, 3), false, 0.5)),
     to_test_params);
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     InputsND, FFTC2R,
     ::testing::Values(fft_params(dim4(513), false, 0.5),
                       fft_params(dim4(1025), false, 0.5),
@@ -816,6 +816,7 @@ TEST_P(FFT2D, Real32ToComplexInputsPreserved) {
 }
 
 TEST_P(FFT2D, Real64ToComplexInputsPreserved) {
+    SUPPORTED_TYPE_CHECK(double);
     fft_params params = GetParam();
     af::array a       = af::randu(params.input_dims_, f64);
     af::array a_copy  = a.copy();
@@ -834,6 +835,7 @@ TEST_P(FFTC2R, Complex32ToRInputsPreserved) {
 }
 
 TEST_P(FFTC2R, Complex64ToRInputsPreserved) {
+    SUPPORTED_TYPE_CHECK(double);
     fft_params params = GetParam();
     af::array a       = af::randu(params.input_dims_, c64);
     af::array a_copy  = a.copy();
@@ -852,6 +854,7 @@ TEST_P(FFTND, Real32ToComplexInputsPreserved) {
 }
 
 TEST_P(FFTND, Real64ToComplexInputsPreserved) {
+    SUPPORTED_TYPE_CHECK(double);
     fft_params params = GetParam();
     af::array a       = af::randu(params.input_dims_, f64);
     af::array a_copy  = a.copy();

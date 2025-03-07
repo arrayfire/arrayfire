@@ -11,6 +11,7 @@
 
 #include <kernel/rotate.hpp>
 
+namespace arrayfire {
 namespace opencl {
 template<typename T>
 Array<T> rotate(const Array<T> &in, const float theta, const af::dim4 &odims,
@@ -53,3 +54,4 @@ INSTANTIATE(char)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 }  // namespace opencl
+}  // namespace arrayfire

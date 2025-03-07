@@ -35,7 +35,7 @@ typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort>
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(MatchTemplate, TestTypes);
+TYPED_TEST_SUITE(MatchTemplate, TestTypes);
 
 template<typename T>
 void matchTemplateTest(string pTestFile, af_match_type pMatchType) {
@@ -45,8 +45,8 @@ void matchTemplateTest(string pTestFile, af_match_type pMatchType) {
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<outType> > tests;
+    vector<vector<T>> in;
+    vector<vector<outType>> tests;
 
     readTests<T, outType, float>(pTestFile, numDims, in, tests);
 
@@ -84,16 +84,19 @@ void matchTemplateTest(string pTestFile, af_match_type pMatchType) {
 }
 
 TYPED_TEST(MatchTemplate, Matrix_SAD) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     matchTemplateTest<TypeParam>(
         string(TEST_DIR "/MatchTemplate/matrix_sad.test"), AF_SAD);
 }
 
 TYPED_TEST(MatchTemplate, Matrix_SSD) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     matchTemplateTest<TypeParam>(
         string(TEST_DIR "/MatchTemplate/matrix_ssd.test"), AF_SSD);
 }
 
 TYPED_TEST(MatchTemplate, MatrixBatch_SAD) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     matchTemplateTest<TypeParam>(
         string(TEST_DIR "/MatchTemplate/matrix_sad_batch.test"), AF_SAD);
 }

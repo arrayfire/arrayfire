@@ -20,13 +20,14 @@
 
 #include <utility>
 
-using common::bytesToString;
+using arrayfire::common::bytesToString;
 
 using af::dim4;
 using std::function;
 using std::move;
 using std::unique_ptr;
 
+namespace arrayfire {
 namespace opencl {
 float getMemoryPressure() { return memoryManager().getMemoryPressure(); }
 float getMemoryPressureThreshold() {
@@ -77,12 +78,15 @@ void *memAllocUser(const size_t &bytes) {
     return new cl::Buffer(buf, true);
 }
 
-template<typename T>
-void memFree(T *ptr) {
+void memFree(cl::Buffer *ptr) {
     cl::Buffer *buf = reinterpret_cast<cl::Buffer *>(ptr);
     cl_mem mem      = static_cast<cl_mem>((*buf)());
     delete buf;
     return memoryManager().unlock(static_cast<void *>(mem), false);
+}
+
+void memFree(cl_mem ptr) {
+    return memoryManager().unlock(static_cast<void *>(ptr), false);
 }
 
 void memFreeUser(void *ptr) {
@@ -148,7 +152,6 @@ void pinnedFree(T *ptr) {
 #define INSTANTIATE(T)                                                         \
     template unique_ptr<cl::Buffer, function<void(cl::Buffer *)>> memAlloc<T>( \
         const size_t &elements);                                               \
-    template void memFree(T *ptr);                                             \
     template T *pinnedAlloc(const size_t &elements);                           \
     template void pinnedFree(T *ptr);
 
@@ -165,6 +168,19 @@ INSTANTIATE(uintl)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 INSTANTIATE(common::half)
+
+template<>
+void *pinnedAlloc<void>(const size_t &elements) {
+    // TODO: make pinnedAlloc aware of array shapes
+    dim4 dims(elements);
+    void *ptr = pinnedMemoryManager().alloc(false, 1, dims.get(), 1);
+    return ptr;
+}
+
+template<>
+void pinnedFree(void *ptr) {
+    pinnedMemoryManager().unlock(ptr, false);
+}
 
 Allocator::Allocator() { logger = common::loggerFactory("mem"); }
 
@@ -237,7 +253,7 @@ void *AllocatorPinned::nativeAlloc(const size_t bytes) {
 
     cl_int err = CL_SUCCESS;
     auto buf   = clCreateBuffer(getContext()(), CL_MEM_ALLOC_HOST_PTR, bytes,
-                              nullptr, &err);
+                                nullptr, &err);
     if (err != CL_SUCCESS) {
         AF_ERROR("Failed to allocate pinned memory.", AF_ERR_NO_MEM);
     }
@@ -272,3 +288,4 @@ void AllocatorPinned::nativeFree(void *ptr) {
     }
 }
 }  // namespace opencl
+}  // namespace arrayfire

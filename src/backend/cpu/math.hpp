@@ -15,9 +15,11 @@
 #include <af/defines.h>
 
 #include <algorithm>
+#include <climits>
 #include <limits>
 #include <numeric>
 
+namespace arrayfire {
 namespace cpu {
 template<typename T>
 static inline T abs(T val) {
@@ -42,54 +44,84 @@ cfloat max(cfloat lhs, cfloat rhs);
 cdouble max(cdouble lhs, cdouble rhs);
 
 template<typename T>
+static inline auto is_nan(const T &val) -> bool {
+    return false;
+}
+
+template<>
+inline auto is_nan<float>(const float &val) -> bool {
+    return std::isnan(val);
+}
+
+template<>
+inline auto is_nan<double>(const double &val) -> bool {
+    return std::isnan(val);
+}
+
+template<>
+inline auto is_nan<common::half>(const common::half &val) -> bool {
+    return isnan(val);
+}
+
+template<>
+inline auto is_nan<cfloat>(const cfloat &in) -> bool {
+    return std::isnan(real(in)) || std::isnan(imag(in));
+}
+
+template<>
+inline auto is_nan<cdouble>(const cdouble &in) -> bool {
+    return std::isnan(real(in)) || std::isnan(imag(in));
+}
+
+template<typename T>
 static inline T division(T lhs, double rhs) {
     return lhs / rhs;
 }
 
 template<>
-STATIC_ cfloat division<cfloat>(cfloat lhs, double rhs) {
+inline cfloat division<cfloat>(cfloat lhs, double rhs) {
     cfloat retVal(real(lhs) / static_cast<float>(rhs),
                   imag(lhs) / static_cast<float>(rhs));
     return retVal;
 }
 
 template<>
-STATIC_ cdouble division<cdouble>(cdouble lhs, double rhs) {
+inline cdouble division<cdouble>(cdouble lhs, double rhs) {
     cdouble retVal(real(lhs) / rhs, imag(lhs) / rhs);
     return retVal;
 }
 
 template<typename T>
-STATIC_ T maxval() {
+inline T maxval() {
     return std::numeric_limits<T>::max();
 }
 template<typename T>
-STATIC_ T minval() {
+inline T minval() {
     return std::numeric_limits<T>::lowest();
 }
 template<>
-STATIC_ float maxval() {
+inline float maxval() {
     return std::numeric_limits<float>::infinity();
 }
 template<>
-STATIC_ double maxval() {
+inline double maxval() {
     return std::numeric_limits<double>::infinity();
 }
 template<>
-STATIC_ common::half maxval() {
-    return std::numeric_limits<common::half>::infinity();
+inline arrayfire::common::half maxval() {
+    return std::numeric_limits<arrayfire::common::half>::infinity();
 }
 template<>
-STATIC_ float minval() {
+inline float minval() {
     return -std::numeric_limits<float>::infinity();
 }
 template<>
-STATIC_ double minval() {
+inline double minval() {
     return -std::numeric_limits<double>::infinity();
 }
 template<>
-STATIC_ common::half minval() {
-    return -std::numeric_limits<common::half>::infinity();
+inline arrayfire::common::half minval() {
+    return -std::numeric_limits<arrayfire::common::half>::infinity();
 }
 
 template<typename T>
@@ -107,16 +139,10 @@ cfloat scalar(float val);
 
 cdouble scalar(double val);
 
-#if __cplusplus < 201703L
-template<typename T>
-static inline T clamp(const T value, const T lo, const T hi) {
-    return (value < lo ? lo : (value > hi ? hi : value));
-}
-#endif
-
 inline double real(cdouble in) noexcept { return std::real(in); }
 inline float real(cfloat in) noexcept { return std::real(in); }
 inline double imag(cdouble in) noexcept { return std::imag(in); }
 inline float imag(cfloat in) noexcept { return std::imag(in); }
 
 }  // namespace cpu
+}  // namespace arrayfire

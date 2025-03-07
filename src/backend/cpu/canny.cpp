@@ -15,6 +15,7 @@
 #include <platform.hpp>
 #include <queue.hpp>
 
+namespace arrayfire {
 namespace cpu {
 Array<float> nonMaximumSuppression(const Array<float>& mag,
                                    const Array<float>& gx,
@@ -35,3 +36,4 @@ Array<char> edgeTrackingByHysteresis(const Array<char>& strong,
     return out;
 }
 }  // namespace cpu
+}  // namespace arrayfire

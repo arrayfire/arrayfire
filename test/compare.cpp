@@ -26,7 +26,7 @@ class Compare : public ::testing::Test {};
 typedef ::testing::Types<float, double, uint, int, intl, uintl, uchar, short,
                          ushort, half_float::half>
     TestTypes;
-TYPED_TEST_CASE(Compare, TestTypes);
+TYPED_TEST_SUITE(Compare, TestTypes);
 
 #define COMPARE(OP, Name)                                   \
     TYPED_TEST(Compare, Test_##Name) {                      \

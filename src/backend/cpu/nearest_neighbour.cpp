@@ -18,6 +18,7 @@
 
 using af::dim4;
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T, typename To>
@@ -73,3 +74,4 @@ INSTANTIATE(short, int)
 INSTANTIATE(uintl, uint)  // For Hamming
 
 }  // namespace cpu
+}  // namespace arrayfire

@@ -11,6 +11,7 @@
 
 #include <Param.hpp>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -25,3 +26,4 @@ void convSep(Param out, const Param sig, const Param filt, const int cDim,
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

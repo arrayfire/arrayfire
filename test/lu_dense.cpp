@@ -37,13 +37,13 @@ using std::string;
 using std::vector;
 
 TEST(LU, InPlaceSmall) {
-    if (noLAPACKTests()) return;
+    LAPACK_ENABLED_CHECK();
 
     int resultIdx = 0;
 
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
     readTests<float, float, float>(string(TEST_DIR "/lapack/lu.test"), numDims,
                                    in, tests);
 
@@ -75,13 +75,13 @@ TEST(LU, InPlaceSmall) {
 }
 
 TEST(LU, SplitSmall) {
-    if (noLAPACKTests()) return;
+    LAPACK_ENABLED_CHECK();
 
     int resultIdx = 0;
 
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
     readTests<float, float, float>(string(TEST_DIR "/lapack/lufactorized.test"),
                                    numDims, in, tests);
 
@@ -128,7 +128,7 @@ TEST(LU, SplitSmall) {
 template<typename T>
 void luTester(const int m, const int n, double eps) {
     SUPPORTED_TYPE_CHECK(T);
-    if (noLAPACKTests()) return;
+    LAPACK_ENABLED_CHECK();
 
 #if 1
     array a_orig = cpu_randu<T>(dim4(m, n));
@@ -212,7 +212,7 @@ template<typename T>
 class LU : public ::testing::Test {};
 
 typedef ::testing::Types<float, cfloat, double, cdouble> TestTypes;
-TYPED_TEST_CASE(LU, TestTypes);
+TYPED_TEST_SUITE(LU, TestTypes);
 
 TYPED_TEST(LU, SquareLarge) { luTester<TypeParam>(500, 500, eps<TypeParam>()); }
 
@@ -237,7 +237,7 @@ TYPED_TEST(LU, RectangularMultipleOfTwoLarge1) {
 }
 
 TEST(LU, NullLowerOutput) {
-    if (noLAPACKTests()) return;
+    LAPACK_ENABLED_CHECK();
     dim4 dims(3, 3);
     af_array in = 0;
     ASSERT_SUCCESS(af_randu(&in, dims.ndims(), dims.get(), f32));
@@ -248,7 +248,7 @@ TEST(LU, NullLowerOutput) {
 }
 
 TEST(LU, NullUpperOutput) {
-    if (noLAPACKTests()) return;
+    LAPACK_ENABLED_CHECK();
     dim4 dims(3, 3);
     af_array in = 0;
     ASSERT_SUCCESS(af_randu(&in, dims.ndims(), dims.get(), f32));
@@ -259,7 +259,7 @@ TEST(LU, NullUpperOutput) {
 }
 
 TEST(LU, NullPivotOutput) {
-    if (noLAPACKTests()) return;
+    LAPACK_ENABLED_CHECK();
     dim4 dims(3, 3);
     af_array in = 0;
     ASSERT_SUCCESS(af_randu(&in, dims.ndims(), dims.get(), f32));
@@ -270,7 +270,7 @@ TEST(LU, NullPivotOutput) {
 }
 
 TEST(LU, InPlaceNullOutput) {
-    if (noLAPACKTests()) return;
+    LAPACK_ENABLED_CHECK();
     dim4 dims(3, 3);
     af_array in = 0;
     ASSERT_SUCCESS(af_randu(&in, dims.ndims(), dims.get(), f32));

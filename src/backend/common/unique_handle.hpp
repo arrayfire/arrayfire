@@ -12,6 +12,7 @@
 
 #include <utility>
 
+namespace arrayfire {
 namespace common {
 
 template<typename T>
@@ -60,7 +61,7 @@ class unique_handle {
         }
     }
 
-    unique_handle(const unique_handle &other) noexcept = delete;
+    unique_handle(const unique_handle &other) noexcept      = delete;
     unique_handle &operator=(unique_handle &other) noexcept = delete;
 
     AF_CONSTEXPR unique_handle(unique_handle &&other) noexcept
@@ -117,8 +118,10 @@ unique_handle<T> make_handle(Args... args) {
 }
 
 }  // namespace common
+}  // namespace arrayfire
 
 #define DEFINE_HANDLER(HANDLE_TYPE, HCREATOR, HDESTROYER)            \
+    namespace arrayfire {                                            \
     namespace common {                                               \
     template<>                                                       \
     class ResourceHandler<HANDLE_TYPE> {                             \
@@ -131,4 +134,5 @@ unique_handle<T> make_handle(Args... args) {
             return HDESTROYER(handle);                               \
         }                                                            \
     };                                                               \
-    }  // namespace common
+    }                                                                \
+    }

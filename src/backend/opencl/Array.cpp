@@ -9,6 +9,7 @@
 
 #include <Array.hpp>
 
+#include <common/Logger.hpp>
 #include <common/half.hpp>
 #include <common/jit/NodeIterator.hpp>
 #include <common/jit/ScalarNode.hpp>
@@ -39,11 +40,11 @@ using af::dtype_traits;
 
 using cl::Buffer;
 
-using common::half;
-using common::Node;
-using common::Node_ptr;
-using common::NodeIterator;
-using opencl::jit::BufferNode;
+using arrayfire::common::half;
+using arrayfire::common::Node;
+using arrayfire::common::Node_ptr;
+using arrayfire::common::NodeIterator;
+using arrayfire::opencl::jit::BufferNode;
 
 using nonstd::span;
 using std::accumulate;
@@ -52,6 +53,7 @@ using std::make_shared;
 using std::shared_ptr;
 using std::vector;
 
+namespace arrayfire {
 namespace opencl {
 template<typename T>
 shared_ptr<BufferNode> bufferNodePtr() {
@@ -191,6 +193,30 @@ Array<T>::Array(const dim4 &dims, const dim4 &strides, dim_t offset_,
 }
 
 template<typename T>
+void checkAndMigrate(Array<T> &arr) {
+    int arr_id = arr.getDevId();
+    int cur_id = detail::getActiveDeviceId();
+    if (!isDeviceBufferAccessible(arr_id, cur_id)) {
+        auto getLogger = [&] { return spdlog::get("platform"); };
+        AF_TRACE("Migrating array from {} to {}.", arr_id, cur_id);
+        auto migrated_data           = memAlloc<T>(arr.elements());
+        void *mapped_migrated_buffer = getQueue().enqueueMapBuffer(
+            *migrated_data, CL_TRUE, CL_MAP_WRITE_INVALIDATE_REGION, 0,
+            sizeof(T) * arr.elements());
+        setDevice(arr_id);
+        Buffer &buf = *arr.get();
+        getQueue().enqueueReadBuffer(buf, CL_TRUE, 0,
+                                     sizeof(T) * arr.elements(),
+                                     mapped_migrated_buffer);
+        setDevice(cur_id);
+        getQueue().enqueueUnmapMemObject(*migrated_data,
+                                         mapped_migrated_buffer);
+        arr.data.reset(migrated_data.release(), bufferFree);
+        arr.setId(cur_id);
+    }
+}
+
+template<typename T>
 void Array<T>::eval() {
     if (isReady()) { return; }
 
@@ -300,14 +326,19 @@ Node_ptr Array<T>::getNode() const {
 template<typename T>
 kJITHeuristics passesJitHeuristics(span<Node *> root_nodes) {
     if (!evalFlag()) { return kJITHeuristics::Pass; }
+    static auto getLogger = [&] { return common::loggerFactory("jit"); };
     for (const Node *n : root_nodes) {
         if (n->getHeight() > static_cast<int>(getMaxJitSize())) {
+            AF_TRACE(
+                "JIT tree evaluated because of tree height exceeds limit: {} > "
+                "{}",
+                n->getHeight(), getMaxJitSize());
             return kJITHeuristics::TreeHeight;
         }
     }
 
     bool isBufferLimit = getMemoryPressure() >= getMemoryPressureThreshold();
-    auto platform      = getActivePlatform();
+    auto platform      = getActivePlatformVendor();
 
     // The Apple platform can have the nvidia card or the AMD card
     bool isIntel = platform == AFCL_PLATFORM_INTEL;
@@ -333,11 +364,16 @@ kJITHeuristics passesJitHeuristics(span<Node *> root_nodes) {
             (3 * sizeof(uint));
 
         const cl::Device &device = getDevice();
-        size_t max_param_size = device.getInfo<CL_DEVICE_MAX_PARAMETER_SIZE>();
         // typical values:
         //   NVIDIA     = 4096
         //   AMD        = 3520  (AMD A10 iGPU = 1024)
         //   Intel iGPU = 1024
+        //
+        // Setting the maximum to 5120 bytes to keep the compile times
+        // resonable. This still results in large kernels but its not excessive.
+        size_t max_param_size =
+            min(static_cast<cl::size_type>(5120),
+                device.getInfo<CL_DEVICE_MAX_PARAMETER_SIZE>());
         max_param_size -= base_param_size;
 
         struct tree_info {
@@ -371,8 +407,17 @@ kJITHeuristics passesJitHeuristics(span<Node *> root_nodes) {
 
         bool isParamLimit = param_size >= max_param_size;
 
-        if (isParamLimit) { return kJITHeuristics::KernelParameterSize; }
-        if (isBufferLimit) { return kJITHeuristics::MemoryPressure; }
+        if (isParamLimit) {
+            AF_TRACE(
+                "JIT tree evaluated because of kernel parameter size: {} >= {}",
+                param_size, max_param_size);
+            return kJITHeuristics::KernelParameterSize;
+        }
+        if (isBufferLimit) {
+            AF_TRACE("JIT tree evaluated because of memory pressure: {}",
+                     info.total_buffer_size);
+            return kJITHeuristics::MemoryPressure;
+        }
     }
     return kJITHeuristics::Pass;
 }
@@ -434,11 +479,9 @@ Array<T> createHostDataArray(const dim4 &dims, const T *const data) {
 }
 
 template<typename T>
-Array<T> createDeviceDataArray(const dim4 &dims, void *data) {
+Array<T> createDeviceDataArray(const dim4 &dims, void *data, bool copy) {
     verifyTypeSupport<T>();
-
-    bool copy_device = false;
-    return Array<T>(dims, static_cast<cl_mem>(data), 0, copy_device);
+    return Array<T>(dims, static_cast<cl_mem>(data), 0, copy);
 }
 
 template<typename T>
@@ -506,7 +549,8 @@ size_t Array<T>::getAllocatedBytes() const {
 #define INSTANTIATE(T)                                                        \
     template Array<T> createHostDataArray<T>(const dim4 &dims,                \
                                              const T *const data);            \
-    template Array<T> createDeviceDataArray<T>(const dim4 &dims, void *data); \
+    template Array<T> createDeviceDataArray<T>(const dim4 &dims, void *data,  \
+                                               bool copy);                    \
     template Array<T> createValueArray<T>(const dim4 &dims, const T &value);  \
     template Array<T> createEmptyArray<T>(const dim4 &dims);                  \
     template Array<T> createParamArray<T>(Param & tmp, bool owner);           \
@@ -532,7 +576,8 @@ size_t Array<T>::getAllocatedBytes() const {
     template kJITHeuristics passesJitHeuristics<T>(span<Node *> node);        \
     template void *getDevicePtr<T>(const Array<T> &arr);                      \
     template void Array<T>::setDataDims(const dim4 &new_dims);                \
-    template size_t Array<T>::getAllocatedBytes() const;
+    template size_t Array<T>::getAllocatedBytes() const;                      \
+    template void checkAndMigrate<T>(Array<T> & arr);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
@@ -549,3 +594,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(half)
 
 }  // namespace opencl
+}  // namespace arrayfire

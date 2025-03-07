@@ -14,15 +14,16 @@
 #include <math.hpp>
 #include <optypes.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<af_op_t op>
 static const char *unaryName();
 
-#define UNARY_DECL(OP, FNAME)                      \
-    template<>                                     \
-    STATIC_ const char *unaryName<af_##OP##_t>() { \
-        return FNAME;                              \
+#define UNARY_DECL(OP, FNAME)                     \
+    template<>                                    \
+    inline const char *unaryName<af_##OP##_t>() { \
+        return FNAME;                             \
     }
 
 #define UNARY_FN(OP) UNARY_DECL(OP, #OP)
@@ -78,8 +79,8 @@ UNARY_DECL(noop, "__noop")
 
 template<typename T, af_op_t op>
 Array<T> unaryOp(const Array<T> &in, dim4 outDim = dim4(-1, -1, -1, -1)) {
-    using common::Node;
-    using common::Node_ptr;
+    using arrayfire::common::Node;
+    using arrayfire::common::Node_ptr;
     using std::array;
 
     auto createUnary = [](array<Node_ptr, 1> &operands) {
@@ -95,7 +96,7 @@ Array<T> unaryOp(const Array<T> &in, dim4 outDim = dim4(-1, -1, -1, -1)) {
 
 template<typename T, af_op_t op>
 Array<char> checkOp(const Array<T> &in, dim4 outDim = dim4(-1, -1, -1, -1)) {
-    using common::Node_ptr;
+    using arrayfire::common::Node_ptr;
 
     auto createUnary = [](std::array<Node_ptr, 1> &operands) {
         return Node_ptr(new common::UnaryNode(
@@ -109,3 +110,4 @@ Array<char> checkOp(const Array<T> &in, dim4 outDim = dim4(-1, -1, -1, -1)) {
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

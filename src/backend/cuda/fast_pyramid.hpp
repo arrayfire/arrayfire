@@ -13,6 +13,7 @@
 
 #include <vector>
 
+namespace arrayfire {
 namespace cuda {
 template<typename T>
 void fast_pyramid(std::vector<unsigned> &feat_pyr,
@@ -23,4 +24,5 @@ void fast_pyramid(std::vector<unsigned> &feat_pyr,
                   const float fast_thr, const unsigned max_feat,
                   const float scl_fctr, const unsigned levels,
                   const unsigned patch_size);
-}
+}  // namespace cuda
+}  // namespace arrayfire
