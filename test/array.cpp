@@ -21,12 +21,18 @@ using std::vector;
 template<typename T>
 class Array : public ::testing::Test {};
 
+template<typename T>
+class SubArray : public ::testing::Test {};
+
 typedef ::testing::Types<float, double, cfloat, cdouble, char, unsigned char,
                          int, uint, intl, uintl, short, ushort,
                          half_float::half>
     TestTypes;
 
+typedef ::testing::Types<af_half, cdouble, cfloat, double, float, int, intl, short, uint, uintl, ushort> SubArrayTypes;
+
 TYPED_TEST_SUITE(Array, TestTypes);
+TYPED_TEST_SUITE(SubArray, SubArrayTypes);
 
 TEST(Array, ConstructorDefault) {
     array a;
@@ -518,6 +524,191 @@ TEST(Array, CreateHandleInvalidNullDimsPointer) {
     EXPECT_EQ(AF_ERR_ARG, af_create_handle(&out, 1, NULL, f32));
 }
 
+template<typename T, typename Id>
+void subArrayIndex() {
+    array A1a = randu(100, (af_dtype)dtype_traits<T>::af_type);
+    array B1a = A1a(seq(3, 75)).copy();
+    A1a = A1a(seq(3, 75));
+    A1a(seq(10,20)) = 9999;
+    B1a(seq(10,20)) = 9999;
+    ASSERT_ARRAYS_EQ(A1a, B1a);
+
+    array A1b = randu(100, (af_dtype)dtype_traits<T>::af_type);
+    array B1b = A1b(seq(3, 75)).copy();
+    A1b = A1b(seq(3, 75));
+    array idx1b = randu(B1b.dims()[0] / 4, u32) % B1b.dims()[0];
+          idx1b = idx1b.as((af_dtype)dtype_traits<Id>::af_type);
+    A1b(idx1b) = 9999;
+    B1b(idx1b) = 9999;
+    ASSERT_ARRAYS_EQ(A1b, B1b);
+
+    array A1c = randu(100, (af_dtype)dtype_traits<T>::af_type);
+    array idx1c = randu(50, u32) % 100;
+          idx1c = idx1c.as((af_dtype)dtype_traits<Id>::af_type);
+    array B1c = A1c(idx1c).copy();
+    A1c = A1c(idx1c);
+    idx1c = randu(B1c.dims()[0] / 4, u32) % B1c.dims()[0];
+    idx1c = idx1c.as((af_dtype)dtype_traits<Id>::af_type);
+    A1c(idx1c) = 9999;
+    B1c(idx1c) = 9999;
+    ASSERT_ARRAYS_EQ(A1c, B1c);
+
+    array A2a = randu(10, 19, (af_dtype)dtype_traits<T>::af_type);
+    array B2a = A2a.rows(2,7).copy();
+    A2a = A2a.rows(2,7);
+    array idx2a = randu(5, u32) % 19;
+          idx2a = idx2a.as((af_dtype)dtype_traits<Id>::af_type);
+    A2a(5, idx2a) = 9999;
+    B2a(5, idx2a) = 9999;
+    A2a(seq(2,4), 1) = 9999;
+    B2a(seq(2,4), 1) = 9999;
+    A2a(1, 2) = 9999;
+    B2a(1, 2) = 9999;
+    ASSERT_ARRAYS_EQ(A2a, B2a);
+
+    array A2b = randu(10, 19, (af_dtype)dtype_traits<T>::af_type);
+    array B2b = A2b.cols(10,17).copy();
+    A2b = A2b.cols(10,17);
+    array idx2b = randu(5, u32) % 19;
+          idx2b = idx2b.as((af_dtype)dtype_traits<Id>::af_type);
+    A2b(5, idx2b) = 9999;
+    B2b(5, idx2b) = 9999;
+    A2b(seq(2,4), 1) = 9999;
+    B2b(seq(2,4), 1) = 9999;
+    A2b(1, 2) = 9999;
+    B2b(1, 2) = 9999;
+    ASSERT_ARRAYS_EQ(A2b, B2b);
+
+    array A2c = randu(10, 19, (af_dtype)dtype_traits<T>::af_type);
+    array B2c = A2c(seq(2,7), span).copy();
+    A2c = A2c(seq(2,7), span);
+    array idx2c = randu(5, u32) % 19;
+          idx2c = idx2c.as((af_dtype)dtype_traits<Id>::af_type);
+    A2c(5, idx2c) = 9999;
+    B2c(5, idx2c) = 9999;
+    A2c(seq(2,4), 1) = 9999;
+    B2c(seq(2,4), 1) = 9999;
+    A2c(1, 2) = 9999;
+    B2c(1, 2) = 9999;
+    ASSERT_ARRAYS_EQ(A2c, B2c);
+
+    array A2d = randu(10, 19, (af_dtype)dtype_traits<T>::af_type);
+    array B2d = A2d(span, seq(10,16)).copy();
+    A2d = A2d(span, seq(10,16));
+    array idx2d = randu(3, u32) % 6;
+          idx2d = idx2d.as((af_dtype)dtype_traits<Id>::af_type);
+    A2d(5, idx2d) = 9999;
+    B2d(5, idx2d) = 9999;
+    A2d(seq(2,4), 1) = 9999;
+    B2d(seq(2,4), 1) = 9999;
+    A2d(1, 2) = 9999;
+    B2d(1, 2) = 9999;
+    ASSERT_ARRAYS_EQ(A2d, B2d);
+
+    array A4a = randu(10, 19, 8, 3, (af_dtype)dtype_traits<T>::af_type);
+    array B4a = A4a(seq(3,9), span, span, span).copy();
+    A4a = A4a(seq(3,9), span, span, span);
+    array idx4a = randu(10, u32) % 19;
+          idx4a = idx4a.as((af_dtype)dtype_traits<Id>::af_type);
+    A4a(5, idx4a, 4, 1) = 9999;
+    B4a(5, idx4a, 4, 1) = 9999;
+    A4a(seq(2,4), 1, 4, 1) = 9999;
+    B4a(seq(2,4), 1, 4, 1) = 9999;
+    A4a(1, 2, 4, 1) = 9999;
+    B4a(1, 2, 4, 1) = 9999;
+    ASSERT_ARRAYS_EQ(A4a, B4a);
+
+    array A4b = randu(10, 19, 8, 3, (af_dtype)dtype_traits<T>::af_type);
+    array B4b = A4b(span, seq(2,15), span, span).copy();
+    A4b = A4b(span, seq(2,15), span, span);
+    array idx4b = randu(5, u32) % 10;
+          idx4b = idx4b.as((af_dtype)dtype_traits<Id>::af_type);
+    A4b(5, idx4b, 4, 1) = 9999;
+    B4b(5, idx4b, 4, 1) = 9999;
+    A4b(seq(2,4), 1, 4, 1) = 9999;
+    B4b(seq(2,4), 1, 4, 1) = 9999;
+    A4b(1, 2, 4, 1) = 9999;
+    B4b(1, 2, 4, 1) = 9999;
+    ASSERT_ARRAYS_EQ(A4b, B4b);
+
+    array A4c = randu(10, 19, 8, 3, (af_dtype)dtype_traits<T>::af_type);
+    array B4c = A4c(span, span, span, seq(1,2)).copy();
+    A4c = A4c(span, span, span, seq(1,2));
+    array idx4c = randu(5, u32) % 10;
+          idx4c = idx4c.as((af_dtype)dtype_traits<Id>::af_type);
+    A4c(5, idx4c, 4, 1) = 9999;
+    B4c(5, idx4c, 4, 1) = 9999;
+    A4c(seq(2,4), 1, 4, 1) = 9999;
+    B4c(seq(2,4), 1, 4, 1) = 9999;
+    A4c(1, 2, 4, 1) = 9999;
+    B4c(1, 2, 4, 1) = 9999;
+    ASSERT_ARRAYS_EQ(A4c, B4c);
+
+    array A4d = randu(10, 19, 8, 3, (af_dtype)dtype_traits<T>::af_type);
+    array idx4d1 = randu(10, u32) % 19;
+          idx4d1 = idx4d1.as((af_dtype)dtype_traits<Id>::af_type);
+    array B4d = A4d(seq(3,9), idx4d1, span, span).copy();
+    A4d = A4d(seq(3,9), idx4d1, span, span);
+    array idx4d2 = randu(5, u32) % 10;
+          idx4d2 = idx4d2.as((af_dtype)dtype_traits<Id>::af_type);
+    A4d(5, idx4d2, 4, 1) = 9999;
+    B4d(5, idx4d2, 4, 1) = 9999;
+    A4d(seq(2,4), 1, 4, 1) = 9999;
+    B4d(seq(2,4), 1, 4, 1) = 9999;
+    A4d(1, 2, 4, 1) = 9999;
+    B4d(1, 2, 4, 1) = 9999;
+    ASSERT_ARRAYS_EQ(A4d, B4d);
+
+    array A4e = randu(10, 19, 8, 3, (af_dtype)dtype_traits<T>::af_type);
+    array idx4e1 = randu(6, u32) % 10;
+          idx4e1 = idx4e1.as((af_dtype)dtype_traits<Id>::af_type);
+    array B4e = A4e(idx4e1, span, span, span).copy();
+    A4e = A4e(idx4e1, span, span, span);
+    array idx4e2 = randu(5, u32) % 10;
+          idx4e2 = idx4e2.as((af_dtype)dtype_traits<Id>::af_type);
+    A4e(1, idx4e2, 4, 1) = 9999;
+    B4e(1, idx4e2, 4, 1) = 9999;
+    A4e(seq(1,2), 1, 4, 1) = 9999;
+    B4e(seq(1,2), 1, 4, 1) = 9999;
+    A4e(1, 2, 4, 1) = 9999;
+    B4e(1, 2, 4, 1) = 9999;
+    ASSERT_ARRAYS_EQ(A4e, B4e);
+
+    array A4f = randu(10, 19, 8, 3, (af_dtype)dtype_traits<T>::af_type);
+    array idx4f1 = randu(10, u32) % 19;
+          idx4f1 = idx4f1.as((af_dtype)dtype_traits<Id>::af_type);
+    array B4f = A4f(span, idx4f1, span, span).copy();
+    A4f = A4f(span, idx4f1, span, span);
+    array idx4f2 = randu(5, u32) % 10;
+          idx4f2 = idx4f2.as((af_dtype)dtype_traits<Id>::af_type);
+    A4f(1, idx4f2, 4, 1) = 9999;
+    B4f(1, idx4f2, 4, 1) = 9999;
+    A4f(seq(1,2), 1, 4, 1) = 9999;
+    B4f(seq(1,2), 1, 4, 1) = 9999;
+    A4f(1, 2, 4, 1) = 9999;
+    B4f(1, 2, 4, 1) = 9999;
+    ASSERT_ARRAYS_EQ(A4f, B4f);
+}
+
+template<typename T>
+void subArrayIndex() {
+    int dev = af::getDevice();
+    if(af::isHalfAvailable(dev)) subArrayIndex<T, af_half>();
+    if(af::isDoubleAvailable(dev)) subArrayIndex<T, double>();
+    subArrayIndex<T, float>();
+    subArrayIndex<T, int>();
+    subArrayIndex<T, intl>();
+    subArrayIndex<T, short>();
+    subArrayIndex<T, uint>();
+    subArrayIndex<T, uintl>();
+    subArrayIndex<T, ushort>();
+}
+
+TYPED_TEST(SubArray, SubArrayOfSubArrayWorks_ISSUE_3534) {
+    SUPPORTED_TYPE_CHECK(TypeParam);
+    //Assigning to a subarray of a subarray should work
+    subArrayIndex<TypeParam>();
+}
 TEST(Device, simple) {
     array a = randu(5, 5);
     {
