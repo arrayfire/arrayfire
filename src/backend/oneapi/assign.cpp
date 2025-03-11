@@ -34,7 +34,7 @@ void assign(Array<T>& out, const af_index_t idxrs[], const Array<T>& rhs) {
     }
 
     // retrieve dimensions, strides and offsets
-    const dim4& dDims = out.dims();
+    const dim4& dDims = out.getDataDims();
     // retrieve dimensions & strides for array
     // to which rhs is being copied to
     dim4 dstOffs  = toOffset(seqs, dDims);
