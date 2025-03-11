@@ -426,7 +426,7 @@ TEST(Array, ISSUE_951) {
     array b       = a.cols(0, 20).rows(10, 20);
 }
 
-TEST(Array, ISSUE_3534) {
+TEST(Array, ISSUE_3534_SubArrayofModifiedSubArray) {
     // This works
     // array a = range(dim4(5,5));
     // a = a.rows(0,3).copy();
@@ -503,17 +503,18 @@ TEST(Array, ISSUE_3534) {
         ASSERT_ARRAYS_EQ(a, b);
 
         a             = range(dim4(128, 128));
-        a(64, 64)   = -67890;
-        a(127, 127)   = -9876;
+        a(64, 127)   = -67890;
+        a(127, 64)   = -98760;
         a             = a.rows(64, 127);
         a             = a.cols(64, 127);
-        
         a(0, 0)   = -54321;
         a(63, 63) = -12345;
 
         b         = range(dim4(64, 64)) + 64;
         b(0, 0)   = -54321;
         b(63, 63) = -12345;
+        b(0, 63)  = -67890;
+        b(63, 0)  = -98760;
 
         ASSERT_ARRAYS_EQ(a, b);
     }
