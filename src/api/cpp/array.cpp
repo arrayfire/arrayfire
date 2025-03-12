@@ -164,9 +164,6 @@ struct array::array_proxy::array_proxy_impl {
     void delete_on_destruction(bool val) { delete_on_destruction_ = val; }
 
     ~array_proxy_impl() {
-        for(int i = 0; i < AF_MAX_DIMS; ++i) {
-            if(!indices_[i].isSeq) af_release_array(indices_[i].idx.arr);
-        }
         if (delete_on_destruction_) { delete parent_; }
     }
 
@@ -383,23 +380,15 @@ INSTANTIATE(sparse)
 
 #undef INSTANTIATE
 
-array::array_proxy gen_indexing(const array &ref, const index &s0,
-                                const index &s1, const index &s2,
-                                const index &s3, bool linear = false) {
+static array::array_proxy gen_indexing(const array &ref, const index &s0,
+                                       const index &s1, const index &s2,
+                                       const index &s3, bool linear = false) {
     ref.eval();
     af_index_t inds[AF_MAX_DIMS];
     inds[0] = s0.get();
     inds[1] = s1.get();
     inds[2] = s2.get();
     inds[3] = s3.get();
-    
-    for(int i = 0; i < AF_MAX_DIMS; ++i) {
-        if(!inds[i].isSeq) {
-            af_array arr = 0;
-            AF_THROW(af_retain_array(&arr, inds[i].idx.arr));
-	    inds[i].idx.arr = arr;
-        }
-    }
 
     return array::array_proxy(const_cast<array &>(ref), inds, linear);
 }
