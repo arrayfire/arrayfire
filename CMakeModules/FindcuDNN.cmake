@@ -169,13 +169,17 @@ if(cuDNN_INCLUDE_DIRS)
   endmacro()
 
   af_find_cudnn_libs("") # gets base cudnn shared library
-  if(cuDNN_VERSION_MAJOR VERSION_GREATER 8 OR cuDNN_VERSION_MAJOR VERSION_EQUAL 8)
+  if(cuDNN_VERSION_MAJOR VERSION_EQUAL 8)
     af_find_cudnn_libs("_adv_infer")
     af_find_cudnn_libs("_adv_train")
     af_find_cudnn_libs("_cnn_infer")
     af_find_cudnn_libs("_cnn_train")
     af_find_cudnn_libs("_ops_infer")
     af_find_cudnn_libs("_ops_train")
+  elseif(cuDNN_VERSION_MAJOR VERSION_GREATER_EQUAL 9)
+    af_find_cudnn_libs("_adv")
+    af_find_cudnn_libs("_cnn")
+    af_find_cudnn_libs("_ops")
   endif()
 endif()
 

@@ -287,7 +287,7 @@ af_component(
   DEB_USE_SHLIBDEPS
   DEB_PROVIDES "arrayfire-cuda (= ${CPACK_PACKAGE_VERSION}), arrayfire-cuda${CPACK_PACKAGE_VERSION_MAJOR} (= ${CPACK_PACKAGE_VERSION}), libarrayfire-cuda${CPACK_PACKAGE_VERSION_MAJOR} (= ${CPACK_PACKAGE_VERSION})"
   DEB_REPLACES "arrayfire-cuda (<< ${CPACK_PACKAGE_VERSION}), arrayfire-cuda${CPACK_PACKAGE_VERSION_MAJOR} (<< ${CPACK_PACKAGE_VERSION})"
-  DEB_OPTIONAL libcudnn8 forge libfreeimage3
+  DEB_OPTIONAL cudnn9-cuda-${CPACK_CUDA_VERSION_MAJOR}-${CPACK_CUDA_VERSION_MINOR} forge libfreeimage3
 )
 
 af_component(
