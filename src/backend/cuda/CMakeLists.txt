@@ -845,7 +845,7 @@ if(AF_INSTALL_STANDALONE)
       afcu_collect_cudnn_libs(cnn_train)
       afcu_collect_cudnn_libs(ops_infer)
       afcu_collect_cudnn_libs(ops_train)
-    elseif(cuDNN_VERSION_MAJOR VERSION_GREATER 9 OR cuDNN_VERSION_MAJOR VERSION_EQUAL 9)
+    elseif(cuDNN_VERSION_MAJOR VERSION_GREATER_EQUAL 9)
       # infer and train libraries are now combined in version 9
       afcu_collect_cudnn_libs(cnn)
       afcu_collect_cudnn_libs(ops)
