@@ -6,8 +6,9 @@ target architecture and operating system. Although ArrayFire can be [built
 from source](https://github.com/arrayfire/arrayfire), the installers
 conveniently package necessary dependencies.
 
-Install the latest device drivers before using ArrayFire. Drivers and runtimes
-should be downloaded and installed from each device vendor's website.
+Install the latest device drivers before using ArrayFire. If you target the
+CPU using ArrayFire’s OpenCL backend, install the OpenCL runtime. Drivers and
+runtimes should be downloaded and installed from each device vendor's website.
 
 # Install Instructions {#InstallInstructions}
 
