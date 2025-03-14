@@ -10,13 +10,15 @@ v3.9.0
 - Add broadcast support \PR{2871}
 - Improve OpenCL CPU JIT performance \PR{3257} \PR{3392}
 - Optimize thread/block calculations of several kernels \PR{3144}
-- Add support for fast math compiliation when building ArrayFire \PR{3334 \PR{3337}
+- Add support for fast math compiliation when building ArrayFire \PR{3334}
+  \PR{3337}
 - Optimize performance of fftconvolve when using floats \PR{3338}
 - Add support for CUDA 12.1 and 12.2
 - Better handling of empty arrays \PR{3398}
 - Better handling of memory in linear algebra functions in OpenCL \PR{3423}
 - Better logging with JIT kernels \PR{3468}
-- Optimize memory manager/JIT interactions for small number of buffers \PR{3468}
+- Optimize memory manager/JIT interactions for small number of buffers
+  \PR{3468}
 - Documentation improvements \PR{3485}
 - Optimize reorder function \PR{3488}
 
@@ -24,20 +26,23 @@ v3.9.0
 - Improve Errors when creating OpenCL contexts from devices \PR{3257}
 - Improvements to vcpkg builds \PR{3376 \PR{3476}
 - Fix reduce by key when nan's are present \PR{3261}
-- Fix error in convolve where the ndims parameter was forced to be equal to 2  \PR{3277}
-- Make constructors that accept dim_t to be explicit to avoid invalid conversions  \PR{3259} 
-- Fix error in randu when compiling against clang 14 \PR{3333} 
+- Fix error in convolve where the ndims parameter was forced to be equal to 2
+  \PR{3277}
+- Make constructors that accept dim_t to be explicit to avoid invalid
+  conversions \PR{3259}
+- Fix error in randu when compiling against clang 14 \PR{3333}
 - Fix bug in OpenCL linear algebra functions  \PR{3398}
-- Fix bug with thread local variables when device was changed \PR{3420} \PR{3421} 
-- Fix bug in qr related to uninitialized memory \PR{3422} 
+- Fix bug with thread local variables when device was changed \PR{3420}
+  \PR{3421}
+- Fix bug in qr related to uninitialized memory \PR{3422}
 - Fix bug in shift where the array had an empty middle dimension \PR{3488}
-
 
 ## Contributions
 
 Special thanks to our contributors:
 [Willy Born](https://github.com/willyborn)
 [Mike Mullen](https://github.com/mfzmullen)
+
 
 v3.8.3
 ======
@@ -100,6 +105,7 @@ v3.8.2
 Special thanks to our contributors:
 [Jacob Kahn](https://github.com/jacobkahn)
 [Willy Born](https://github.com/willyborn)
+
 
 v3.8.1
 ======
