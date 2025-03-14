@@ -355,7 +355,7 @@ target_link_libraries(afoneapi
     OpenCL::OpenCL
     OpenCL::cl2hpp
     -fno-sycl-id-queries-fit-in-int
-    $<$<PLATFORM_ID:Linux>:-fsycl-link-huge-device-code>
+    $<$<PLATFORM_ID:Linux>:-flink-huge-device-code>
     $<$<PLATFORM_ID:Linux>:-fvisibility-inlines-hidden>
     $<$<PLATFORM_ID:Linux>:-fno-sycl-rdc>
     -fsycl-max-parallel-link-jobs=${NumberOfThreads}
