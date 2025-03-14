@@ -161,8 +161,10 @@ static af_array lookup(const af_array& in, const af_array& idx,
 af_err af_lookup(af_array* out, const af_array in, const af_array indices,
                  const unsigned dim) {
     try {
+        ARG_ASSERT(0, out != nullptr);
+        ARG_ASSERT(1, in != nullptr);
+        ARG_ASSERT(2, indices != nullptr);
         const ArrayInfo& idxInfo = getInfo(indices);
-
         if (idxInfo.ndims() == 0) {
             *out = retain(indices);
             return AF_SUCCESS;
@@ -173,12 +175,9 @@ af_err af_lookup(af_array* out, const af_array in, const af_array indices,
 
         af_dtype idxType = idxInfo.getType();
 
-        ARG_ASSERT(2, (idxType != c32));
-        ARG_ASSERT(2, (idxType != c64));
-        ARG_ASSERT(2, (idxType != b8));
+        ARG_ASSERT(2, (idxType != c32) && (idxType != c64) && (idxType != b8));
 
-        af_array output = 0;
-
+        af_array output = nullptr;
         switch (idxType) {
             case f32: output = lookup<float>(in, indices, dim); break;
             case f64: output = lookup<double>(in, indices, dim); break;
@@ -193,7 +192,7 @@ af_err af_lookup(af_array* out, const af_array in, const af_array indices,
             case f16: output = lookup<half>(in, indices, dim); break;
             default: TYPE_ERROR(1, idxType);
         }
-        std::swap(*out, output);
+        *out = output;
     }
     CATCHALL;
     return AF_SUCCESS;

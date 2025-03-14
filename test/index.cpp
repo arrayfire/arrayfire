@@ -705,20 +705,33 @@ TEST(Indexing2D, ColumnContiniousCPP) {
  * ******************/
 
 template<typename T>
-class lookup : public ::testing::Test {
+class lookupT : public ::testing::Test {
    public:
     virtual void SetUp() {}
+    virtual void TearDown() {
+        // Test on buffer leaks
+        cleanSlate();
+    }
 };
 
 typedef ::testing::Types<float, double, int, unsigned, signed char,
                          unsigned char, short, ushort, intl, uintl,
                          half_float::half>
     ArrIdxTestTypes;
-TYPED_TEST_SUITE(lookup, ArrIdxTestTypes);
+TYPED_TEST_SUITE(lookupT, ArrIdxTestTypes);
 
 template<typename T>
 void arrayIndexTest(string pTestFile, int dim) {
     SUPPORTED_TYPE_CHECK(T);
+    const vector<TestInputArrayType> testInputArrayTypeLIST{
+        FULL_ARRAY,       //
+        SUB_ARRAY,        //
+        REORDERED_ARRAY,  //
+        NULL_ARRAY,       //
+    };
+    // if true will loop over all possible combinations
+    // if false will loop over all individual conditions
+    const bool ALL = false;
 
     vector<dim4> numDims;
     vector<vector<T>> in;
@@ -728,9 +741,8 @@ void arrayIndexTest(string pTestFile, int dim) {
 
     dim4 dims0        = numDims[0];
     dim4 dims1        = numDims[1];
-    af_array outArray = 0;
-    af_array inArray  = 0;
-    af_array idxArray = 0;
+    af_array inArray  = nullptr;
+    af_array idxArray = nullptr;
 
     ASSERT_SUCCESS(af_create_array(&inArray, &(in[0].front()), dims0.ndims(),
                                    dims0.get(),
@@ -739,37 +751,85 @@ void arrayIndexTest(string pTestFile, int dim) {
     ASSERT_SUCCESS(af_create_array(&idxArray, &(in[1].front()), dims1.ndims(),
                                    dims1.get(),
                                    (af_dtype)dtype_traits<T>::af_type));
-
-    ASSERT_SUCCESS(af_lookup(&outArray, inArray, idxArray, dim));
-
     vector<T> currGoldBar = tests[0];
     dim4 goldDims         = dims0;
     goldDims[dim]         = dims1[0];
 
-    ASSERT_VEC_ARRAY_EQ(currGoldBar, goldDims, outArray);
+    bool idxTypeLoopFinished = false;
+    for (TestInputArrayType inType : testInputArrayTypeLIST) {
+        af_array inArray2 = nullptr;
+        TestInputArrayInfo inMeta(inType);
+        // Release handled by TestInputArrayInfo object
+        genTestInputArray(&inArray2, inArray, &inMeta);
 
+        for (TestInputArrayType idxType : testInputArrayTypeLIST) {
+            af_array idxArray2 = nullptr;
+            TestInputArrayInfo idxMeta(idxType);
+            // Release handled by TestInputArrayInfo
+            genTestInputArray(&idxArray2, idxArray, &idxMeta);
+
+            af_array outArray = nullptr;
+            const af_err err  = af_lookup(&outArray, inArray2, idxArray2, dim);
+            if (inArray2 == nullptr || idxArray2 == nullptr || dim > 3) {
+                EXPECT_EQ(AF_ERR_ARG, err);
+            } else {
+                ASSERT_VEC_ARRAY_EQ(currGoldBar, goldDims, outArray);
+            }
+            ASSERT_SUCCESS(af_release_array(outArray));
+            outArray = nullptr;
+            if (idxTypeLoopFinished) break;
+        }
+        idxTypeLoopFinished = !ALL;
+    }
     ASSERT_SUCCESS(af_release_array(inArray));
+    inArray = nullptr;
     ASSERT_SUCCESS(af_release_array(idxArray));
-    ASSERT_SUCCESS(af_release_array(outArray));
+    idxArray = nullptr;
 }
 
-TYPED_TEST(lookup, Dim0) {
+TYPED_TEST(lookupT, Dim0) {
     arrayIndexTest<TypeParam>(string(TEST_DIR "/arrayindex/dim0.test"), 0);
 }
 
-TYPED_TEST(lookup, Dim1) {
+TYPED_TEST(lookupT, Dim1) {
     arrayIndexTest<TypeParam>(string(TEST_DIR "/arrayindex/dim1.test"), 1);
 }
 
-TYPED_TEST(lookup, Dim2) {
+TYPED_TEST(lookupT, Dim2) {
     arrayIndexTest<TypeParam>(string(TEST_DIR "/arrayindex/dim2.test"), 2);
 }
 
-TYPED_TEST(lookup, Dim3) {
+TYPED_TEST(lookupT, Dim3) {
     arrayIndexTest<TypeParam>(string(TEST_DIR "/arrayindex/dim3.test"), 3);
 }
 
-TEST(lookup, CPP) {
+class lookup : public ::testing::Test {
+   public:
+    virtual void SetUp() {}
+    virtual void TearDown() {
+        // Test on buffer leaks
+        cleanSlate();
+    }
+};
+
+TEST_F(lookup, Nulloutput) {
+    const dim_t dim = 10;
+
+    af_array input = nullptr;
+    ASSERT_SUCCESS(af_range(&input, 1, &dim, 0, f32));
+
+    af_array idx = nullptr;
+    ASSERT_SUCCESS(af_constant(&idx, 1, 1, &dim, u32));
+
+    ASSERT_EQ(AF_ERR_ARG, af_lookup(nullptr, input, idx, 0));
+
+    ASSERT_SUCCESS(af_release_array(input));
+    input = nullptr;
+    ASSERT_SUCCESS(af_release_array(idx));
+    idx = nullptr;
+}
+
+TEST_F(lookup, CPP) {
     vector<dim4> numDims;
     vector<vector<float>> in;
     vector<vector<float>> tests;
@@ -791,7 +851,7 @@ TEST(lookup, CPP) {
     ASSERT_VEC_ARRAY_EQ(currGoldBar, goldDims, output);
 }
 
-TEST(lookup, largeDim) {
+TEST_F(lookup, largeDim) {
     const size_t largeDim = 65535 * 8 + 1;
 
     cleanSlate();
@@ -801,7 +861,7 @@ TEST(lookup, largeDim) {
     array output = af::lookup(input, indices);
 }
 
-TEST(lookup, Issue2009) {
+TEST_F(lookup, Issue2009) {
     array a   = range(dim4(1000, 1));
     array idx = constant(0, 1, u32);
     array b   = af::lookup(a, idx, 1);
@@ -809,7 +869,7 @@ TEST(lookup, Issue2009) {
     ASSERT_ARRAYS_EQ(a, b);
 }
 
-TEST(lookup, SNIPPET_lookup1d) {
+TEST_F(lookup, SNIPPET_lookup1d) {
     //! [ex_index_lookup1d]
 
     // input array
@@ -831,7 +891,7 @@ TEST(lookup, SNIPPET_lookup1d) {
     ASSERT_ARRAYS_NEAR(indexed, indexed_gold, 1e-5);
 }
 
-TEST(lookup, SNIPPET_lookup_oob) {
+TEST_F(lookup, SNIPPET_lookup_oob) {
     //! [ex_index_lookup_oob]
 
     // input array
@@ -862,7 +922,7 @@ TEST(lookup, SNIPPET_lookup_oob) {
     ASSERT_ARRAYS_NEAR(indexed_out_of_bounds_neg, oob_n_g, 1e-5);
 }
 
-TEST(lookup, SNIPPET_lookup2d) {
+TEST_F(lookup, SNIPPET_lookup2d) {
     //! [ex_index_lookup2d]
 
     // constant input data
@@ -1280,7 +1340,8 @@ TYPED_TEST(IndexedMembers, MemFuncs) {
     ASSERT_EQ(input.isinteger(), input(span, 1).isinteger());
     ASSERT_EQ(input.isbool(), input(span, 1).isbool());
     // TODO: Doesn't compile in cuda for cfloat and cdouble
-    // ASSERT_EQ(input.scalar<TypeParam>(), input(span, 0).scalar<TypeParam>());
+    // ASSERT_EQ(input.scalar<TypeParam>(), input(span,
+    // 0).scalar<TypeParam>());
 }
 
 #if 1
