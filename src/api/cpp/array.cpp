@@ -380,17 +380,17 @@ INSTANTIATE(sparse)
 
 #undef INSTANTIATE
 
-array::array_proxy array::gen_indexing(const index &s0,
+static array::array_proxy gen_indexing(const array &ref, const index &s0,
                                        const index &s1, const index &s2,
-                                       const index &s3, bool linear) const {
-    eval();
+                                       const index &s3, bool linear = false) {
+    ref.eval();
     af_index_t inds[AF_MAX_DIMS];
     inds[0] = s0.get();
     inds[1] = s1.get();
     inds[2] = s2.get();
     inds[3] = s3.get();
 
-    return array::array_proxy(const_cast<array &>(*this), inds, linear);
+    return array::array_proxy(const_cast<array &>(ref), inds, linear);
 }
 
 array::array_proxy array::operator()(const index &s0) {
@@ -407,14 +407,14 @@ const array::array_proxy array::operator()(const index &s0) const {
     index z = index(0);
     if (isvector()) {
         switch (numDims(this->arr)) {
-            case 1: return gen_indexing(s0, z, z, z);
-            case 2: return gen_indexing(z, s0, z, z);
-            case 3: return gen_indexing(z, z, s0, z);
-            case 4: return gen_indexing(z, z, z, s0);
+            case 1: return gen_indexing(*this, s0, z, z, z);
+            case 2: return gen_indexing(*this, z, s0, z, z);
+            case 3: return gen_indexing(*this, z, z, s0, z);
+            case 4: return gen_indexing(*this, z, z, z, s0);
             default: AF_THROW_ERR("ndims for Array is invalid", AF_ERR_SIZE);
         }
     } else {
-        return gen_indexing(s0, z, z, z, true);
+        return gen_indexing(*this, s0, z, z, z, true);
     }
 }
 
@@ -422,7 +422,7 @@ const array::array_proxy array::operator()(const index &s0) const {
 const array::array_proxy array::operator()(const index &s0, const index &s1,
                                            const index &s2,
                                            const index &s3) const {
-    return gen_indexing(s0, s1, s2, s3);
+    return gen_indexing(*this, s0, s1, s2, s3);
 }
 
 // NOLINTNEXTLINE(readability-const-return-type)

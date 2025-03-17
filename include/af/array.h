@@ -59,13 +59,13 @@ namespace af
             array_proxy_impl *impl;     // implementation
 
         private:
-            array_proxy(array& par, af_index_t *ssss, bool linear = false);
             array_proxy(const array_proxy &other);
 #if AF_COMPILER_CXX_RVALUE_REFERENCES
             array_proxy(array_proxy &&other);
 #endif
         public:
             friend class array;
+            array_proxy(array& par, af_index_t *ssss, bool linear = false);
 #if AF_COMPILER_CXX_RVALUE_REFERENCES
             array_proxy & operator=(array_proxy &&other);
 #endif
@@ -1138,12 +1138,6 @@ namespace af
         /// This method can be called after called after calling \ref array::lock()
         /// Calling this method gives back the control of the device pointer to the memory manager.
         void unlock() const;
-
-    private:
-        array::array_proxy gen_indexing(const index &s0,
-                                        const index &s1, const index &s2,
-                                        const index &s3, bool linear = false) const;
-
     };
     // end of class array
 
