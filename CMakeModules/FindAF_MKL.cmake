@@ -74,8 +74,12 @@
 include(CheckTypeSize)
 include(FindPackageHandleStandardArgs)
 
-check_type_size("int" INT_SIZE
-  BUILTIN_TYPES_ONLY LANGUAGE C)
+if(DEFINED MKL_INTERFACE_INTEGER_SIZE)
+  set(INT_SIZE ${MKL_INTERFACE_INTEGER_SIZE})
+else()
+  check_type_size("int" INT_SIZE
+    BUILTIN_TYPES_ONLY LANGUAGE C)
+endif()
 
 set(MKL_THREAD_LAYER "TBB" CACHE STRING "The thread layer to choose for MKL")
 set_property(CACHE MKL_THREAD_LAYER PROPERTY STRINGS "TBB" "GNU OpenMP" "Intel OpenMP" "Sequential")

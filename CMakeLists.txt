@@ -144,7 +144,6 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)
   endif()
   set(SYCL_COMPILER ON)
   set(MKL_THREADING "tbb_thread")
-  set(MKL_INTERFACE "ilp64")
   find_package(MKL)
 endif()
 
@@ -552,13 +551,25 @@ if(BUILD_WITH_MKL AND AF_INSTALL_STANDALONE)
         ${mkl_int}
         DESTINATION ${AF_INSTALL_LIB_DIR}
         COMPONENT mkl_dependencies)
+
+      find_library(IMF_LINK_LIBRARY NAMES imf)
+      find_library(SVML_LINK_LIBRARY NAMES svml)
+      find_library(IRNG_LINK_LIBRARY NAMES irng)
+      get_filename_component(intel_imf ${IMF_LINK_LIBRARY} REALPATH)
+      get_filename_component(intel_svml ${SVML_LINK_LIBRARY} REALPATH)
+      get_filename_component(intel_irng ${IRNG_LINK_LIBRARY} REALPATH)
+      install(FILES
+        ${intel_imf}
+        ${intel_svml}
+        ${intel_irng}
+        DESTINATION ${AF_INSTALL_LIB_DIR}
+        COMPONENT mkl_dependencies)
     endif()
 
     get_filename_component(mkl_rnt ${MKL_RT_LINK_LIBRARY} REALPATH)
     get_filename_component(mkl_shd ${MKL_Core_LINK_LIBRARY} REALPATH)
     get_filename_component(mkl_tly ${MKL_ThreadLayer_LINK_LIBRARY} REALPATH)
     install(FILES
-      ${mkl_sycl}
       ${mkl_rnt}
       ${mkl_shd}
       ${mkl_tly}
