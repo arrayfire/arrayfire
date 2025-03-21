@@ -53,9 +53,6 @@ if(ArrayFire_oneAPI_FOUND)
   add_executable(swe_oneapi swe.cpp)
   target_link_libraries(swe_oneapi ArrayFire::afoneapi)
 
-  add_executable(bhrt_oneapi bhrt.cpp)
-  target_link_libraries(bhrt_oneapi ArrayFire::afoneapi)
-
   add_executable(boltzmann_cfd_oneapi boltzmann_cfd.cpp)
   target_link_libraries(boltzmann_cfd_oneapi ArrayFire::afoneapi)
 endif()
