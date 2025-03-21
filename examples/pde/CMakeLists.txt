@@ -14,8 +14,6 @@ find_package(ArrayFire REQUIRED)
 
 add_definitions("-DASSETS_DIR=\"${ASSETS_DIR}\"")
 
-add_definitions("-DASSETS_DIR=\"${ASSETS_DIR}\"")
-
 if(ArrayFire_CPU_FOUND)
   # Shallow Water simulation example
   add_executable(swe_cpu swe.cpp)
