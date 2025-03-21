@@ -69,6 +69,7 @@ INSTANTIATE(cdouble, double, af_cplx2_t);
     INSTANTIATE(unsigned short, unsigned short, op);         \
     INSTANTIATE(unsigned long long, unsigned long long, op); \
     INSTANTIATE(long long, long long, op);                   \
+    INSTANTIATE(signed char, signed char, op);               \
     INSTANTIATE(unsigned char, unsigned char, op);           \
     INSTANTIATE(char, char, op);                             \
     INSTANTIATE(common::half, common::half, op);             \
@@ -91,6 +92,7 @@ INSTANTIATE_ARITH(af_max_t);
     INSTANTIATE(unsigned short, unsigned short, op);         \
     INSTANTIATE(unsigned long long, unsigned long long, op); \
     INSTANTIATE(long long, long long, op);                   \
+    INSTANTIATE(signed char, signed char, op);               \
     INSTANTIATE(unsigned char, unsigned char, op);           \
     INSTANTIATE(char, char, op);                             \
     INSTANTIATE(common::half, common::half, op);             \
@@ -114,6 +116,7 @@ INSTANTIATE_FLOATOPS(af_atan2_t);
     INSTANTIATE(unsigned short, unsigned short, op);         \
     INSTANTIATE(unsigned long long, unsigned long long, op); \
     INSTANTIATE(long long, long long, op);                   \
+    INSTANTIATE(signed char, signed char, op);               \
     INSTANTIATE(unsigned char, unsigned char, op);           \
     INSTANTIATE(char, char, op);                             \
     INSTANTIATE(int, int, op)
@@ -136,6 +139,7 @@ INSTANTIATE_BITOP(af_bitxor_t);
     INSTANTIATE(char, unsigned short, op);     \
     INSTANTIATE(char, unsigned long long, op); \
     INSTANTIATE(char, long long, op);          \
+    INSTANTIATE(char, signed char, op);        \
     INSTANTIATE(char, unsigned char, op);      \
     INSTANTIATE(char, char, op);               \
     INSTANTIATE(char, int, op)

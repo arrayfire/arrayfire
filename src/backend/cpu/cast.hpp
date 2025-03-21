@@ -150,6 +150,7 @@ struct UnOp<std::complex<double>, std::complex<float>, af_cast_t> {
 CAST_B8(float)
 CAST_B8(double)
 CAST_B8(int)
+CAST_B8(schar)
 CAST_B8(uchar)
 CAST_B8(char)
 

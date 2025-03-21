@@ -29,7 +29,7 @@ using std::vector;
 template<typename T>
 class AnisotropicDiffusion : public ::testing::Test {};
 
-typedef ::testing::Types<float, double, int, uint, uchar, short, ushort>
+typedef ::testing::Types<float, double, int, uint, schar, uchar, short, ushort>
     TestTypes;
 
 TYPED_TEST_SUITE(AnisotropicDiffusion, TestTypes);
@@ -98,12 +98,12 @@ void imageTest(string pTestFile, const float dt, const float K,
 
         if (isCurvatureDiffusion) {
             ASSERT_SUCCESS(af_anisotropic_diffusion(&_outArray, inArray, dt, K,
-                                                    iters, fluxKind,
-                                                    AF_DIFFUSION_MCDE));
+                                                                iters, fluxKind,
+                                                                AF_DIFFUSION_MCDE));
         } else {
             ASSERT_SUCCESS(af_anisotropic_diffusion(&_outArray, inArray, dt, K,
-                                                    iters, fluxKind,
-                                                    AF_DIFFUSION_GRAD));
+                                                                iters, fluxKind,
+                                                                AF_DIFFUSION_GRAD));
         }
 
         double maxima, minima, imag;
@@ -142,6 +142,7 @@ void imageTest(string pTestFile, const float dt, const float K,
 }
 
 TYPED_TEST(AnisotropicDiffusion, GradientGrayscale) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     // Numeric values separated by underscore are arguments to fn being tested.
     // Divide first value by 1000 to get time step `dt`
     // Divide second value by 100 to get time step `K`
@@ -153,6 +154,7 @@ TYPED_TEST(AnisotropicDiffusion, GradientGrayscale) {
 }
 
 TYPED_TEST(AnisotropicDiffusion, GradientColorImage) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     imageTest<TypeParam, true>(
         string(TEST_DIR "/gradient_diffusion/color_00125_100_2_exp.test"),
         0.125f, 1.0, 2, AF_FLUX_EXPONENTIAL);
@@ -166,6 +168,7 @@ TEST(AnisotropicDiffusion, GradientInvalidInputArray) {
 }
 
 TYPED_TEST(AnisotropicDiffusion, CurvatureGrayscale) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     // Numeric values separated by underscore are arguments to fn being tested.
     // Divide first value by 1000 to get time step `dt`
     // Divide second value by 100 to get time step `K`
@@ -177,6 +180,7 @@ TYPED_TEST(AnisotropicDiffusion, CurvatureGrayscale) {
 }
 
 TYPED_TEST(AnisotropicDiffusion, CurvatureColorImage) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     imageTest<TypeParam, true>(
         string(TEST_DIR "/curvature_diffusion/color_00125_100_2_mcde.test"),
         0.125f, 1.0, 2, AF_FLUX_EXPONENTIAL, true);

@@ -478,8 +478,8 @@ void evalNodes(vector<Param<T>>& outputs, const vector<Node*>& output_nodes) {
     full_nodes.clear();
     for (Node_ptr& node : node_clones) { full_nodes.push_back(node.get()); }
 
-    const string funcName{getFuncName(output_nodes, full_nodes, full_ids,
-                                      is_linear, false, false, false,
+    const string funcName{getFuncName(output_nodes, output_ids, full_nodes,
+                                      full_ids, is_linear, false, false, false,
                                       outputs[0].info.dims[2] > 1)};
 
     getQueue().submit([&](sycl::handler& h) {
@@ -627,6 +627,7 @@ template void evalNodes<cdouble>(Param<cdouble>& out, Node* node);
 template void evalNodes<int>(Param<int>& out, Node* node);
 template void evalNodes<uint>(Param<uint>& out, Node* node);
 template void evalNodes<char>(Param<char>& out, Node* node);
+template void evalNodes<schar>(Param<schar>& out, Node* node);
 template void evalNodes<uchar>(Param<uchar>& out, Node* node);
 template void evalNodes<intl>(Param<intl>& out, Node* node);
 template void evalNodes<uintl>(Param<uintl>& out, Node* node);
@@ -648,6 +649,8 @@ template void evalNodes<uint>(vector<Param<uint>>& out,
                               const vector<Node*>& node);
 template void evalNodes<char>(vector<Param<char>>& out,
                               const vector<Node*>& node);
+template void evalNodes<schar>(vector<Param<schar>>& out,
+                               const vector<Node*>& node);
 template void evalNodes<uchar>(vector<Param<uchar>>& out,
                                const vector<Node*>& node);
 template void evalNodes<intl>(vector<Param<intl>>& out,

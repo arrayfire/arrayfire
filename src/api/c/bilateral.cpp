@@ -19,6 +19,7 @@
 
 using af::dim4;
 using detail::bilateral;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::ushort;
@@ -50,6 +51,7 @@ af_err af_bilateral(af_array *out, const af_array in, const float ssigma,
             case b8: output = bilateral<char>(in, ssigma, csigma); break;
             case s32: output = bilateral<int>(in, ssigma, csigma); break;
             case u32: output = bilateral<uint>(in, ssigma, csigma); break;
+            case s8: output = bilateral<schar>(in, ssigma, csigma); break;
             case u8: output = bilateral<uchar>(in, ssigma, csigma); break;
             case s16: output = bilateral<short>(in, ssigma, csigma); break;
             case u16: output = bilateral<ushort>(in, ssigma, csigma); break;

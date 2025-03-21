@@ -44,8 +44,8 @@ class Transpose : public ::testing::Test {
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, cfloat, double, cdouble, int, uint, char, uchar,
-                         short, ushort, half_float::half>
+typedef ::testing::Types<float, cfloat, double, cdouble, int, uint, char, schar,
+                         uchar, short, ushort, half_float::half>
     TestTypes;
 
 // register the type list

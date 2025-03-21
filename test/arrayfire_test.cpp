@@ -77,6 +77,7 @@ std::ostream &operator<<(std::ostream &os, af::dtype type) {
         case b8: name = "b8"; break;
         case s32: name = "s32"; break;
         case u32: name = "u32"; break;
+        case s8: name = "s8"; break;
         case u8: name = "u8"; break;
         case s64: name = "s64"; break;
         case u64: name = "u64"; break;
@@ -102,14 +103,20 @@ std::string readNextNonEmptyLine(std::ifstream &file) {
     return result;
 }
 
-std::string getBackendName() {
+std::string getBackendName(bool lower) {
     af::Backend backend = af::getActiveBackend();
-    if (backend == AF_BACKEND_OPENCL)
-        return std::string("opencl");
-    else if (backend == AF_BACKEND_CUDA)
-        return std::string("cuda");
-
-    return std::string("cpu");
+    switch(backend) {
+    case AF_BACKEND_CPU:
+        return lower ? std::string("cpu") : std::string("CPU");
+    case AF_BACKEND_CUDA:
+        return lower ? std::string("cuda") : std::string("CUDA");
+    case AF_BACKEND_OPENCL:
+        return lower ? std::string("opencl") : std::string("OpenCL");
+    case AF_BACKEND_ONEAPI:
+        return lower ? std::string("oneapi") : std::string("oneAPI");
+    default:
+        return lower ? std::string("unknown") : std::string("Unknown");
+    }
 }
 
 std::string getTestName() {
@@ -161,6 +168,9 @@ std::ostream &operator<<(std::ostream &os, half_float::half val) {
         case s32: return elemWiseEq<int>(aName, bName, a, b, maxAbsDiff); break;
         case u32:
             return elemWiseEq<uint>(aName, bName, a, b, maxAbsDiff);
+            break;
+        case s8:
+            return elemWiseEq<schar>(aName, bName, a, b, maxAbsDiff);
             break;
         case u8:
             return elemWiseEq<uchar>(aName, bName, a, b, maxAbsDiff);
@@ -258,6 +268,7 @@ template<typename T>
                << "Expected: " << aName << "([" << a.dims() << "])";
 
     switch (arrDtype) {
+        case s8: return imageEq<signed char>(aName, bName, a, b, maxAbsDiff);
         case u8: return imageEq<unsigned char>(aName, bName, a, b, maxAbsDiff);
         case b8: return imageEq<char>(aName, bName, a, b, maxAbsDiff);
         case s32: return imageEq<int>(aName, bName, a, b, maxAbsDiff);
@@ -344,6 +355,7 @@ INSTANTIATE(double, float, int);
 INSTANTIATE(int, float, int);
 INSTANTIATE(unsigned int, float, int);
 INSTANTIATE(char, float, int);
+INSTANTIATE(signed char, float, int);
 INSTANTIATE(unsigned char, float, int);
 INSTANTIATE(short, float, int);
 INSTANTIATE(unsigned short, float, int);
@@ -358,6 +370,7 @@ INSTANTIATE(unsigned int, unsigned int, unsigned int);
 INSTANTIATE(long long, long long, int);
 INSTANTIATE(unsigned long long, unsigned long long, int);
 INSTANTIATE(char, char, int);
+INSTANTIATE(signed char, signed char, int);
 INSTANTIATE(unsigned char, unsigned char, int);
 INSTANTIATE(short, short, int);
 INSTANTIATE(unsigned short, unsigned short, int);
@@ -366,12 +379,19 @@ INSTANTIATE(af_half, af_half, int);
 INSTANTIATE(float, int, int);
 INSTANTIATE(unsigned int, int, int);
 INSTANTIATE(char, int, int);
+INSTANTIATE(signed char, int, int);
 INSTANTIATE(unsigned char, int, int);
 INSTANTIATE(short, int, int);
 INSTANTIATE(unsigned short, int, int);
 
+INSTANTIATE(signed char, unsigned short, int);
+INSTANTIATE(signed char, short, int);
+INSTANTIATE(signed char, unsigned char, int);
+INSTANTIATE(signed char, double, int);
+
 INSTANTIATE(unsigned char, unsigned short, int);
 INSTANTIATE(unsigned char, short, int);
+INSTANTIATE(unsigned char, signed char, int);
 INSTANTIATE(unsigned char, double, int);
 
 INSTANTIATE(long long, unsigned int, unsigned int);
@@ -380,6 +400,7 @@ INSTANTIATE(int, unsigned int, unsigned int);
 INSTANTIATE(short, unsigned int, unsigned int);
 INSTANTIATE(unsigned short, unsigned int, unsigned int);
 INSTANTIATE(char, unsigned int, unsigned int);
+INSTANTIATE(signed char, unsigned int, unsigned int);
 INSTANTIATE(unsigned char, unsigned int, unsigned int);
 INSTANTIATE(float, unsigned int, unsigned int);
 INSTANTIATE(double, unsigned int, unsigned int);
@@ -390,12 +411,14 @@ INSTANTIATE(int, unsigned int, int);
 INSTANTIATE(long long, unsigned int, int);
 INSTANTIATE(unsigned long long, unsigned int, int);
 INSTANTIATE(char, unsigned int, int);
+INSTANTIATE(signed char, unsigned int, int);
 INSTANTIATE(unsigned char, unsigned int, int);
 INSTANTIATE(short, unsigned int, int);
 INSTANTIATE(unsigned short, unsigned int, int);
 
 INSTANTIATE(float, char, int);
 INSTANTIATE(double, char, int);
+INSTANTIATE(signed char, char, int);
 INSTANTIATE(unsigned char, char, int);
 INSTANTIATE(short, char, int);
 INSTANTIATE(unsigned short, char, int);
@@ -406,6 +429,7 @@ INSTANTIATE(char, float, float);
 INSTANTIATE(int, float, float);
 INSTANTIATE(unsigned int, float, float);
 INSTANTIATE(short, float, float);
+INSTANTIATE(signed char, float, float);
 INSTANTIATE(unsigned char, float, float);
 INSTANTIATE(unsigned short, float, float);
 INSTANTIATE(double, float, float);
@@ -426,6 +450,7 @@ INSTANTIATE(unsigned int, unsigned int, float);
 INSTANTIATE(long long, long long, float);
 INSTANTIATE(unsigned long long, unsigned long long, float);
 INSTANTIATE(char, char, float);
+INSTANTIATE(signed char, signed char, float);
 INSTANTIATE(unsigned char, unsigned char, float);
 INSTANTIATE(short, short, float);
 INSTANTIATE(unsigned short, unsigned short, float);
@@ -442,6 +467,7 @@ INSTANTIATE(unsigned int, float, double);
 INSTANTIATE(short, float, double);
 INSTANTIATE(unsigned short, float, double);
 INSTANTIATE(char, float, double);
+INSTANTIATE(signed char, float, double);
 INSTANTIATE(unsigned char, float, double);
 INSTANTIATE(long long, double, double);
 INSTANTIATE(unsigned long long, double, double);
@@ -1332,10 +1358,17 @@ af_err conv_image(af_array *out, af_array in) {
 
     T *out_data = new T[nElems];
 
-    for (int i = 0; i < (int)nElems; i++) out_data[i] = (T)in_data[i];
+    af_dtype out_type = (af_dtype)af::dtype_traits<T>::af_type;
+    for (int i = 0; i < (int)nElems; i++) {
+        if (out_type == s8) {
+            // shift to avoid overflow
+            out_data[i] = (T)(std::trunc(in_data[i]) - 128.f);
+        } else {
+            out_data[i] = (T)in_data[i];
+        }
+    }
 
-    af_create_array(&outArray, out_data, idims.ndims(), idims.get(),
-                    (af_dtype)af::dtype_traits<T>::af_type);
+    af_create_array(&outArray, out_data, idims.ndims(), idims.get(), out_type);
 
     std::swap(*out, outArray);
 
@@ -1350,6 +1383,7 @@ af_err conv_image(af_array *out, af_array in) {
 
 INSTANTIATE(float);
 INSTANTIATE(double);
+INSTANTIATE(signed char);
 INSTANTIATE(unsigned char);
 INSTANTIATE(half_float::half);
 INSTANTIATE(unsigned int);
@@ -1387,6 +1421,7 @@ af::array cpu_randu(const af::dim4 dims) {
 #define INSTANTIATE(To) template af::array cpu_randu<To>(const af::dim4 dims)
 INSTANTIATE(float);
 INSTANTIATE(double);
+INSTANTIATE(signed char);
 INSTANTIATE(unsigned char);
 INSTANTIATE(half_float::half);
 INSTANTIATE(unsigned int);
@@ -1995,6 +2030,7 @@ template<typename T>
 
 INSTANTIATE(float);
 INSTANTIATE(double);
+INSTANTIATE(signed char);
 INSTANTIATE(unsigned char);
 INSTANTIATE(half_float::half);
 INSTANTIATE(unsigned int);

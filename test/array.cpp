@@ -21,8 +21,8 @@ using std::vector;
 template<typename T>
 class Array : public ::testing::Test {};
 
-typedef ::testing::Types<float, double, cfloat, cdouble, char, unsigned char,
-                         int, uint, intl, uintl, short, ushort,
+typedef ::testing::Types<float, double, cfloat, cdouble, char, signed char,
+                         unsigned char, int, uint, intl, uintl, short, ushort,
                          half_float::half>
     TestTypes;
 
@@ -302,6 +302,17 @@ TYPED_TEST(Array, TypeAttributes) {
             EXPECT_FALSE(one.isbool());
             EXPECT_FALSE(one.ishalf());
             break;
+        case s8:
+            EXPECT_FALSE(one.isfloating());
+            EXPECT_FALSE(one.isdouble());
+            EXPECT_FALSE(one.issingle());
+            EXPECT_FALSE(one.isrealfloating());
+            EXPECT_TRUE(one.isinteger());
+            EXPECT_TRUE(one.isreal());
+            EXPECT_FALSE(one.iscomplex());
+            EXPECT_FALSE(one.isbool());
+            EXPECT_FALSE(one.ishalf());
+            break;
         case u8:
             EXPECT_FALSE(one.isfloating());
             EXPECT_FALSE(one.isdouble());
@@ -499,6 +510,29 @@ TEST(DeviceId, Different) {
     deviceGC();
     setDevice(id0);
     deviceGC();
+}
+
+TEST(Device, MigrateAllDevicesToAllDevices) {
+    int ndevices = getDeviceCount();
+    if (ndevices < 2) GTEST_SKIP() << "Skipping mult-GPU test";
+
+    for (int i = 0; i < ndevices; i++) {
+        for (int j = 0; j < ndevices; j++) {
+            setDevice(i);
+            array a = constant(i * 255, 10, 10);
+            a.eval();
+
+            setDevice(j);
+            array b = constant(j * 256, 10, 10);
+            b.eval();
+
+            array c = a + b;
+
+            std::vector<float> gold(10 * 10, i * 255 + j * 256);
+
+            ASSERT_VEC_ARRAY_EQ(gold, dim4(10, 10), c);
+        }
+    }
 }
 
 TEST(Device, empty) {

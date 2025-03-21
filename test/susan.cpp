@@ -59,7 +59,8 @@ class Susan : public ::testing::Test {
     virtual void SetUp() {}
 };
 
-typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort>
+typedef ::testing::Types<float, double, int, uint, char, schar, uchar, short,
+                         ushort>
     TestTypes;
 
 TYPED_TEST_SUITE(Susan, TestTypes);
@@ -125,6 +126,7 @@ void susanTest(string pTestFile, float t, float g) {
 
 #define SUSAN_TEST(image, tval, gval)                                         \
     TYPED_TEST(Susan, image) {                                                \
+        UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);                               \
         susanTest<TypeParam>(string(TEST_DIR "/susan/" #image ".test"), tval, \
                              gval);                                           \
     }

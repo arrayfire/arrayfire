@@ -42,7 +42,7 @@ void af_get_last_error(char **str, dim_t *len) {
         typedef void (*af_func)(char **, dim_t *);
         void *vfn    = LOAD_SYMBOL();
         af_func func = nullptr;
-        memcpy(&func, vfn, sizeof(void *));
+        memcpy(&func, &vfn, sizeof(void *));
         func(str, len);
     }
 }

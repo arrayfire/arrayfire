@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2014, ArrayFire
+ * Copyright (c) 2025, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -80,7 +80,7 @@ namespace af
     /// \param[in] lo lower limit; can be an array or a scalar
     /// \param[in] hi upper limit; can be an array or a scalar
     /// \return       clamped array
-    /// 
+    ///
     /// \ingroup arith_func_clamp
     AFAPI array clamp(const array &in, const array &lo, const array &hi);
 #endif
@@ -104,10 +104,13 @@ namespace af
     /// @{
     /// C++ Interface to calculate the remainder.
     ///
+    /// For integers, it returns the same output as modulus (% operator)
+    /// For floating point numbers, it returns the same as std::remainder from <cmath>
+    /// 
     /// \param[in] lhs numerator; can be an array or a scalar
     /// \param[in] rhs denominator; can be an array or a scalar
     /// \return        remainder
-    /// 
+    ///
     /// \ingroup arith_func_rem
     AFAPI array rem    (const array &lhs, const array &rhs);
 
@@ -121,10 +124,13 @@ namespace af
     /// @{
     /// C++ Interface to calculate the modulus.
     ///
+    /// For integers, it returns the same output as modulus (% operator)
+    /// For floating point numbers, it returns the same as std::fmod from <cmath>
+    ///
     /// \param[in] lhs dividend; can be an array or a scalar
     /// \param[in] rhs divisor; can be an array or a scalar
     /// \return        modulus
-    /// 
+    ///
     /// \ingroup arith_func_mod
     AFAPI array mod    (const array &lhs, const array &rhs);
 
@@ -148,7 +154,7 @@ namespace af
     ///
     /// \param[in] in input array, typically complex
     /// \return       phase angle (in radians)
-    /// 
+    ///
     /// \ingroup arith_func_arg
     AFAPI array arg    (const array &in);
 
@@ -156,7 +162,7 @@ namespace af
     ///
     /// \param[in] in input array
     /// \return       array containing 1's for negative values; 0's otherwise
-    /// 
+    ///
     /// \ingroup arith_func_sign
     AFAPI array sign  (const array &in);
 
@@ -172,7 +178,7 @@ namespace af
     ///
     /// \param[in] in input array
     /// \return       nearest integer not greater in magnitude than `in`
-    /// 
+    ///
     /// \ingroup arith_func_trunc
     AFAPI array trunc  (const array &in);
 
@@ -330,7 +336,7 @@ namespace af
     /// \param[in] in input array
     /// \return       complex array
     AFAPI array complex(const array& in);
- 
+
     /// C++ Interface to create a complex array from two real arrays.
     ///
     /// \param[in] real_ input array to be assigned as the real component of
@@ -412,7 +418,6 @@ namespace af
     /// \ingroup arith_func_root
     AFAPI array root    (const double nth_root, const array &value);
 
-
     /// \ingroup arith_func_pow
     /// @{
     /// C++ Interface to raise a base to a power (or exponent).
@@ -435,7 +440,6 @@ namespace af
     ///
     /// \param[in] in power
     /// \return       2 raised to the power
-    ///
     AFAPI array pow2    (const array &in);
     /// @}
 
@@ -443,7 +447,7 @@ namespace af
     /// C++ Interface to evaluate the logistical sigmoid function.
     ///
     /// Computes \f$\frac{1}{1+e^{-x}}\f$.
-    /// 
+    ///
     /// \param[in] in input
     /// \return       sigmoid
     ///
@@ -463,7 +467,7 @@ namespace af
     /// `exp(in) - 1`.
     ///
     /// This function is useful when `in` is small.
-    /// 
+    ///
     /// \param[in] in exponent
     /// \return       exponential minus 1
     ///
@@ -496,9 +500,9 @@ namespace af
 
     /// C++ Interface to evaluate the natural logarithm of 1 + input,
     /// `ln(1+in)`.
-    /// 
+    ///
     /// This function is useful when `in` is small.
-    /// 
+    ///
     /// \param[in] in input
     /// \return natural logarithm of `1 + input`
     ///
@@ -904,21 +908,22 @@ extern "C" {
        be performed by ArrayFire. The following table shows which casts will
        be optimized out. outer -> inner -> outer
 
-       | inner-> | f32 | f64 | c32 | c64 | s32 | u32 | u8 | b8 | s64 | u64 | s16 | u16 | f16 |
-       |---------|-----|-----|-----|-----|-----|-----|----|----|-----|-----|-----|-----|-----|
-       | f32     | x   | x   | x   | x   |     |     |    |    |     |     |     |     | x   |
-       | f64     | x   | x   | x   | x   |     |     |    |    |     |     |     |     | x   |
-       | c32     | x   | x   | x   | x   |     |     |    |    |     |     |     |     | x   |
-       | c64     | x   | x   | x   | x   |     |     |    |    |     |     |     |     | x   |
-       | s32     | x   | x   | x   | x   | x   | x   |    |    | x   | x   |     |     | x   |
-       | u32     | x   | x   | x   | x   | x   | x   |    |    | x   | x   |     |     | x   |
-       | u8      | x   | x   | x   | x   | x   | x   | x  | x  | x   | x   | x   | x   | x   |
-       | b8      | x   | x   | x   | x   | x   | x   | x  | x  | x   | x   | x   | x   | x   |
-       | s64     | x   | x   | x   | x   |     |     |    |    | x   | x   |     |     | x   |
-       | u64     | x   | x   | x   | x   |     |     |    |    | x   | x   |     |     | x   |
-       | s16     | x   | x   | x   | x   | x   | x   |    |    | x   | x   | x   | x   | x   |
-       | u16     | x   | x   | x   | x   | x   | x   |    |    | x   | x   | x   | x   | x   |
-       | f16     | x   | x   | x   | x   |     |     |    |    |     |     |     |     | x   |
+       | inner-> | f32 | f64 | c32 | c64 | s32 | u32 | s8 | u8 | b8 | s64 | u64 | s16 | u16 | f16 |
+       |---------|-----|-----|-----|-----|-----|-----|----|----|----|-----|-----|-----|-----|-----|
+       | f32     | x   | x   | x   | x   |     |     |    |    |    |     |     |     |     | x   |
+       | f64     | x   | x   | x   | x   |     |     |    |    |    |     |     |     |     | x   |
+       | c32     | x   | x   | x   | x   |     |     |    |    |    |     |     |     |     | x   |
+       | c64     | x   | x   | x   | x   |     |     |    |    |    |     |     |     |     | x   |
+       | s32     | x   | x   | x   | x   | x   | x   |    |    |    | x   | x   |     |     | x   |
+       | u32     | x   | x   | x   | x   | x   | x   |    |    |    | x   | x   |     |     | x   |
+       | s8      | x   | x   | x   | x   | x   | x   | x  | x  | x  | x   | x   | x   | x   | x   |
+       | u8      | x   | x   | x   | x   | x   | x   | x  | x  | x  | x   | x   | x   | x   | x   |
+       | b8      | x   | x   | x   | x   | x   | x   | x  | x  | x  | x   | x   | x   | x   | x   |
+       | s64     | x   | x   | x   | x   |     |     |    |    |    | x   | x   |     |     | x   |
+       | u64     | x   | x   | x   | x   |     |     |    |    |    | x   | x   |     |     | x   |
+       | s16     | x   | x   | x   | x   | x   | x   |    |    |    | x   | x   | x   | x   | x   |
+       | u16     | x   | x   | x   | x   | x   | x   |    |    |    | x   | x   | x   | x   | x   |
+       | f16     | x   | x   | x   | x   |     |     |    |    |    |     |     |     |     | x   |
 
        If you want to avoid this behavior use, af_eval after the first cast
        operation. This will ensure that the cast operation is performed on the
@@ -984,6 +989,9 @@ extern "C" {
     /**
        C Interface to calculate the remainder.
 
+       For integers, it returns the same output as modulus (% operator)
+       For floating point numbers, it returns the same as `remainder` from <math.h>
+
        \param[out] out   remainder
        \param[in]  lhs   numerator
        \param[in]  rhs   denominator
@@ -997,6 +1005,9 @@ extern "C" {
 
     /**
        C Interface to calculate the modulus.
+
+       For integers, it returns the same output as modulus (% operator)
+       For floating point numbers, it returns the same as `fmod` from <math.h>
 
        \param[out] out   modulus
        \param[in]  lhs   dividend

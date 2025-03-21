@@ -1,4 +1,4 @@
-# Copyright (c) 2020, ArrayFire
+# Copyright (c) 2025, ArrayFire
 # All rights reserved.
 #
 # This file is distributed under 3-clause BSD license.
@@ -20,7 +20,7 @@ if(AF_TEST_WITH_MTX_FILES)
 endif()
 
 if(AF_WITH_EXTERNAL_PACKAGES_ONLY)
-    dependency_check(GTest_FOUND)
+  dependency_check(GTest_FOUND "Google Tests not found.")
 elseif(NOT TARGET GTest::gtest)
   af_dep_check_and_populate(${gtest_prefix}
     URI https://github.com/google/googletest.git
@@ -99,8 +99,8 @@ if(${AF_USE_RELATIVE_TEST_DIR})
 else(${AF_USE_RELATIVE_TEST_DIR})
   af_dep_check_and_populate(${testdata_prefix}
     URI https://github.com/arrayfire/arrayfire-data.git
-    #pinv large data set update change
-    REF 0144a599f913cc67c76c9227031b4100156abc25
+    #Add test file for SSAS_LinearSteps
+    REF 05703a4897c8b89b7a0ece1dbe21ede33d226f44
   )
   set(TESTDATA_SOURCE_DIR "${${testdata_prefix}_SOURCE_DIR}")
 endif(${AF_USE_RELATIVE_TEST_DIR})
@@ -259,6 +259,11 @@ function(make_test)
         MTX_TEST_DIR="${ArrayFire_BINARY_DIR}/extern/matrixmarket/"
         )
     endif()
+    if(AF_SKIP_UNSUPPORTED_TESTS)
+      target_compile_definitions(${target}
+        PRIVATE
+          SKIP_UNSUPPORTED_TESTS)
+    endif()
     if(WIN32)
       target_compile_definitions(${target}
         PRIVATE
@@ -354,6 +359,7 @@ make_test(SRC moments.cpp)
 make_test(SRC morph.cpp)
 make_test(SRC nearest_neighbour.cpp CXX11)
 make_test(SRC nodevice.cpp CXX11)
+make_test(SRC norm.cpp CXX11)
 
 if(OpenCL_FOUND)
   make_test(SRC ocl_ext_context.cpp
@@ -372,51 +378,53 @@ if(OpenCL_FOUND)
             CXX11)
 endif()
 
-if(CUDA_FOUND)
-  include(AFcuda_helpers)
-  foreach(backend ${enabled_backends})
-    set(cuda_test_backends "cuda" "unified")
-    if(${backend} IN_LIST cuda_test_backends)
-      set(target test_cuda_${backend})
-      add_executable(${target} cuda.cu)
-      target_include_directories(${target}
-        PRIVATE
-        ${CMAKE_SOURCE_DIR}
-        ${CMAKE_CURRENT_SOURCE_DIR})
-      target_include_directories(${target}
-        SYSTEM PRIVATE
-          ${ArrayFire_SOURCE_DIR}/extern/half/include)
-      if(${backend} STREQUAL "unified")
+if(AF_BUILD_CUDA)
+  if(CUDA_FOUND)
+    include(AFcuda_helpers)
+    foreach(backend ${enabled_backends})
+      set(cuda_test_backends "cuda" "unified")
+      if(${backend} IN_LIST cuda_test_backends)
+        set(target test_cuda_${backend})
+        add_executable(${target} cuda.cu)
+        target_include_directories(${target}
+          PRIVATE
+          ${CMAKE_SOURCE_DIR}
+          ${CMAKE_CURRENT_SOURCE_DIR})
+        target_include_directories(${target}
+          SYSTEM PRIVATE
+            ${ArrayFire_SOURCE_DIR}/extern/half/include)
+        if(${backend} STREQUAL "unified")
+          target_link_libraries(${target}
+            ArrayFire::af)
+        else()
+          target_link_libraries(${target}
+            ArrayFire::af${backend})
+        endif()
         target_link_libraries(${target}
-          ArrayFire::af)
-      else()
-        target_link_libraries(${target}
-          ArrayFire::af${backend})
+          mmio
+          arrayfire_test)
+  
+        # Couldn't get Threads::Threads to work with this cuda binary. The import
+        # target would not add the -pthread flag which is required for this
+        # executable (on Ubuntu 18.04 anyway)
+        check_cxx_compiler_flag(-pthread pthread_flag)
+        if(pthread_flag)
+          target_link_libraries(${target} -pthread)
+        endif()
+  
+        af_detect_and_set_cuda_architectures(${target})
+  
+        set_target_properties(${target}
+          PROPERTIES
+            FOLDER "Tests"
+            OUTPUT_NAME "cuda_${backend}")
+  
+        if(NOT ${backend} STREQUAL "unified")
+          af_add_test(${target} ${backend} ON)
+        endif()
       endif()
-      target_link_libraries(${target}
-        mmio
-        arrayfire_test)
-
-      # Couldn't get Threads::Threads to work with this cuda binary. The import
-      # target would not add the -pthread flag which is required for this
-      # executable (on Ubuntu 18.04 anyway)
-      check_cxx_compiler_flag(-pthread pthread_flag)
-      if(pthread_flag)
-        target_link_libraries(${target} -pthread)
-      endif()
-
-      af_detect_and_set_cuda_architectures(${target})
-
-      set_target_properties(${target}
-        PROPERTIES
-          FOLDER "Tests"
-          OUTPUT_NAME "cuda_${backend}")
-
-      if(NOT ${backend} STREQUAL "unified")
-        af_add_test(${target} ${backend} ON)
-      endif()
-    endif()
-  endforeach()
+    endforeach()
+  endif()
 endif()
 
 

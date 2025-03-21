@@ -17,6 +17,7 @@
 #include <common/defines.hpp>
 #include <af/defines.h>
 
+#include <cassert>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -112,7 +113,7 @@ class SupportError : public AfError {
 
    public:
     SupportError(const char* const func, const char* const file, const int line,
-                 const char* const back,
+                 const char* const back, const char* const message,
                  const boost::stacktrace::stacktrace st);
     SupportError(SupportError&& other) noexcept = default;
 

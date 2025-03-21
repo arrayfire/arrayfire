@@ -64,6 +64,12 @@ cudnnDataType_t getCudnnDataType<int>() {
 }
 
 #if CUDNN_VERSION >= 7100
+/// TODONT COMMIT
+template<>
+cudnnDataType_t getCudnnDataType<signed char>() {
+    return CUDNN_DATA_INT8;
+}
+
 template<>
 cudnnDataType_t getCudnnDataType<unsigned char>() {
     return CUDNN_DATA_UINT8;

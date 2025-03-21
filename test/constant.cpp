@@ -31,7 +31,8 @@ template<typename T>
 class Constant : public ::testing::Test {};
 
 typedef ::testing::Types<float, cfloat, double, cdouble, int, unsigned, char,
-                         uchar, uintl, intl, short, ushort, half_float::half>
+                         schar, uchar, uintl, intl, short, ushort,
+                         half_float::half>
     TestTypes;
 TYPED_TEST_SUITE(Constant, TestTypes);
 

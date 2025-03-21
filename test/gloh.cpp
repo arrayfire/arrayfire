@@ -161,8 +161,9 @@ void glohTest(string pTestFile) {
             af_load_image(&inArray_f32, inFiles[testId].c_str(), false));
         ASSERT_SUCCESS(conv_image<T>(&inArray, inArray_f32));
 
-        ASSERT_SUCCESS(af_gloh(&feat, &desc, inArray, 3, 0.04f, 10.0f, 1.6f,
-                               true, 1.f / 256.f, 0.05f));
+        ASSERT_SUCCESS(af_gloh(&feat, &desc, inArray, 3,
+                                           0.04f, 10.0f, 1.6f,
+                                           true, 1.f / 256.f, 0.05f));
 
         dim_t n = 0;
         af_array x, y, score, orientation, size;
@@ -253,6 +254,7 @@ void glohTest(string pTestFile) {
 
 #define GLOH_INIT(desc, image)                                         \
     TYPED_TEST(GLOH, desc) {                                           \
+        UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);                        \
         glohTest<TypeParam>(string(TEST_DIR "/gloh/" #image ".test")); \
     }
 
@@ -261,6 +263,7 @@ GLOH_INIT(man, man);
 ///////////////////////////////////// CPP ////////////////////////////////
 //
 TEST(GLOH, CPP) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;

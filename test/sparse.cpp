@@ -19,6 +19,7 @@ using af::dtype_traits;
 using af::identity;
 using af::randu;
 using af::span;
+using af::seq;
 
 #define SPARSE_TESTS(T, eps)                                                \
     TEST(Sparse, T##Square) { sparseTester<T>(1000, 1000, 100, 5, eps); }   \
@@ -107,6 +108,42 @@ TEST(Sparse, ISSUE_1745) {
     ASSERT_EQ(AF_ERR_ARG, af_create_sparse_array(
                               &A_sparse, A.dims(0), A.dims(1), data.get(),
                               row_idx.get(), col_idx.get(), AF_STORAGE_CSR));
+}
+
+TEST(Sparse, offsets_work_csr_to_dense_ISSUE_1918) {
+    array reference(2,2);
+    reference(0, span) = 0;
+    reference(1, span) = 2;
+    float value[] = { 1, 1, 2, 2 };
+    int row_csr[] = { 0, 2, 2, 0, 0, 2 };
+    int col[] = { 0, 1, 0, 1 };
+    array values(4, 1, value, afHost);
+    array rows_csr(6, 1, row_csr, afHost);
+    array cols(4, 1, col, afHost);
+    array S_csr;
+  
+    S_csr = sparse(2, 2, values(seq(2, 3)), rows_csr(seq(3, 5)), cols(seq(2, 3)));
+    array output_csr = dense(S_csr);
+
+    EXPECT_ARRAYS_EQ(reference, output_csr);
+}
+
+TEST(Sparse, offsets_work_coo_to_dense_ISSUE_1918) {
+    array reference(2,2);
+    reference(0, span) = 0;
+    reference(1, span) = 2;
+    float value[] = { 1, 1, 2, 2 };
+    int row_coo[] = { 0, 0, 1, 1 };
+    int col[] = { 0, 1, 0, 1 };
+    array values(4, 1, value, afHost);
+    array rows_coo(4, 1, row_coo, afHost);
+    array cols(4, 1, col, afHost);
+    array S_coo;
+  
+    S_coo = sparse(2, 2, values(seq(2, 3)), rows_coo(seq(2, 3)), cols(seq(2, 3)), AF_STORAGE_COO);
+    array output_coo = dense(S_coo);
+
+    EXPECT_ARRAYS_EQ(reference, output_coo);
 }
 
 TEST(Sparse, ISSUE_2134_COO) {
@@ -415,4 +452,25 @@ TEST(Sparse, CPPDenseToSparseToDenseUsage) {
     array gold(dim4(M, N), g);
     ASSERT_ARRAYS_EQ(in, gold);
     ASSERT_ARRAYS_EQ(dense, gold);
+}
+
+TEST(Sparse, CPPDenseToSparseConversions) {
+    array in      = af::randu(200, 200);
+    in(in < 0.75) = 0;
+
+    array coo_sparse_arr = af::sparse(in, AF_STORAGE_COO);
+    array csr_sparse_arr = af::sparse(in, AF_STORAGE_CSR);
+
+    array coo_dense_arr = af::dense(coo_sparse_arr);
+    array csr_dense_arr = af::dense(csr_sparse_arr);
+
+    ASSERT_ARRAYS_EQ(in, coo_dense_arr);
+    ASSERT_ARRAYS_EQ(in, csr_dense_arr);
+
+    array non_zero   = af::flat(in)(af::where(in));
+    array non_zero_T = af::flat(in.T())(af::where(in.T()));
+    ASSERT_ARRAYS_EQ(non_zero, af::sparseGetValues(coo_sparse_arr));
+    ASSERT_ARRAYS_EQ(
+        non_zero_T,
+        af::sparseGetValues(csr_sparse_arr));  // csr values are transposed
 }

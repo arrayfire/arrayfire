@@ -99,7 +99,12 @@ if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
     # contains GPU accelerated stedc and bdsqr. The user has to link
     # libcusolver_static.a with liblapack_static.a in order to build
     # successfully.
-    af_find_static_cuda_libs(lapack_static)
+    # Cuda Versions >= 12.0 changed lib name to libcusolver_lapack_static.a
+    if (CUDA_VERSION VERSION_GREATER_EQUAL 12.0)
+      af_find_static_cuda_libs(cusolver_lapack_static)
+    else()
+      af_find_static_cuda_libs(lapack_static)
+    endif()
 
     set(af_cuda_static_flags "${af_cuda_static_flags};-lcusolver_static")
   else()
@@ -855,6 +860,9 @@ if(AF_INSTALL_STANDALONE)
     endif()
     afcu_collect_libs(cusolver)
     afcu_collect_libs(cusparse)
+    if(CUDA_VERSION VERSION_GREATER 12.0)
+      afcu_collect_libs(nvJitLink)
+    endif()
   elseif(NOT ${use_static_cuda_lapack})
     afcu_collect_libs(cusolver)
   endif()

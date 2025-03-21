@@ -33,6 +33,7 @@ using detail::cdouble;
 using detail::cfloat;
 using detail::convolve;
 using detail::intl;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -196,6 +197,10 @@ af_err convolve(af_array *out, const af_array signal, const af_array filter,
                 output = convolve<uchar, float>(signal, filter, convBT, rank,
                                                 expand);
                 break;
+            case s8:
+                output = convolve<schar, float>(signal, filter, convBT, rank,
+                                                expand);
+                break;
             case b8:
                 output =
                     convolve<char, float>(signal, filter, convBT, rank, expand);
@@ -309,6 +314,10 @@ af_err af_convolve2_sep(af_array *out, const af_array col_filter,
                 break;
             case u8:
                 output = convolve2<uchar, float>(signal, col_filter, row_filter,
+                                                 expand);
+                break;
+            case s8:
+                output = convolve2<schar, float>(signal, col_filter, row_filter,
                                                  expand);
                 break;
             case b8:
@@ -437,7 +446,7 @@ af_err af_convolve2_gradient_nn(
         size_t padding_ndims  = padding.ndims();
         size_t dilation_ndims = dilation.ndims();
         ARG_ASSERT(3, stride_ndims > 0 && stride_ndims <= 2);
-        ARG_ASSERT(5, padding_ndims > 0 && padding_ndims <= 2);
+        ARG_ASSERT(5, padding_ndims >= 0 && padding_ndims <= 2);
         ARG_ASSERT(7, dilation_ndims > 0 && dilation_ndims <= 2);
 
         af_dtype type = oinfo.getType();

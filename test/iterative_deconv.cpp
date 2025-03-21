@@ -25,7 +25,7 @@ template<typename T>
 class IterativeDeconvolution : public ::testing::Test {};
 
 // create a list of types to be tested
-typedef ::testing::Types<float, uchar, short, ushort> TestTypes;
+typedef ::testing::Types<float, schar, uchar, short, ushort> TestTypes;
 
 // register the type list
 TYPED_TEST_SUITE(IterativeDeconvolution, TestTypes);
@@ -39,6 +39,11 @@ void iterDeconvImageTest(string pTestFile, const unsigned iters, const float rf,
 
     SUPPORTED_TYPE_CHECK(T);
     IMAGEIO_ENABLED_CHECK();
+
+    if (is_same_type<T, schar>::value &&
+        algo == AF_ITERATIVE_DECONV_RICHARDSONLUCY) {
+        GTEST_SKIP() << "Incompatible with signed values";
+    }
 
     using af::dim4;
 

@@ -63,6 +63,7 @@ INSTANTIATE(uintl, double, double);
 INSTANTIATE(short, float, float);
 INSTANTIATE(ushort, float, float);
 INSTANTIATE(uchar, float, float);
+INSTANTIATE(schar, float, float);
 INSTANTIATE(char, float, float);
 INSTANTIATE(cfloat, float, cfloat);
 INSTANTIATE(cdouble, double, cdouble);

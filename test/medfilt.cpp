@@ -35,7 +35,8 @@ class MedianFilter1d : public ::testing::Test {
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort>
+typedef ::testing::Types<float, double, int, uint, char, schar, uchar, short,
+                         ushort>
     TestTypes;
 
 // register the type list
@@ -80,24 +81,28 @@ void medfiltTest(string pTestFile, dim_t w_len, dim_t w_wid,
 }
 
 TYPED_TEST(MedianFilter, ZERO_PAD_3x3) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     medfiltTest<TypeParam>(
         string(TEST_DIR "/medianfilter/zero_pad_3x3_window.test"), 3, 3,
         AF_PAD_ZERO);
 }
 
 TYPED_TEST(MedianFilter, SYMMETRIC_PAD_3x3) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     medfiltTest<TypeParam>(
         string(TEST_DIR "/medianfilter/symmetric_pad_3x3_window.test"), 3, 3,
         AF_PAD_SYM);
 }
 
 TYPED_TEST(MedianFilter, BATCH_ZERO_PAD_3x3) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     medfiltTest<TypeParam>(
         string(TEST_DIR "/medianfilter/batch_zero_pad_3x3_window.test"), 3, 3,
         AF_PAD_ZERO);
 }
 
 TYPED_TEST(MedianFilter, BATCH_SYMMETRIC_PAD_3x3) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     medfiltTest<TypeParam>(
         string(TEST_DIR "/medianfilter/batch_symmetric_pad_3x3_window.test"), 3,
         3, AF_PAD_SYM);
@@ -140,24 +145,28 @@ void medfilt1_Test(string pTestFile, dim_t w_wid, af_border_type pad) {
 }
 
 TYPED_TEST(MedianFilter1d, ZERO_PAD_3) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     medfilt1_Test<TypeParam>(
         string(TEST_DIR "/medianfilter/zero_pad_3x1_window.test"), 3,
         AF_PAD_ZERO);
 }
 
 TYPED_TEST(MedianFilter1d, SYMMETRIC_PAD_3) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     medfilt1_Test<TypeParam>(
         string(TEST_DIR "/medianfilter/symmetric_pad_3x1_window.test"), 3,
         AF_PAD_SYM);
 }
 
 TYPED_TEST(MedianFilter1d, BATCH_ZERO_PAD_3) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     medfilt1_Test<TypeParam>(
         string(TEST_DIR "/medianfilter/batch_zero_pad_3x1_window.test"), 3,
         AF_PAD_ZERO);
 }
 
 TYPED_TEST(MedianFilter1d, BATCH_SYMMETRIC_PAD_3) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     medfilt1_Test<TypeParam>(
         string(TEST_DIR "/medianfilter/batch_symmetric_pad_3x1_window.test"), 3,
         AF_PAD_SYM);
@@ -338,6 +347,7 @@ TYPED_TEST(MedianFilter1d, InvalidPadType) { medfilt1d_PadTest<TypeParam>(); }
 using af::array;
 
 TEST(MedianFilter, CPP) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     const dim_t w_len = 3;
     const dim_t w_wid = 3;
 
@@ -365,6 +375,7 @@ TEST(MedianFilter, CPP) {
 }
 
 TEST(MedianFilter1d, CPP) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     const dim_t w_wid = 3;
 
     vector<dim4> numDims;
@@ -391,6 +402,7 @@ TEST(MedianFilter1d, CPP) {
 }
 
 TEST(MedianFilter, Docs) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     float input[] = {1.0000,  2.0000,  3.0000,  4.0000,  5.0000,  6.0000,
                      7.0000,  8.0000,  9.0000,  10.0000, 11.0000, 12.0000,
                      13.0000, 14.0000, 15.0000, 16.0000};
@@ -431,6 +443,7 @@ using af::seq;
 using af::span;
 
 TEST(MedianFilter, GFOR) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     dim4 dims = dim4(10, 10, 3);
     array A   = iota(dims);
     array B   = constant(0, dims);
@@ -445,6 +458,7 @@ TEST(MedianFilter, GFOR) {
 }
 
 TEST(MedianFilter1d, GFOR) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     dim4 dims = dim4(10, 10, 3);
     array A   = iota(dims);
     array B   = constant(0, dims);

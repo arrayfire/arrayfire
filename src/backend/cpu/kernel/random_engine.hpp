@@ -116,6 +116,11 @@ uchar transform<uchar>(uint *val, uint index) {
 }
 
 template<>
+schar transform<schar>(uint *val, uint index) {
+    return transform<uchar>(val, index);
+}
+
+template<>
 ushort transform<ushort>(uint *val, uint index) {
     ushort v = val[index >> 1U] >> (16U * (index & 1U)) & 0x0000ffff;
     return v;

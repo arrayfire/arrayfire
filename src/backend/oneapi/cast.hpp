@@ -34,6 +34,7 @@ struct CastOp {
 
 CAST_FN(int)
 CAST_FN(uint)
+CAST_FN(schar)
 CAST_FN(uchar)
 CAST_FN(float)
 CAST_FN(double)

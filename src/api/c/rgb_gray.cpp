@@ -30,6 +30,7 @@ using detail::createEmptyArray;
 using detail::createValueArray;
 using detail::join;
 using detail::scalar;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::ushort;
@@ -156,6 +157,9 @@ af_err convert(af_array* out, const af_array in, const float r, const float g,
                 break;
             case u8:
                 output = convert<uchar, float, isRGB2GRAY>(in, r, g, b);
+                break;
+            case s8:
+                output = convert<schar, float, isRGB2GRAY>(in, r, g, b);
                 break;
             default: TYPE_ERROR(1, iType); break;
         }

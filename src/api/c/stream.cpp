@@ -28,6 +28,7 @@ using detail::cdouble;
 using detail::cfloat;
 using detail::createHostDataArray;
 using detail::intl;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -141,6 +142,7 @@ af_err af_save_array(int *index, const char *key, const af_array arr,
             case b8: id = save<char>(key, arr, filename, append); break;
             case s32: id = save<int>(key, arr, filename, append); break;
             case u32: id = save<unsigned>(key, arr, filename, append); break;
+            case s8: id = save<schar>(key, arr, filename, append); break;
             case u8: id = save<uchar>(key, arr, filename, append); break;
             case s64: id = save<intl>(key, arr, filename, append); break;
             case u64: id = save<uintl>(key, arr, filename, append); break;
@@ -240,6 +242,7 @@ static af_array readArrayV1(const char *filename, const unsigned index) {
         case b8: out = readDataToArray<char>(fs); break;
         case s32: out = readDataToArray<int>(fs); break;
         case u32: out = readDataToArray<uint>(fs); break;
+        case s8: out = readDataToArray<schar>(fs); break;
         case u8: out = readDataToArray<uchar>(fs); break;
         case s64: out = readDataToArray<intl>(fs); break;
         case u64: out = readDataToArray<uintl>(fs); break;

@@ -88,11 +88,12 @@ struct dtype_traits<half_float::half> {
 
 }  // namespace af
 
+typedef signed char schar;
 typedef unsigned char uchar;
 typedef unsigned int uint;
 typedef unsigned short ushort;
 
-std::string getBackendName();
+std::string getBackendName(bool lower = false);
 std::string getTestName();
 
 std::string readNextNonEmptyLine(std::ifstream &file);
@@ -241,6 +242,15 @@ bool noHalfTests(af::dtype ty);
         GTEST_SKIP() << "Device doesn't support Doubles";         \
     if (noHalfTests((af_dtype)af::dtype_traits<type>::af_type))   \
     GTEST_SKIP() << "Device doesn't support Half"
+
+#ifdef SKIP_UNSUPPORTED_TESTS
+#define UNSUPPORTED_BACKEND(backend)                        \
+    if(backend == af::getActiveBackend())                   \
+        GTEST_SKIP() << "Skipping unsupported function on " \
+                        + getBackendName() + " backend"
+#else
+#define UNSUPPORTED_BACKEND(backend)
+#endif
 
 #define LAPACK_ENABLED_CHECK() \
     if (!af::isLAPACKAvailable()) GTEST_SKIP() << "LAPACK Not Configured."

@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2014, ArrayFire
+ * Copyright (c) 2025, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -14,12 +14,16 @@
 #include <af/data.h>
 #include <af/device.h>
 #include <af/random.h>
+#include <af/half.h>
+#include "half.hpp"  //note: NOT common. From extern/half/include/half.hpp
 
 #include <cfenv>
 #include <cmath>
 
 using namespace std;
 using namespace af;
+
+using half_float_half = half_float::half;
 
 const int num = 10000;
 
@@ -34,6 +38,11 @@ typedef std::complex<double> complex_double;
 template<typename T>
 T mod(T a, T b) {
     return std::fmod(a, b);
+}
+
+template<typename T>
+T rem(T x, T y) {
+    return remainder(x, y);
 }
 
 af::array randgen(const int num, dtype ty) {
@@ -122,7 +131,7 @@ af::array randgen(const int num, dtype ty) {
                                                                       \
         af_dtype ta = (af_dtype)dtype_traits<Ta>::af_type;            \
         af::array a = randgen(num, ta);                               \
-        Tb h_b      = 0.3;                                            \
+        Tb h_b      = (Tb)0.3;                                            \
         af::array c = func(a, h_b);                                   \
         Ta *h_a     = a.host<Ta>();                                   \
         Td *h_d     = c.host<Td>();                                   \
@@ -139,7 +148,7 @@ af::array randgen(const int num, dtype ty) {
         SUPPORTED_TYPE_CHECK(Tc);                                     \
                                                                       \
         af_dtype tb = (af_dtype)dtype_traits<Tb>::af_type;            \
-        Ta h_a      = 0.3;                                            \
+        Ta h_a      = (Ta)0.3;                                            \
         af::array b = randgen(num, tb);                               \
         af::array c = func(h_a, b);                                   \
         Tb *h_b     = b.host<Tb>();                                   \
@@ -163,6 +172,8 @@ af::array randgen(const int num, dtype ty) {
 #define BINARY_TESTS_UINT(func) BINARY_TESTS(uint, uint, uint, func)
 #define BINARY_TESTS_INTL(func) BINARY_TESTS(intl, intl, intl, func)
 #define BINARY_TESTS_UINTL(func) BINARY_TESTS(uintl, uintl, uintl, func)
+#define BINARY_TESTS_NEAR_HALF(func) \
+    BINARY_TESTS_NEAR(half_float_half, half_float_half, half_float_half, func, 1e-3)
 #define BINARY_TESTS_NEAR_FLOAT(func) \
     BINARY_TESTS_NEAR(float, float, float, func, 1e-5)
 #define BINARY_TESTS_NEAR_DOUBLE(func) \
@@ -175,6 +186,7 @@ BINARY_TESTS_NEAR(float, float, float, div, 1e-3)  // FIXME
 BINARY_TESTS_FLOAT(min)
 BINARY_TESTS_FLOAT(max)
 BINARY_TESTS_NEAR(float, float, float, mod, 1e-5)  // FIXME
+BINARY_TESTS_FLOAT(rem)
 
 BINARY_TESTS_DOUBLE(add)
 BINARY_TESTS_DOUBLE(sub)
@@ -183,10 +195,15 @@ BINARY_TESTS_DOUBLE(div)
 BINARY_TESTS_DOUBLE(min)
 BINARY_TESTS_DOUBLE(max)
 BINARY_TESTS_DOUBLE(mod)
+BINARY_TESTS_DOUBLE(rem)
 
 BINARY_TESTS_NEAR_FLOAT(atan2)
 BINARY_TESTS_NEAR_FLOAT(pow)
 BINARY_TESTS_NEAR_FLOAT(hypot)
+
+BINARY_TESTS_NEAR_HALF(atan2)
+BINARY_TESTS_NEAR_HALF(pow)
+BINARY_TESTS_NEAR_HALF(hypot)
 
 BINARY_TESTS_NEAR_DOUBLE(atan2)
 BINARY_TESTS_NEAR_DOUBLE(pow)
@@ -195,18 +212,26 @@ BINARY_TESTS_NEAR_DOUBLE(hypot)
 BINARY_TESTS_INT(add)
 BINARY_TESTS_INT(sub)
 BINARY_TESTS_INT(mul)
+BINARY_TESTS_INT(div)
+BINARY_TESTS_INT(pow)
 
 BINARY_TESTS_UINT(add)
 BINARY_TESTS_UINT(sub)
 BINARY_TESTS_UINT(mul)
+BINARY_TESTS_UINT(div)
+BINARY_TESTS_UINT(pow)
 
 BINARY_TESTS_INTL(add)
 BINARY_TESTS_INTL(sub)
 BINARY_TESTS_INTL(mul)
+BINARY_TESTS_INTL(div)
+BINARY_TESTS_INTL(pow)
 
 BINARY_TESTS_UINTL(add)
 BINARY_TESTS_UINTL(sub)
 BINARY_TESTS_UINTL(mul)
+BINARY_TESTS_UINTL(div)
+BINARY_TESTS_UINTL(pow)
 
 BINARY_TESTS_CFLOAT(add)
 BINARY_TESTS_CFLOAT(sub)
@@ -299,6 +324,7 @@ UBITOP(bitnot, int)
 UBITOP(bitnot, uint)
 UBITOP(bitnot, intl)
 UBITOP(bitnot, uintl)
+UBITOP(bitnot, schar)
 UBITOP(bitnot, uchar)
 UBITOP(bitnot, short)
 UBITOP(bitnot, ushort)
@@ -389,6 +415,7 @@ DEF_TEST(Int, int)
 DEF_TEST(UShort, unsigned short)
 DEF_TEST(Short, short)
 DEF_TEST(UChar, unsigned char)
+DEF_TEST(SChar, signed char)
 
 #undef DEF_TEST
 
@@ -406,6 +433,8 @@ INSTANTIATE_TEST_SUITE_P(PositiveValues, PowPrecisionTestShort,
                          testing::Range<short>(1, 180, 50));
 INSTANTIATE_TEST_SUITE_P(PositiveValues, PowPrecisionTestUChar,
                          testing::Range<unsigned char>(1, 12, 5));
+INSTANTIATE_TEST_SUITE_P(PositiveValues, PowPrecisionTestSChar,
+                         testing::Range<signed char>(1, 9, 3));
 
 INSTANTIATE_TEST_SUITE_P(NegativeValues, PowPrecisionTestLong,
                          testing::Range<long long>(-1e7, 0, 1e6));
@@ -413,6 +442,8 @@ INSTANTIATE_TEST_SUITE_P(NegativeValues, PowPrecisionTestInt,
                          testing::Range<int>(-46340, 0, 10e3));
 INSTANTIATE_TEST_SUITE_P(NegativeValues, PowPrecisionTestShort,
                          testing::Range<short>(-180, 0, 50));
+INSTANTIATE_TEST_SUITE_P(NegativeValues, PowPrecisionTestSChar,
+                         testing::Range<signed char>(-9, 0, 3));
 
 struct result_type_param {
     af_dtype result_;
@@ -471,6 +502,7 @@ INSTANTIATE_TEST_SUITE_P(
                       result_type_param(b8),
                       result_type_param(s32),
                       result_type_param(u32),
+                      result_type_param(s8),
                       result_type_param(u8),
                       result_type_param(s64),
                       result_type_param(u64),
@@ -490,6 +522,7 @@ INSTANTIATE_TEST_SUITE_P(
                       result_type_param(f32, b8, f32),
                       result_type_param(f32, s32, f32),
                       result_type_param(f32, u32, f32),
+                      result_type_param(f32, s8, f32),
                       result_type_param(f32, u8, f32),
                       result_type_param(f32, s64, f32),
                       result_type_param(f32, u64, f32),
@@ -510,6 +543,7 @@ INSTANTIATE_TEST_SUITE_P(
                       result_type_param(f64, b8,  f64),
                       result_type_param(f64, s32, f64),
                       result_type_param(f64, u32, f64),
+                      result_type_param(f64, s8,  f64),
                       result_type_param(f64, u8,  f64),
                       result_type_param(f64, s64, f64),
                       result_type_param(f64, u64, f64),
@@ -542,7 +576,8 @@ class ResultTypeScalar : public ::testing::Test {
 };
 
 typedef ::testing::Types<float, double, unsigned int, int, short,
-                         unsigned short, char, unsigned char, half_float::half>
+                         unsigned short, char, signed char, unsigned char,
+                         half_float::half>
     TestTypes;
 TYPED_TEST_SUITE(ResultTypeScalar, TestTypes);
 

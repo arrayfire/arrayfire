@@ -10,7 +10,9 @@ project(ArrayFire-Example-PDE
   VERSION 3.5.0
   LANGUAGES CXX)
 
-find_package(ArrayFire)
+find_package(ArrayFire REQUIRED)
+
+add_definitions("-DASSETS_DIR=\"${ASSETS_DIR}\"")
 
 add_definitions("-DASSETS_DIR=\"${ASSETS_DIR}\"")
 
@@ -22,6 +24,9 @@ if(ArrayFire_CPU_FOUND)
   # Black Hole Raytracing example
   add_executable(bhrt_cpu bhrt.cpp)
   target_link_libraries(bhrt_cpu ArrayFire::afcpu)
+
+  add_executable(boltzmann_cfd_cpu boltzmann_cfd.cpp)
+  target_link_libraries(boltzmann_cfd_cpu ArrayFire::afcpu)
 endif()
 
 if(ArrayFire_CUDA_FOUND)
@@ -30,6 +35,9 @@ if(ArrayFire_CUDA_FOUND)
 
   add_executable(bhrt_cuda bhrt.cpp)
   target_link_libraries(bhrt_cuda ArrayFire::afcuda)
+
+  add_executable(boltzmann_cfd_cuda boltzmann_cfd.cpp)
+  target_link_libraries(boltzmann_cfd_cuda ArrayFire::afcuda)
 endif()
 
 if(ArrayFire_OpenCL_FOUND)
@@ -38,6 +46,9 @@ if(ArrayFire_OpenCL_FOUND)
 
   add_executable(bhrt_opencl bhrt.cpp)
   target_link_libraries(bhrt_opencl ArrayFire::afopencl)
+
+  add_executable(boltzmann_cfd_opencl boltzmann_cfd.cpp)
+  target_link_libraries(boltzmann_cfd_opencl ArrayFire::afopencl)
 endif()
 
 if(ArrayFire_oneAPI_FOUND)
@@ -46,4 +57,7 @@ if(ArrayFire_oneAPI_FOUND)
 
   add_executable(bhrt_oneapi bhrt.cpp)
   target_link_libraries(bhrt_oneapi ArrayFire::afoneapi)
+
+  add_executable(boltzmann_cfd_oneapi boltzmann_cfd.cpp)
+  target_link_libraries(boltzmann_cfd_oneapi ArrayFire::afoneapi)
 endif()

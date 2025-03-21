@@ -43,6 +43,7 @@ void copy_histogram(const Array<T> &data, fg_histogram hist) {
 INSTANTIATE(float)
 INSTANTIATE(int)
 INSTANTIATE(uint)
+INSTANTIATE(schar)
 INSTANTIATE(uchar)
 INSTANTIATE(short)
 INSTANTIATE(ushort)

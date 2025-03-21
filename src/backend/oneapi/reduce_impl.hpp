@@ -58,12 +58,16 @@ void reduceBlocksByKey(sycl::buffer<int> &reduced_block_sizes,
     sycl::range<3> global(local[0] * numBlocks, vals_out.dims()[1],
                           vals_out.dims()[2] * vals_out.dims()[3]);
 
+    auto keys_out_get = keys_out.get();
+    auto vals_out_get = vals_out.get();
+    auto keys_get = keys.get();
+    auto vals_get = vals.get();
     getQueue().submit([&](sycl::handler &h) {
         sycl::accessor<int> reduced_block_sizes_acc{reduced_block_sizes, h};
-        write_accessor<Tk> keys_out_acc{*keys_out.get(), h};
-        write_accessor<To> vals_out_acc{*vals_out.get(), h};
-        read_accessor<Tk> keys_acc{*keys.get(), h};
-        read_accessor<Ti> vals_acc{*vals.get(), h};
+        write_accessor<Tk> keys_out_acc{*keys_out_get, h};
+        write_accessor<To> vals_out_acc{*vals_out_get, h};
+        read_accessor<Tk> keys_acc{*keys_get, h};
+        read_accessor<Ti> vals_acc{*vals_get, h};
 
         auto l_keys         = sycl::local_accessor<Tk>(threads_x, h);
         auto l_vals         = sycl::local_accessor<compute_t<To>>(threads_x, h);
@@ -100,12 +104,16 @@ void reduceBlocksByKeyDim(sycl::buffer<int> &reduced_block_sizes,
         local[0] * numBlocks, vals_out.dims()[dim_ordering[1]],
         vals_out.dims()[dim_ordering[2]] * vals_out.dims()[dim_ordering[3]]);
 
+    auto keys_out_get = keys_out.get();
+    auto vals_out_get = vals_out.get();
+    auto keys_get = keys.get();
+    auto vals_get = vals.get();
     getQueue().submit([&](sycl::handler &h) {
         sycl::accessor<int> reduced_block_sizes_acc{reduced_block_sizes, h};
-        write_accessor<Tk> keys_out_acc{*keys_out.get(), h};
-        write_accessor<To> vals_out_acc{*vals_out.get(), h};
-        read_accessor<Tk> keys_acc{*keys.get(), h};
-        read_accessor<Ti> vals_acc{*vals.get(), h};
+        write_accessor<Tk> keys_out_acc{*keys_out_get, h};
+        write_accessor<To> vals_out_acc{*vals_out_get, h};
+        read_accessor<Tk> keys_acc{*keys_get, h};
+        read_accessor<Ti> vals_acc{*vals_get, h};
 
         auto l_keys         = sycl::local_accessor<Tk>(threads_x, h);
         auto l_vals         = sycl::local_accessor<compute_t<To>>(threads_x, h);
@@ -135,10 +143,12 @@ void finalBoundaryReduce(sycl::buffer<int> &reduced_block_sizes, Array<Tk> keys,
     sycl::range<1> local(threads_x);
     sycl::range<1> global(local[0] * numBlocks);
 
+    auto vals_out_get = vals_out.get();
+    auto keys_get = keys.get();
     getQueue().submit([&](sycl::handler &h) {
         write_accessor<int> reduced_block_sizes_acc{reduced_block_sizes, h};
-        read_accessor<Tk> keys_acc{*keys.get(), h};
-        sycl::accessor<To> vals_out_acc{*vals_out.get(), h};
+        read_accessor<Tk> keys_acc{*keys_get, h};
+        sycl::accessor<To> vals_out_acc{*vals_out_get, h};
 
         h.parallel_for(sycl::nd_range<1>(global, local),
                        kernel::finalBoundaryReduceKernel<Tk, To, op>(
@@ -158,10 +168,12 @@ void finalBoundaryReduceDim(sycl::buffer<int> &reduced_block_sizes,
         local[0] * numBlocks, vals_out.dims()[dim_ordering[1]],
         vals_out.dims()[dim_ordering[2]] * vals_out.dims()[dim_ordering[3]]);
 
+    auto vals_out_get = vals_out.get();
+    auto keys_get = keys.get();
     getQueue().submit([&](sycl::handler &h) {
         write_accessor<int> reduced_block_sizes_acc{reduced_block_sizes, h};
-        read_accessor<Tk> keys_acc{*keys.get(), h};
-        sycl::accessor<To> vals_out_acc{*vals_out.get(), h};
+        read_accessor<Tk> keys_acc{*keys_get, h};
+        sycl::accessor<To> vals_out_acc{*vals_out_get, h};
 
         // TODO: fold 3,4 dimensions
         h.parallel_for(
@@ -181,12 +193,16 @@ void compact(sycl::buffer<int> reduced_block_sizes, Array<Tk> &keys_out,
     sycl::range<3> global(local[0] * numBlocks, vals_out.dims()[1],
                           vals_out.dims()[2] * vals_out.dims()[3]);
 
+    auto keys_out_get = keys_out.get();
+    auto vals_out_get = vals_out.get();
+    auto keys_get = keys.get();
+    auto vals_get = vals.get();
     getQueue().submit([&](sycl::handler &h) {
         read_accessor<int> reduced_block_sizes_acc{reduced_block_sizes, h};
-        write_accessor<Tk> keys_out_acc{*keys_out.get(), h};
-        write_accessor<To> vals_out_acc{*vals_out.get(), h};
-        read_accessor<Tk> keys_acc{*keys.get(), h};
-        read_accessor<To> vals_acc{*vals.get(), h};
+        write_accessor<Tk> keys_out_acc{*keys_out_get, h};
+        write_accessor<To> vals_out_acc{*vals_out_get, h};
+        read_accessor<Tk> keys_acc{*keys_get, h};
+        read_accessor<To> vals_acc{*vals_get, h};
 
         h.parallel_for(sycl::nd_range<3>(global, local),
                        kernel::compactKernel<Tk, To>(
@@ -207,12 +223,16 @@ void compactDim(sycl::buffer<int> &reduced_block_sizes, Array<Tk> &keys_out,
         local[0] * numBlocks, vals_out.dims()[dim_ordering[1]],
         vals_out.dims()[dim_ordering[2]] * vals_out.dims()[dim_ordering[3]]);
 
+    auto keys_out_get = keys_out.get();
+    auto vals_out_get = vals_out.get();
+    auto keys_get = keys.get();
+    auto vals_get = vals.get();
     getQueue().submit([&](sycl::handler &h) {
         read_accessor<int> reduced_block_sizes_acc{reduced_block_sizes, h};
-        write_accessor<Tk> keys_out_acc{*keys_out.get(), h};
-        write_accessor<To> vals_out_acc{*vals_out.get(), h};
-        read_accessor<Tk> keys_acc{*keys.get(), h};
-        read_accessor<To> vals_acc{*vals.get(), h};
+        write_accessor<Tk> keys_out_acc{*keys_out_get, h};
+        write_accessor<To> vals_out_acc{*vals_out_get, h};
+        read_accessor<Tk> keys_acc{*keys_get, h};
+        read_accessor<To> vals_acc{*vals_get, h};
 
         h.parallel_for(
             sycl::nd_range<3>(global, local),
@@ -231,10 +251,11 @@ void testNeedsReduction(sycl::buffer<int> needs_reduction,
     sycl::range<1> local(threads_x);
     sycl::range<1> global(local[0] * numBlocks);
 
+    auto keys_get = keys.get();
     getQueue().submit([&](sycl::handler &h) {
         sycl::accessor<int> needs_reduction_acc{needs_reduction, h};
         sycl::accessor<int> needs_boundary_acc{needs_boundary, h};
-        read_accessor<Tk> keys_acc{*keys.get(), h};
+        read_accessor<Tk> keys_acc{*keys_get, h};
         auto l_keys = sycl::local_accessor<Tk>(threads_x, h);
 
         h.parallel_for(sycl::nd_range<1>(global, local),

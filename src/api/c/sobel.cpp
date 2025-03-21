@@ -21,6 +21,7 @@ using detail::Array;
 using detail::cdouble;
 using detail::cfloat;
 using detail::intl;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -66,6 +67,9 @@ af_err af_sobel_operator(af_array *dx, af_array *dy, const af_array img,
                 output = sobelDerivatives<ushort, int>(img, ker_size);
                 break;
             case b8: output = sobelDerivatives<char, int>(img, ker_size); break;
+            case s8:
+                output = sobelDerivatives<schar, int>(img, ker_size);
+                break;
             case u8:
                 output = sobelDerivatives<uchar, int>(img, ker_size);
                 break;

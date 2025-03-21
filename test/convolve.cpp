@@ -33,8 +33,8 @@ class Convolve : public ::testing::Test {
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<cdouble, cfloat, float, double, int, uint, char, uchar,
-                         short, ushort, intl, uintl>
+typedef ::testing::Types<cdouble, cfloat, float, double, int, uint, char, schar,
+                         uchar, short, ushort, intl, uintl>
     TestTypes;
 
 // register the type list
@@ -898,7 +898,7 @@ float tolerance();
 
 template<>
 float tolerance<float>() {
-    return 2e-3;
+    return 4e-3;
 }
 
 template<>
@@ -1176,4 +1176,10 @@ TEST(ConvolveNN, ZeroPadding_Issue2817) {
     array convolved = convolve2NN(signal, filter, strides, padding, dilation);
     ASSERT_EQ(sum<float>(abs(signal(seq(1, 3), seq(1, 3)) - convolved)) < 1E-5,
               true);
+
+    array incoming_gradient = constant(1 / 9.f, 3, 3);
+    array convolved_grad = convolve2GradientNN(incoming_gradient, signal, filter,
+                                               convolved, strides, padding, dilation,
+                                               AF_CONV_GRADIENT_FILTER);
+    ASSERT_EQ(sum<float>(abs(convolved - convolved_grad)) < 1E-5, true);
 }

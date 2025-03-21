@@ -39,6 +39,7 @@ void thrustSortByKey(Tk *keyPtr, Tv *valPtr, int elements, bool isAscending) {
     INSTANTIATE(Tk, cfloat)  \
     INSTANTIATE(Tk, cdouble) \
     INSTANTIATE(Tk, char)    \
+    INSTANTIATE(Tk, schar)   \
     INSTANTIATE(Tk, uchar)
 
 #define INSTANTIATE1(Tk)    \

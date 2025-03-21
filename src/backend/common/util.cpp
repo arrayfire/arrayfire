@@ -103,6 +103,7 @@ const char* getName(af_dtype type) {
         case u64: return "unsigned long long";
         case s64: return "long long";
         case u8: return "unsigned char";
+        case s8: return "signed char";
         case b8: return "bool";
         default: return "unknown type";
     }
@@ -125,7 +126,13 @@ void saveKernel(const string& funcName, const string& jit_ker,
     // Path to a folder
     const string ffp =
         string(jitKernelsOutput) + AF_PATH_SEPARATOR + funcName + ext;
+
+#if defined(OS_WIN)
+    FILE* f = fopen(ffp.c_str(), "w");
+#else
     FILE* f = fopen(ffp.c_str(), "we");
+#endif
+
     if (!f) {
         fprintf(stderr, "Cannot open file %s\n", ffp.c_str());
         return;
@@ -269,6 +276,7 @@ template string toString<int>(int);
 template string toString<unsigned short>(unsigned short);
 template string toString<short>(short);
 template string toString<unsigned char>(unsigned char);
+template string toString<signed char>(signed char);
 template string toString<char>(char);
 template string toString<long>(long);
 template string toString<long long>(long long);

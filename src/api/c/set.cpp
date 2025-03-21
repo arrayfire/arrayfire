@@ -18,6 +18,7 @@
 using detail::cdouble;
 using detail::cfloat;
 using detail::intl;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -51,6 +52,7 @@ af_err af_set_unique(af_array* out, const af_array in, const bool is_sorted) {
             case s64: res = setUnique<intl>(in, is_sorted); break;
             case u64: res = setUnique<uintl>(in, is_sorted); break;
             case b8: res = setUnique<char>(in, is_sorted); break;
+            case s8: res = setUnique<schar>(in, is_sorted); break;
             case u8: res = setUnique<uchar>(in, is_sorted); break;
             default: TYPE_ERROR(1, type);
         }
@@ -98,6 +100,7 @@ af_err af_set_union(af_array* out, const af_array first, const af_array second,
             case s64: res = setUnion<intl>(first, second, is_unique); break;
             case u64: res = setUnion<uintl>(first, second, is_unique); break;
             case b8: res = setUnion<char>(first, second, is_unique); break;
+            case s8: res = setUnion<schar>(first, second, is_unique); break;
             case u8: res = setUnion<uchar>(first, second, is_unique); break;
             default: TYPE_ERROR(1, first_type);
         }
@@ -156,6 +159,7 @@ af_err af_set_intersect(af_array* out, const af_array first,
                 res = setIntersect<uintl>(first, second, is_unique);
                 break;
             case b8: res = setIntersect<char>(first, second, is_unique); break;
+            case s8: res = setIntersect<schar>(first, second, is_unique); break;
             case u8: res = setIntersect<uchar>(first, second, is_unique); break;
             default: TYPE_ERROR(1, first_type);
         }

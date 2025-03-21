@@ -19,6 +19,7 @@
 
 using af::dim4;
 using detail::intl;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -81,6 +82,10 @@ af_err af_match_template(af_array* out, const af_array search_img,
                 break;
             case b8:
                 output = match_template<char>(search_img, template_img, m_type);
+                break;
+            case s8:
+                output =
+                    match_template<schar>(search_img, template_img, m_type);
                 break;
             case u8:
                 output =

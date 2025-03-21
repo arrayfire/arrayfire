@@ -22,6 +22,7 @@ using af::dim4;
 using detail::Array;
 using detail::createEmptyArray;
 using detail::createValueArray;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::ushort;
@@ -95,6 +96,10 @@ af_err af_fast(af_features *out, const af_array in, const float thr,
             case u16:
                 *out = fast<ushort>(in, thr, arc_length, non_max, feature_ratio,
                                     edge);
+                break;
+            case s8:
+                *out = fast<schar>(in, thr, arc_length, non_max, feature_ratio,
+                                   edge);
                 break;
             case u8:
                 *out = fast<uchar>(in, thr, arc_length, non_max, feature_ratio,

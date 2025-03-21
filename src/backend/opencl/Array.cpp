@@ -201,10 +201,12 @@ void checkAndMigrate(Array<T> &arr) {
         AF_TRACE("Migrating array from {} to {}.", arr_id, cur_id);
         auto migrated_data           = memAlloc<T>(arr.elements());
         void *mapped_migrated_buffer = getQueue().enqueueMapBuffer(
-            *migrated_data, CL_TRUE, CL_MAP_READ, 0, arr.elements());
+            *migrated_data, CL_TRUE, CL_MAP_WRITE_INVALIDATE_REGION, 0,
+            sizeof(T) * arr.elements());
         setDevice(arr_id);
         Buffer &buf = *arr.get();
-        getQueue().enqueueReadBuffer(buf, CL_TRUE, 0, arr.elements(),
+        getQueue().enqueueReadBuffer(buf, CL_TRUE, 0,
+                                     sizeof(T) * arr.elements(),
                                      mapped_migrated_buffer);
         setDevice(cur_id);
         getQueue().enqueueUnmapMemObject(*migrated_data,
@@ -583,6 +585,7 @@ INSTANTIATE(cfloat)
 INSTANTIATE(cdouble)
 INSTANTIATE(int)
 INSTANTIATE(uint)
+INSTANTIATE(schar)
 INSTANTIATE(uchar)
 INSTANTIATE(char)
 INSTANTIATE(intl)

@@ -108,8 +108,9 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Combine(
         ::testing::Values(index_test(
             string(TEST_DIR "/gen_index/s0_3s0_1s1_2a.test"), dim4(4, 2, 2))),
-        ::testing::Values(f32, f64, c32, c64, u64, s64, u16, s16, u8, b8, f16),
-        ::testing::Values(f32, f64, u64, s64, u16, s16, u8, f16)),
+        ::testing::Values(f32, f64, c32, c64, u64, s64, u16, s16, s8, u8, b8,
+                          f16),
+        ::testing::Values(f32, f64, u64, s64, u16, s16, s8, u8, f16)),
     testNameGenerator);
 
 TEST_P(IndexGeneralizedLegacy, SSSA) {
@@ -250,6 +251,56 @@ TEST(GeneralIndex, AASS) {
     ASSERT_SUCCESS(af_release_array(inArray));
     ASSERT_SUCCESS(af_release_array(idxArray0));
     ASSERT_SUCCESS(af_release_array(idxArray1));
+    ASSERT_SUCCESS(af_release_array(outArray));
+}
+
+TEST(GeneralIndex, SSAS_LinearSteps) {
+    vector<dim4> numDims;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;  // Read tests from file
+
+    readTestsFromFile<float, float>(
+        TEST_DIR "/gen_index/s29_9__3s0_9_2as0_n.test", numDims, in, tests);
+
+    af_array outArray  = 0;
+    af_array inArray   = 0;
+    af_array idxArray0 = 0;
+    dim4 dims0         = numDims[0];
+    dim4 dims1         = numDims[1];
+
+    ASSERT_SUCCESS(af_create_array(&inArray, &(in[0].front()), dims0.ndims(),
+                                   dims0.get(),
+                                   (af_dtype)dtype_traits<float>::af_type));
+
+    ASSERT_SUCCESS(af_create_array(&idxArray0, &(in[1].front()), dims1.ndims(),
+                                   dims1.get(),
+                                   (af_dtype)dtype_traits<float>::af_type));
+
+    af_index_t indexs[4];
+    indexs[0].idx.seq = af_make_seq(29, 9, -3);
+    indexs[1].idx.seq = af_make_seq(0, 9, 2);
+    indexs[2].idx.arr = idxArray0;
+    indexs[3].idx.seq = af_span;
+
+    indexs[0].isSeq = true;
+    indexs[1].isSeq = true;
+    indexs[2].isSeq = false;
+    indexs[3].isSeq = true;
+
+    ASSERT_SUCCESS(af_index_gen(&outArray, inArray, 4, indexs));
+
+    vector<float> currGoldBar = tests[0];
+    size_t nElems             = currGoldBar.size();
+    vector<float> outData(nElems);
+
+    ASSERT_SUCCESS(af_get_data_ptr((void *)outData.data(), outArray));
+
+    for (size_t elIter = 0; elIter < nElems; ++elIter) {
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter])
+            << "at: " << elIter << endl;
+    }
+
+    ASSERT_SUCCESS(af_release_array(inArray));
     ASSERT_SUCCESS(af_release_array(outArray));
 }
 

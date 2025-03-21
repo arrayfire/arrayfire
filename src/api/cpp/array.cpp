@@ -236,6 +236,7 @@ INSTANTIATE(double)
 INSTANTIATE(float)
 INSTANTIATE(unsigned)
 INSTANTIATE(int)
+INSTANTIATE(signed char)
 INSTANTIATE(unsigned char)
 INSTANTIATE(char)
 INSTANTIATE(long long)
@@ -701,6 +702,7 @@ MEM_FUNC(af_array, get)
     ASSIGN_TYPE(long long, OP)          \
     ASSIGN_TYPE(unsigned long long, OP) \
     ASSIGN_TYPE(char, OP)               \
+    ASSIGN_TYPE(signed char, OP)        \
     ASSIGN_TYPE(unsigned char, OP)      \
     ASSIGN_TYPE(bool, OP)               \
     ASSIGN_TYPE(short, OP)              \
@@ -828,6 +830,7 @@ array &array::operator=(const array &other) {
     ASSIGN_TYPE(long long, OP)                                    \
     ASSIGN_TYPE(unsigned long long, OP)                           \
     ASSIGN_TYPE(char, OP)                                         \
+    ASSIGN_TYPE(signed char, OP)                                  \
     ASSIGN_TYPE(unsigned char, OP)                                \
     ASSIGN_TYPE(bool, OP)                                         \
     ASSIGN_TYPE(short, OP)                                        \
@@ -863,6 +866,7 @@ ASSIGN_OP(/=, af_div)
     ASSIGN_TYPE(long long, OP)          \
     ASSIGN_TYPE(unsigned long long, OP) \
     ASSIGN_TYPE(char, OP)               \
+    ASSIGN_TYPE(signed char, OP)        \
     ASSIGN_TYPE(unsigned char, OP)      \
     ASSIGN_TYPE(bool, OP)               \
     ASSIGN_TYPE(short, OP)              \
@@ -939,6 +943,7 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type) {
     BINARY_TYPE(long long, OP, release_func, s64)                      \
     BINARY_TYPE(unsigned long long, OP, release_func, u64)             \
     BINARY_TYPE(char, OP, release_func, b8)                            \
+    BINARY_TYPE(signed char, OP, release_func, s8)                     \
     BINARY_TYPE(unsigned char, OP, release_func, u8)                   \
     BINARY_TYPE(bool, OP, release_func, b8)                            \
     BINARY_TYPE(short, OP, release_func, s16)                          \
@@ -1038,6 +1043,7 @@ INSTANTIATE(double)
 INSTANTIATE(float)
 INSTANTIATE(unsigned)
 INSTANTIATE(int)
+INSTANTIATE(signed char)
 INSTANTIATE(unsigned char)
 INSTANTIATE(char)
 INSTANTIATE(long long)
@@ -1080,6 +1086,7 @@ INSTANTIATE(double)
 INSTANTIATE(float)
 INSTANTIATE(unsigned)
 INSTANTIATE(int)
+INSTANTIATE(signed char)
 INSTANTIATE(unsigned char)
 INSTANTIATE(char)
 INSTANTIATE(long long)

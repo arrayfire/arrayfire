@@ -34,7 +34,7 @@ template<typename T>
 class Where : public ::testing::Test {};
 
 typedef ::testing::Types<float, double, cfloat, cdouble, int, uint, intl, uintl,
-                         char, uchar, short, ushort>
+                         char, schar, uchar, short, ushort>
     TestTypes;
 TYPED_TEST_SUITE(Where, TestTypes);
 

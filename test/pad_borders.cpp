@@ -24,8 +24,8 @@ using std::vector;
 template<typename T>
 class PadBorders : public ::testing::Test {};
 
-typedef ::testing::Types<float, double, cfloat, cdouble, char, unsigned char,
-                         int, uint, intl, uintl, short,
+typedef ::testing::Types<float, double, cfloat, cdouble, char, signed char,
+                         unsigned char, int, uint, intl, uintl, short,
                          ushort /*, half_float::half*/>
     TestTypes;
 

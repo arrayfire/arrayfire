@@ -303,6 +303,12 @@ static void writeOut128Bytes(uchar *out, const uint &index, const uint groupSz,
     out[index + 15 * groupSz] = r4 >> 24;
 }
 
+static void writeOut128Bytes(schar *out, const uint &index, const uint groupSz,
+                             const uint &r1, const uint &r2, const uint &r3,
+                             const uint &r4) {
+    writeOut128Bytes((uchar *)(out), index, groupSz, r1, r2, r3, r4);
+}
+
 static void writeOut128Bytes(char *out, const uint &index, const uint groupSz,
                              const uint &r1, const uint &r2, const uint &r3,
                              const uint &r4) {
@@ -503,6 +509,14 @@ static void partialWriteOut128Bytes(uchar *out, const uint &index,
     if (index + 15 * groupSz < elements) {
         out[index + 15 * groupSz] = r4 >> 24;
     }
+}
+
+static void partialWriteOut128Bytes(schar *out, const uint &index,
+                                    const uint groupSz, const uint &r1,
+                                    const uint &r2, const uint &r3,
+                                    const uint &r4, const uint &elements) {
+    partialWriteOut128Bytes((uchar *)(out), index, groupSz, r1, r2, r3, r4,
+                            elements);
 }
 
 static void partialWriteOut128Bytes(char *out, const uint &index,

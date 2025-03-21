@@ -47,19 +47,16 @@ class coo2DenseCreateKernel {
     void operator()(sycl::nd_item<2> it) const {
         sycl::group g = it.get_group();
 
-        const int id = g.get_group_id(0) * g.get_local_range(0) * REPEAT +
-                       it.get_local_id(0);
-
-        if (id >= values_.dims[0]) return;
-
         const int dimSize = g.get_local_range(0);
 
         for (int i = it.get_local_id(0); i < REPEAT * dimSize; i += dimSize) {
-            if (i >= values_.dims[0]) return;
+            const int id =
+                g.get_group_id(0) * g.get_local_range(0) * REPEAT + i;
+            if (id >= values_.dims[0]) return;
 
-            T v   = vPtr_[i];
-            int r = rPtr_[i];
-            int c = cPtr_[i];
+            T v   = vPtr_[id + values_.offset];
+            int r = rPtr_[id + rowIdx_.offset];
+            int c = cPtr_[id + colIdx_.offset];
 
             int offset = r + c * output_.strides[1];
 
@@ -83,7 +80,7 @@ void coo2dense(Param<T> out, const Param<T> values, const Param<int> rowIdx,
                const Param<int> colIdx) {
     auto local  = sycl::range(THREADS_PER_BLOCK, 1);
     auto global = sycl::range(
-        divup(out.info.dims[0], local[0] * REPEAT) * THREADS_PER_BLOCK, 1);
+        divup(values.info.dims[0], local[0] * REPEAT) * THREADS_PER_BLOCK, 1);
 
     getQueue().submit([&](auto &h) {
         sycl::accessor d_rowIdx{*rowIdx.data, h, sycl::read_only};
@@ -104,12 +101,15 @@ class csr2DenseCreateKernel {
    public:
     csr2DenseCreateKernel(write_accessor<T> output, read_accessor<T> values,
                           read_accessor<int> rowidx, read_accessor<int> colidx,
-                          const int M)
+                          const int M, const int v_off, const int r_off, const int c_off)
         : output_(output)
         , values_(values)
         , rowidx_(rowidx)
         , colidx_(colidx)
-        , M_(M) {}
+        , M_(M)
+        , v_off_(v_off)
+        , r_off_(r_off)
+        , c_off_(c_off) {}
 
     void operator()(sycl::nd_item<2> it) const {
         sycl::group g = it.get_group();
@@ -117,10 +117,10 @@ class csr2DenseCreateKernel {
         int lid = it.get_local_id(0);
         for (int rowId = g.get_group_id(0); rowId < M_;
              rowId += it.get_group_range(0)) {
-            int colStart = rowidx_[rowId];
-            int colEnd   = rowidx_[rowId + 1];
+            int colStart = rowidx_[rowId + r_off_];
+            int colEnd   = rowidx_[rowId + r_off_ + 1];
             for (int colId = colStart + lid; colId < colEnd; colId += THREADS) {
-                output_[rowId + colidx_[colId] * M_] = values_[colId];
+                output_[rowId + colidx_[colId + c_off_] * M_] = values_[colId + v_off_];
             }
         }
     }
@@ -131,6 +131,9 @@ class csr2DenseCreateKernel {
     read_accessor<int> rowidx_;
     read_accessor<int> colidx_;
     const int M_;
+    const int v_off_;
+    const int r_off_;
+    const int c_off_;
 };
 
 template<typename T>
@@ -154,7 +157,10 @@ void csr2dense(Param<T> output, const Param<T> values, const Param<int> rowIdx,
                                 sycl::no_init};
         h.parallel_for(sycl::nd_range{global, local},
                        csr2DenseCreateKernel<T, threads>(
-                           d_output, d_values, d_rowIdx, d_colIdx, M));
+                           d_output, d_values, d_rowIdx, d_colIdx, M,
+                           static_cast<int>(values.info.offset),
+                           static_cast<int>(rowIdx.info.offset),
+                           static_cast<int>(colIdx.info.offset)));
     });
 
     ONEAPI_DEBUG_FINISH(getQueue());
@@ -185,17 +191,13 @@ class dense2csrCreateKernel {
         if (gidy >= (unsigned)valinfo_.dims[1]) return;
 
         int rowoff       = rowptr_[gidx];
-        T *svalptr_ptr   = svalptr_.get_pointer();
-        int *scolptr_ptr = scolptr_.get_pointer();
-        svalptr_ptr += rowoff;
-        scolptr_ptr += rowoff;
+        auto svalptr_ptr   = svalptr_.get_pointer();
+        auto scolptr_ptr = scolptr_.get_pointer();
 
-        T *dvalptr_ptr   = dvalptr_.get_pointer();
-        int *dcolptr_ptr = dcolptr_.get_pointer();
-        dvalptr_ptr += valinfo_.offset;
-        dcolptr_ptr += colinfo_.offset;
+        auto dvalptr_ptr   = dvalptr_.get_pointer();
+        auto dcolptr_ptr = dcolptr_.get_pointer();
 
-        T val = dvalptr_ptr[gidx + gidy * (unsigned)valinfo_.strides[1]];
+        T val = dvalptr_ptr[gidx + gidy * (unsigned)valinfo_.strides[1] + valinfo_.offset];
 
         if constexpr (std::is_same_v<decltype(val), std::complex<float>> ||
                       std::is_same_v<decltype(val), std::complex<double>>) {
@@ -204,9 +206,9 @@ class dense2csrCreateKernel {
             if (val == 0) return;
         }
 
-        int oloc              = dcolptr_ptr[gidx + gidy * colinfo_.strides[1]];
-        svalptr_ptr[oloc - 1] = val;
-        scolptr_ptr[oloc - 1] = gidy;
+        int oloc              = dcolptr_ptr[gidx + gidy * colinfo_.strides[1] + colinfo_.offset];
+        svalptr_ptr[oloc + rowoff - 1] = val;
+        scolptr_ptr[oloc + rowoff - 1] = gidy;
     }
 
    private:

@@ -98,6 +98,7 @@ static const char *getFullName(af::dtype type) {
         case u16: return detail::getFullName<unsigned short>();
         case s16: return detail::getFullName<short>();
         case b8: return detail::getFullName<char>();
+        case s8: return detail::getFullName<signed char>();
         case u8: return detail::getFullName<unsigned char>();
         case f16: return "half";
     }
@@ -117,6 +118,7 @@ static const char *getShortName(af::dtype type) {
         case u16: return detail::shortname<unsigned short>();
         case s16: return detail::shortname<short>();
         case b8: return detail::shortname<char>();
+        case s8: return detail::shortname<signed char>();
         case u8: return detail::shortname<unsigned char>();
         case f16: return "h";
     }
@@ -326,6 +328,7 @@ struct Node_ids {
 };
 
 std::string getFuncName(const std::vector<Node *> &output_nodes,
+                        const std::vector<int> &output_ids,
                         const std::vector<Node *> &full_nodes,
                         const std::vector<Node_ids> &full_ids,
                         const bool is_linear, const bool loop0,

@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2014, ArrayFire
+ * Copyright (c) 2025, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -59,14 +59,9 @@ typedef cuDoubleComplex cdouble;
 #define __rem(lhs, rhs) ((lhs) % (rhs))
 #define __mod(lhs, rhs) ((lhs) % (rhs))
 
-#ifdef AF_WITH_FAST_MATH
 #define __pow(lhs, rhs)  \
     static_cast<double>( \
         pow(static_cast<double>(lhs), static_cast<double>(rhs)));
-#else
-#define __pow(lhs, rhs) \
-    __float2int_rn(powf(__int2float_rn((int)lhs), __int2float_rn((int)rhs)))
-#endif
 #define __powll(lhs, rhs) \
     __double2ll_rn(pow(__ll2double_rn(lhs), __ll2double_rn(rhs)))
 #define __powul(lhs, rhs) \
@@ -78,6 +73,7 @@ typedef cuDoubleComplex cdouble;
 
 #define __convert_char(val) (char)((val) != 0)
 #define frem(lhs, rhs) remainder((lhs), (rhs))
+#define fremf(lhs, rhs) remainderf((lhs), (rhs))
 
 // ----------------------------------------------
 // COMPLEX FLOAT OPERATIONS
@@ -216,6 +212,15 @@ __device__ __inline__ int __isinf<__half>(const __half in) {
     return __hisinf(in);
 #else
     return ::isinf(__half2float(in));
+#endif
+}
+
+__device__ __inline__
+__half hmod(const __half lhs, const __half rhs) {
+#if __CUDA_ARCH__ >= 530
+    return __hsub(lhs, __hmul(htrunc(__hdiv(lhs, rhs)), rhs));
+#else
+    return __float2half(fmodf(__half2float(lhs), __half2float(rhs)));
 #endif
 }
 

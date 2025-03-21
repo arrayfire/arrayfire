@@ -42,7 +42,8 @@ class Wrap : public ::testing::Test {
 
 // create a list of types to be tested
 typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned int,
-                         intl, uintl, char, unsigned char, short, ushort>
+                         intl, uintl, char, signed char, unsigned char, short,
+                         ushort>
     TestTypes;
 
 // register the type list

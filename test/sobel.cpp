@@ -35,7 +35,8 @@ class Sobel_Integer : public ::testing::Test {
 
 // create a list of types to be tested
 typedef ::testing::Types<float, double> TestTypes;
-typedef ::testing::Types<int, unsigned, char, unsigned char, short, ushort>
+typedef ::testing::Types<int, unsigned, char, signed char, unsigned char, short,
+                         ushort>
     TestTypesInt;
 
 // register the type list
@@ -79,11 +80,13 @@ void testSobelDerivatives(string pTestFile) {
 // border type is set to cv.BORDER_REFLECT_101 in opencv
 
 TYPED_TEST(Sobel, Rectangle) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     testSobelDerivatives<TypeParam, TypeParam>(
         string(TEST_DIR "/sobel/rectangle.test"));
 }
 
 TYPED_TEST(Sobel_Integer, Rectangle) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
     testSobelDerivatives<TypeParam, int>(
         string(TEST_DIR "/sobel/rectangle.test"));
 }
