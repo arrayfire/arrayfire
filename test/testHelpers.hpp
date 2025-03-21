@@ -563,7 +563,10 @@ enum TestOutputArrayType {
     REORDERED_ARRAY
 };
 
+#define TestInputArrayType TestOutputArrayType
+
 class TestOutputArrayInfo {
+   protected:
     af_array out_arr;
     af_array out_arr_cpy;
     af_array out_subarr;
@@ -574,7 +577,7 @@ class TestOutputArrayInfo {
    public:
     TestOutputArrayInfo();
 
-    TestOutputArrayInfo(TestOutputArrayType arr_type);
+    TestOutputArrayInfo(const TestOutputArrayType arr_type);
 
     ~TestOutputArrayInfo();
 
@@ -591,13 +594,27 @@ class TestOutputArrayInfo {
 
     af_array getOutput();
 
-    void setOutput(af_array array);
+    void setOutput(const af_array array);
 
     af_array getFullOutput();
     af_array getFullOutputCopy();
     af_seq *getSubArrayIdxs();
     dim_t getSubArrayNumDims();
     TestOutputArrayType getOutputArrayType();
+};
+
+class TestInputArrayInfo : public TestOutputArrayInfo {
+   public:
+    TestInputArrayInfo() : TestOutputArrayInfo(){};
+    TestInputArrayInfo(const TestInputArrayType arr_type)
+        : TestOutputArrayInfo(arr_type){};
+    void init(const af_array inArray);
+
+    af_array getInput() { return getOutput(); };
+    void setInput(const af_array array) { setOutput(array); };
+    af_array getFullInput() { return getFullOutput(); };
+    af_array getFullInputCopy() { return getFullOutputCopy(); };
+    TestInputArrayType getInputArrayType() { return getOutputArrayType(); };
 };
 
 // Generates a random array. testWriteToOutputArray expects that it will receive
@@ -620,6 +637,8 @@ void genSubArray(TestOutputArrayInfo *metadata, double val,
                  const unsigned ndims, const dim_t *const dims,
                  const af_dtype ty);
 
+void genSubArray(TestInputArrayInfo *metadata, const af_array inArray);
+
 // Generates a reordered array. testWriteToOutputArray expects that this array
 // will still have the correct output values from the af_* function, even though
 // the array was initially reordered.
@@ -629,6 +648,9 @@ void genReorderedArray(TestOutputArrayInfo *metadata, const unsigned ndims,
 void genReorderedArray(TestOutputArrayInfo *metadata, double val,
                        const unsigned ndims, const dim_t *const dims,
                        const af_dtype ty);
+
+void genReorderedArray(TestInputArrayInfo *metadata, const af_array inArray);
+
 // Partner function of testWriteToOutputArray. This generates the "special"
 // array that testWriteToOutputArray will use to check if the af_* function
 // correctly uses an existing array as its output
@@ -639,6 +661,11 @@ void genTestOutputArray(af_array *out_ptr, const unsigned ndims,
 void genTestOutputArray(af_array *out_ptr, double val, const unsigned ndims,
                         const dim_t *const dims, const af_dtype ty,
                         TestOutputArrayInfo *metadata);
+
+// Generates an array corresponding to type of metadata.  Data from inArray will
+// be copied into the generated array.
+void genTestInputArray(af_array *out_ptr, const af_array inArray,
+                       TestInputArrayInfo *metadata);
 
 // Partner function of genTestOutputArray. This uses the same "special"
 // array that genTestOutputArray generates, and checks whether the

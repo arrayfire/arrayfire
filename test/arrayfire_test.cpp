@@ -581,6 +581,24 @@ void genRegularArray(TestOutputArrayInfo *metadata, double val,
     metadata->init(val, ndims, dims, ty);
 }
 
+void genRegularArray(TestInputArrayInfo *metadata, const af_array inArray) {
+    metadata->init(inArray);
+    /*
+    unsigned ndims;
+    ASSERT_SUCCESS(af_get_numdims(&ndims, inArray));
+    dim_t dims[4];
+    ASSERT_SUCCESS(
+        af_get_dims(&dims[0], &dims[1], &dims[2], &dims[3], inArray));
+    af_dtype type;
+    ASSERT_SUCCESS(af_get_type(&type, inArray));
+
+    genRegularArray(metadata, ndims, dims, type);
+    af_array ref = metadata->getFullOutput();
+    ASSERT_SUCCESS(
+        af_assign_seq(&ref, ref, ndims, metadata->getSubArrayIdxs(), inArray));
+        */
+}
+
 // Generates a large, random array, and extracts a subarray for the af_*
 // function to use. testWriteToOutputArray expects that the large array that it
 // receives is equal to the same large array with the gold array injected on the
@@ -630,6 +648,21 @@ void genSubArray(TestOutputArrayInfo *metadata, double val,
     }
 
     metadata->init(val, ndims, full_arr_dims, ty, &subarr_idxs[0]);
+}
+
+void genSubArray(TestInputArrayInfo *metadata, const af_array inArray) {
+    unsigned ndims;
+    ASSERT_SUCCESS(af_get_numdims(&ndims, inArray));
+    dim_t dims[4];
+    ASSERT_SUCCESS(
+        af_get_dims(&dims[0], &dims[1], &dims[2], &dims[3], inArray));
+    af_dtype type;
+    ASSERT_SUCCESS(af_get_type(&type, inArray));
+
+    genSubArray(metadata, ndims, dims, type);
+    af_array ref = metadata->getFullOutput();
+    ASSERT_SUCCESS(af_assign_seq(&ref, ref, metadata->getSubArrayNumDims(),
+                                 metadata->getSubArrayIdxs(), inArray));
 }
 
 // Generates a reordered array. testWriteToOutputArray expects that this array
@@ -687,6 +720,46 @@ void genReorderedArray(TestOutputArrayInfo *metadata, double val,
                               reorder_idxs[3]));
     metadata->setOutput(reordered);
 }
+
+void genReorderedArray(TestInputArrayInfo *metadata, const af_array inArray) {
+    // This reorder combination will not move data around, but will simply
+    // call modDims and modStrides (see src/api/c/reorder.cpp).
+    // The output will be checked if it is still correct even with the
+    // modified dims and strides "hack" with no data movement
+
+    // WILL GENERATE ERRORS ON MOST af_<func>, due to unlinearity on dim0
+    // SHOULD THIS BE SUPPORTED ??
+    // const std::vector<uint> reorder_idxs{1, 2, 3, 0};
+    const vector<uint> reorder_idxs{0, 2, 1, 3};
+
+    // Prepare the input array into the reverse order, so that a final reorder
+    // will generate the original array again although with special strides
+    vector<uint> reverse_idxs(reorder_idxs.size(), 0);
+    for (unsigned i = 0; i < reorder_idxs.size(); ++i) {
+        reverse_idxs[reorder_idxs[i]] = i;
+    }
+    af_array reverse = 0;
+    ASSERT_SUCCESS(af_reorder(&reverse, inArray, reverse_idxs[0],
+                              reverse_idxs[1], reverse_idxs[2],
+                              reverse_idxs[3]));
+
+    // By copying the array, the data is written in the new order in the buffer.
+    // The reorder will generate the original inArray with the correct
+    // dimensions and new strides
+    af_array reverseBis = 0;
+    ASSERT_SUCCESS(af_copy_array(&reverseBis, reverse));
+    ASSERT_SUCCESS(af_release_array(reverse));
+
+    // Regenerate inArray, although now with special strides
+    af_array inArrayBis = 0;
+    ASSERT_SUCCESS(af_reorder(&inArrayBis, reverseBis, reorder_idxs[0],
+                              reorder_idxs[1], reorder_idxs[2],
+                              reorder_idxs[3]));
+    ASSERT_SUCCESS(af_release_array(reverseBis));
+    metadata->init(inArrayBis);
+    ASSERT_SUCCESS(af_release_array(inArrayBis));
+}
+
 // Partner function of testWriteToOutputArray. This generates the "special"
 // array that testWriteToOutputArray will use to check if the af_* function
 // correctly uses an existing array as its output
@@ -716,6 +789,18 @@ void genTestOutputArray(af_array *out_ptr, double val, const unsigned ndims,
         default: break;
     }
     *out_ptr = metadata->getOutput();
+}
+
+void genTestInputArray(af_array *out_ptr, const af_array inArray,
+                       TestInputArrayInfo *metadata) {
+    switch (metadata->getInputArrayType()) {
+        case FULL_ARRAY: genRegularArray(metadata, inArray); break;
+        case SUB_ARRAY: genSubArray(metadata, inArray); break;
+        case REORDERED_ARRAY: genReorderedArray(metadata, inArray); break;
+        case NULL_ARRAY:
+        default: break;
+    }
+    *out_ptr = metadata->getInput();
 }
 
 // Partner function of genTestOutputArray. This uses the same "special"
@@ -1166,7 +1251,7 @@ TestOutputArrayInfo::TestOutputArrayInfo()
     for (uint i = 0; i < 4; ++i) { out_subarr_idxs[i] = af_span; }
 }
 
-TestOutputArrayInfo::TestOutputArrayInfo(TestOutputArrayType arr_type)
+TestOutputArrayInfo::TestOutputArrayInfo(const TestOutputArrayType arr_type)
     : out_arr(0)
     , out_arr_cpy(0)
     , out_subarr(0)
@@ -1227,6 +1312,10 @@ void TestOutputArrayInfo::init(double val, const unsigned ndims,
     ASSERT_SUCCESS(af_index(&out_subarr, out_arr, ndims, subarr_idxs));
 }
 
+void TestInputArrayInfo::init(const af_array inArray) {
+    ASSERT_SUCCESS(af_retain_array(&out_arr, inArray));
+}
+
 af_array TestOutputArrayInfo::getOutput() {
     if (out_arr_type == SUB_ARRAY) {
         return out_subarr;
@@ -1235,15 +1324,19 @@ af_array TestOutputArrayInfo::getOutput() {
     }
 }
 
-void TestOutputArrayInfo::setOutput(af_array array) {
+void TestOutputArrayInfo::setOutput(const af_array array) {
     if (out_arr != 0) { ASSERT_SUCCESS(af_release_array(out_arr)); }
     out_arr = array;
 }
 
 af_array TestOutputArrayInfo::getFullOutput() { return out_arr; }
 af_array TestOutputArrayInfo::getFullOutputCopy() { return out_arr_cpy; }
-af_seq *TestOutputArrayInfo::getSubArrayIdxs() { return &out_subarr_idxs[0]; }
-dim_t TestOutputArrayInfo::getSubArrayNumDims() { return out_subarr_ndims; }
+af_seq *TestOutputArrayInfo::getSubArrayIdxs() {
+    return &out_subarr_idxs[0];
+}
+dim_t TestOutputArrayInfo::getSubArrayNumDims() {
+    return out_subarr_ndims;
+}
 TestOutputArrayType TestOutputArrayInfo::getOutputArrayType() {
     return out_arr_type;
 }
