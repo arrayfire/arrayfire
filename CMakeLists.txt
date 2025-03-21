@@ -585,6 +585,27 @@ if(BUILD_WITH_MKL AND AF_INSTALL_STANDALONE)
       DESTINATION ${AF_INSTALL_LIB_DIR}
       COMPONENT mkl_dependencies)
   endif()
+  if(AF_BUILD_ONEAPI)
+    get_filename_component(mkl_sycl_lapack ${MKL_SyclLapack_LINK_LIBRARY} REALPATH)
+    get_filename_component(mkl_sycl_dft ${MKL_SyclDft_LINK_LIBRARY} REALPATH)
+    get_filename_component(mkl_sycl_blas ${MKL_SyclBlas_LINK_LIBRARY} REALPATH)
+    get_filename_component(mkl_sycl_sparse ${MKL_SyclSparse_LINK_LIBRARY} REALPATH)
+    get_filename_component(mkl_sycl_data ${MKL_SyclDataFitting_LINK_LIBRARY} REALPATH)
+    get_filename_component(mkl_sycl_rng ${MKL_SyclRNG_LINK_LIBRARY} REALPATH)
+    get_filename_component(mkl_sycl_stats ${MKL_SyclStats_LINK_LIBRARY} REALPATH)
+    get_filename_component(mkl_sycl_vm ${MKL_SyclVM_LINK_LIBRARY} REALPATH)
+    install(FILES
+      ${mkl_sycl_lapack}
+      ${mkl_sycl_dft}
+      ${mkl_sycl_blas}
+      ${mkl_sycl_sparse}
+      ${mkl_sycl_data}
+      ${mkl_sycl_rng}
+      ${mkl_sycl_stats}
+      ${mkl_sycl_vm}
+      DESTINATION ${AF_INSTALL_LIB_DIR}
+      COMPONENT mkl_dependencies)
+  endif()
 endif()
 
 # This file will be used to create the config file for the build directory.
