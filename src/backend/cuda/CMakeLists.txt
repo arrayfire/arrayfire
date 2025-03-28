@@ -838,13 +838,17 @@ endfunction()
 if(AF_INSTALL_STANDALONE)
   if(AF_WITH_CUDNN)
     afcu_collect_cudnn_libs("")
-    if(cuDNN_VERSION_MAJOR VERSION_GREATER 8 OR cuDNN_VERSION_MAJOR VERSION_EQUAL 8)
+    if(cuDNN_VERSION_MAJOR VERSION_EQUAL 8)
       # cudnn changed how dlls are shipped starting major version 8
       # except the main dll a lot of the other DLLs are loaded upon demand
       afcu_collect_cudnn_libs(cnn_infer)
       afcu_collect_cudnn_libs(cnn_train)
       afcu_collect_cudnn_libs(ops_infer)
       afcu_collect_cudnn_libs(ops_train)
+    elseif(cuDNN_VERSION_MAJOR VERSION_GREATER_EQUAL 9)
+      # infer and train libraries are now combined in version 9
+      afcu_collect_cudnn_libs(cnn)
+      afcu_collect_cudnn_libs(ops)
     endif()
   endif()
 
