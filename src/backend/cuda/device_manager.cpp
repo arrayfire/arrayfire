@@ -58,6 +58,7 @@ using std::make_pair;
 using std::pair;
 using std::string;
 using std::stringstream;
+using std::stof;
 
 namespace arrayfire {
 namespace cuda {
@@ -549,11 +550,13 @@ void DeviceManager::checkCudaVsDriverVersion() {
             runtime_it->unix_min_version;
 #endif
 
-        char buf[buf_size];
-        fmt::format_to_n(buf, buf_size, msg, fromCudaVersion(runtime),
-                         minimumDriverVersion, fromCudaVersion(driver));
+        if (stof(driverVersionString) < minimumDriverVersion) {
+          char buf[buf_size];
+          fmt::format_to_n(buf, buf_size, msg, fromCudaVersion(runtime),
+                           minimumDriverVersion, fromCudaVersion(driver));
 
-        AF_ERROR(buf, AF_ERR_DRIVER);
+          AF_ERROR(buf, AF_ERR_DRIVER);
+        }
     }
 }
 
