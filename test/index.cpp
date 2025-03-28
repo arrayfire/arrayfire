@@ -809,6 +809,84 @@ TEST(lookup, Issue2009) {
     ASSERT_ARRAYS_EQ(a, b);
 }
 
+TEST(lookup, Issue3613_FirstDimLookupWithOffset) {
+    dim4 dims(1);
+    const int selected_dim = 0; // selected span dimension
+    dims[selected_dim] = 125; // input size
+
+    array a = iota(dims);
+    array idxs = iota(dim4(5, 4, 3, 2));
+    array selected_idx = idxs(af::span, 3, 2, 1); // Offsets in second, third, & fourth dimension
+
+    array expected_selected_idx = range(dim4(5)) * 1 + 3 * 5 + 2 * (5 * 4) + 1 * (5 * 4 * 3);
+    ASSERT_ARRAYS_EQ(selected_idx, expected_selected_idx);
+
+    array b = af::lookup(a, selected_idx, selected_dim);
+    dim4 output_dims(1);
+    output_dims[selected_dim] = 5; // output size
+    ASSERT_ARRAYS_EQ(b, af::moddims(expected_selected_idx, output_dims)); // lookup output should be the same as looked up indices
+}
+
+TEST(lookup, Issue3613_SecondDimLookupWithOffset) {
+    dim4 dims(1);
+    const int selected_dim = 1; // selected span dimension
+    dims[selected_dim] = 125; // input size
+
+    array a = iota(dims);
+    array idxs = iota(dim4(5, 4, 3, 2));
+    array selected_idx = idxs(af::span, 3, 2, 1); // Offsets in second, third, & fourth dimension
+
+    array expected_selected_idx = range(dim4(5)) * 1 + 3 * 5 + 2 * (5 * 4) + 1 * (5 * 4 * 3);
+    ASSERT_ARRAYS_EQ(selected_idx, expected_selected_idx);
+
+    array b = af::lookup(a, selected_idx, selected_dim);
+    dim4 output_dims(1);
+    output_dims[selected_dim] = 5; // output size
+    ASSERT_ARRAYS_EQ(b, af::moddims(expected_selected_idx, output_dims)); // lookup output should be the same as looked up indices
+}
+
+
+TEST(lookup, Issue3613_ThirdDimLookupWithOffset) {
+    dim4 dims(1);
+    const int selected_dim = 2; // selected span dimension
+    dims[selected_dim] = 125; // input size
+    
+    array a = iota(dims);
+    array idxs = iota(dim4(5, 4, 3, 2));
+    array selected_idx = idxs(af::span, 3, 2, 1); // Offsets in second, third, & fourth dimension
+    
+    array expected_selected_idx = range(dim4(5)) * 1 + 3 * 5 + 2 * (5 * 4) + 1 * (5 * 4 * 3);
+    ASSERT_ARRAYS_EQ(selected_idx, expected_selected_idx);
+    
+    array b = af::lookup(a, selected_idx, selected_dim);
+    dim4 output_dims(1);
+    output_dims[selected_dim] = 5; // output size
+    ASSERT_ARRAYS_EQ(b, af::moddims(expected_selected_idx, output_dims)); // lookup output should be the same as looked up indices
+}
+
+TEST(lookup, Issue3613_FourthDimLookupWithOffset) {
+    dim4 dims(1);
+    const int selected_dim = 3; // selected span dimension
+    dims[selected_dim] = 125; // input size
+    
+    array a = iota(dims);
+    array idxs = iota(dim4(5, 4, 3, 2));
+    array selected_idx = idxs(af::span, 3, 2, 1); // Offsets in second, third, & fourth dimension
+    
+    array expected_selected_idx = range(dim4(5)) * 1 + 3 * 5 + 2 * (5 * 4) + 1 * (5 * 4 * 3);
+    ASSERT_ARRAYS_EQ(selected_idx, expected_selected_idx);
+    
+    array b = af::lookup(a, selected_idx, selected_dim);
+    dim4 output_dims(1);
+    output_dims[selected_dim] = 5; // output size
+    ASSERT_ARRAYS_EQ(b, af::moddims(expected_selected_idx, output_dims)); // lookup output should be the same as looked up indices
+}
+
+TEST(lookup, InvalidArrayIndices) {
+    // indices must be an array with values only in the first dimension
+    EXPECT_THROW(af::lookup(af::iota(dim4(10, 10)), af::iota(dim4(1, 5))), af::exception);
+}
+
 TEST(lookup, SNIPPET_lookup1d) {
     //! [ex_index_lookup1d]
 
