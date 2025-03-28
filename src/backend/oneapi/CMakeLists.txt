@@ -358,6 +358,7 @@ target_link_libraries(afoneapi
     $<$<PLATFORM_ID:Linux>:-flink-huge-device-code>
     $<$<PLATFORM_ID:Linux>:-fvisibility-inlines-hidden>
     $<$<PLATFORM_ID:Linux>:-fno-sycl-rdc>
+    $<$<PLATFORM_ID:Linux>:-Wl,--build-id>
     -fsycl-max-parallel-link-jobs=${NumberOfThreads}
     MKL::MKL_SYCL
   )
