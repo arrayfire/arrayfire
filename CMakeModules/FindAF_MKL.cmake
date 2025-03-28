@@ -74,8 +74,12 @@
 include(CheckTypeSize)
 include(FindPackageHandleStandardArgs)
 
-check_type_size("int" INT_SIZE
-  BUILTIN_TYPES_ONLY LANGUAGE C)
+if(DEFINED MKL_INTERFACE_INTEGER_SIZE)
+  set(INT_SIZE ${MKL_INTERFACE_INTEGER_SIZE})
+else()
+  check_type_size("int" INT_SIZE
+    BUILTIN_TYPES_ONLY LANGUAGE C)
+endif()
 
 set(MKL_THREAD_LAYER "TBB" CACHE STRING "The thread layer to choose for MKL")
 set_property(CACHE MKL_THREAD_LAYER PROPERTY STRINGS "TBB" "GNU OpenMP" "Intel OpenMP" "Sequential")
@@ -323,10 +327,14 @@ find_mkl_library(NAME RT LIBRARY_NAME mkl_rt)
 
 if(AF_BUILD_ONEAPI)
     find_mkl_library(NAME Sycl LIBRARY_NAME sycl DLL_ONLY)
-	find_mkl_library(NAME SyclLapack LIBRARY_NAME sycl_lapack DLL_ONLY)
-	find_mkl_library(NAME SyclDft LIBRARY_NAME sycl_dft DLL_ONLY)
-	find_mkl_library(NAME SyclBlas LIBRARY_NAME sycl_blas DLL_ONLY)
-	find_mkl_library(NAME SyclSparse LIBRARY_NAME sycl_sparse DLL_ONLY)
+    find_mkl_library(NAME SyclLapack LIBRARY_NAME mkl_sycl_lapack DLL_ONLY)
+    find_mkl_library(NAME SyclDft LIBRARY_NAME mkl_sycl_dft DLL_ONLY)
+    find_mkl_library(NAME SyclBlas LIBRARY_NAME mkl_sycl_blas DLL_ONLY)
+    find_mkl_library(NAME SyclSparse LIBRARY_NAME mkl_sycl_sparse DLL_ONLY)
+    find_mkl_library(NAME SyclDataFitting LIBRARY_NAME mkl_sycl_data_fitting DLL_ONLY)
+    find_mkl_library(NAME SyclRNG LIBRARY_NAME mkl_sycl_rng DLL_ONLY)
+    find_mkl_library(NAME SyclStats LIBRARY_NAME mkl_sycl_stats DLL_ONLY)
+    find_mkl_library(NAME SyclVM LIBRARY_NAME mkl_sycl_vm DLL_ONLY)
 endif()
 
 # MKL can link against Intel OpenMP, GNU OpenMP, TBB, and Sequential
