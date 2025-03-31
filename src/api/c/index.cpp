@@ -178,22 +178,34 @@ af_err af_lookup(af_array* out, const af_array in, const af_array indices,
         ARG_ASSERT(2, (idxType != b8));
 
         af_array output = 0;
+        af_array idx = 0;
+
+        if (!idxInfo.isColumn()) {
+            // Force a deep copy to flatten the array and handle subarrays of not column vector arrays correctly
+            AF_CHECK(af_copy_array(&idx, indices)); 
+        } else {
+            idx = indices;
+        }
 
         switch (idxType) {
-            case f32: output = lookup<float>(in, indices, dim); break;
-            case f64: output = lookup<double>(in, indices, dim); break;
+            case f32: output = lookup<float>(in, idx, dim); break;
+            case f64: output = lookup<double>(in, idx, dim); break;
             case s32: output = lookup<int>(in, indices, dim); break;
-            case u32: output = lookup<unsigned>(in, indices, dim); break;
-            case s16: output = lookup<short>(in, indices, dim); break;
-            case u16: output = lookup<ushort>(in, indices, dim); break;
-            case s64: output = lookup<intl>(in, indices, dim); break;
-            case u64: output = lookup<uintl>(in, indices, dim); break;
-            case s8: output = lookup<schar>(in, indices, dim); break;
-            case u8: output = lookup<uchar>(in, indices, dim); break;
-            case f16: output = lookup<half>(in, indices, dim); break;
+            case u32: output = lookup<unsigned>(in, idx, dim); break;
+            case s16: output = lookup<short>(in, idx, dim); break;
+            case u16: output = lookup<ushort>(in, idx, dim); break;
+            case s64: output = lookup<intl>(in, idx, dim); break;
+            case u64: output = lookup<uintl>(in, idx, dim); break;
+            case s8: output = lookup<schar>(in, idx, dim); break;
+            case u8: output = lookup<uchar>(in, idx, dim); break;
+            case f16: output = lookup<half>(in, idx, dim); break;
             default: TYPE_ERROR(1, idxType);
         }
         std::swap(*out, output);
+
+        if (idx != indices) {
+            AF_CHECK(af_release_array(idx)); // Release indices array if a copy has been made
+        }
     }
     CATCHALL;
     return AF_SUCCESS;
