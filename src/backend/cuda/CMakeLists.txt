@@ -50,7 +50,7 @@ set(CUDA_architecture_build_targets "Auto" CACHE
 
 find_cuda_helper_libs(nvrtc)
 find_cuda_helper_libs(nvrtc-builtins)
-list(APPEND nvrtc_libs ${CUDA_nvrtc_LIBRARY})
+list(APPEND nvrtc_libs ${CUDA_nvrtc_LIBRARY} ${CUDA_nvrtc-builtins_LIBRARY})
 
 if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
   # The libraries that may be staticly linked or may be loaded at runtime
