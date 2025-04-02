@@ -58,7 +58,6 @@ using std::make_pair;
 using std::pair;
 using std::string;
 using std::stringstream;
-using std::stof;
 
 namespace arrayfire {
 namespace cuda {
@@ -512,7 +511,10 @@ void DeviceManager::checkCudaVsDriverVersion() {
 
     debugRuntimeCheck(getLogger(), runtime, driver);
 
-    if (runtime > driver) {
+    int runtime_major = runtime / 1000;
+    int driver_major = driver / 1000;
+
+    if (runtime_major > driver_major) {
         string msg =
             "ArrayFire was built with CUDA {} which requires GPU driver "
             "version {} or later. Please download and install the latest "
@@ -550,13 +552,11 @@ void DeviceManager::checkCudaVsDriverVersion() {
             runtime_it->unix_min_version;
 #endif
 
-        if (stof(driverVersionString) < minimumDriverVersion) {
-          char buf[buf_size];
-          fmt::format_to_n(buf, buf_size, msg, fromCudaVersion(runtime),
-                           minimumDriverVersion, fromCudaVersion(driver));
+        char buf[buf_size];
+        fmt::format_to_n(buf, buf_size, msg, fromCudaVersion(runtime),
+                         minimumDriverVersion, fromCudaVersion(driver));
 
-          AF_ERROR(buf, AF_ERR_DRIVER);
-        }
+        AF_ERROR(buf, AF_ERR_DRIVER);
     }
 }
 
