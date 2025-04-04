@@ -24,7 +24,7 @@ if(AF_WITH_EXTERNAL_PACKAGES_ONLY)
 elseif(NOT TARGET GTest::gtest)
   af_dep_check_and_populate(${gtest_prefix}
     URI https://github.com/google/googletest.git
-    REF release-1.12.1
+    REF v1.16.0
   )
   if(WIN32)
     set(gtest_force_shared_crt ON
