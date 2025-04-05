@@ -7,6 +7,24 @@
 
 if(AF_BUILD_ONEAPI)
     enable_language(SYCL)
+    set(OPENCL_INCLUDE_DIR ${SYCL_INCLUDE_DIR}/sycl)
+    set(OPENCL_LIBRARY_DIR ${SYCL_LIBRARY_DIR})
+
+    set(MSVC_RUNTIME "")
+    if(CMAKE_HOST_WIN32)
+      if("${CMAKE_MSVC_RUNTIME_LIBRARY}" STREQUAL "MultiThreaded")
+        set(MSVC_RUNTIME "-MT")
+      elseif("${CMAKE_MSVC_RUNTIME_LIBRARY}" STREQUAL "MultiThreadedDLL")
+        set(MSVC_RUNTIME "-MD")
+      elseif("${CMAKE_MSVC_RUNTIME_LIBRARY}" STREQUAL "MultiThreadedDebug")
+        set(MSVC_RUNTIME "-MTd")
+      elseif("${CMAKE_MSVC_RUNTIME_LIBRARY}" STREQUAL "MultiThreadedDebugDLL")
+        set(MSVC_RUNTIME "-MDd")
+      else()
+        set(MSVC_RUNTIME "-MD$<$<CONFIG:Debug>:d>")
+      endif()
+      set(CMAKE_MSVC_RUNTIME_LIBRARY "")
+    endif()
 endif()
 
 include(InternalUtils)
@@ -270,6 +288,10 @@ function(set_sycl_language)
     set_target_properties(${target}
       PROPERTIES
         LINKER_LANGUAGE SYCL)
+    get_target_property(target_type ${target} TYPE)
+    if (NOT (${target_type} STREQUAL "INTERFACE_LIBRARY"))
+      target_compile_options(${target} PRIVATE ${MSVC_RUNTIME})
+    endif()
 
     get_target_property(TGT_SOURCES ${target} SOURCES)
     if(NOT TGT_SOURCES)
@@ -360,6 +382,7 @@ target_link_libraries(afoneapi
     $<$<PLATFORM_ID:Linux>:-fno-sycl-rdc>
     $<$<PLATFORM_ID:Linux>:-Wl,--build-id>
     -fsycl-max-parallel-link-jobs=${NumberOfThreads}
+    $<$<PLATFORM_ID:Linux>: PUBLIC >
     MKL::MKL_SYCL
   )
   set_sycl_language(afcommon_interface
