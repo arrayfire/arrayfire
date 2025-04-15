@@ -56,3 +56,24 @@ if(ArrayFire_oneAPI_FOUND)
   add_executable(boltzmann_cfd_oneapi boltzmann_cfd.cpp)
   target_link_libraries(boltzmann_cfd_oneapi ArrayFire::afoneapi)
 endif()
+
+if(ArrayFire_CPU_FOUND)
+  # Smothered Particle Hydrodynamics Example
+  add_executable(smh_cpu smothered_hydrodynamics.cpp)
+  target_link_libraries(smh_cpu ArrayFire::afcpu)
+endif()
+
+if(ArrayFire_CUDA_FOUND)
+  add_executable(smh_cuda smothered_hydrodynamics.cpp)
+  target_link_libraries(smh_cuda ArrayFire::afcuda)
+endif()
+
+if(ArrayFire_OpenCL_FOUND)
+  add_executable(smh_opencl smothered_hydrodynamics.cpp)
+  target_link_libraries(smh_opencl ArrayFire::afopencl)
+endif()
+
+if(ArrayFire_oneAPI_FOUND)
+  add_executable(smh_oneapi smothered_hydrodynamics.cpp)
+  target_link_libraries(smh_oneapi ArrayFire::afoneapi)
+endif()
