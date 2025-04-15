@@ -49,8 +49,12 @@ set(CUDA_architecture_build_targets "Auto" CACHE
   STRING "The compute architectures targeted by this build. (Options: Auto;3.0;Maxwell;All;Common)")
 
 find_cuda_helper_libs(nvrtc)
-find_cuda_helper_libs(nvrtc-builtins)
-list(APPEND nvrtc_libs ${CUDA_nvrtc_LIBRARY} ${CUDA_nvrtc-builtins_LIBRARY})
+if(NOT WIN32)
+    find_cuda_helper_libs(nvrtc-builtins)
+    list(APPEND nvrtc_libs ${CUDA_nvrtc_LIBRARY} ${CUDA_nvrtc-builtins_LIBRARY})
+else()
+    list(APPEND nvrtc_libs ${CUDA_nvrtc_LIBRARY})
+endif()
 
 if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
   # The libraries that may be staticly linked or may be loaded at runtime
