@@ -11,9 +11,10 @@
 
 namespace arrayfire {
 namespace cuda {
-template<typename T>
-void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
-          const Array<T> &lhs, const Array<T> &rhs, const T *beta);
+template<typename Ti, typename To = Ti>
+void gemm(Array<To> &out, af_mat_prop optLhs, af_mat_prop optRhs,
+          const To *alpha, const Array<Ti> &lhs, const Array<Ti> &rhs,
+          const To *beta);
 
 template<typename T>
 Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,

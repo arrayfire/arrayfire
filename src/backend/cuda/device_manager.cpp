@@ -511,7 +511,10 @@ void DeviceManager::checkCudaVsDriverVersion() {
 
     debugRuntimeCheck(getLogger(), runtime, driver);
 
-    if (runtime > driver) {
+    int runtime_major = runtime / 1000;
+    int driver_major = driver / 1000;
+
+    if (runtime_major > driver_major) {
         string msg =
             "ArrayFire was built with CUDA {} which requires GPU driver "
             "version {} or later. Please download and install the latest "
