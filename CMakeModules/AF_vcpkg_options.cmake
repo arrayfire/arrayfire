@@ -6,7 +6,6 @@
 # http://arrayfire.com/licenses/BSD-3-Clause
 
 set(ENV{VCPKG_FEATURE_FLAGS} "versions")
-set(ENV{VCPKG_KEEP_ENV_VARS} "MKLROOT")
 set(VCPKG_MANIFEST_NO_DEFAULT_FEATURES ON)
 
 set(VCPKG_OVERLAY_TRIPLETS ${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/vcpkg/vcpkg-triplets)
@@ -28,9 +27,7 @@ if(BUILD_TESTING)
   list(APPEND VCPKG_MANIFEST_FEATURES "tests")
 endif()
 
-if(AF_COMPUTE_LIBRARY STREQUAL "Intel-MKL")
-  list(APPEND VCPKG_MANIFEST_FEATURES "mkl")
-else()
+if(NOT AF_COMPUTE_LIBRARY STREQUAL "Intel-MKL")
   list(APPEND VCPKG_MANIFEST_FEATURES "openblasfftw")
 endif()
 

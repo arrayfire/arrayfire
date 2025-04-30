@@ -27,7 +27,7 @@ if(NOT TARGET OpenCL::cl2hpp)
   elseif (NOT TARGET OpenCL::cl2hpp OR NOT TARGET cl2hpp)
     af_dep_check_and_populate(${cl2hpp_prefix}
       URI https://github.com/KhronosGroup/OpenCL-CLHPP.git
-      REF v2022.09.30)
+      REF v2024.10.24)
 
     find_path(cl2hpp_var
       NAMES CL/cl2.hpp

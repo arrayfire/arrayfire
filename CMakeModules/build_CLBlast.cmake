@@ -26,7 +26,7 @@ if(TARGET clblast OR AF_WITH_EXTERNAL_PACKAGES_ONLY)
 else()
   af_dep_check_and_populate(${clblast_prefix}
     URI https://github.com/cnugteren/CLBlast.git
-    REF 4500a03440e2cc54998c0edab366babf5e504d67
+    REF 1.6.3
   )
 
   include(ExternalProject)
@@ -69,6 +69,7 @@ else()
       BUILD_BYPRODUCTS ${CLBlast_location}
       CONFIGURE_COMMAND ${CMAKE_COMMAND} ${extproj_gen_opts}
         -Wno-dev <SOURCE_DIR>
+        -DCMAKE_POLICY_VERSION_MINIMUM=3.5
         -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
         "-DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}"
         -DOVERRIDE_MSVC_FLAGS_TO_MT:BOOL=OFF
