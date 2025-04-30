@@ -353,6 +353,21 @@ if(NOT CMAKE_SYCL_LINK_EXECUTABLE)
     "<CMAKE_SYCL_COMPILER> <FLAGS> <CMAKE_SYCL_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>")
 endif()
 
+if(CMAKE_HOST_WIN32)
+  set(MSVC_RUNTIME "")
+  if("${CMAKE_MSVC_RUNTIME_LIBRARY}" STREQUAL "MultiThreaded")
+    set(MSVC_RUNTIME "-MT")
+  elseif("${CMAKE_MSVC_RUNTIME_LIBRARY}" STREQUAL "MultiThreadedDLL")
+    set(MSVC_RUNTIME "-MD")
+  elseif("${CMAKE_MSVC_RUNTIME_LIBRARY}" STREQUAL "MultiThreadedDebug")
+    set(MSVC_RUNTIME "-MTd")
+  elseif("${CMAKE_MSVC_RUNTIME_LIBRARY}" STREQUAL "MultiThreadedDebugDLL")
+    set(MSVC_RUNTIME "-MDd")
+  else()
+    set(MSVC_RUNTIME "-MD$<$<CONFIG:Debug>:d>")
+  endif()
+  set(CMAKE_MSVC_RUNTIME_LIBRARY "")
+endif()
 
 mark_as_advanced(
 CMAKE_VERBOSE_MAKEFILE

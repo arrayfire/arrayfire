@@ -271,6 +271,11 @@ function(set_sycl_language)
       PROPERTIES
         LINKER_LANGUAGE SYCL)
 
+    get_target_property(target_type ${target} TYPE)
+    if(NOT (${target_type} STREQUAL "INTERFACE_LIBRARY"))
+      target_compile_options(${target} PRIVATE ${MSVC_RUNTIME})
+    endif()
+
     get_target_property(TGT_SOURCES ${target} SOURCES)
     if(NOT TGT_SOURCES)
       get_target_property(TGT_SOURCES ${target} INTERFACE_SOURCES)
