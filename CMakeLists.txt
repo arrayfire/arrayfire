@@ -56,6 +56,7 @@ endif()
 if(SYCL_COMPILER_NAME STREQUAL "dpcpp" OR SYCL_COMPILER_NAME STREQUAL "dpcpp.exe"
    OR SYCL_COMPILER_NAME STREQUAL "icpx" OR SYCL_COMPILER_NAME STREQUAL "icx.exe")
   set(MKL_THREAD_LAYER "TBB" CACHE STRING "The thread layer to choose for MKL")
+  set(TBB_ROOT "$ENV{TBBROOT}")
   set(MKL_INTERFACE "ilp64")
   set(MKL_INTERFACE_INTEGER_SIZE 8)
 else()
@@ -553,19 +554,7 @@ if(BUILD_WITH_MKL AND AF_INSTALL_STANDALONE)
         COMPONENT mkl_dependencies)
     endif()
 
-    if(WIN32)
-      get_filename_component(mkl_rnt ${MKL_RT_DLL_LIBRARY} REALPATH)
-      get_filename_component(mkl_shd ${MKL_Core_DLL_LIBRARY} REALPATH)
-      get_filename_component(mkl_tly ${MKL_ThreadLayer_DLL_LIBRARY} REALPATH)
-    else()
-      get_filename_component(mkl_rnt ${MKL_RT_LINK_LIBRARY} REALPATH)
-      get_filename_component(mkl_shd ${MKL_Core_LINK_LIBRARY} REALPATH)
-      get_filename_component(mkl_tly ${MKL_ThreadLayer_LINK_LIBRARY} REALPATH)
-    endif()
     install(FILES
-      ${mkl_rnt}
-      ${mkl_shd}
-      ${mkl_tly}
       $<TARGET_FILE:MKL::RT>
       $<TARGET_FILE:MKL::Shared>
       $<TARGET_FILE:MKL::ThreadLayer>

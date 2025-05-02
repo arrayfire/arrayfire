@@ -311,7 +311,7 @@ function(find_mkl_library)
         $ENV{LIBRARY_PATH}
       PATHS
         ${MKL_ROOT}/bin
-	${TBB_DIR}/../../../bin
+        ${TBB_ROOT}/bin
       PATH_SUFFIXES
         IntelSWTools/compilers_and_libraries/windows/redist/intel64/mkl
         IntelSWTools/compilers_and_libraries/windows/redist/intel64/compiler
