@@ -49,6 +49,7 @@ foreach(SBK_TYPE ${SBK_TYPES})
     PRIVATE
       $<$<COMPILE_LANGUAGE:SYCL>: -fno-sycl-id-queries-fit-in-int
                                   -sycl-std=2020
+                                  ${MSVC_RUNTIME}
                                   $<$<PLATFORM_ID:Linux>: -fno-sycl-rdc>>)
 
   target_include_directories(oneapi_sort_by_key_${SBK_TYPE}
