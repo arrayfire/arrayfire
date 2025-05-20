@@ -75,12 +75,14 @@ find_library(FreeImage_STATIC_LIBRARY
   DOC "The FreeImage static library")
 
 if (WIN32)
+  get_filename_component(FreeImage_LIB_PATH ${FreeImage_LINK_LIBRARY} DIRECTORY)
   find_file(FreeImage_DLL_LIBRARY
     NAMES
       ${CMAKE_SHARED_LIBRARY_PREFIX}FreeImage${CMAKE_SHARED_LIBRARY_SUFFIX}
       ${CMAKE_SHARED_LIBRARY_PREFIX}freeimage${CMAKE_SHARED_LIBRARY_SUFFIX}
     PATHS
       ${FreeImage_ROOT}
+      ${FreeImage_LIB_PATH}/../bin
     DOC "The FreeImage dll")
 	mark_as_advanced(FreeImage_DLL_LIBRARY)
 endif ()
