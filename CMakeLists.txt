@@ -143,7 +143,6 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)
     set(MKL_ROOT "$ENV{MKLROOT}")
   endif()
   set(SYCL_COMPILER ON)
-  set(MKL_THREADING "tbb_thread")
   find_package(MKL)
 endif()
 

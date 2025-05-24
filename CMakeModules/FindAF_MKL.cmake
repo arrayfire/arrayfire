@@ -364,9 +364,11 @@ endif()
 
 if("${INT_SIZE}" EQUAL 4)
   set(MKL_INTERFACE_INTEGER_SIZE 4)
+  set(MKL_INTERFACE "lp64")
   find_mkl_library(NAME Interface LIBRARY_NAME mkl_intel_lp64 SEARCH_STATIC)
 else()
   set(MKL_INTERFACE_INTEGER_SIZE 8)
+  set(MKL_INTERFACE "ilp64")
   find_mkl_library(NAME Interface LIBRARY_NAME mkl_intel_ilp64 SEARCH_STATIC)
 endif()
 
