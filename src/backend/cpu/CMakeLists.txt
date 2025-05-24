@@ -15,6 +15,10 @@ generate_product_version(af_cpu_ver_res_file
 add_library(afcpu "")
 add_library(ArrayFire::afcpu ALIAS afcpu)
 
+# CPU back end needs to use MKL LP64 interface
+set(MKL_INTERFACE_INTEGER_SIZE 4)
+set(MKL_INTERFACE "lp64")
+
 # CPU backend source files
 target_sources(afcpu
   PRIVATE
@@ -313,6 +317,7 @@ target_link_libraries(afcpu
   )
 if(BUILD_WITH_MKL)
   target_compile_definitions(afcpu PRIVATE USE_MKL)
+  target_compile_definitions(afcpu PRIVATE AF_MKL_INTERFACE_SIZE=${MKL_INTERFACE_INTEGER_SIZE})
 
   if(MKL_BATCH)
     target_compile_definitions(afcpu PRIVATE AF_USE_MKL_BATCH)

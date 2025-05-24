@@ -7,6 +7,10 @@
 
 dependency_check(OpenCL_FOUND "OpenCL not found.")
 
+# OpenCL back end needs to use MKL LP64 interface
+set(MKL_INTERFACE_INTEGER_SIZE 4)
+set(MKL_INTERFACE "lp64")
+
 include(InternalUtils)
 include(build_cl2hpp)
 include(build_CLBlast)
@@ -578,6 +582,7 @@ if(LAPACK_FOUND OR BUILD_WITH_MKL)
 
   if(BUILD_WITH_MKL)
     target_compile_definitions(afopencl PRIVATE USE_MKL)
+    target_compile_definitions(afopencl PRIVATE AF_MKL_INTERFACE_SIZE=${MKL_INTERFACE_INTEGER_SIZE})
     if(MKL_BATCH)
       target_compile_definitions(afopencl PRIVATE AF_USE_MKL_BATCH)
     endif()
