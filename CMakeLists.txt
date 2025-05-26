@@ -554,6 +554,18 @@ if(BUILD_WITH_MKL AND AF_INSTALL_STANDALONE)
         COMPONENT mkl_dependencies)
     endif()
 
+  if(UNIX)
+    get_filename_component(mkl_rnt ${MKL_RT_LINK_LIBRARY} REALPATH)
+    get_filename_component(mkl_shd ${MKL_Core_LINK_LIBRARY} REALPATH)
+    get_filename_component(mkl_tly ${MKL_ThreadLayer_LINK_LIBRARY} REALPATH)
+    install(FILES
+      ${mkl_rnt}
+      ${mkl_shd}
+      ${mkl_tly}
+      DESTINATION ${AF_INSTALL_LIB_DIR}
+      COMPONENT mkl_dependencies)
+  endif()
+
     install(FILES
       $<TARGET_FILE:MKL::RT>
       $<TARGET_FILE:MKL::Shared>
