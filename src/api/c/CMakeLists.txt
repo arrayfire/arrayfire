@@ -186,10 +186,6 @@ if(FreeImage_FOUND AND AF_WITH_IMAGEIO)
 endif()
 
 if(BUILD_WITH_MKL)
-  target_compile_definitions(c_api_interface
-    INTERFACE
-      AF_MKL_INTERFACE_SIZE=${MKL_INTERFACE_INTEGER_SIZE}
-    )
   # Create mkl thread layer compile option based on cmake cache variable
   if(MKL_THREAD_LAYER STREQUAL "Sequential")
     target_compile_definitions(c_api_interface INTERFACE AF_MKL_THREAD_LAYER=0)

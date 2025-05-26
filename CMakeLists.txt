@@ -143,8 +143,6 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)
     set(MKL_ROOT "$ENV{MKLROOT}")
   endif()
   set(SYCL_COMPILER ON)
-  set(MKL_THREADING "tbb_thread")
-  set(MKL_INTERFACE "ilp64")
   find_package(MKL)
 endif()
 
@@ -552,13 +550,21 @@ if(BUILD_WITH_MKL AND AF_INSTALL_STANDALONE)
         ${mkl_int}
         DESTINATION ${AF_INSTALL_LIB_DIR}
         COMPONENT mkl_dependencies)
+
+      # LP64 library is required for the CPU and OpenCL back ends, so install it too
+      if(MKL_INTERFACE_INTEGER_SIZE EQUAL 8)
+        get_filename_component(mkl_int_lp ${MKL_InterfaceLP_LINK_LIBRARY} REALPATH)
+        install(FILES
+          ${mkl_int_lp}
+          DESTINATION ${AF_INSTALL_LIB_DIR}
+          COMPONENT mkl_dependencies)
+      endif()
     endif()
 
     get_filename_component(mkl_rnt ${MKL_RT_LINK_LIBRARY} REALPATH)
     get_filename_component(mkl_shd ${MKL_Core_LINK_LIBRARY} REALPATH)
     get_filename_component(mkl_tly ${MKL_ThreadLayer_LINK_LIBRARY} REALPATH)
     install(FILES
-      ${mkl_sycl}
       ${mkl_rnt}
       ${mkl_shd}
       ${mkl_tly}
@@ -573,6 +579,27 @@ if(BUILD_WITH_MKL AND AF_INSTALL_STANDALONE)
       ${AF_ADDITIONAL_MKL_LIBRARIES}
       DESTINATION ${AF_INSTALL_LIB_DIR}
       COMPONENT mkl_dependencies)
+    if(AF_BUILD_ONEAPI)
+      get_filename_component(mkl_sycl_lapack ${MKL_SyclLapack_LINK_LIBRARY} REALPATH)
+      get_filename_component(mkl_sycl_dft ${MKL_SyclDft_LINK_LIBRARY} REALPATH)
+      get_filename_component(mkl_sycl_blas ${MKL_SyclBlas_LINK_LIBRARY} REALPATH)
+      get_filename_component(mkl_sycl_sparse ${MKL_SyclSparse_LINK_LIBRARY} REALPATH)
+      get_filename_component(mkl_sycl_data ${MKL_SyclDataFitting_LINK_LIBRARY} REALPATH)
+      get_filename_component(mkl_sycl_rng ${MKL_SyclRNG_LINK_LIBRARY} REALPATH)
+      get_filename_component(mkl_sycl_stats ${MKL_SyclStats_LINK_LIBRARY} REALPATH)
+      get_filename_component(mkl_sycl_vm ${MKL_SyclVM_LINK_LIBRARY} REALPATH)
+      install(FILES
+        ${mkl_sycl_lapack}
+        ${mkl_sycl_dft}
+        ${mkl_sycl_blas}
+        ${mkl_sycl_sparse}
+        ${mkl_sycl_data}
+        ${mkl_sycl_rng}
+        ${mkl_sycl_stats}
+        ${mkl_sycl_vm}
+        DESTINATION ${AF_INSTALL_LIB_DIR}
+        COMPONENT mkl_dependencies)
+    endif()
   endif()
 endif()
 
