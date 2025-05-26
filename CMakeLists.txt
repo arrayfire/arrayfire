@@ -550,6 +550,15 @@ if(BUILD_WITH_MKL AND AF_INSTALL_STANDALONE)
         ${mkl_int}
         DESTINATION ${AF_INSTALL_LIB_DIR}
         COMPONENT mkl_dependencies)
+
+      # LP64 library is required for the CPU and OpenCL back ends, so install it too
+      if(MKL_INTERFACE_INTEGER_SIZE EQUAL 8)
+        get_filename_component(mkl_int_lp ${MKL_InterfaceLP_LINK_LIBRARY} REALPATH)
+        install(FILES
+          ${mkl_int_lp}
+          DESTINATION ${AF_INSTALL_LIB_DIR}
+          COMPONENT mkl_dependencies)
+      endif()
     endif()
 
     get_filename_component(mkl_rnt ${MKL_RT_LINK_LIBRARY} REALPATH)
