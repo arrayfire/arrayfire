@@ -534,6 +534,14 @@ install(FILES ${ArrayFire_BINARY_DIR}/cmake/install/ArrayFireConfig.cmake
               DESTINATION ${AF_INSTALL_CMAKE_DIR}
               COMPONENT cmake)
 
+if(WIN32 AND AF_INSTALL_STANDALONE)
+  find_program(MSVC_REDIST NAMES vc_redist.x64.exe
+          PATHS "$ENV{VCINSTALLDIR}Redist\\MSVC\\v${MSVC_TOOLSET_VERSION}")
+  get_filename_component(MSVC_REDIST_INSTALLER ${MSVC_REDIST} NAME)
+  install(PROGRAMS ${MSVC_REDIST} COMPONENT common_backend_dependencies
+          DESTINATION ${AF_INSTALL_BIN_DIR})
+endif()
+
 if(BUILD_WITH_MKL AND AF_INSTALL_STANDALONE)
   if(TARGET MKL::ThreadingLibrary)
     get_filename_component(mkl_tl ${MKL_ThreadingLibrary_LINK_LIBRARY} REALPATH)
