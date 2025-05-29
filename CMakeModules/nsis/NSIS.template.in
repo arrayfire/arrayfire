@@ -740,6 +740,11 @@ Section "-Core installation"
 
 SectionEnd
 
+Section "-Visual C++ installation"
+  ExecWait "$INSTDIR\lib\vc_redist.x64.exe /install /passive"
+  Delete "$INSTDIR\lib\vc_redist.x64.exe"
+SectionEnd
+
 Section "-Add to path"
   Push $INSTDIR\lib
   StrCmp "@CPACK_NSIS_MODIFY_PATH@" "ON" 0 doNotAddToPath

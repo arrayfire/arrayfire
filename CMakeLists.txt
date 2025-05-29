@@ -56,6 +56,7 @@ endif()
 if(SYCL_COMPILER_NAME STREQUAL "dpcpp" OR SYCL_COMPILER_NAME STREQUAL "dpcpp.exe"
    OR SYCL_COMPILER_NAME STREQUAL "icpx" OR SYCL_COMPILER_NAME STREQUAL "icx.exe")
   set(MKL_THREAD_LAYER "TBB" CACHE STRING "The thread layer to choose for MKL")
+  set(TBB_ROOT "$ENV{TBBROOT}")
   set(MKL_INTERFACE "ilp64")
   set(MKL_INTERFACE_INTEGER_SIZE 8)
 else()
@@ -144,7 +145,6 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)
   endif()
   set(SYCL_COMPILER ON)
   set(MKL_THREADING "tbb_thread")
-  set(MKL_INTERFACE "ilp64")
   find_package(MKL)
 endif()
 
@@ -534,6 +534,14 @@ install(FILES ${ArrayFire_BINARY_DIR}/cmake/install/ArrayFireConfig.cmake
               DESTINATION ${AF_INSTALL_CMAKE_DIR}
               COMPONENT cmake)
 
+if(WIN32 AND AF_INSTALL_STANDALONE)
+  find_program(MSVC_REDIST NAMES vc_redist.x64.exe
+          PATHS "$ENV{VCINSTALLDIR}Redist\\MSVC\\v${MSVC_TOOLSET_VERSION}")
+  get_filename_component(MSVC_REDIST_INSTALLER ${MSVC_REDIST} NAME)
+  install(PROGRAMS ${MSVC_REDIST} COMPONENT common_backend_dependencies
+          DESTINATION ${AF_INSTALL_BIN_DIR})
+endif()
+
 if(BUILD_WITH_MKL AND AF_INSTALL_STANDALONE)
   if(TARGET MKL::ThreadingLibrary)
     get_filename_component(mkl_tl ${MKL_ThreadingLibrary_LINK_LIBRARY} REALPATH)
@@ -554,14 +562,19 @@ if(BUILD_WITH_MKL AND AF_INSTALL_STANDALONE)
         COMPONENT mkl_dependencies)
     endif()
 
+  if(UNIX)
     get_filename_component(mkl_rnt ${MKL_RT_LINK_LIBRARY} REALPATH)
     get_filename_component(mkl_shd ${MKL_Core_LINK_LIBRARY} REALPATH)
     get_filename_component(mkl_tly ${MKL_ThreadLayer_LINK_LIBRARY} REALPATH)
     install(FILES
-      ${mkl_sycl}
       ${mkl_rnt}
       ${mkl_shd}
       ${mkl_tly}
+      DESTINATION ${AF_INSTALL_LIB_DIR}
+      COMPONENT mkl_dependencies)
+  endif()
+
+    install(FILES
       $<TARGET_FILE:MKL::RT>
       $<TARGET_FILE:MKL::Shared>
       $<TARGET_FILE:MKL::ThreadLayer>
@@ -573,6 +586,38 @@ if(BUILD_WITH_MKL AND AF_INSTALL_STANDALONE)
       ${AF_ADDITIONAL_MKL_LIBRARIES}
       DESTINATION ${AF_INSTALL_LIB_DIR}
       COMPONENT mkl_dependencies)
+    if(AF_BUILD_ONEAPI)
+      if(WIN32)
+        get_filename_component(mkl_sycl_lapack ${MKL_SyclLapack_DLL_LIBRARY} REALPATH)
+        get_filename_component(mkl_sycl_dft ${MKL_SyclDft_DLL_LIBRARY} REALPATH)
+        get_filename_component(mkl_sycl_blas ${MKL_SyclBlas_DLL_LIBRARY} REALPATH)
+        get_filename_component(mkl_sycl_sparse ${MKL_SyclSparse_DLL_LIBRARY} REALPATH)
+        get_filename_component(mkl_sycl_data ${MKL_SyclDataFitting_DLL_LIBRARY} REALPATH)
+        get_filename_component(mkl_sycl_rng ${MKL_SyclRNG_DLL_LIBRARY} REALPATH)
+        get_filename_component(mkl_sycl_stats ${MKL_SyclStats_DLL_LIBRARY} REALPATH)
+        get_filename_component(mkl_sycl_vm ${MKL_SyclVM_DLL_LIBRARY} REALPATH)
+      else()
+        get_filename_component(mkl_sycl_lapack ${MKL_SyclLapack_LINK_LIBRARY} REALPATH)
+        get_filename_component(mkl_sycl_dft ${MKL_SyclDft_LINK_LIBRARY} REALPATH)
+        get_filename_component(mkl_sycl_blas ${MKL_SyclBlas_LINK_LIBRARY} REALPATH)
+        get_filename_component(mkl_sycl_sparse ${MKL_SyclSparse_LINK_LIBRARY} REALPATH)
+        get_filename_component(mkl_sycl_data ${MKL_SyclDataFitting_LINK_LIBRARY} REALPATH)
+        get_filename_component(mkl_sycl_rng ${MKL_SyclRNG_LINK_LIBRARY} REALPATH)
+        get_filename_component(mkl_sycl_stats ${MKL_SyclStats_LINK_LIBRARY} REALPATH)
+        get_filename_component(mkl_sycl_vm ${MKL_SyclVM_LINK_LIBRARY} REALPATH)
+      endif()
+      install(FILES
+        ${mkl_sycl_lapack}
+        ${mkl_sycl_dft}
+        ${mkl_sycl_blas}
+        ${mkl_sycl_sparse}
+        ${mkl_sycl_data}
+        ${mkl_sycl_rng}
+        ${mkl_sycl_stats}
+        ${mkl_sycl_vm}
+        DESTINATION ${AF_INSTALL_LIB_DIR}
+        COMPONENT mkl_dependencies)
+    endif()
   endif()
 endif()
 
