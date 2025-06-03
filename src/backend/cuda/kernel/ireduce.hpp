@@ -165,14 +165,14 @@ T ireduce_all(uint *idx, CParam<T> in) {
     using std::unique_ptr;
     int in_elements = in.dims[0] * in.dims[1] * in.dims[2] * in.dims[3];
 
-    // FIXME: Use better heuristics to get to the optimum number
-    if (in_elements > 4096) {
-        bool is_linear = (in.strides[0] == 1);
-        for (int k = 1; k < 4; k++) {
-            is_linear &=
-                (in.strides[k] == (in.strides[k - 1] * in.dims[k - 1]));
-        }
+    bool is_linear = (in.strides[0] == 1);
+    for (int k = 1; k < 4; k++) {
+        is_linear &=
+            (in.strides[k] == (in.strides[k - 1] * in.dims[k - 1]));
+    }
 
+    // FIXME: Use better heuristics to get to the optimum number
+    if (!is_linear || in_elements > 4096) {
         if (is_linear) {
             in.dims[0] = in_elements;
             for (int k = 1; k < 4; k++) {
