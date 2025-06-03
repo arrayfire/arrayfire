@@ -161,9 +161,12 @@ if(NOT CPACK_GENERATOR MATCHES "DEB")
     DESCRIPTION "ArrayFire development files including headers and configuration files"
     EXPANDED)
 
-  cpack_add_component_group(debug
-    DISPLAY_NAME "ArrayFire Debug Symbols"
-    DESCRIPTION "ArrayFire Debug symbols")
+  if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR
+     CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+    cpack_add_component_group(debug
+      DISPLAY_NAME "ArrayFire Debug Symbols"
+      DESCRIPTION "ArrayFire Debug symbols")
+  endif()
 endif()
 
 set(arrayfire_cuda_runtime_name "CUDA Runtime(${CPACK_CUDA_VERSION_MAJOR}.${CPACK_CUDA_VERSION_MINOR})")
@@ -473,45 +476,48 @@ endif()
 # Debug symbols in debian installers are created using the DEBINFO property
 if(NOT APPLE AND
    NOT CPACK_GENERATOR MATCHES "DEB")
-  af_component(
-    COMPONENT afoneapi_debug_symbols
-    DISPLAY_NAME "oneAPI Debug Symbols"
-    DESCRIPTION "Debug symbols for the oneAPI backend."
-    GROUP debug
-    DISABLED
-    INSTALL_TYPES Development)
-
-  af_component(
-    COMPONENT afopencl_debug_symbols
-    DISPLAY_NAME "OpenCL Debug Symbols"
-    DESCRIPTION "Debug symbols for the OpenCL backend."
-    GROUP debug
-    DISABLED
-    INSTALL_TYPES Development)
-
-  af_component(
-    COMPONENT afcuda_debug_symbols
-    DISPLAY_NAME "CUDA Debug Symbols"
-    DESCRIPTION "Debug symbols for CUDA backend backend."
-    GROUP debug
-    DISABLED
-    INSTALL_TYPES Development)
-
-  af_component(
-    COMPONENT afcpu_debug_symbols
-    DISPLAY_NAME "CPU Debug Symbols"
-    DESCRIPTION "Debug symbols for CPU backend backend."
-    GROUP debug
-    DISABLED
-    INSTALL_TYPES Development)
-
-  af_component(
-    COMPONENT af_debug_symbols
-    DISPLAY_NAME "Unified Debug Symbols"
-    DESCRIPTION "Debug symbols for the Unified backend."
-    GROUP debug
-    DISABLED
-    INSTALL_TYPES Development)
+  if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR
+     CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+    af_component(
+      COMPONENT afoneapi_debug_symbols
+      DISPLAY_NAME "oneAPI Debug Symbols"
+      DESCRIPTION "Debug symbols for the oneAPI backend."
+      GROUP debug
+      DISABLED
+      INSTALL_TYPES Development)
+  
+    af_component(
+      COMPONENT afopencl_debug_symbols
+      DISPLAY_NAME "OpenCL Debug Symbols"
+      DESCRIPTION "Debug symbols for the OpenCL backend."
+      GROUP debug
+      DISABLED
+      INSTALL_TYPES Development)
+  
+    af_component(
+      COMPONENT afcuda_debug_symbols
+      DISPLAY_NAME "CUDA Debug Symbols"
+      DESCRIPTION "Debug symbols for CUDA backend backend."
+      GROUP debug
+      DISABLED
+      INSTALL_TYPES Development)
+  
+    af_component(
+      COMPONENT afcpu_debug_symbols
+      DISPLAY_NAME "CPU Debug Symbols"
+      DESCRIPTION "Debug symbols for CPU backend backend."
+      GROUP debug
+      DISABLED
+      INSTALL_TYPES Development)
+  
+    af_component(
+      COMPONENT af_debug_symbols
+      DISPLAY_NAME "Unified Debug Symbols"
+      DESCRIPTION "Debug symbols for the Unified backend."
+      GROUP debug
+      DISABLED
+      INSTALL_TYPES Development)
+  endif()
 endif()
 
 # if (AF_INSTALL_FORGE_DEV)

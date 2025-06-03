@@ -303,9 +303,15 @@ function(find_mkl_library)
       NAMES
         ${CMAKE_SHARED_LIBRARY_PREFIX}${mkl_args_LIBRARY_NAME}${CMAKE_SHARED_LIBRARY_SUFFIX}
         ${CMAKE_SHARED_LIBRARY_PREFIX}${mkl_args_LIBRARY_NAME}${md_suffix}${CMAKE_SHARED_LIBRARY_SUFFIX}
+        ${CMAKE_SHARED_LIBRARY_PREFIX}${mkl_args_LIBRARY_NAME}.2${CMAKE_SHARED_LIBRARY_SUFFIX}
+        ${CMAKE_SHARED_LIBRARY_PREFIX}${mkl_args_LIBRARY_NAME}.5${CMAKE_SHARED_LIBRARY_SUFFIX}
+        ${CMAKE_SHARED_LIBRARY_PREFIX}${mkl_args_LIBRARY_NAME}12${CMAKE_SHARED_LIBRARY_SUFFIX}
         lib${mkl_args_LIBRARY_NAME}${md_suffix}${CMAKE_SHARED_LIBRARY_SUFFIX}
         $ENV{LIB}
         $ENV{LIBRARY_PATH}
+      PATHS
+        ${MKL_ROOT}/bin
+        ${TBB_ROOT}/bin
       PATH_SUFFIXES
         IntelSWTools/compilers_and_libraries/windows/redist/intel64/mkl
         IntelSWTools/compilers_and_libraries/windows/redist/intel64/compiler

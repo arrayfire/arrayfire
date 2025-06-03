@@ -71,6 +71,7 @@
             "description": "Build OpenCL backend",
             "dependencies": [
                 "boost-compute",
+                "boost-program-options",
                 "opencl"
             ]
         },
