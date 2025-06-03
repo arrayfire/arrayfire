@@ -346,7 +346,11 @@ target_compile_definitions(afoneapi
     CL_HPP_TARGET_OPENCL_VERSION=300
     CL_HPP_MINIMUM_OPENCL_VERSION=110
     CL_HPP_ENABLE_EXCEPTIONS
+    AF_MKL_INTERFACE_SIZE=${MKL_INTERFACE_INTEGER_SIZE}
   )
+if(MKL_INTERFACE_INTEGER_SIZE EQUAL 8)
+  target_compile_definitions(afoneapi PRIVATE MKL_ILP64)
+endif()
 
 cmake_host_system_information(RESULT NumberOfThreads
   QUERY NUMBER_OF_LOGICAL_CORES)

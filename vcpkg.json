@@ -23,10 +23,6 @@
         {
             "name": "jasper",
             "version": "4.2.0"
-        },
-        {
-            "name": "boost-modular-build-helper",
-            "version": "1.84.0#3"
         }
     ],
     "features": {
@@ -79,12 +75,6 @@
                 "opencl"
             ]
         },
-        "mkl": {
-            "description": "Build with MKL",
-            "dependencies": [
-                "intel-mkl"
-            ]
-        },
         "cudnn": {
             "description": "Build CUDA with support for cuDNN",
             "dependencies": [
@@ -92,5 +82,5 @@
             ]
         }
     },
-    "builtin-baseline": "9d47b24eacbd1cd94f139457ef6cd35e5d92cc84"
+    "builtin-baseline": "b02e341c927f16d991edbd915d8ea43eac52096c"
 }
