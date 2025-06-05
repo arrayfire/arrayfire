@@ -64,7 +64,7 @@ class lookupNDCreateKernel {
         int gx = g.get_local_range(0) * (g.get_group_id(0) - gz * nBBS0_) + lx;
         int gy = g.get_local_range(1) * (g.get_group_id(1) - gw * nBBS1_) + ly;
 
-        const idx_t *idxPtr = indices_.get_pointer();
+        const idx_t *idxPtr = indices_.get_pointer() + idxInfo_.offset;
 
         int i = iInfo_.strides[0] *
                 (DIM_ == 0 ? trimIndex((int)idxPtr[gx], iInfo_.dims[0]) : gx);
