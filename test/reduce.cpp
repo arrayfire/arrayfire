@@ -454,7 +454,7 @@ template<typename T>
 struct generateConsq {
     T vals;
 
-    generateConsq(T v_i = 0) : vals(v_i){};
+    generateConsq(T v_i = 0) : vals(v_i) {};
 
     T operator()() { return vals++; }
 };
@@ -463,7 +463,7 @@ template<typename T>
 struct generateConst {
     T vals;
 
-    generateConst(T v_i) : vals(v_i){};
+    generateConst(T v_i) : vals(v_i) {};
 
     T operator()() { return vals; }
 };
@@ -507,29 +507,35 @@ reduce_by_key_params *rbk_single_data(const string testname, const int testSz,
 // clang-format off
 template<typename Tk, typename Tv, typename To>
 vector<reduce_by_key_params*> genUniqueKeyTests() {
-  return {rbk_unique_data<Tk, Tv, To>("unique_key", 31,          generateConsq<Tk>(0), generateConst<Tv>(Tv( 1 ))),
-          rbk_unique_data<Tk, Tv, To>("unique_key", 32,          generateConsq<Tk>(0), generateConst<Tv>(Tv( 1 ))),
-          rbk_unique_data<Tk, Tv, To>("unique_key", 33,          generateConsq<Tk>(0), generateConst<Tv>(Tv( 1 ))),
-          rbk_unique_data<Tk, Tv, To>("unique_key", 127,         generateConsq<Tk>(0), generateConst<Tv>(Tv( 1 ))),
-          rbk_unique_data<Tk, Tv, To>("unique_key", 128,         generateConsq<Tk>(0), generateConst<Tv>(Tv( 1 ))),
-          rbk_unique_data<Tk, Tv, To>("unique_key", 129,         generateConsq<Tk>(0), generateConst<Tv>(Tv( 1 ))),
-          rbk_unique_data<Tk, Tv, To>("unique_key", 1024,        generateConsq<Tk>(0), generateConst<Tv>(Tv( 1 ))),
-          rbk_unique_data<Tk, Tv, To>("unique_key", 1025,        generateConsq<Tk>(0), generateConst<Tv>(Tv( 1 ))),
-          rbk_unique_data<Tk, Tv, To>("unique_key", 1024 * 1025, generateConsq<Tk>(0), generateConst<Tv>(Tv( 1 )))
+  return {rbk_unique_data<Tk, Tv, To>("unique_key", 31, generateConsq<Tk>(0),
+generateConst<Tv>(Tv( 1 ))), rbk_unique_data<Tk, Tv, To>("unique_key", 32,
+generateConsq<Tk>(0), generateConst<Tv>(Tv( 1 ))), rbk_unique_data<Tk, Tv,
+To>("unique_key", 33,          generateConsq<Tk>(0), generateConst<Tv>(Tv( 1
+))), rbk_unique_data<Tk, Tv, To>("unique_key", 127, generateConsq<Tk>(0),
+generateConst<Tv>(Tv( 1 ))), rbk_unique_data<Tk, Tv, To>("unique_key", 128,
+generateConsq<Tk>(0), generateConst<Tv>(Tv( 1 ))), rbk_unique_data<Tk, Tv,
+To>("unique_key", 129,         generateConsq<Tk>(0), generateConst<Tv>(Tv( 1
+))), rbk_unique_data<Tk, Tv, To>("unique_key", 1024, generateConsq<Tk>(0),
+generateConst<Tv>(Tv( 1 ))), rbk_unique_data<Tk, Tv, To>("unique_key", 1025,
+generateConsq<Tk>(0), generateConst<Tv>(Tv( 1 ))), rbk_unique_data<Tk, Tv,
+To>("unique_key", 1024 * 1025, generateConsq<Tk>(0), generateConst<Tv>(Tv( 1 )))
     };
 }
 
 template<typename Tk, typename Tv, typename To>
 vector<reduce_by_key_params*> genSingleKeyTests() {
-  return {rbk_single_data<Tk, Tv, To>("single_key", 31,         generateConst<Tk>(0), generateConst<Tv>(Tv( 1 ))),
-          rbk_single_data<Tk, Tv, To>("single_key", 32,         generateConst<Tk>(0), generateConst<Tv>(Tv( 1 ))),
-          rbk_single_data<Tk, Tv, To>("single_key", 33,         generateConst<Tk>(0), generateConst<Tv>(Tv( 1 ))),
-          rbk_single_data<Tk, Tv, To>("single_key", 127,        generateConst<Tk>(0), generateConst<Tv>(Tv( 1 ))),
-          rbk_single_data<Tk, Tv, To>("single_key", 128,        generateConst<Tk>(0), generateConst<Tv>(Tv( 1 ))),
-          rbk_single_data<Tk, Tv, To>("single_key", 129,        generateConst<Tk>(0), generateConst<Tv>(Tv( 1 ))),
-          rbk_single_data<Tk, Tv, To>("single_key", 1024,       generateConst<Tk>(0), generateConst<Tv>(Tv( 1 ))),
-          rbk_single_data<Tk, Tv, To>("single_key", 1025,       generateConst<Tk>(0), generateConst<Tv>(Tv( 1 ))),
-          rbk_single_data<Tk, Tv, To>("single_key", 128 * 1025, generateConst<Tk>(0), generateConst<Tv>(Tv( 1 )))
+  return {rbk_single_data<Tk, Tv, To>("single_key", 31, generateConst<Tk>(0),
+generateConst<Tv>(Tv( 1 ))), rbk_single_data<Tk, Tv, To>("single_key", 32,
+generateConst<Tk>(0), generateConst<Tv>(Tv( 1 ))), rbk_single_data<Tk, Tv,
+To>("single_key", 33,         generateConst<Tk>(0), generateConst<Tv>(Tv( 1 ))),
+          rbk_single_data<Tk, Tv, To>("single_key", 127, generateConst<Tk>(0),
+generateConst<Tv>(Tv( 1 ))), rbk_single_data<Tk, Tv, To>("single_key", 128,
+generateConst<Tk>(0), generateConst<Tv>(Tv( 1 ))), rbk_single_data<Tk, Tv,
+To>("single_key", 129,        generateConst<Tk>(0), generateConst<Tv>(Tv( 1 ))),
+          rbk_single_data<Tk, Tv, To>("single_key", 1024, generateConst<Tk>(0),
+generateConst<Tv>(Tv( 1 ))), rbk_single_data<Tk, Tv, To>("single_key", 1025,
+generateConst<Tk>(0), generateConst<Tv>(Tv( 1 ))), rbk_single_data<Tk, Tv,
+To>("single_key", 128 * 1025, generateConst<Tk>(0), generateConst<Tv>(Tv( 1 )))
     };
 }
 // clang-format on
@@ -626,12 +632,12 @@ TYPED_TEST(ReduceByKey, MultiBlockReduceSingleval) {
     SUPPORTED_TYPE_CHECK(TypeParam);
     array keys = constant(0, 1024 * 1024, s32);
     array vals = constant(1, 1024 * 1024,
-            (af_dtype)af::dtype_traits<TypeParam>::af_type);
+                          (af_dtype)af::dtype_traits<TypeParam>::af_type);
 
     array keyResGold      = constant(0, 1);
-    using promoted_t = typename promote_type<TypeParam, af_sum>::type;
-    array valsReducedGold = constant(1024 * 1024, 1,
-            (af_dtype)af::dtype_traits<promoted_t>::af_type);
+    using promoted_t      = typename promote_type<TypeParam, af_sum>::type;
+    array valsReducedGold = constant(
+        1024 * 1024, 1, (af_dtype)af::dtype_traits<promoted_t>::af_type);
 
     array keyRes, valsReduced;
     sumByKey(keyRes, valsReduced, keys, vals);
@@ -842,9 +848,9 @@ TYPED_TEST(ReduceByKey, ReduceByKeyNans) {
 
     SKIP_IF_FAST_MATH_ENABLED();
     SUPPORTED_TYPE_CHECK(TypeParam);
-    const static int testSz          = 8;
-    const int testKeys[testSz]       = {0, 2, 2, 9, 5, 5, 5, 8};
-    const TypeParam nan = std::numeric_limits<TypeParam>::quiet_NaN();
+    const static int testSz    = 8;
+    const int testKeys[testSz] = {0, 2, 2, 9, 5, 5, 5, 8};
+    const TypeParam nan        = std::numeric_limits<TypeParam>::quiet_NaN();
     const TypeParam testVals[testSz] = {0, 7, nan, 6, 2, 5, 3, 4};
 
     array keys(testSz, testKeys);
@@ -906,7 +912,7 @@ TYPED_TEST(ReduceByKey, nDim1ReduceByKey) {
     const double nanval = 0.0;
     sumByKey(reduced_keys, reduced_vals, keys, vals, dim, nanval);
 
-    const int goldSz                = 5;
+    const int goldSz = 5;
     using promoted_t = typename promote_type<TypeParam, af_sum>::type;
     const promoted_t gold_reduce[goldSz] = {0, 8, 6, 10, 4};
     vector<promoted_t> hreduce(reduced_vals.elements());
@@ -935,7 +941,7 @@ TYPED_TEST(ReduceByKey, nDim2ReduceByKey) {
     const double nanval = 0.0;
     sumByKey(reduced_keys, reduced_vals, keys, vals, dim, nanval);
 
-    const int goldSz                = 5;
+    const int goldSz = 5;
     using promoted_t = typename promote_type<TypeParam, af_sum>::type;
     const promoted_t gold_reduce[goldSz] = {0, 8, 6, 10, 4};
     vector<promoted_t> h_a(reduced_vals.elements());
@@ -964,7 +970,7 @@ TYPED_TEST(ReduceByKey, nDim3ReduceByKey) {
     const double nanval = 0.0;
     sumByKey(reduced_keys, reduced_vals, keys, vals, dim, nanval);
 
-    const int goldSz                = 5;
+    const int goldSz = 5;
     using promoted_t = typename promote_type<TypeParam, af_sum>::type;
     const promoted_t gold_reduce[goldSz] = {0, 8, 6, 10, 4};
     vector<promoted_t> h_a(reduced_vals.elements());
@@ -2420,7 +2426,7 @@ TEST(Reduce, SNIPPET_algorithm_func_sum) {
                                           //      1, 3, 5]
 
     // Create b by summing across the first dimension
-    array b = sum(a);        // sum across the first dimension, same as sum(a, 0)
+    array b = sum(a);        // sum across the first dimension, same as sum(a,0)
 
     // Create c by summing across the second dimension
     array c = sum(a, 1);     // sum across the second dimension
@@ -2448,3 +2454,90 @@ TEST(Reduce, SNIPPET_algorithm_func_sum) {
     ASSERT_VEC_ARRAY_EQ(gold_a, d.dims(), d);
     ASSERT_VEC_ARRAY_EQ(gold_a, e.dims(), e);
 }
+
+#define TEMP_FORMAT_TESTS_reduce(form, op)                    \
+    TEST(TEMP_FORMAT, form##_##op##_array) {                  \
+        const array in(dim4(1, 1, 1, 3), {1.f, 2.f, 3.f});    \
+        const array gold = op(in, 3);                         \
+        array out        = op(toTempFormat(form, in), 3);     \
+        EXPECT_ARRAYS_EQ(out, gold);                          \
+    }                                                         \
+    TEST(TEMP_FORMAT, form##_##op##_value) {                  \
+        const array in(dim4(1, 1, 1, 3), {1.f, 2.f, 3.f});    \
+        const float gold = op<float>(in);                     \
+        float out        = op<float>(toTempFormat(form, in)); \
+        EXPECT_EQ(out, gold);                                 \
+    }
+
+#define TEMP_FORMAT_TESTS_ragged(form, op)                                     \
+    TEST(TEMP_FORMAT, form##_##op##_ragged) {                                  \
+        const array in(dim4(1, 1, 1, 3), {1.f, 2.f, 3.f});                     \
+        const array ragged_len(dim4(1), {(unsigned)in.elements()});            \
+        array gold_vals, gold_idxs;                                            \
+        op(gold_vals, gold_idxs, in, ragged_len, 3);                           \
+        array vals, idxs;                                                      \
+        op(vals, idxs, toTempFormat(form, in), toTempFormat(form, ragged_len), \
+           3);                                                                 \
+        EXPECT_ARRAYS_EQ(vals, gold_vals);                                     \
+        EXPECT_ARRAYS_EQ(idxs, gold_idxs);                                     \
+    }
+
+#define TEMP_FORMAT_TESTS_ByKey(form, op)                      \
+    TEST(TEMP_FORMAT, form##_##op) {                           \
+        const array in(dim4(1, 1, 1, 3), {1.f, 2.f, 3.f});     \
+        const array keys(constant(0, in.dims().dims[3], u32)); \
+        keys.eval();                                           \
+        array gold_keys, gold_vals;                            \
+        op(gold_keys, gold_vals, keys, in, 3);                 \
+        array out_keys, out_vals;                              \
+        op(out_keys, out_vals, toTempFormat(form, keys),       \
+           toTempFormat(form, in), 3);                         \
+        EXPECT_ARRAYS_EQ(gold_vals, out_vals);                 \
+        EXPECT_ARRAYS_EQ(gold_keys, out_keys);                 \
+    }
+
+#define TEMP_FORMAT_TESTS_allTest(form, op)                         \
+    TEST(TEMP_FORMAT, form##_##op##_array) {                        \
+        const array in(dim4(1, 1, 1, 3), {1.f, 2.f, 3.f});          \
+        const array gold = op(in > 2.0, 3);                         \
+        array out        = op(toTempFormat(form, in) > 2.0, 3);     \
+        EXPECT_ARRAYS_EQ(gold, out);                                \
+    }                                                               \
+    TEST(TEMP_FORMAT, form##_##op##_value) {                        \
+        const array in(dim4(1, 1, 1, 3), {1.f, 2.f, 3.f});          \
+        const float gold = op<float>(in > 2.0);                     \
+        float out        = op<float>(toTempFormat(form, in) > 2.0); \
+        EXPECT_EQ(gold, out);                                       \
+    }
+
+#define TEMP_FORMAT_TESTS_allTestByKey(form, op)               \
+    TEST(TEMP_FORMAT, form##_##op) {                           \
+        const array in(dim4(1, 1, 1, 3), {1.f, 2.f, 3.f});     \
+        const array keys(constant(0, in.dims().dims[3], u32)); \
+        array gold_vals, gold_keys;                            \
+        op(gold_keys, gold_vals, keys, in > 2.0, 3);           \
+        array out_vals, out_keys;                              \
+        op(out_keys, out_vals, toTempFormat(form, keys),       \
+           toTempFormat(form, in) > 2.0, 3);                   \
+        EXPECT_ARRAYS_EQ(gold_vals, out_vals);                 \
+        EXPECT_ARRAYS_EQ(gold_keys, out_keys);                 \
+    }
+
+#define TEMP_FORMATS_TESTS(form)                        \
+    TEMP_FORMAT_TESTS_reduce(form, min);                \
+    TEMP_FORMAT_TESTS_reduce(form, max);                \
+    TEMP_FORMAT_TESTS_reduce(form, sum);                \
+    TEMP_FORMAT_TESTS_reduce(form, product);            \
+    TEMP_FORMAT_TESTS_reduce(form, count);              \
+    TEMP_FORMAT_TESTS_ragged(form, max);                \
+    TEMP_FORMAT_TESTS_ByKey(form, minByKey);            \
+    TEMP_FORMAT_TESTS_ByKey(form, maxByKey);            \
+    TEMP_FORMAT_TESTS_ByKey(form, sumByKey);            \
+    TEMP_FORMAT_TESTS_ByKey(form, productByKey);        \
+    TEMP_FORMAT_TESTS_ByKey(form, countByKey);          \
+    TEMP_FORMAT_TESTS_allTest(form, allTrue);           \
+    TEMP_FORMAT_TESTS_allTest(form, anyTrue);           \
+    TEMP_FORMAT_TESTS_allTestByKey(form, allTrueByKey); \
+    TEMP_FORMAT_TESTS_allTestByKey(form, anyTrueByKey);
+
+FOREACH_TEMP_FORMAT(TEMP_FORMATS_TESTS)
