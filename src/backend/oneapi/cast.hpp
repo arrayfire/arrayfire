@@ -34,10 +34,14 @@ struct CastOp {
 
 CAST_FN(int)
 CAST_FN(uint)
-CAST_FN(schar)
 CAST_FN(uchar)
 CAST_FN(float)
 CAST_FN(double)
+
+template<typename Ti>
+struct CastOp<schar, Ti> {
+    const char *name() { return "convert_char"; }
+};
 
 #define CAST_CFN(TYPE)                                    \
     template<typename Ti>                                 \
