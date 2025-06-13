@@ -8,71 +8,12 @@
  ********************************************************/
 #pragma once
 #include <sycl/sycl.hpp>
+#include <math.hpp>
 
 namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
-// TODO: !!!! half functions still need to be ported !!!!
-
-//// Conversion to half adapted from Random123
-//// #define HALF_FACTOR (1.0f) / (std::numeric_limits<ushort>::max() + (1.0f))
-//// #define HALF_HALF_FACTOR ((0.5f) * HALF_FACTOR)
-////
-//// NOTE: The following constants for half were calculated using the formulas
-//// above. This is done so that we can avoid unnecessary computations because
-/// the / __half datatype is not a constexprable type. This prevents the
-/// compiler from / peforming these operations at compile time.
-// #define HALF_FACTOR __ushort_as_half(0x100u)
-// #define HALF_HALF_FACTOR __ushort_as_half(0x80)
-//
-//// Conversion to half adapted from Random123
-////#define SIGNED_HALF_FACTOR                                \
-//    //((1.0f) / (std::numeric_limits<short>::max() + (1.0f)))
-////#define SIGNED_HALF_HALF_FACTOR ((0.5f) * SIGNED_HALF_FACTOR)
-////
-//// NOTE: The following constants for half were calculated using the formulas
-//// above. This is done so that we can avoid unnecessary computations because
-/// the / __half datatype is not a constexprable type. This prevents the
-/// compiler from / peforming these operations at compile time
-// #define SIGNED_HALF_FACTOR __ushort_as_half(0x200u)
-// #define SIGNED_HALF_HALF_FACTOR __ushort_as_half(0x100u)
-//
-///// This is the largest integer representable by fp16. We need to
-///// make sure that the value converted from ushort is smaller than this
-///// value to avoid generating infinity
-// constexpr ushort max_int_before_infinity = 65504;
-//
-//// Generates rationals in (0, 1]
-//__device__ static __half oneMinusGetHalf01(uint num) {
-//    // convert to ushort before the min operation
-//    ushort v = min(max_int_before_infinity, ushort(num));
-// #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ < 530
-//    return (1.0f - __half2float(__hfma(__ushort2half_rn(v), HALF_FACTOR,
-//                                       HALF_HALF_FACTOR)));
-// #else
-//    __half out = __ushort_as_half(0x3c00u) /*1.0h*/ -
-//                 __hfma(__ushort2half_rn(v), HALF_FACTOR, HALF_HALF_FACTOR);
-//    if (__hisinf(out)) printf("val: %d ushort: %d\n", num, v);
-//    return out;
-// #endif
-//}
-//
-//// Generates rationals in (0, 1]
-//__device__ static __half getHalf01(uint num) {
-//    // convert to ushort before the min operation
-//    ushort v = min(max_int_before_infinity, ushort(num));
-//    return __hfma(__ushort2half_rn(v), HALF_FACTOR, HALF_HALF_FACTOR);
-//}
-//
-//// Generates rationals in (-1, 1]
-//__device__ static __half getHalfNegative11(uint num) {
-//    // convert to ushort before the min operation
-//    ushort v = min(max_int_before_infinity, ushort(num));
-//    return __hfma(__ushort2half_rn(v), SIGNED_HALF_FACTOR,
-//                  SIGNED_HALF_HALF_FACTOR);
-//}
-//
 // Generates rationals in (0, 1]
 static float getFloat01(uint num) {
     // Conversion to floats adapted from Random123
@@ -126,94 +67,43 @@ static double getDoubleNegative11(uint num1, uint num2) {
     return sycl::fma(static_cast<double>(num), signed_factor, half_factor);
 }
 
+/// This is the largest integer representable by fp16. We need to
+/// make sure that the value converted from ushort is smaller than this
+/// value to avoid generating infinity
+#define MAX_INT_BEFORE_INFINITY (ushort)65504u
+
+// Generates rationals in (0, 1]
+sycl::half getHalf01(uint num, uint index) {
+    sycl::half v = static_cast<sycl::half>(min(MAX_INT_BEFORE_INFINITY,
+                       static_cast<ushort>(num >> (16U * (index & 1U)) & 0x0000ffff)));
+
+    const sycl::half half_factor{1.526e-5}; // (1 / (USHRT_MAX + 1))
+    const sycl::half half_half_factor{7.6e-6}; // (0.5 * half_factor)
+    return sycl::fma(v, half_factor, half_half_factor);
+}
+
+sycl::half oneMinusGetHalf01(uint num, uint index) {
+    return static_cast<sycl::half>(1.) - getHalf01(num, index);
+}
+
+// Generates rationals in (-1, 1]
+sycl::half getHalfNegative11(uint num, uint index) {
+    sycl::half v = static_cast<sycl::half>(min(MAX_INT_BEFORE_INFINITY,
+                       static_cast<ushort>(num >> (16U * (index & 1U)) & 0x0000ffff)));
+
+    const sycl::half signed_half_factor{3.05e-5}; // (1 / (SHRT_MAX + 1))
+    const sycl::half signed_half_half_factor{1.526e-5}; // (0.5 * signed_half_factor)
+    return sycl::fma(v, signed_half_factor, signed_half_half_factor);
+}
+
 namespace {
-//
-// #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 530
-// #define HALF_MATH_FUNC(OP, HALF_OP)    \
-//    template<>                         \
-//    __device__ __half OP(__half val) { \
-//        return ::HALF_OP(val);         \
-//    }
-// #else
-// #define HALF_MATH_FUNC(OP, HALF_OP)     \
-//    template<>                          \
-//    __device__ __half OP(__half val) {  \
-//        float fval = __half2float(val); \
-//        return __float2half(OP(fval));  \
-//    }
-// #endif
-//
-// #define MATH_FUNC(OP, DOUBLE_OP, FLOAT_OP, HALF_OP) \
-//    template<typename T>                            \
-//    __device__ T OP(T val);                         \
-//    template<>                                      \
-//    __device__ double OP(double val) {              \
-//        return ::DOUBLE_OP(val);                    \
-//    }                                               \
-//    template<>                                      \
-//    __device__ float OP(float val) {                \
-//        return ::FLOAT_OP(val);                     \
-//    }                                               \
-//    HALF_MATH_FUNC(OP, HALF_OP)
-//
-// MATH_FUNC(log, log, logf, hlog)
-// MATH_FUNC(sqrt, sqrt, sqrtf, hsqrt)
-// MATH_FUNC(sin, sin, sinf, hsin)
-// MATH_FUNC(cos, cos, cosf, hcos)
-//
-// template<typename T>
-//__device__ void sincos(T val, T *sptr, T *cptr);
-//
-// template<>
-//__device__ void sincos(double val, double *sptr, double *cptr) {
-//    ::sincos(val, sptr, cptr);
-//}
-//
-// template<>
-//__device__ void sincos(float val, float *sptr, float *cptr) {
-//    sincosf(val, sptr, cptr);
-//}
-//
-// template<>
-//__device__ void sincos(__half val, __half *sptr, __half *cptr) {
-// #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 530
-//    *sptr = sin(val);
-//    *cptr = cos(val);
-// #else
-//    float s, c;
-//    float fval = __half2float(val);
-//    sincos(fval, &s, &c);
-//    *sptr = __float2half(s);
-//    *cptr = __float2half(c);
-// #endif
-//}
-//
 template<typename T>
 void sincospi(T val, T *sptr, T *cptr) {
     *sptr = sycl::sinpi(val);
     *cptr = sycl::cospi(val);
 }
-
-// template<>
-//__device__ void sincospi(__half val, __half *sptr, __half *cptr) {
-//    // CUDA cannot make __half into a constexpr as of CUDA 11 so we are
-//    // converting this offline
-// #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 530
-//    const __half pi_val = __ushort_as_half(0x4248);  // 0x4248 == 3.14062h
-//    val *= pi_val;
-//    *sptr = sin(val);
-//    *cptr = cos(val);
-// #else
-//    float fval = __half2float(val);
-//    float s, c;
-//    sincospi(fval, &s, &c);
-//    *sptr = __float2half(s);
-//    *cptr = __float2half(c);
-// #endif
-//}
-//
 }  // namespace
-//
+
 template<typename T>
 constexpr T neg_two() {
     return -2.0;
@@ -273,13 +163,6 @@ static void boxMullerTransform(Td *const out1, Td *const out2, const Tc &r1,
     *out1 = static_cast<Td>(r * s);
     *out2 = static_cast<Td>(r * c);
 }
-// template<>
-//__device__ void boxMullerTransform<arrayfire::common::half, __half>(
-//    arrayfire::common::half *const out1, arrayfire::common::half *const out2,
-//    const __half &r1, const __half &r2) { float o1, o2; float fr1 =
-//    __half2float(r1); float fr2 = __half2float(r2); boxMullerTransform(&o1,
-//    &o2, fr1, fr2); *out1 = o1; *out2 = o2;
-//}
 
 // Writes without boundary checking
 static void writeOut128Bytes(uchar *out, const uint &index, const uint groupSz,
@@ -413,14 +296,14 @@ static void writeOut128Bytes(cdouble *out, const uint &index,
 static void writeOut128Bytes(arrayfire::common::half *out, const uint &index,
                              const uint groupSz, const uint &r1, const uint &r2,
                              const uint &r3, const uint &r4) {
-    // out[index]               = oneMinusGetHalf01(r1);
-    // out[index + groupSz]     = oneMinusGetHalf01(r1 >> 16);
-    // out[index + 2 * groupSz] = oneMinusGetHalf01(r2);
-    // out[index + 3 * groupSz] = oneMinusGetHalf01(r2 >> 16);
-    // out[index + 4 * groupSz] = oneMinusGetHalf01(r3);
-    // out[index + 5 * groupSz] = oneMinusGetHalf01(r3 >> 16);
-    // out[index + 6 * groupSz] = oneMinusGetHalf01(r4);
-    // out[index + 7 * groupSz] = oneMinusGetHalf01(r4 >> 16);
+    out[index]               = oneMinusGetHalf01(r1, 0);
+    out[index + groupSz]     = oneMinusGetHalf01(r1, 1);
+    out[index + 2 * groupSz] = oneMinusGetHalf01(r2, 0);
+    out[index + 3 * groupSz] = oneMinusGetHalf01(r2, 1);
+    out[index + 4 * groupSz] = oneMinusGetHalf01(r3, 0);
+    out[index + 5 * groupSz] = oneMinusGetHalf01(r3, 1);
+    out[index + 6 * groupSz] = oneMinusGetHalf01(r4, 0);
+    out[index + 7 * groupSz] = oneMinusGetHalf01(r4, 1);
 }
 
 // Normalized writes without boundary checking
@@ -464,17 +347,14 @@ static void boxMullerWriteOut128Bytes(arrayfire::common::half *out,
                                       const uint &index, const uint groupSz,
                                       const uint &r1, const uint &r2,
                                       const uint &r3, const uint &r4) {
-    //   boxMullerTransform(&out[index], &out[index + groupSz],
-    //                      getHalfNegative11(r1), getHalf01(r1 >> 16));
-    //   boxMullerTransform(&out[index + 2 * groupSz],
-    //                      &out[index + 3 * groupSz], getHalfNegative11(r2),
-    //                      getHalf01(r2 >> 16));
-    //   boxMullerTransform(&out[index + 4 * groupSz],
-    //                      &out[index + 5 * groupSz], getHalfNegative11(r3),
-    //                      getHalf01(r3 >> 16));
-    //   boxMullerTransform(&out[index + 6 * groupSz],
-    //                      &out[index + 7 * groupSz], getHalfNegative11(r4),
-    //                      getHalf01(r4 >> 16));
+    boxMullerTransform(&out[index], &out[index + groupSz],
+                       getHalfNegative11(r1, 0), getHalf01(r1, 1));
+    boxMullerTransform(&out[index + 2 * groupSz], &out[index + 3 * groupSz],
+                       getHalfNegative11(r2, 0), getHalf01(r2, 1));
+    boxMullerTransform(&out[index + 4 * groupSz], &out[index + 5 * groupSz],
+                       getHalfNegative11(r3, 0), getHalf01(r3, 1));
+    boxMullerTransform(&out[index + 6 * groupSz], &out[index + 7 * groupSz],
+                       getHalfNegative11(r4, 0), getHalf01(r4, 1));
 }
 
 // Writes with boundary checking
@@ -727,28 +607,28 @@ static void partialWriteOut128Bytes(arrayfire::common::half *out,
                                     const uint &r1, const uint &r2,
                                     const uint &r3, const uint &r4,
                                     const uint &elements) {
-    //  if (index < elements) { out[index] = oneMinusGetHalf01(r1); }
-    //  if (index + groupSz < elements) {
-    //      out[index + groupSz] = oneMinusGetHalf01(r1 >> 16);
-    //  }
-    //  if (index + 2 * groupSz < elements) {
-    //      out[index + 2 * groupSz] = oneMinusGetHalf01(r2);
-    //  }
-    //  if (index + 3 * groupSz < elements) {
-    //      out[index + 3 * groupSz] = oneMinusGetHalf01(r2 >> 16);
-    //  }
-    //  if (index + 4 * groupSz < elements) {
-    //      out[index + 4 * groupSz] = oneMinusGetHalf01(r3);
-    //  }
-    //  if (index + 5 * groupSz < elements) {
-    //      out[index + 5 * groupSz] = oneMinusGetHalf01(r3 >> 16);
-    //  }
-    //  if (index + 6 * groupSz < elements) {
-    //      out[index + 6 * groupSz] = oneMinusGetHalf01(r4);
-    //  }
-    //  if (index + 7 * groupSz < elements) {
-    //      out[index + 7 * groupSz] = oneMinusGetHalf01(r4 >> 16);
-    //  }
+    if (index < elements) { out[index] = oneMinusGetHalf01(r1, 0); }
+    if (index + groupSz < elements) {
+        out[index + groupSz] = oneMinusGetHalf01(r1, 1);
+    }
+    if (index + 2 * groupSz < elements) {
+        out[index + 2 * groupSz] = oneMinusGetHalf01(r2, 0);
+    }
+    if (index + 3 * groupSz < elements) {
+        out[index + 3 * groupSz] = oneMinusGetHalf01(r2, 1);
+    }
+    if (index + 4 * groupSz < elements) {
+        out[index + 4 * groupSz] = oneMinusGetHalf01(r3, 0);
+    }
+    if (index + 5 * groupSz < elements) {
+        out[index + 5 * groupSz] = oneMinusGetHalf01(r3, 1);
+    }
+    if (index + 6 * groupSz < elements) {
+        out[index + 6 * groupSz] = oneMinusGetHalf01(r4, 0);
+    }
+    if (index + 7 * groupSz < elements) {
+        out[index + 7 * groupSz] = oneMinusGetHalf01(r4, 1);
+    }
 }
 
 // Normalized writes with boundary checking
@@ -758,35 +638,22 @@ static void partialBoxMullerWriteOut128Bytes(arrayfire::common::half *out,
                                              const uint &r2, const uint &r3,
                                              const uint &r4,
                                              const uint &elements) {
-    //    arrayfire::common::half n[8];
-    //    boxMullerTransform(n + 0, n + 1, getHalfNegative11(r1),
-    //                       getHalf01(r1 >> 16));
-    //    boxMullerTransform(n + 2, n + 3, getHalfNegative11(r2),
-    //                       getHalf01(r2 >> 16));
-    //    boxMullerTransform(n + 4, n + 5, getHalfNegative11(r3),
-    //                       getHalf01(r3 >> 16));
-    //    boxMullerTransform(n + 6, n + 7, getHalfNegative11(r4),
-    //                       getHalf01(r4 >> 16));
-    //    if (index < elements) { out[index] = n[0]; }
-    //    if (index + groupSz < elements) { out[index + groupSz] = n[1]; }
-    //    if (index + 2 * groupSz < elements) {
-    //        out[index + 2 * groupSz] = n[2];
-    //    }
-    //    if (index + 3 * groupSz < elements) {
-    //        out[index + 3 * groupSz] = n[3];
-    //    }
-    //    if (index + 4 * groupSz < elements) {
-    //        out[index + 4 * groupSz] = n[4];
-    //    }
-    //    if (index + 5 * groupSz < elements) {
-    //        out[index + 5 * groupSz] = n[5];
-    //    }
-    //    if (index + 6 * groupSz < elements) {
-    //        out[index + 6 * groupSz] = n[6];
-    //    }
-    //    if (index + 7 * groupSz < elements) {
-    //        out[index + 7 * groupSz] = n[7];
-    //    }
+    sycl::half n1, n2;
+    boxMullerTransform(&n1, &n2, getHalfNegative11(r1, 0), getHalf01(r1, 1));
+    if (index < elements) { out[index] = n1; }
+    if (index + groupSz < elements) { out[index + groupSz] = n2; }
+
+    boxMullerTransform(&n1, &n2, getHalfNegative11(r2, 0), getHalf01(r2, 1));
+    if (index + 2 * groupSz < elements) { out[index + 2 * groupSz] = n1; }
+    if (index + 3 * groupSz < elements) { out[index + 3 * groupSz] = n2; }
+
+    boxMullerTransform(&n1, &n2, getHalfNegative11(r3, 0), getHalf01(r3, 1));
+    if (index + 4 * groupSz < elements) { out[index + 4 * groupSz] = n1; }
+    if (index + 5 * groupSz < elements) { out[index + 5 * groupSz] = n2; }
+
+    boxMullerTransform(&n1, &n2, getHalfNegative11(r4, 0), getHalf01(r4, 1));
+    if (index + 6 * groupSz < elements) { out[index + 6 * groupSz] = n1; }
+    if (index + 7 * groupSz < elements) { out[index + 7 * groupSz] = n2; }
 }
 
 }  // namespace kernel
