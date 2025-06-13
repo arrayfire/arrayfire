@@ -541,3 +541,15 @@ TEST(IndexedReduce, min_subarray_1) {
         ASSERT_EQ(h_idx[i], gold_idx[i]);
     }
 }
+
+//Ensure that array is evaluated before reducing
+TEST(IndexedReduce, reduce_jit_array) {
+    af::array jit(af::dim4(2),{1.0f, 2.0f});
+    jit += af::constant(1.0f, af::dim4(2));
+    float val; unsigned idx;
+    float gold_val = 2.0f;
+    unsigned gold_idx = 0;
+    af::min(&val, &idx, jit);
+    ASSERT_EQ(val, gold_val);
+    ASSERT_EQ(idx, gold_idx);
+}
