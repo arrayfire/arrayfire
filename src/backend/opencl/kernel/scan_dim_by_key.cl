@@ -34,7 +34,7 @@ kernel void scanDimByKeyNonfinal(
     // Hence increment ids[kDim] just after offseting out and before offsetting
     // in
     tData += ids[3] * tInfo.strides[3] + ids[2] * tInfo.strides[2] +
-             ids[1] * tInfo.strides[1] + ids[0];
+             ids[1] * tInfo.strides[1] + ids[0] ;
     tfData += ids[3] * tfInfo.strides[3] + ids[2] * tfInfo.strides[2] +
               ids[1] * tfInfo.strides[1] + ids[0];
     tiData += ids[3] * tiInfo.strides[3] + ids[2] * tiInfo.strides[2] +
@@ -45,10 +45,9 @@ kernel void scanDimByKeyNonfinal(
     oData += ids[3] * oInfo.strides[3] + ids[2] * oInfo.strides[2] +
              ids[1] * oInfo.strides[1] + ids[0];
     iData += ids[3] * iInfo.strides[3] + ids[2] * iInfo.strides[2] +
-             ids[1] * iInfo.strides[1] + ids[0];
+             ids[1] * iInfo.strides[1] + ids[0] + iInfo.offset;
     kData += ids[3] * kInfo.strides[3] + ids[2] * kInfo.strides[2] +
-             ids[1] * kInfo.strides[1] + ids[0];
-    iData += iInfo.offset;
+             ids[1] * kInfo.strides[1] + ids[0] + kInfo.offset;
 
     int id_dim        = ids[kDim];
     const int out_dim = oInfo.dims[kDim];
@@ -192,10 +191,9 @@ kernel void scanDimByKeyFinal(global To *oData, KParam oInfo,
     oData += ids[3] * oInfo.strides[3] + ids[2] * oInfo.strides[2] +
              ids[1] * oInfo.strides[1] + ids[0];
     iData += ids[3] * iInfo.strides[3] + ids[2] * iInfo.strides[2] +
-             ids[1] * iInfo.strides[1] + ids[0];
+             ids[1] * iInfo.strides[1] + ids[0] + iInfo.offset;
     kData += ids[3] * kInfo.strides[3] + ids[2] * kInfo.strides[2] +
-             ids[1] * kInfo.strides[1] + ids[0];
-    iData += iInfo.offset;
+             ids[1] * kInfo.strides[1] + ids[0] + kInfo.offset;
 
     int id_dim        = ids[kDim];
     const int out_dim = oInfo.dims[kDim];
