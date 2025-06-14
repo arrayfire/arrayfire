@@ -31,8 +31,8 @@ kernel void compact(global int *reduced_block_sizes, global Tk *oKeys,
                    : (reduced_block_sizes[bid] - reduced_block_sizes[bid - 1]);
     int writeloc = (bid == 0) ? 0 : reduced_block_sizes[bid - 1];
 
-    k = iKeys[gid];
-    v = iVals[bOffset + gid];
+    k = iKeys[gid + iKInfo.offset];
+    v = iVals[bOffset + gid + iVInfo.offset];
 
     if (lid < nwrite) {
         oKeys[writeloc + lid]           = k;
