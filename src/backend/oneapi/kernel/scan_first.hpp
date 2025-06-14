@@ -71,7 +71,7 @@ class scanFirstKernel {
         To *tptr       = tmp_acc_.get_pointer();
 
         iptr += wid * iInfo_.strides[3] + zid * iInfo_.strides[2] +
-                yid * iInfo_.strides[1];
+                yid * iInfo_.strides[1] + iInfo_.offset;
         optr += wid * oInfo_.strides[3] + zid * oInfo_.strides[2] +
                 yid * oInfo_.strides[1];
         tptr += wid * tInfo_.strides[3] + zid * tInfo_.strides[2] +
