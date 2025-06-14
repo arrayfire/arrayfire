@@ -280,9 +280,9 @@ TEST(Join, respect_parameters_order_ISSUE3511) {
     const af::array jit2{buf2 + 2.0};
     const std::array<af::array, 8> cases{jit1,  -jit1,       jit1 + 1.0, jit2,
                                          -jit2, jit1 + jit2, buf1,       buf2};
-    const std::array<char*, 8> cases_name{"JIT1", "-JIT1", "JIT1+1.0",
-                                          "JIT2", "-JIT2", "JIT1+JIT2",
-                                          "BUF1", "BUF2"};
+    const std::array<const char*, 8> cases_name{"JIT1", "-JIT1", "JIT1+1.0",
+                                                "JIT2", "-JIT2", "JIT1+JIT2",
+                                                "BUF1", "BUF2"};
     assert(cases.size() == cases_name.size());
     for (size_t cl0{0}; cl0 < cases.size(); ++cl0) {
         for (size_t cl1{0}; cl1 < cases.size(); ++cl1) {
@@ -312,3 +312,22 @@ TEST(Join, respect_parameters_order_ISSUE3511) {
         }
     }
 }
+
+#define TEST_TEMP_FORMAT(form, d)                                           \
+    TEST(TEMP_FORMAT, form##_dim##d) {                                      \
+        const dim4 dims(2, 2, 2, 2);                                        \
+        const array a(randu(dims));                                         \
+        const array b(randu(dims));                                         \
+                                                                            \
+        array out  = join(d, toTempFormat(form, a), toTempFormat(form, b)); \
+        array gold = join(d, a, b);                                         \
+        EXPECT_ARRAYS_EQ(gold, out);                                        \
+    }
+
+#define TEST_TEMP_FORMATS(form) \
+    TEST_TEMP_FORMAT(form, 0)   \
+    TEST_TEMP_FORMAT(form, 1)   \
+    TEST_TEMP_FORMAT(form, 2)   \
+    TEST_TEMP_FORMAT(form, 3)
+
+FOREACH_TEMP_FORMAT(TEST_TEMP_FORMATS)
