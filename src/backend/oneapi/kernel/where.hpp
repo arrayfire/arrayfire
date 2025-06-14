@@ -73,7 +73,7 @@ class whereKernel {
         otptr += wid * otInfo_.strides[3] + zid * otInfo_.strides[2] +
                  yid * otInfo_.strides[1];
         iptr += wid * iInfo_.strides[3] + zid * iInfo_.strides[2] +
-                yid * iInfo_.strides[1];
+                yid * iInfo_.strides[1] + iInfo_.offset;
 
         size_t odims0 = otInfo_.dims[0];
         size_t odims1 = otInfo_.dims[1];
