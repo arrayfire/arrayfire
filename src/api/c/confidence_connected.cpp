@@ -45,8 +45,13 @@ using std::swap;
 template<typename T>
 Array<T> pointList(const Array<T>& in, const Array<uint>& x,
                    const Array<uint>& y) {
-    af_array xcoords                          = getHandle<uint>(x);
-    af_array ycoords                          = getHandle<uint>(y);
+    // Array<T> has to be a basic array, to be accepted as af_index
+    Array<uint> x_ = (x.getOffset() == 0 && x.isLinear()) ? x : copyArray(x);
+    Array<uint> y_ = (y.getOffset() == 0 && y.isLinear()) ? y : copyArray(y);
+
+    af_array xcoords = getHandle<uint>(x_);
+    af_array ycoords = getHandle<uint>(y_);
+
     std::array<af_index_t, AF_MAX_DIMS> idxrs = {{{{xcoords}, false, false},
                                                   {{ycoords}, false, false},
                                                   createSpanIndex(),
