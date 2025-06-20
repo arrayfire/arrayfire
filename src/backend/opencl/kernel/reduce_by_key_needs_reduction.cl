@@ -32,8 +32,8 @@ kernel void test_needs_reduction(global int *needs_another_reduction,
     // last thread in each block checks if any inter-block keys need further
     // reduction
     if (gid == ((bid + 1) * DIMX) - 1 && bid < get_num_groups(0) - 1) {
-        int k0 = iKeys[gid];
-        int k1 = iKeys[gid + 1];
+        int k0 = iKeys[gid + iKInfo.offset];
+        int k1 = iKeys[gid + 1 + iKInfo.offset];
         if (k0 == k1) { atomic_or(needs_block_boundary_reduced, 1); }
     }
 }

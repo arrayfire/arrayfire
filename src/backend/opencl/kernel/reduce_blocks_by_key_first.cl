@@ -72,10 +72,10 @@ kernel void reduce_blocks_by_key_first(global int *reduced_block_sizes,
     Tk k;
     To v;
     if (gid < n) {
-        k                 = iKeys[gid];
+        k                 = iKeys[gid + iKInfo.offset];
         const int bOffset = bidw * iVInfo.strides[3] +
                             bidz * iVInfo.strides[2] + bidy * iVInfo.strides[1];
-        v = transform(iVals[bOffset + gid]);
+        v = transform(iVals[bOffset + gid + iVInfo.offset]);
         if (change_nan) v = IS_NAN(v) ? nanval : v;
     } else {
         v = init_val;

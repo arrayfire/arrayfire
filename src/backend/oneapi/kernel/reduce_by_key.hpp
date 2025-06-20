@@ -51,8 +51,8 @@ class finalBoundaryReduceKernel {
         common::Binary<compute_t<To>, op> binOp;
         if (gid == ((bid + 1) * it.get_local_range(0)) - 1 &&
             bid < g.get_group_range(0) - 1) {
-            Tk k0 = iKeys_[gid];
-            Tk k1 = iKeys_[gid + 1];
+            Tk k0 = iKeys_[gid + iKInfo_.offset];
+            Tk k1 = iKeys_[gid + 1 + iKInfo_.offset];
 
             if (k0 == k1) {
                 compute_t<To> v0          = compute_t<To>(oVals_[gid]);
@@ -104,8 +104,8 @@ class finalBoundaryReduceDimKernel {
         common::Binary<compute_t<To>, op> binOp;
         if (gid == ((bid + 1) * it.get_local_range(0)) - 1 &&
             bid < g.get_group_range(0) - 1) {
-            Tk k0 = iKeys_[gid];
-            Tk k1 = iKeys_[gid + 1];
+            Tk k0 = iKeys_[gid + iKInfo_.offset];
+            Tk k1 = iKeys_[gid + 1 + iKInfo_.offset];
 
             if (k0 == k1) {
                 compute_t<To> v0          = compute_t<To>(oVals_[gid]);
@@ -163,7 +163,7 @@ class testNeedsReductionKernel {
         const uint bid = g.get_group_id(0);
 
         Tk k = scalar<Tk>(0);
-        if (gid < n_) { k = iKeys_[gid]; }
+        if (gid < n_) { k = iKeys_[gid + iKInfo_.offset]; }
 
         l_keys_[lid] = k;
         it.barrier();
@@ -181,8 +181,8 @@ class testNeedsReductionKernel {
         // reduction
         if (gid == ((bid + 1) * DIMX_) - 1 &&
             bid < (g.get_group_range(0) - 1)) {
-            int k0 = iKeys_[gid];
-            int k1 = iKeys_[gid + 1];
+            int k0 = iKeys_[gid + iKInfo_.offset];
+            int k1 = iKeys_[gid + 1 + iKInfo_.offset];
             if (k0 == k1) {
                 global_atomic_ref<int>(needs_block_boundary_reduced_[0]) |= 1;
             }
@@ -240,8 +240,8 @@ class compactKernel {
                 : (reduced_block_sizes_[bid] - reduced_block_sizes_[bid - 1]);
         int writeloc = (bid == 0) ? 0 : reduced_block_sizes_[bid - 1];
 
-        Tk k = iKeys_[gid];
-        To v = iVals_[bOffset + gid];
+        Tk k = iKeys_[gid + iKInfo_.offset];
+        To v = iVals_[bOffset + gid + iVInfo_.offset];
 
         if (lid < nwrite) {
             oKeys_[writeloc + lid]           = k;
@@ -316,8 +316,8 @@ class compactDimKernel {
                         bidz * iVInfo_.strides[dims_ordering[2]] +
                         bidy * iVInfo_.strides[dims_ordering[1]] +
                         gidx * iVInfo_.strides[DIM_];
-        k = iKeys_[gidx];
-        v = iVals_[tid];
+        k = iKeys_[gidx + iKInfo_.offset];
+        v = iVals_[tid + iVInfo_.offset];
 
         if (lid < nwrite) {
             oKeys_[writeloc + lid] = k;
@@ -403,11 +403,11 @@ class reduceBlocksByKeyKernel {
         Tk k            = scalar<Tk>(0);
         compute_t<To> v = init_val;
         if (gid < n_) {
-            k                 = iKeys_[gid];
+            k                 = iKeys_[gid + iKInfo_.offset];
             const int bOffset = bidw * iVInfo_.strides[3] +
                                 bidz * iVInfo_.strides[2] +
                                 bidy * iVInfo_.strides[1];
-            v = transform(iVals_[bOffset + gid]);
+            v = transform(iVals_[bOffset + gid + iVInfo_.offset]);
             if (change_nan_) v = IS_NAN(v) ? nanval_ : v;
         }
 
@@ -579,11 +579,12 @@ class reduceBlocksByKeyDimKernel {
         Tk k            = scalar<Tk>(0);
         compute_t<To> v = init_val;
         if (gid < n_) {
-            k                 = iKeys_[gid];
+            k                 = iKeys_[gid + iKInfo_.offset];
             const int bOffset = bidw * iVInfo_.strides[dims_ordering[3]] +
                                 bidz * iVInfo_.strides[dims_ordering[2]] +
                                 bidy * iVInfo_.strides[dims_ordering[1]];
-            v = transform(iVals_[bOffset + gid * iVInfo_.strides[DIM_]]);
+            v = transform(
+                iVals_[bOffset + gid * iVInfo_.strides[DIM_] + iVInfo_.offset]);
             if (change_nan_) v = IS_NAN(v) ? nanval_ : v;
         }
 

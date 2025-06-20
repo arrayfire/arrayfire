@@ -74,7 +74,8 @@ class reduceDimKernelSMEM {
 
         const data_t<Ti> *iptr =
             in_.get_pointer() + ids[3] * iInfo_.strides[3] +
-            ids[2] * iInfo_.strides[2] + ids[1] * iInfo_.strides[1] + ids[0];
+            ids[2] * iInfo_.strides[2] + ids[1] * iInfo_.strides[1] + ids[0] +
+            iInfo_.offset;
 
         const uint id_dim_in   = ids[dim];
         const uint istride_dim = iInfo_.strides[dim];
