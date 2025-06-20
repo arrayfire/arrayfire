@@ -23,8 +23,8 @@ kernel void init_seeds(global T *out, KParam oInfo, global const uint *seedsx,
                        KParam syInfo) {
     uint tid = get_global_id(0);
     if (tid < sxInfo.dims[0]) {
-        uint x                                             = seedsx[tid];
-        uint y                                             = seedsy[tid];
+        uint x                                             = seedsx[tid + sxInfo.offset];
+        uint y                                             = seedsy[tid + syInfo.offset];
         out[(x * oInfo.strides[0] + y * oInfo.strides[1])] = VALID;
     }
 }
@@ -76,14 +76,15 @@ kernel void flood_step(global T *out, KParam oInfo, global const T *img,
 
     T tImgVal =
         img[(clamp(gx, 0, (int)(iInfo.dims[0] - 1)) * iInfo.strides[0] +
-             clamp(gy, 0, (int)(iInfo.dims[1] - 1)) * iInfo.strides[1])];
+             clamp(gy, 0, (int)(iInfo.dims[1] - 1)) * iInfo.strides[1])+ 
+             iInfo.offset];
     const int isPxBtwnThresholds =
         (tImgVal >= lowValue && tImgVal <= highValue);
 
     int tid = lx + get_local_size(0) * ly;
 
     barrier(CLK_LOCAL_MEM_FENCE);
-
+    
     T origOutVal     = lmem[j][i];
     bool isBorderPxl = (lx == 0 || ly == 0 || lx == (get_local_size(0) - 1) ||
                         ly == (get_local_size(1) - 1));

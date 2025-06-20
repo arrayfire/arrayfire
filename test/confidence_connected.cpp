@@ -92,9 +92,9 @@ void testImage(const std::string pTestFile, const size_t numSeeds,
         params.iterations = iter;
         params.replace    = 255.0;
 
-        ASSERT_SUCCESS(af_confidence_cc(&outArray, inArray, seedxArr, seedyArr, params.radius,
-                                        params.multiplier, params.iterations,
-                                        params.replace));
+        ASSERT_SUCCESS(af_confidence_cc(&outArray, inArray, seedxArr, seedyArr,
+                                        params.radius, params.multiplier,
+                                        params.iterations, params.replace));
         int device = 0;
         ASSERT_SUCCESS(af_get_device(&device));
         ASSERT_SUCCESS(af_sync(device));
@@ -141,9 +141,9 @@ void testData(CCCTestParams params) {
                                    (af_dtype)af::dtype_traits<T>::af_type));
 
     af_array outArray = 0;
-    ASSERT_SUCCESS(af_confidence_cc(&outArray, inArray, seedxArr, seedyArr, params.radius,
-                                    params.multiplier, params.iterations,
-                                    params.replace));
+    ASSERT_SUCCESS(af_confidence_cc(&outArray, inArray, seedxArr, seedyArr,
+                                    params.radius, params.multiplier,
+                                    params.iterations, params.replace));
     int device = 0;
     ASSERT_SUCCESS(af_get_device(&device));
     ASSERT_SUCCESS(af_sync(device));
@@ -201,3 +201,50 @@ INSTANTIATE_TEST_SUITE_P(
            << info.param.iterations << "_replace_" << info.param.replace;
         return ss.str();
     });
+
+#define TEST_FORMATS(form)                                                     \
+    TEST(TEMP_FORMAT, form##_2Dseed) {                                         \
+        UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);                                \
+        const string filename(string(TEST_DIR) + "/confidence_cc/donut.png");  \
+        const af::array image(af::loadImage(filename.c_str()));                \
+        const af::array seed(dim4(1, 2), {10u, 8u});                           \
+                                                                               \
+        const af::array out =                                                  \
+            af::confidenceCC(toTempFormat(form, image),                        \
+                             toTempFormat(form, seed), 3, 3, 25, 255.0);       \
+        const af::array gold = af::confidenceCC(image, seed, 3, 3, 25, 255.0); \
+                                                                               \
+        EXPECT_ARRAYS_EQ(out, gold);                                           \
+    }                                                                          \
+                                                                               \
+    TEST(TEMP_FORMAT, form##_2xSeed) {                                         \
+        UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);                                \
+        const string filename(string(TEST_DIR) + "/confidence_cc/donut.png");  \
+        const af::array image(af::loadImage(filename.c_str()));                \
+        const af::array seedx({10u});                                          \
+        const af::array seedy({8u});                                           \
+                                                                               \
+        const af::array out = af::confidenceCC(                                \
+            toTempFormat(form, image), toTempFormat(form, seedx),              \
+            toTempFormat(form, seedy), 3, 3, 25, 255.0);                       \
+        const af::array gold =                                                 \
+            af::confidenceCC(image, seedx, seedy, 3, 3, 25, 255.0);            \
+                                                                               \
+        EXPECT_ARRAYS_EQ(out, gold);                                           \
+    }                                                                          \
+    TEST(TEMP_FORMAT, form##_vectSeed) {                                       \
+        UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);                                \
+        const string filename(string(TEST_DIR) + "/confidence_cc/donut.png");  \
+        const af::array image(af::loadImage(filename.c_str()));                \
+        const unsigned seedx[1] = {10u};                                       \
+        const unsigned seedy[1] = {8u};                                        \
+                                                                               \
+        const af::array out = af::confidenceCC(toTempFormat(form, image), 1,   \
+                                               seedx, seedy, 3, 3, 25, 255.0); \
+        const af::array gold =                                                 \
+            af::confidenceCC(image, 1, seedx, seedy, 3, 3, 25, 255.0);         \
+                                                                               \
+        EXPECT_ARRAYS_EQ(out, gold);                                           \
+    }
+
+FOREACH_TEMP_FORMAT(TEST_FORMATS)
