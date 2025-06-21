@@ -125,10 +125,14 @@ __global__ void harris_response(float* score_out, float* size_out,
             int j = k % block_size - r;
 
             // Calculate local x and y derivatives
-            float ix = image.ptr[(x + i + 1) * image.dims[0] + y + j] -
-                       image.ptr[(x + i - 1) * image.dims[0] + y + j];
-            float iy = image.ptr[(x + i) * image.dims[0] + y + j + 1] -
-                       image.ptr[(x + i) * image.dims[0] + y + j - 1];
+            float ix = image.ptr[(x + i + 1) * image.strides[1] +
+                                 (y + j) * image.strides[0]] -
+                       image.ptr[(x + i - 1) * image.strides[1] +
+                                 (y + j) * image.strides[0]];
+            float iy = image.ptr[(x + i) * image.strides[1] +
+                                 (y + j + 1) * image.strides[0]] -
+                       image.ptr[(x + i) * image.strides[1] +
+                                 (y + j - 1) * image.strides[0]];
 
             // Accumulate second order derivatives
             ixx += ix * ix;
@@ -181,7 +185,8 @@ __global__ void centroid_angle(const float* x_in, const float* y_in,
             int j = k % patch_size - r;
 
             // Calculate first order moments
-            T p = image.ptr[(x + i) * image.dims[0] + y + j];
+            T p = image.ptr[(x + i) * image.strides[1] +
+                            (y + j) * image.strides[0]];
             m01 += j * p;
             m10 += i * p;
         }
@@ -209,7 +214,7 @@ inline __device__ T get_pixel(unsigned x, unsigned y, const float ori,
     x += round(dist_x * patch_scl * ori_cos - dist_y * patch_scl * ori_sin);
     y += round(dist_x * patch_scl * ori_sin + dist_y * patch_scl * ori_cos);
 
-    return image.ptr[x * image.dims[0] + y];
+    return image.ptr[x * image.strides[1] + y * image.strides[0]];
 }
 
 inline __device__ int lookup(const int n, cudaTextureObject_t tex) {
