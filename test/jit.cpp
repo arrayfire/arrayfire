@@ -814,3 +814,43 @@ TEST(JIT, setKernelCacheDirectory) {
   // Reset to the old path
   ASSERT_SUCCESS(af_set_kernel_cache_directory(old_path.c_str(), false));
 }
+
+// Ensure that a correct result is obtained when evaluating an expression
+// that contains both an array and its transpose - see ISSUE 3660
+TEST(JIT, evaluateBothArrayAndItsTranspose) {
+  float X2_ptr[25] = { -1.,  -1.,  -1.,  -1.,  -1.,
+                      -0.5, -0.5, -0.5, -0.5, -0.5,
+                        0.,   0.,   0.,   0.,   0.,
+                       0.5,  0.5,  0.5,  0.5,  0.5,
+                        1.,   1.,   1.,   1.,   1. };
+  array X2_gold(5, 5, X2_ptr);
+
+  float Y2_ptr[25] = { -1., -0.5,   0.,  0.5,   1.,
+                       -1., -0.5,   0.,  0.5,   1.,
+                       -1., -0.5,   0.,  0.5,   1.,
+                       -1., -0.5,   0.,  0.5,   1.,
+                       -1., -0.5,   0.,  0.5,   1. };
+  array Y2_gold(5, 5, Y2_ptr);
+
+  float X2Y2_ptr[25] = {  -2., -1.5,  -1., -0.5,  0.,
+                         -1.5,  -1., -0.5,   0., 0.5,
+                          -1., -0.5,   0.,  0.5,  1.,
+                         -0.5,   0.,  0.5,   1., 1.5,
+                           0.,  0.5,   1.,  1.5,  2. };
+  array X2Y2_gold(5, 5, X2Y2_ptr);
+
+  int n = 5;
+  int half = (n - 1) / 2;
+  double delta = 1.0 / half;
+
+  array coord = delta * (af::range(n) - half);
+
+  array X2 = tile(coord.T(), n, 1);
+  array Y2 = tile(coord, 1, n);
+
+  array X2Y2 = X2 + Y2;
+
+  ASSERT_ARRAYS_EQ(X2_gold, X2);
+  ASSERT_ARRAYS_EQ(Y2_gold, Y2);
+  ASSERT_ARRAYS_EQ(X2Y2_gold, X2Y2);
+}
