@@ -105,17 +105,16 @@ std::string readNextNonEmptyLine(std::ifstream &file) {
 
 std::string getBackendName(bool lower) {
     af::Backend backend = af::getActiveBackend();
-    switch(backend) {
-    case AF_BACKEND_CPU:
-        return lower ? std::string("cpu") : std::string("CPU");
-    case AF_BACKEND_CUDA:
-        return lower ? std::string("cuda") : std::string("CUDA");
-    case AF_BACKEND_OPENCL:
-        return lower ? std::string("opencl") : std::string("OpenCL");
-    case AF_BACKEND_ONEAPI:
-        return lower ? std::string("oneapi") : std::string("oneAPI");
-    default:
-        return lower ? std::string("unknown") : std::string("Unknown");
+    switch (backend) {
+        case AF_BACKEND_CPU:
+            return lower ? std::string("cpu") : std::string("CPU");
+        case AF_BACKEND_CUDA:
+            return lower ? std::string("cuda") : std::string("CUDA");
+        case AF_BACKEND_OPENCL:
+            return lower ? std::string("opencl") : std::string("OpenCL");
+        case AF_BACKEND_ONEAPI:
+            return lower ? std::string("oneapi") : std::string("oneAPI");
+        default: return lower ? std::string("unknown") : std::string("Unknown");
     }
 }
 
@@ -2045,6 +2044,163 @@ INSTANTIATE(unsigned long long);
 INSTANTIATE(std::complex<float>);
 INSTANTIATE(std::complex<double>);
 #undef INSTANTIATE
+
+af::array toTempFormat(tempFormat form, const af::array &in) {
+    af::array ret;
+    const af::dim4 &dims = in.dims();
+    switch (form) {
+        case JIT_FORMAT:
+            switch (in.type()) {
+                case b8: ret = not(in); break;
+                default: ret = in * 2;
+            }
+            // Make sure that the base array is <> form original
+            ret.eval();
+            switch (in.type()) {
+                case b8: ret = not(ret); break;
+                default: ret /= 2;
+            }
+            break;
+        case SUB_FORMAT_dim0: {
+            af::dim4 pdims(dims);
+            pdims[0] += 2;
+            af::array parent = af::randu(pdims, in.type());
+            parent(af::seq(1, dims[0]), af::span, af::span, af::span) = in;
+            ret = parent(af::seq(1, dims[0]), af::span, af::span, af::span);
+        }; break;
+        case SUB_FORMAT_dim1: {
+            af::dim4 pdims(dims);
+            pdims[1] += 2;
+            af::array parent = af::randu(pdims, in.type());
+            parent(af::span, af::seq(1, dims[1]), af::span, af::span) = in;
+            ret = parent(af::span, af::seq(1, dims[1]), af::span, af::span);
+        }; break;
+        case SUB_FORMAT_dim2: {
+            af::dim4 pdims(dims);
+            pdims[2] += 2;
+            af::array parent = af::randu(pdims, in.type());
+            parent(af::span, af::span, af::seq(1, dims[2]), af::span) = in;
+            ret = parent(af::span, af::span, af::seq(1, dims[2]), af::span);
+        }; break;
+        case SUB_FORMAT_dim3: {
+            af::dim4 pdims(dims);
+            pdims[3] += 2;
+            af::array parent = af::randu(pdims, in.type());
+            parent(af::span, af::span, af::span, af::seq(1, dims[3])) = in;
+            ret = parent(af::span, af::span, af::span, af::seq(1, dims[3]));
+        }; break;
+        case REORDERED_FORMAT: {
+            const dim_t idxs[4] = {0, 3, 1, 2};
+            // idxs[0] has to be 0, to keep the same data in mem
+            dim_t rev_idxs[4];
+            for (dim_t i = 0; i < 4; ++i) { rev_idxs[idxs[i]] = i; };
+            ret = af::reorder(in, idxs[0], idxs[1], idxs[2], idxs[3]);
+            ret = ret.copy();  // make data linear
+            ret = af::reorder(ret, rev_idxs[0], rev_idxs[1], rev_idxs[2],
+                              rev_idxs[3]);
+            // ret has same content as in, although data is stored in
+            // different order
+        }; break;
+        case LINEAR_FORMAT:
+        default: ret = in.copy();
+    };
+    return ret;
+}
+
+void toTempFormat(tempFormat form, af_array *out, const af_array &in) {
+    dim_t dims[4];
+    af_get_dims(dims, dims + 1, dims + 2, dims + 3, in);
+    unsigned numdims;
+    af_get_numdims(&numdims, in);
+    af_dtype ty;
+    af_get_type(&ty, in);
+    switch (form) {
+        case JIT_FORMAT: {
+            // af_array one = nullptr, min_one = nullptr, res = nullptr;
+            af_array res = nullptr, two = nullptr;
+            ASSERT_SUCCESS(af_constant(&two, 2, numdims, dims, ty));
+            switch (ty) {
+                case b8: af_not(&res, in); break;
+                default:
+                    // ret = in + af::constant(1, dims, in.type());
+                    ASSERT_SUCCESS(af_mul(&res, in, two, false));
+            }
+            // Make sure that the base array is <> form original
+            ASSERT_SUCCESS(af_eval(res));
+            switch (ty) {
+                case b8: af_not(out, res); break;
+                default:
+                    ASSERT_SUCCESS(af_div(out, res, two, false));  // NO EVAL!!
+            }
+            ASSERT_SUCCESS(af_release_array(two));
+            two = nullptr;
+            ASSERT_SUCCESS(af_release_array(res));
+            res = nullptr;
+        }; break;
+        case SUB_FORMAT_dim0: {
+            const dim_t pdims[4] = {dims[0] + 2, dims[1], dims[2], dims[3]};
+            af_array parent      = nullptr;
+            ASSERT_SUCCESS(af_randu(&parent, std::max(1u, numdims), pdims, ty));
+            const af_seq idxs[4] = {af_make_seq(1, dims[0], 1), af_span,
+                                    af_span, af_span};
+
+            ASSERT_SUCCESS(af_assign_seq(out, parent, numdims, idxs, in));
+            ASSERT_SUCCESS(af_index(out, parent, numdims, idxs));
+            ASSERT_SUCCESS(af_release_array(parent));
+        }; break;
+        case SUB_FORMAT_dim1: {
+            const dim_t pdims[4] = {dims[0], dims[1] + 2, dims[2], dims[3]};
+            af_array parent      = nullptr;
+            ASSERT_SUCCESS(af_randu(&parent, std::max(2u, numdims), pdims, ty));
+            const af_seq idxs[4] = {af_span, af_make_seq(1, dims[1], 1),
+                                    af_span, af_span};
+            ASSERT_SUCCESS(af_assign_seq(out, parent, numdims, idxs, in));
+            ASSERT_SUCCESS(af_index(out, parent, numdims, idxs));
+            ASSERT_SUCCESS(af_release_array(parent));
+            parent = nullptr;
+        }; break;
+        case SUB_FORMAT_dim2: {
+            const dim_t pdims[4] = {dims[0], dims[1], dims[2] + 2, dims[3]};
+            af_array parent      = nullptr;
+            ASSERT_SUCCESS(af_randu(&parent, std::max(3u, numdims), pdims, ty));
+            const af_seq idxs[4] = {af_span, af_span,
+                                    af_make_seq(1, dims[2], 1), af_span};
+            ASSERT_SUCCESS(af_assign_seq(out, parent, numdims, idxs, in));
+            ASSERT_SUCCESS(af_index(out, parent, numdims, idxs));
+            ASSERT_SUCCESS(af_release_array(parent));
+            parent = nullptr;
+        }; break;
+        case SUB_FORMAT_dim3: {
+            const dim_t pdims[4] = {dims[0], dims[1], dims[2], dims[3] + 2};
+            af_array parent      = nullptr;
+            ASSERT_SUCCESS(af_randu(&parent, std::max(4u, numdims), pdims, ty));
+            const af_seq idxs[4] = {af_span, af_span, af_span,
+                                    af_make_seq(1, dims[3], 1)};
+            ASSERT_SUCCESS(af_assign_seq(out, parent, numdims, idxs, in));
+            ASSERT_SUCCESS(af_index(out, parent, numdims, idxs));
+            ASSERT_SUCCESS(af_release_array(parent));
+            parent = nullptr;
+        }; break;
+        case REORDERED_FORMAT: {
+            const unsigned idxs[4] = {0, 3, 1, 2};
+            // idxs[0] has to be 0, to keep the same data in mem
+            dim_t rev_idxs[4];
+            for (dim_t i = 0; i < 4; ++i) { rev_idxs[idxs[i]] = i; };
+            af_array rev = nullptr;
+            ASSERT_SUCCESS(
+                af_reorder(&rev, in, idxs[0], idxs[1], idxs[2], idxs[3]));
+            ASSERT_SUCCESS(af_copy_array(out, rev));
+            ASSERT_SUCCESS(af_reorder(out, rev, rev_idxs[0], rev_idxs[1],
+                                      rev_idxs[2], rev_idxs[3]));
+            // ret has same content as in, although data is stored in
+            // different order
+            ASSERT_SUCCESS(af_release_array(rev));
+            rev = nullptr;
+        }; break;
+        case LINEAR_FORMAT:
+        default: af_copy_array(out, in);
+    };
+}
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

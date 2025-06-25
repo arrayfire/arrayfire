@@ -244,10 +244,10 @@ bool noHalfTests(af::dtype ty);
     GTEST_SKIP() << "Device doesn't support Half"
 
 #ifdef SKIP_UNSUPPORTED_TESTS
-#define UNSUPPORTED_BACKEND(backend)                        \
-    if(backend == af::getActiveBackend())                   \
-        GTEST_SKIP() << "Skipping unsupported function on " \
-                        + getBackendName() + " backend"
+#define UNSUPPORTED_BACKEND(backend)                                         \
+    if (backend == af::getActiveBackend())                                   \
+    GTEST_SKIP() << "Skipping unsupported function on " + getBackendName() + \
+                        " backend"
 #else
 #define UNSUPPORTED_BACKEND(backend)
 #endif
@@ -652,6 +652,30 @@ void genTestOutputArray(af_array *out_ptr, double val, const unsigned ndims,
                                          std::string metadataName,
                                          const af_array a, const af_array b,
                                          TestOutputArrayInfo *metadata);
+
+enum tempFormat {
+    LINEAR_FORMAT,    // Linear array (= default)
+    JIT_FORMAT,       // Array which has JIT operations outstanding
+    SUB_FORMAT_dim0,  // Array where only a subset is allocated for dim0
+    SUB_FORMAT_dim1,  // Array where only a subset is allocated for dim1
+    SUB_FORMAT_dim2,  // Array where only a subset is allocated for dim2
+    SUB_FORMAT_dim3,  // Array where only a subset is allocated for dim3
+    REORDERED_FORMAT  // Array where the dimensions are reordered
+};
+// Calls the function fn for all available formats
+#define FOREACH_TEMP_FORMAT(TESTS) \
+    TESTS(LINEAR_FORMAT)           \
+    TESTS(JIT_FORMAT)              \
+    TESTS(SUB_FORMAT_dim0)         \
+    TESTS(SUB_FORMAT_dim1)         \
+    TESTS(SUB_FORMAT_dim2)         \
+    TESTS(SUB_FORMAT_dim3)         \
+    TESTS(REORDERED_FORMAT)
+
+// formats the "in" array according to provided format.  The content remains
+// unchanged.
+af::array toTempFormat(tempFormat form, const af::array &in);
+void toTempFormat(tempFormat form, af_array *out, const af_array &in);
 
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
