@@ -58,11 +58,13 @@ void rreduce(Array<T> &out, Array<uint> &loc, const Array<T> &in, const int dim,
 
 template<af_op_t op, typename T>
 T ireduce_all(unsigned *loc, const Array<T> &in) {
+    in.eval();
     getQueue().sync();
 
     af::dim4 dims    = in.dims();
     af::dim4 strides = in.strides();
     const T *inPtr   = in.get();
+    dim_t idx = 0;
 
     kernel::MinMaxOp<op, T> Op(inPtr[0], 0);
 
@@ -76,8 +78,8 @@ T ireduce_all(unsigned *loc, const Array<T> &in) {
                 dim_t off1 = j * strides[1];
 
                 for (dim_t i = 0; i < dims[0]; i++) {
-                    dim_t idx = i + off1 + off2 + off3;
-                    Op(inPtr[idx], idx);
+                    dim_t d_idx = i + off1 + off2 + off3;
+                    Op(inPtr[d_idx], idx++);
                 }
             }
         }
