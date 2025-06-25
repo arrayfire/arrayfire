@@ -39,13 +39,13 @@ kernel void scanFirstByKeyNonfinal(global To *oData, KParam oInfo,
              yid * kInfo.strides[1] + kInfo.offset;
 
     tData += wid * tInfo.strides[3] + zid * tInfo.strides[2] +
-             yid * tInfo.strides[1] + tInfo.offset;
+             yid * tInfo.strides[1];
 
     tfData += wid * tfInfo.strides[3] + zid * tfInfo.strides[2] +
-              yid * tfInfo.strides[1] + tfInfo.offset;
+              yid * tfInfo.strides[1];
 
     tiData += wid * tiInfo.strides[3] + zid * tiInfo.strides[2] +
-              yid * tiInfo.strides[1] + tiInfo.offset;
+              yid * tiInfo.strides[1];
 
     oData += wid * oInfo.strides[3] + zid * oInfo.strides[2] +
              yid * oInfo.strides[1] + oInfo.offset;
@@ -179,7 +179,7 @@ kernel void scanFirstByKeyFinal(global To *oData, KParam oInfo,
              yid * kInfo.strides[1] + kInfo.offset;
 
     oData += wid * oInfo.strides[3] + zid * oInfo.strides[2] +
-             yid * oInfo.strides[1] + oInfo.offset;
+             yid * oInfo.strides[1];
 
     local To l_val0[SHARED_MEM_SIZE];
     local To l_val1[SHARED_MEM_SIZE];
@@ -283,13 +283,13 @@ kernel void bcastFirstByKey(global To *oData, KParam oInfo,
 
         if (cond) {
             tiData += wid * tiInfo.strides[3] + zid * tiInfo.strides[2] +
-                      yid * tiInfo.strides[1] + tiInfo.offset;
+                      yid * tiInfo.strides[1];
 
             tData += wid * tInfo.strides[3] + zid * tInfo.strides[2] +
-                     yid * tInfo.strides[1] + tInfo.offset;
+                     yid * tInfo.strides[1];
 
             oData += wid * oInfo.strides[3] + zid * oInfo.strides[2] +
-                     yid * oInfo.strides[1] + oInfo.offset;
+                     yid * oInfo.strides[1];
 
             int boundary = tiData[groupId_x];
             To accum     = tData[groupId_x - 1];
