@@ -136,3 +136,22 @@ TEST(Where, ISSUE_1259) {
     array indices = where(a > 2);
     ASSERT_EQ(indices.elements(), 0);
 }
+
+#define TEST_TEMP_FORMAT(form, dim)                                      \
+    TEST(TEMP_FORMAT, form##_Dim##dim) {                                 \
+        const dim4 dims(2, 3, 4, 5);                                     \
+        const array in(af::moddims(range(dim4(dims.elements())), dims)); \
+        in.eval();                                                       \
+        const array gold = where(in > 3.0);                              \
+                                                                         \
+        array out = where(toTempFormat(form, in) > 3.0);                 \
+        ASSERT_ARRAYS_EQ(gold, out);                                     \
+    }
+
+#define TEST_TEMP_FORMATS(form) \
+    TEST_TEMP_FORMAT(form, 0)   \
+    TEST_TEMP_FORMAT(form, 1)   \
+    TEST_TEMP_FORMAT(form, 2)   \
+    TEST_TEMP_FORMAT(form, 3)
+
+FOREACH_TEMP_FORMAT(TEST_TEMP_FORMATS)
