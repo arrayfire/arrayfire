@@ -82,7 +82,7 @@ class scanDimKernel {
         optr += ids[3] * oInfo_.strides[3] + ids[2] * oInfo_.strides[2] +
                 ids[1] * oInfo_.strides[1] + ids[0];
         iptr += ids[3] * iInfo_.strides[3] + ids[2] * iInfo_.strides[2] +
-                ids[1] * iInfo_.strides[1] + ids[0];
+                ids[1] * iInfo_.strides[1] + ids[0] + iInfo_.offset;
         int id_dim        = ids[dim];
         const int out_dim = oInfo_.dims[dim];
 
