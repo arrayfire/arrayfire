@@ -13,6 +13,7 @@
 #include <common/kernel_cache.hpp>
 #include <debug_oneapi.hpp>
 #include <kernel/accessors.hpp>
+#include <kernel/memcopy.hpp>
 #include <af/defines.h>
 
 #include <sycl/sycl.hpp>
@@ -75,7 +76,7 @@ void prepareKernelArgs(conv_kparam_t<aT> &param, dim_t *oDims,
         param.nBBS0    = divup(oDims[0], THREADS);
         param.nBBS1    = batchDims[2];
         param.global   = range<3>(param.nBBS0 * THREADS * batchDims[1],
-                                param.nBBS1 * batchDims[3], 1);
+                                  param.nBBS1 * batchDims[3], 1);
         param.loc_size = (THREADS + 2 * (fDims[0] - 1));
     } else if (rank == 2) {
         param.local  = range<3>{THREADS_X, THREADS_Y, 1};
@@ -89,24 +90,11 @@ void prepareKernelArgs(conv_kparam_t<aT> &param, dim_t *oDims,
         param.nBBS1    = divup(oDims[1], CUBE_Y);
         int blk_z      = divup(oDims[2], CUBE_Z);
         param.global   = range<3>(param.nBBS0 * CUBE_X * batchDims[3],
-                                param.nBBS1 * CUBE_Y, blk_z * CUBE_Z);
+                                  param.nBBS1 * CUBE_Y, blk_z * CUBE_Z);
         param.loc_size = (CUBE_X + 2 * (fDims[0] - 1)) *
                          (CUBE_Y + 2 * (fDims[1] - 1)) *
                          (CUBE_Z + 2 * (fDims[2] - 1));
     }
-}
-
-template<typename T>
-void memcpyBuffer(sycl::buffer<T, 1> &dest, sycl::buffer<T, 1> &src,
-                  const size_t n, const size_t srcOffset) {
-    getQueue().submit([&](auto &h) {
-        sycl::accessor srcAcc{src, h, sycl::range{n}, sycl::id{srcOffset},
-                              sycl::read_only};
-        sycl::accessor destAcc{
-            dest,         h, sycl::range{n}, sycl::id{0}, sycl::write_only,
-            sycl::no_init};
-        h.copy(srcAcc, destAcc);
-    });
 }
 
 #include "convolve1.hpp"

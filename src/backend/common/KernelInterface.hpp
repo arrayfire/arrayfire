@@ -64,6 +64,51 @@ class KernelInterface {
     virtual void copyToReadOnly(DevPtrType dst, DevPtrType src,
                                 size_t bytes) = 0;
 
+    /// \brief Copy data from device memory to read-only memory
+    ///
+    /// This function copies data of `bytes` size from the device pointer to a
+    /// read-only memory.
+    ///
+    /// \param[in] dst is the device pointer to which data will be copied
+    /// \param[in] src is the device pointer from which data will be copied
+    /// \param[in] srcXInBytes is offset in Bytes
+    /// \param[in] bytes are the number of bytes of data to be copied
+    virtual void copyToReadOnly(DevPtrType dst, DevPtrType src,
+                                size_t srcXInBytes, size_t bytes) = 0;
+
+    /// \brief Copy strided 2D data from device memory to read-only memory
+    ///
+    /// This function copies data of any 2D array from the device pointer to a
+    /// read-only memory.
+    ///
+    /// \param[in] dst is the device pointer to which data will be copied
+    /// \param[in] src is the device pointer from which data will be copied
+    /// \param[in] srcXInBytes is offset in Bytes
+    /// \param[in] srcPitchInBytes is strides[1] in Bytes
+    /// \param[in] height is the number of elements for dim[1] dst
+    /// \param[in] widthInBytes are #bytes of continous data to copy (dim[0])
+    virtual void copyToReadOnly2D(DevPtrType dst, DevPtrType src,
+                                  size_t srcXInBytes, size_t srcPitchInBytes,
+                                  size_t height, size_t widthInBytes) = 0;
+
+    /// \brief Copy strided 3D data from device memory to read-only memory
+    ///
+    /// This function copies data of any 3D array from the device pointer to a
+    /// read-only memory.
+    ///
+    /// \param[in] dst is the device pointer to which data will be copied
+    /// \param[in] src is the device pointer from which data will be copied
+    /// \param[in] srcXInBytes is offset in Bytes
+    /// \param[in] srcPitchInBytes is strides[1] in Bytes
+    /// \param[in] srcHeight is the number of elements ALLOCATED for dim[1] src
+    /// \param[in] depth is the number of elements for dim[2] dst
+    /// \param[in] height is the number of elements for dim[1] dst
+    /// \param[in] widthInBytes are #bytes of continous data to copy (dim[0])
+    virtual void copyToReadOnly3D(DevPtrType dst, DevPtrType src,
+                                  size_t srcXInBytes, size_t srcPitchInBytes,
+                                  size_t srcHeight, size_t depth, size_t height,
+                                  size_t widthInBytes) = 0;
+
     /// \brief Copy a single scalar to device memory
     ///
     /// This function copies a single value of type T from host variable

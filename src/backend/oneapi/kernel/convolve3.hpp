@@ -164,15 +164,21 @@ void conv3Helper(const conv_kparam_t<aT> &param, Param<T> &out,
 template<typename T, typename aT>
 void conv3(conv_kparam_t<aT> &p, Param<T> &out, const Param<T> &sig,
            const Param<aT> &filt, const bool expand) {
-    size_t se_size = filt.info.dims[0] * filt.info.dims[1] * filt.info.dims[2];
+    const dim_t se_size =
+        filt.info.dims[0] * filt.info.dims[1] * filt.info.dims[2];
     sycl::buffer<aT> impulse{sycl::range(se_size)};
-    int f0Off = filt.info.offset;
+    const dim_t mstrides[4] = {1, filt.info.dims[0],
+                               filt.info.dims[0] * filt.info.dims[1], se_size};
+    const dim_t mdims[4]    = {filt.info.dims[0], filt.info.dims[1],
+                               filt.info.dims[2], 1};
+    const dim_t f0Off       = filt.info.offset;
 
     for (int b3 = 0; b3 < filt.info.dims[3]; ++b3) {
-        int f3Off = b3 * filt.info.strides[3];
+        const dim_t f3Off = b3 * filt.info.strides[3];
 
-        const size_t srcOffset = f3Off + f0Off;
-        memcpyBuffer(impulse, *filt.data, se_size, srcOffset);
+        const dim_t srcOffset = f3Off + f0Off;
+        kernel::memcopy(&impulse, mstrides, filt.data, mdims, filt.info.strides,
+                        srcOffset, 3);
         p.impulse = &impulse;
 
         p.o[2] = (p.outHasNoOffset ? 0 : b3);

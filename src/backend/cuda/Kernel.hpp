@@ -66,6 +66,18 @@ class Kernel
 
     void copyToReadOnly(DevPtrType dst, DevPtrType src, size_t bytes) final;
 
+    void copyToReadOnly(DevPtrType dst, DevPtrType src, size_t srcXInBytes,
+                        size_t bytes) final;
+
+    void copyToReadOnly2D(DevPtrType dst, DevPtrType src, size_t srcXInBytes,
+                          size_t srcPitchInBytes, size_t height,
+                          size_t widthInBytes) final;
+
+    void copyToReadOnly3D(DevPtrType dst, DevPtrType src, size_t srcXInBytes,
+                          size_t srcPitchInBytes, size_t srcHeight,
+                          size_t depth, size_t height,
+                          size_t widthInBytes) final;
+
     void setFlag(DevPtrType dst, int* scalarValPtr,
                  const bool syncCopy = false) final;
 

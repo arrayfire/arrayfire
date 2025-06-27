@@ -125,8 +125,8 @@ void one2one_3d(InT *optr, InT const *const iptr, AccT const *const fptr,
                 }
                 optr[koff + joff + i - iStart] = InT(accum);
             }  // i loop ends here
-        }      // j loop ends here
-    }          // k loop ends here
+        }  // j loop ends here
+    }  // k loop ends here
 }
 
 template<typename InT, typename AccT>
@@ -217,7 +217,6 @@ void convolve2_separable(InT *optr, InT const *const iptr,
                          dim_t fDim, af::dim4 const &oStrides,
                          af::dim4 const &sStrides, dim_t fStride) {
     UNUSED(orgDims);
-    UNUSED(sStrides);
     UNUSED(fStride);
     for (dim_t j = 0; j < oDims[1]; ++j) {
         dim_t jOff = j * oStrides[1];
@@ -237,14 +236,18 @@ void convolve2_separable(InT *optr, InT const *const iptr,
                     dim_t offi     = ci - f;
                     bool isCIValid = offi >= 0 && offi < sDims[0];
                     bool isCJValid = cj >= 0 && cj < sDims[1];
-                    s_val = (isCJValid && isCIValid ? iptr[cj * sDims[0] + offi]
-                                                    : scalar<InT>(0));
+                    s_val =
+                        (isCJValid && isCIValid ? iptr[cj * sStrides.dims[1] +
+                                                       offi * sStrides.dims[0]]
+                                                : scalar<InT>(0));
                 } else {
                     dim_t offj     = cj - f;
                     bool isCIValid = ci >= 0 && ci < sDims[0];
                     bool isCJValid = offj >= 0 && offj < sDims[1];
-                    s_val = (isCJValid && isCIValid ? iptr[offj * sDims[0] + ci]
-                                                    : scalar<InT>(0));
+                    s_val =
+                        (isCJValid && isCIValid ? iptr[offj * sStrides.dims[1] +
+                                                       ci * sStrides.dims[0]]
+                                                : scalar<InT>(0));
                 }
 
                 accum += AccT(s_val * f_val);

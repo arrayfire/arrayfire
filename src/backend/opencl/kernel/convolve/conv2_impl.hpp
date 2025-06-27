@@ -18,7 +18,8 @@ namespace kernel {
 
 template<typename T, typename aT>
 void conv2Helper(const conv_kparam_t& param, Param out, const Param signal,
-                 const Param filter, const bool expand) {
+                 const Param filter, const size_t srcXInBytes,
+                 const bool expand) {
     using cl::EnqueueArgs;
     using cl::NDRange;
     using std::string;
@@ -27,8 +28,8 @@ void conv2Helper(const conv_kparam_t& param, Param out, const Param signal,
     constexpr bool IsComplex =
         std::is_same<T, cfloat>::value || std::is_same<T, cdouble>::value;
 
-    const int f0 = filter.info.dims[0];
-    const int f1 = filter.info.dims[1];
+    const dim_t f0 = filter.info.dims[0];
+    const dim_t f1 = filter.info.dims[1];
     const size_t LOC_SIZE =
         (THREADS_X + 2 * (f0 - 1)) * (THREADS_Y + 2 * (f1 - 1));
 
@@ -54,6 +55,17 @@ void conv2Helper(const conv_kparam_t& param, Param out, const Param signal,
     auto convolve = common::getKernel(
         "convolve", {{ops_cl_src, convolve_cl_src}}, tmpltArgs, compileOpts);
 
+    if (filter.info.strides[1] == f0) {
+        // 2D linear filter array
+        convolve.copyToReadOnly(param.impulse, filter.data, srcXInBytes,
+                                f0 * f1 * sizeof(aT));
+    } else {
+        // 2D strided filter array
+        convolve.copyToReadOnly2D(param.impulse, filter.data, srcXInBytes,
+                                  filter.info.strides[1] * sizeof(aT), f1,
+                                  f0 * sizeof(aT));
+    }
+
     convolve(EnqueueArgs(getQueue(), param.global, param.local), *out.data,
              out.info, *signal.data, signal.info, *param.impulse, filter.info,
              param.nBBS0, param.nBBS1, param.o[1], param.o[2], param.s[1],
@@ -65,26 +77,21 @@ void conv2(conv_kparam_t& p, Param& out, const Param& sig, const Param& filt,
            const bool expand) {
     size_t se_size = filt.info.dims[0] * filt.info.dims[1] * sizeof(aT);
     p.impulse      = bufferAlloc(se_size);
-    int f0Off      = filt.info.offset;
+    dim_t f0Off    = filt.info.offset;
 
     for (int b3 = 0; b3 < filt.info.dims[3]; ++b3) {
-        int f3Off = b3 * filt.info.strides[3];
+        dim_t f3Off = b3 * filt.info.strides[3];
 
         for (int b2 = 0; b2 < filt.info.dims[2]; ++b2) {
-            int f2Off = b2 * filt.info.strides[2];
-
-            // FIXME: if the filter array is strided, direct copy of symbols
-            // might cause issues
-            getQueue().enqueueCopyBuffer(*filt.data, *p.impulse,
-                                         (f2Off + f3Off + f0Off) * sizeof(aT),
-                                         0, se_size);
+            dim_t f2Off = b2 * filt.info.strides[2];
 
             p.o[1] = (p.outHasNoOffset ? 0 : b2);
             p.o[2] = (p.outHasNoOffset ? 0 : b3);
             p.s[1] = (p.inHasNoOffset ? 0 : b2);
             p.s[2] = (p.inHasNoOffset ? 0 : b3);
 
-            conv2Helper<T, aT>(p, out, sig, filt, expand);
+            conv2Helper<T, aT>(p, out, sig, filt,
+                               (f2Off + f3Off + f0Off) * sizeof(aT), expand);
         }
     }
 }
