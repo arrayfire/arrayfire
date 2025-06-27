@@ -507,35 +507,29 @@ reduce_by_key_params *rbk_single_data(const string testname, const int testSz,
 // clang-format off
 template<typename Tk, typename Tv, typename To>
 vector<reduce_by_key_params*> genUniqueKeyTests() {
-  return {rbk_unique_data<Tk, Tv, To>("unique_key", 31, generateConsq<Tk>(0),
-generateConst<Tv>(Tv( 1 ))), rbk_unique_data<Tk, Tv, To>("unique_key", 32,
-generateConsq<Tk>(0), generateConst<Tv>(Tv( 1 ))), rbk_unique_data<Tk, Tv,
-To>("unique_key", 33,          generateConsq<Tk>(0), generateConst<Tv>(Tv( 1
-))), rbk_unique_data<Tk, Tv, To>("unique_key", 127, generateConsq<Tk>(0),
-generateConst<Tv>(Tv( 1 ))), rbk_unique_data<Tk, Tv, To>("unique_key", 128,
-generateConsq<Tk>(0), generateConst<Tv>(Tv( 1 ))), rbk_unique_data<Tk, Tv,
-To>("unique_key", 129,         generateConsq<Tk>(0), generateConst<Tv>(Tv( 1
-))), rbk_unique_data<Tk, Tv, To>("unique_key", 1024, generateConsq<Tk>(0),
-generateConst<Tv>(Tv( 1 ))), rbk_unique_data<Tk, Tv, To>("unique_key", 1025,
-generateConsq<Tk>(0), generateConst<Tv>(Tv( 1 ))), rbk_unique_data<Tk, Tv,
-To>("unique_key", 1024 * 1025, generateConsq<Tk>(0), generateConst<Tv>(Tv( 1 )))
+  return {rbk_unique_data<Tk, Tv, To>("unique_key", 31,          generateConsq<Tk>(0), generateConst<Tv>(Tv( 1 ))),
+          rbk_unique_data<Tk, Tv, To>("unique_key", 32,          generateConsq<Tk>(0), generateConst<Tv>(Tv( 1 ))),
+          rbk_unique_data<Tk, Tv, To>("unique_key", 33,          generateConsq<Tk>(0), generateConst<Tv>(Tv( 1 ))),
+          rbk_unique_data<Tk, Tv, To>("unique_key", 127,         generateConsq<Tk>(0), generateConst<Tv>(Tv( 1 ))),
+          rbk_unique_data<Tk, Tv, To>("unique_key", 128,         generateConsq<Tk>(0), generateConst<Tv>(Tv( 1 ))),
+          rbk_unique_data<Tk, Tv, To>("unique_key", 129,         generateConsq<Tk>(0), generateConst<Tv>(Tv( 1 ))),
+          rbk_unique_data<Tk, Tv, To>("unique_key", 1024,        generateConsq<Tk>(0), generateConst<Tv>(Tv( 1 ))),
+          rbk_unique_data<Tk, Tv, To>("unique_key", 1025,        generateConsq<Tk>(0), generateConst<Tv>(Tv( 1 ))),
+          rbk_unique_data<Tk, Tv, To>("unique_key", 1024 * 1025, generateConsq<Tk>(0), generateConst<Tv>(Tv( 1 )))
     };
 }
 
 template<typename Tk, typename Tv, typename To>
 vector<reduce_by_key_params*> genSingleKeyTests() {
-  return {rbk_single_data<Tk, Tv, To>("single_key", 31, generateConst<Tk>(0),
-generateConst<Tv>(Tv( 1 ))), rbk_single_data<Tk, Tv, To>("single_key", 32,
-generateConst<Tk>(0), generateConst<Tv>(Tv( 1 ))), rbk_single_data<Tk, Tv,
-To>("single_key", 33,         generateConst<Tk>(0), generateConst<Tv>(Tv( 1 ))),
-          rbk_single_data<Tk, Tv, To>("single_key", 127, generateConst<Tk>(0),
-generateConst<Tv>(Tv( 1 ))), rbk_single_data<Tk, Tv, To>("single_key", 128,
-generateConst<Tk>(0), generateConst<Tv>(Tv( 1 ))), rbk_single_data<Tk, Tv,
-To>("single_key", 129,        generateConst<Tk>(0), generateConst<Tv>(Tv( 1 ))),
-          rbk_single_data<Tk, Tv, To>("single_key", 1024, generateConst<Tk>(0),
-generateConst<Tv>(Tv( 1 ))), rbk_single_data<Tk, Tv, To>("single_key", 1025,
-generateConst<Tk>(0), generateConst<Tv>(Tv( 1 ))), rbk_single_data<Tk, Tv,
-To>("single_key", 128 * 1025, generateConst<Tk>(0), generateConst<Tv>(Tv( 1 )))
+  return {rbk_single_data<Tk, Tv, To>("single_key", 31,         generateConst<Tk>(0), generateConst<Tv>(Tv( 1 ))),
+          rbk_single_data<Tk, Tv, To>("single_key", 32,         generateConst<Tk>(0), generateConst<Tv>(Tv( 1 ))),
+          rbk_single_data<Tk, Tv, To>("single_key", 33,         generateConst<Tk>(0), generateConst<Tv>(Tv( 1 ))),
+          rbk_single_data<Tk, Tv, To>("single_key", 127,        generateConst<Tk>(0), generateConst<Tv>(Tv( 1 ))),
+          rbk_single_data<Tk, Tv, To>("single_key", 128,        generateConst<Tk>(0), generateConst<Tv>(Tv( 1 ))),
+          rbk_single_data<Tk, Tv, To>("single_key", 129,        generateConst<Tk>(0), generateConst<Tv>(Tv( 1 ))),
+          rbk_single_data<Tk, Tv, To>("single_key", 1024,       generateConst<Tk>(0), generateConst<Tv>(Tv( 1 ))),
+          rbk_single_data<Tk, Tv, To>("single_key", 1025,       generateConst<Tk>(0), generateConst<Tv>(Tv( 1 ))),
+          rbk_single_data<Tk, Tv, To>("single_key", 128 * 1025, generateConst<Tk>(0), generateConst<Tv>(Tv( 1 )))
     };
 }
 // clang-format on
