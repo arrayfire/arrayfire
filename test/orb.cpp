@@ -326,3 +326,55 @@ TEST(ORB, CPP) {
     delete[] outSize;
     delete[] outDesc;
 }
+
+#define TEST_TEMP_FORMATS(form)                                               \
+    TEST(TEMP_FORMAT, form) {                                                 \
+        UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);                               \
+        IMAGEIO_ENABLED_CHECK();                                              \
+                                                                              \
+        constexpr size_t MAX_FEATURES = 400;                                  \
+                                                                              \
+        vector<dim4> inDims;                                                  \
+        vector<string> inFiles;                                               \
+        vector<vector<float>> goldFeat;                                       \
+        vector<vector<unsigned>> goldDesc;                                    \
+                                                                              \
+        readImageFeaturesDescriptors<unsigned>(                               \
+            string(TEST_DIR "/orb/square.test"), inDims, inFiles, goldFeat,   \
+            goldDesc);                                                        \
+        inFiles[0].insert(0, string(TEST_DIR "/orb/"));                       \
+                                                                              \
+        array in = loadImage(inFiles[0].c_str(), false);                      \
+                                                                              \
+        features feat;                                                        \
+        array desc;                                                           \
+        orb(feat, desc, toTempFormat(form, in), 20.0f, MAX_FEATURES, 1.2f, 8, \
+            true);                                                            \
+                                                                              \
+        /* The clipping of the features is dependent on threads runtime, so   \
+         * capture them all. */                                               \
+        ASSERT_GT(MAX_FEATURES, feat.getNumFeatures())                        \
+            << "Please increase MAX_FEATURES to capture all features";        \
+                                                                              \
+        /* The results from orb are dependent on threads runtime, so sort     \
+         * (X,Y) before comparing */                                          \
+        array idx, X_sorted;                                                  \
+        sort(X_sorted, idx, feat.getX() * inDims[0].dims[1] + feat.getY());   \
+                                                                              \
+        features gfeat;                                                       \
+        array gdesc;                                                          \
+        orb(gfeat, gdesc, in, 20.0f, MAX_FEATURES, 1.2f, 8, true);            \
+        array gidx, gX_sorted;                                                \
+        sort(gX_sorted, gidx,                                                 \
+             gfeat.getX() * inDims[0].dims[1] + gfeat.getY());                \
+                                                                              \
+        EXPECT_ARRAYS_EQ(feat.getX()(idx), gfeat.getX()(gidx));               \
+        EXPECT_ARRAYS_EQ(feat.getY()(idx), gfeat.getY()(gidx));               \
+        EXPECT_ARRAYS_EQ(feat.getScore()(idx), gfeat.getScore()(gidx));       \
+        EXPECT_ARRAYS_EQ(feat.getOrientation()(idx),                          \
+                         gfeat.getOrientation()(gidx));                       \
+        EXPECT_ARRAYS_EQ(feat.getSize()(idx), gfeat.getSize()(gidx));         \
+        EXPECT_ARRAYS_EQ(desc(af::span, idx), gdesc(af::span, gidx));         \
+    }
+
+FOREACH_TEMP_FORMAT(TEST_TEMP_FORMATS)
