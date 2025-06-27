@@ -327,13 +327,14 @@ void orb(unsigned* out_feat, Param& x_out, Param& y_out, Param& score_out,
         Param lvl_tmp;
 
         if (blur_img) {
-            lvl_filt = lvl_img;
-            lvl_tmp  = lvl_img;
+            const dim_t pixels = lvl_img.info.dims[0] * lvl_img.info.dims[1];
+            lvl_filt.info = {{lvl_img.info.dims[0], lvl_img.info.dims[1], 1, 1},
+                             {1, lvl_img.info.dims[0], pixels, pixels},
+                             0};
+            lvl_filt.data = bufferAlloc(pixels * sizeof(T));
 
-            lvl_filt.data = bufferAlloc(lvl_filt.info.dims[0] *
-                                        lvl_filt.info.dims[1] * sizeof(T));
-            lvl_tmp.data  = bufferAlloc(lvl_tmp.info.dims[0] *
-                                        lvl_tmp.info.dims[1] * sizeof(T));
+            lvl_tmp.info = lvl_filt.info;
+            lvl_tmp.data = bufferAlloc(pixels * sizeof(T));
 
             // Calculate a separable Gaussian kernel
             if (h_gauss == nullptr) {

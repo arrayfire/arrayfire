@@ -128,6 +128,7 @@ kernel void harris_response(
     local float data[BLOCK_SIZE * BLOCK_SIZE];
 
     unsigned f = get_global_id(0);
+    image += iInfo.offset;
 
     unsigned x, y;
     float ixx = 0.f, iyy = 0.f, ixy = 0.f;
@@ -155,10 +156,10 @@ kernel void harris_response(
                 int j = k % block_size - r;
 
                 // Calculate local x and y derivatives
-                float ix = image[(x + i + 1) * iInfo.dims[0] + y + j] -
-                           image[(x + i - 1) * iInfo.dims[0] + y + j];
-                float iy = image[(x + i) * iInfo.dims[0] + y + j + 1] -
-                           image[(x + i) * iInfo.dims[0] + y + j - 1];
+                float ix = image[(x + i + 1) * iInfo.strides[1] + (y + j) * iInfo.strides[0]] -
+                           image[(x + i - 1) * iInfo.strides[1] + (y + j) * iInfo.strides[0]] ;
+                float iy = image[(x + i) * iInfo.strides[1] + (y + j + 1) * iInfo.strides[0]] -
+                           image[(x + i) * iInfo.strides[1] + (y + j - 1) * iInfo.strides[0]];
 
                 // Accumulate second order derivatives
                 ixx += ix * ix;
@@ -219,7 +220,7 @@ kernel void centroid_angle(global const float* x_in,
                 int j = k % patch_size - r;
 
                 // Calculate first order moments
-                T p = image[(x + i) * iInfo.dims[0] + y + j];
+                T p = image[(x + i) * iInfo.strides[1] + (y + j) * iInfo.strides[0] + iInfo.offset];
                 m01 += j * p;
                 m10 += i * p;
             }
@@ -246,7 +247,7 @@ inline T get_pixel(unsigned x, unsigned y, const float ori, const unsigned size,
     x += round(dist_x * patch_scl * ori_cos - dist_y * patch_scl * ori_sin);
     y += round(dist_x * patch_scl * ori_sin + dist_y * patch_scl * ori_cos);
 
-    return image[x * iInfo.dims[0] + y];
+    return image[x * iInfo.strides[1] + y * iInfo.strides[0] + iInfo.offset];
 }
 
 kernel void extract_orb(global unsigned* desc_out, const unsigned n_feat,
