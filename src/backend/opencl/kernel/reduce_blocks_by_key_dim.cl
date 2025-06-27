@@ -82,12 +82,12 @@ kernel void reduce_blocks_by_key_dim(global int *reduced_block_sizes,
     Tk k;
     To v;
     if (gidx < n) {
-        k             = iKeys[gidx];
+        k             = iKeys[gidx + iKInfo.offset];
         const int gid = bidw * iVInfo.strides[dims_ordering[3]] +
                         bidz * iVInfo.strides[dims_ordering[2]] +
                         bidy * iVInfo.strides[dims_ordering[1]] +
                         gidx * iVInfo.strides[DIM];
-        v = transform(iVals[gid]);
+        v = transform(iVals[gid + iVInfo.offset]);
         if (change_nan) v = IS_NAN(v) ? nanval : v;
     } else {
         v = init_val;

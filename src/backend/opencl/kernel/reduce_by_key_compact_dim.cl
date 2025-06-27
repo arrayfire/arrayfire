@@ -43,8 +43,8 @@ kernel void compact_dim(global int *reduced_block_sizes, global Tk *oKeys,
                     bidz * iVInfo.strides[dim_ordering[2]] +
                     bidy * iVInfo.strides[dim_ordering[1]] +
                     gidx * iVInfo.strides[DIM];
-    k = iKeys[gidx];
-    v = iVals[tid];
+    k = iKeys[gidx + iKInfo.offset];
+    v = iVals[tid + iVInfo.offset];
 
     if (lid < nwrite) {
         oKeys[writeloc + lid] = k;
