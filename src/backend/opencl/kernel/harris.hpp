@@ -126,21 +126,20 @@ void harris(unsigned *corners_out, Param &x_out, Param &y_out, Param &resp_out,
 
     // Second order-derivatives kernel sizes
     const unsigned blk_x_so =
-        divup(in.info.dims[3] * in.info.strides[3], HARRIS_THREADS_PER_GROUP);
+        divup(in.info.dims[0] * in.info.dims[1], HARRIS_THREADS_PER_GROUP);
     const NDRange local_so(HARRIS_THREADS_PER_GROUP, 1);
     const NDRange global_so(blk_x_so * HARRIS_THREADS_PER_GROUP, 1);
 
     // Compute second-order derivatives
     soOp(EnqueueArgs(getQueue(), global_so, local_so), *ixx.get(), *ixy.get(),
-         *iyy.get(), in.info.dims[3] * in.info.strides[3], *ix.get(),
-         *iy.get());
+         *iyy.get(), in.info.dims[0] * in.info.dims[1], *ix.get(), *iy.get());
     CL_DEBUG_FINISH(getQueue());
 
     // Convolve second order derivatives with proper window filter
     conv_helper<T, convAccT>(ixx, ixy, iyy, filter);
 
     cl::Buffer *d_responses =
-        bufferAlloc(in.info.dims[3] * in.info.strides[3] * sizeof(T));
+        bufferAlloc(in.info.dims[0] * in.info.dims[1] * sizeof(T));
 
     // Harris responses kernel sizes
     unsigned blk_x_hr =
@@ -159,7 +158,7 @@ void harris(unsigned *corners_out, Param &x_out, Param &y_out, Param &resp_out,
 
     // Number of corners is not known a priori, limit maximum number of corners
     // according to image dimensions
-    unsigned corner_lim = in.info.dims[3] * in.info.strides[3] * 0.2f;
+    unsigned corner_lim = in.info.dims[0] * in.info.dims[1] * 0.2f;
 
     unsigned corners_found      = 0;
     cl::Buffer *d_corners_found = bufferAlloc(sizeof(unsigned));
@@ -221,7 +220,8 @@ void harris(unsigned *corners_out, Param &x_out, Param &y_out, Param &resp_out,
                 harris_idx.info.dims[k - 1] * harris_idx.info.strides[k - 1];
         }
 
-        int sort_elem = harris_resp.info.strides[3] * harris_resp.info.dims[3];
+        int sort_elem = harris_resp.info.dims[0] * harris_resp.info.dims[1];
+
         harris_resp.data = d_resp_corners;
         // Create indices using range
         harris_idx.data = bufferAlloc(sort_elem * sizeof(unsigned));
