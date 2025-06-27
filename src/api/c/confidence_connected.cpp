@@ -45,6 +45,8 @@ using std::swap;
 template<typename T>
 Array<T> pointList(const Array<T>& in, const Array<uint>& x,
                    const Array<uint>& y) {
+
+    // TODO: Temporary Fix, must fix handling subarrays upstream
     // Array<T> has to be a basic array, to be accepted as af_index
     Array<uint> x_ = (x.getOffset() == 0 && x.isLinear()) ? x : copyArray(x);
     Array<uint> y_ = (y.getOffset() == 0 && y.isLinear()) ? y : copyArray(y);
