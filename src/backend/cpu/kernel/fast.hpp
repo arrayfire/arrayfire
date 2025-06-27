@@ -28,7 +28,9 @@ inline int idx_x(int i) {
     return idx_y(i - 12);
 }
 
-inline int idx(int y, int x, unsigned idim0) { return x * idim0 + y; }
+inline int idx(int y, int x, unsigned istrides0, unsigned istrides1) {
+    return x * istrides1 + y * istrides0;
+}
 
 // test_greater()
 // Tests if a pixel x > p + thr
@@ -44,9 +46,10 @@ inline int test_smaller(float x, float p, float thr) { return (x < p - thr); }
 // Returns  1 when x > p + thr
 template<typename T>
 inline int test_pixel(const T *image, const float p, float thr, int y, int x,
-                      unsigned idim0) {
-    return -test_smaller((float)image[idx(y, x, idim0)], p, thr) +
-           test_greater((float)image[idx(y, x, idim0)], p, thr);
+                      unsigned istrides0, unsigned istrides1) {
+    return -test_smaller((float)image[idx(y, x, istrides0, istrides1)], p,
+                         thr) +
+           test_greater((float)image[idx(y, x, istrides0, istrides1)], p, thr);
 }
 
 // abs_diff()
@@ -64,36 +67,53 @@ void locate_features(CParam<T> in, Param<float> score, Param<float> x_out,
                      unsigned *count, float const thr,
                      unsigned const arc_length, unsigned const nonmax,
                      unsigned const max_feat, unsigned const edge) {
-    af::dim4 in_dims = in.dims();
-    T const *in_ptr  = in.get();
+    af::dim4 in_dims    = in.dims();
+    af::dim4 in_strides = in.strides();
+    T const *in_ptr     = in.get();
 
     for (int y = edge; y < (int)(in_dims[0] - edge); y++) {
         for (int x = edge; x < (int)(in_dims[1] - edge); x++) {
-            float p = in_ptr[idx(y, x, in_dims[0])];
+            float p = in_ptr[idx(y, x, in_strides[0], in_strides[1])];
 
             // Start by testing opposite pixels of the circle that will result
             // in a non-kepoint
             int d;
-            d = test_pixel<T>(in_ptr, p, thr, y - 3, x, in_dims[0]) |
-                test_pixel<T>(in_ptr, p, thr, y + 3, x, in_dims[0]);
+            d = test_pixel<T>(in_ptr, p, thr, y - 3, x, in_strides[0],
+                              in_strides[1]) |
+                test_pixel<T>(in_ptr, p, thr, y + 3, x, in_strides[0],
+                              in_strides[1]);
             if (d == 0) continue;
 
-            d &= test_pixel<T>(in_ptr, p, thr, y - 2, x + 2, in_dims[0]) |
-                 test_pixel<T>(in_ptr, p, thr, y + 2, x - 2, in_dims[0]);
-            d &= test_pixel<T>(in_ptr, p, thr, y, x + 3, in_dims[0]) |
-                 test_pixel<T>(in_ptr, p, thr, y, x - 3, in_dims[0]);
-            d &= test_pixel<T>(in_ptr, p, thr, y + 2, x + 2, in_dims[0]) |
-                 test_pixel<T>(in_ptr, p, thr, y - 2, x - 2, in_dims[0]);
+            d &= test_pixel<T>(in_ptr, p, thr, y - 2, x + 2, in_strides[0],
+                               in_strides[1]) |
+                 test_pixel<T>(in_ptr, p, thr, y + 2, x - 2, in_strides[0],
+                               in_strides[1]);
+            d &= test_pixel<T>(in_ptr, p, thr, y, x + 3, in_strides[0],
+                               in_strides[1]) |
+                 test_pixel<T>(in_ptr, p, thr, y, x - 3, in_strides[0],
+                               in_strides[1]);
+            d &= test_pixel<T>(in_ptr, p, thr, y + 2, x + 2, in_strides[0],
+                               in_strides[1]) |
+                 test_pixel<T>(in_ptr, p, thr, y - 2, x - 2, in_strides[0],
+                               in_strides[1]);
             if (d == 0) continue;
 
-            d &= test_pixel<T>(in_ptr, p, thr, y - 3, x + 1, in_dims[0]) |
-                 test_pixel<T>(in_ptr, p, thr, y + 3, x - 1, in_dims[0]);
-            d &= test_pixel<T>(in_ptr, p, thr, y - 1, x + 3, in_dims[0]) |
-                 test_pixel<T>(in_ptr, p, thr, y + 1, x - 3, in_dims[0]);
-            d &= test_pixel<T>(in_ptr, p, thr, y + 1, x + 3, in_dims[0]) |
-                 test_pixel<T>(in_ptr, p, thr, y - 1, x - 3, in_dims[0]);
-            d &= test_pixel<T>(in_ptr, p, thr, y + 3, x + 1, in_dims[0]) |
-                 test_pixel<T>(in_ptr, p, thr, y - 3, x - 1, in_dims[0]);
+            d &= test_pixel<T>(in_ptr, p, thr, y - 3, x + 1, in_strides[0],
+                               in_strides[1]) |
+                 test_pixel<T>(in_ptr, p, thr, y + 3, x - 1, in_strides[0],
+                               in_strides[1]);
+            d &= test_pixel<T>(in_ptr, p, thr, y - 1, x + 3, in_strides[0],
+                               in_strides[1]) |
+                 test_pixel<T>(in_ptr, p, thr, y + 1, x - 3, in_strides[0],
+                               in_strides[1]);
+            d &= test_pixel<T>(in_ptr, p, thr, y + 1, x + 3, in_strides[0],
+                               in_strides[1]) |
+                 test_pixel<T>(in_ptr, p, thr, y - 1, x - 3, in_strides[0],
+                               in_strides[1]);
+            d &= test_pixel<T>(in_ptr, p, thr, y + 3, x + 1, in_strides[0],
+                               in_strides[1]) |
+                 test_pixel<T>(in_ptr, p, thr, y - 3, x - 1, in_strides[0],
+                               in_strides[1]);
             if (d == 0) continue;
 
             int sum = 0;
@@ -101,7 +121,7 @@ void locate_features(CParam<T> in, Param<float> score, Param<float> x_out,
             // Sum responses [-1, 0 or 1] of first arc_length pixels
             for (int i = 0; i < static_cast<int>(arc_length); i++)
                 sum += test_pixel<T>(in_ptr, p, thr, y + idx_y(i), x + idx_x(i),
-                                     in_dims[0]);
+                                     in_strides[0], in_strides[1]);
 
             // Test maximum and mininmum responses of first segment of
             // arc_length pixels
@@ -113,9 +133,10 @@ void locate_features(CParam<T> in, Param<float> score, Param<float> x_out,
             // circle
             for (int i = arc_length; i < 16; i++) {
                 sum -= test_pixel<T>(in_ptr, p, thr, y + idx_y(i - arc_length),
-                                     x + idx_x(i - arc_length), in_dims[0]);
+                                     x + idx_x(i - arc_length), in_strides[0],
+                                     in_strides[1]);
                 sum += test_pixel<T>(in_ptr, p, thr, y + idx_y(i), x + idx_x(i),
-                                     in_dims[0]);
+                                     in_strides[0], in_strides[1]);
                 max_sum = std::max(max_sum, sum);
                 min_sum = std::min(min_sum, sum);
             }
@@ -123,19 +144,20 @@ void locate_features(CParam<T> in, Param<float> score, Param<float> x_out,
             // To completely test all possible segments, it's necessary to test
             // segments that include the top junction of the circle
             for (int i = 0; i < static_cast<int>(arc_length - 1); i++) {
-                sum -= test_pixel<T>(
-                    in_ptr, p, thr, y + idx_y(16 - arc_length + i),
-                    x + idx_x(16 - arc_length + i), in_dims[0]);
+                sum -= test_pixel<T>(in_ptr, p, thr,
+                                     y + idx_y(16 - arc_length + i),
+                                     x + idx_x(16 - arc_length + i),
+                                     in_strides[0], in_strides[1]);
                 sum += test_pixel<T>(in_ptr, p, thr, y + idx_y(i), x + idx_x(i),
-                                     in_dims[0]);
+                                     in_strides[0], in_strides[1]);
                 max_sum = std::max(max_sum, sum);
                 min_sum = std::min(min_sum, sum);
             }
 
             float s_bright = 0, s_dark = 0;
             for (int i = 0; i < 16; i++) {
-                float p_x =
-                    (float)in_ptr[idx(y + idx_y(i), x + idx_x(i), in_dims[0])];
+                float p_x = (float)in_ptr[idx(y + idx_y(i), x + idx_x(i),
+                                              in_strides[0], in_strides[1])];
 
                 s_bright +=
                     test_greater(p_x, p, thr) * (abs_diff(p_x, p) - thr);
@@ -159,7 +181,7 @@ void locate_features(CParam<T> in, Param<float> score, Param<float> x_out,
                         static_cast<float>(std::max(s_bright, s_dark));
                     if (nonmax == 1) {
                         float *score_ptr = score.get();
-                        score_ptr[idx(y, x, in_dims[0])] =
+                        score_ptr[idx(y, x, 1, in_dims[0])] =
                             std::max(s_bright, s_dark);
                     }
                 }
