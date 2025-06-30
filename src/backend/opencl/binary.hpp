@@ -9,9 +9,6 @@
 
 #pragma once
 #include <optypes.hpp>
-#include <common/half.hpp>
-  
-using arrayfire::common::half;
 
 namespace arrayfire {
 namespace opencl {
@@ -101,7 +98,6 @@ struct BinOp<To, Ti, af_pow_t> {
 
 POW_BINARY_OP(double, "pow")
 POW_BINARY_OP(float, "pow")
-POW_BINARY_OP(half, "pow")
 POW_BINARY_OP(intl, "__powll")
 POW_BINARY_OP(uintl, "__powul")
 POW_BINARY_OP(uint, "__powui")
