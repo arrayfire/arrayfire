@@ -13,6 +13,7 @@
 #include <optypes.hpp>
 #include <types.hpp>
 #include <af/defines.h>
+#include <af/dim4.hpp>
 
 #include <nonstd/span.hpp>
 #include <algorithm>
@@ -310,6 +311,10 @@ class Node {
         return this == &other;
     }
     virtual std::unique_ptr<Node> clone() = 0;
+
+    virtual void modDims(const af::dim4 &newDim) {
+        UNUSED(newDim);
+    }
 
 #ifdef AF_CPU
     template<typename U>
