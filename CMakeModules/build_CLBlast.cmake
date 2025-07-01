@@ -24,9 +24,10 @@ if(TARGET clblast OR AF_WITH_EXTERNAL_PACKAGES_ONLY)
     message(ERROR "CLBlast now found")
   endif()
 else()
+  # This specific reference passes tests
   af_dep_check_and_populate(${clblast_prefix}
     URI https://github.com/cnugteren/CLBlast.git
-    REF 1.6.3
+    REF 4500a03440e2cc54998c0edab366babf5e504d67
   )
 
   include(ExternalProject)
