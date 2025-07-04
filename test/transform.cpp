@@ -620,3 +620,43 @@ TEST(TransformBatching, CPP) {
         }
     }
 }
+
+#define TEST_TEMP_FORMAT(form, interp)                                         \
+    TEST(TEMP_FORMAT, form##_##interp) {                                       \
+        IMAGEIO_ENABLED_CHECK();                                               \
+                                                                               \
+        vector<dim4> inDims;                                                   \
+        vector<string> inFiles;                                                \
+        vector<dim_t> goldDim;                                                 \
+        vector<string> goldFiles;                                              \
+                                                                               \
+        vector<dim4> HDims;                                                    \
+        vector<vector<float>> HIn;                                             \
+        vector<vector<float>> HTests;                                          \
+        readTests<float, float, float>(TEST_DIR "/transform/tux_tmat.test",    \
+                                       HDims, HIn, HTests);                    \
+                                                                               \
+        readImageTests(string(TEST_DIR "/transform/tux_nearest.test"), inDims, \
+                       inFiles, goldDim, goldFiles);                           \
+        inFiles[1].insert(0, string(TEST_DIR "/transform/"));                  \
+        const array IH = array(HDims[0][0], HDims[0][1], &(HIn[0].front()));   \
+        const array scene_img = loadImage(inFiles[1].c_str(), false);          \
+                                                                               \
+        const array out =                                                      \
+            transform(toTempFormat(form, scene_img), toTempFormat(form, IH),   \
+                      inDims[0][0], inDims[0][1], interp, false);              \
+        const array gold = transform(scene_img, IH, inDims[0][0],              \
+                                     inDims[0][1], interp, false);             \
+                                                                               \
+        EXPECT_ARRAYS_EQ(out, gold);                                           \
+    }
+
+#define TESTS_TEMP_FORMAT(form)                       \
+    TEST_TEMP_FORMAT(form, AF_INTERP_NEAREST)         \
+    TEST_TEMP_FORMAT(form, AF_INTERP_BILINEAR)        \
+    TEST_TEMP_FORMAT(form, AF_INTERP_BILINEAR_COSINE) \
+    TEST_TEMP_FORMAT(form, AF_INTERP_BICUBIC)         \
+    TEST_TEMP_FORMAT(form, AF_INTERP_BICUBIC_SPLINE)  \
+    TEST_TEMP_FORMAT(form, AF_INTERP_LOWER)
+
+FOREACH_TEMP_FORMAT(TESTS_TEMP_FORMAT)

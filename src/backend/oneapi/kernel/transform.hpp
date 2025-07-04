@@ -178,7 +178,8 @@ class transformCreateKernel {
         using TMatTy =
             typename std::conditional<PERSPECTIVE, float[9], float[6]>::type;
         TMatTy tmat;
-        const float *tmat_ptr = c_tmat_.get_pointer() + t_idx * transf_len;
+        const float *tmat_ptr =
+            c_tmat_.get_pointer() + tf_.offset + t_idx * transf_len;
 
         // We expect a inverse transform matrix by default
         // If it is an forward transform, then we need its inverse

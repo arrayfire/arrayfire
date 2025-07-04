@@ -9,6 +9,7 @@
 
 #include <transform.hpp>
 
+#include <copy.hpp>
 #include <kernel/transform.hpp>
 #include <utility.hpp>
 
@@ -19,7 +20,10 @@ template<typename T>
 void transform(Array<T> &out, const Array<T> &in, const Array<float> &tf,
                const af::interpType method, const bool inverse,
                const bool perspective) {
-    kernel::transform<T>(out, in, tf, inverse, perspective, method,
+    // tf has to be linear, although offset is allowed.
+    const Array<float> tf_Lin = tf.isLinear() ? tf : copyArray(tf);
+
+    kernel::transform<T>(out, in, tf_Lin, inverse, perspective, method,
                          interpOrder(method));
 }
 

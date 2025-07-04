@@ -133,7 +133,7 @@ kernel void transformKernel(global T *d_out, const KParam out,
     const int transf_len = 6;
     float tmat[6];
 #endif
-    global const float *tmat_ptr = c_tmat + t_idx * transf_len;
+    global const float *tmat_ptr = c_tmat + tf.offset + t_idx * transf_len;
 
     // We expect a inverse transform matrix by default
     // If it is an forward transform, then we need its inverse
