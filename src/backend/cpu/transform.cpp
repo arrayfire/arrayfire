@@ -24,6 +24,7 @@ void transform(Array<T> &out, const Array<T> &in, const Array<float> &tf,
     out.eval();
     in.eval();
 
+    // TODO: Temporary Fix, must fix handling subarrays upstream
     // tf has to be linear, although offset is allowed
     const Array<float> tf_Lin = tf.isLinear() ? tf : copyArray(tf);
     tf.eval();

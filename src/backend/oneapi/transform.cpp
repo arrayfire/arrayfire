@@ -20,6 +20,7 @@ template<typename T>
 void transform(Array<T> &out, const Array<T> &in, const Array<float> &tf,
                const af_interp_type method, const bool inverse,
                const bool perspective) {
+    // TODO: Temporary Fix, must fix handling subarrays upstream
     // tf has to be linear, although offset is allowed.
     const Array<float> tf_Lin = tf.isLinear() ? tf : copyArray(tf);
 
