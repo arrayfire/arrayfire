@@ -61,7 +61,7 @@ void transformCoordinatesTest(string pTestFile) {
         dim_t outEl = 0;
         ASSERT_SUCCESS(af_get_elements(&outEl, outArray));
         vector<T> outData(outEl);
-        ASSERT_SUCCESS(af_get_data_ptr((void*)&outData.front(), outArray));
+        ASSERT_SUCCESS(af_get_data_ptr((void *)&outData.front(), outArray));
 
         ASSERT_SUCCESS(af_release_array(outArray));
         const float thr = 1.f;
@@ -114,3 +114,26 @@ TEST(TransformCoordinates, CPP) {
             << "at: " << elIter << endl;
     }
 }
+
+#define TESTS_TEMP_FORMAT(form)                                                \
+    TEST(TEMP_FORMAT, form) {                                                  \
+        vector<dim4> inDims;                                                   \
+        vector<vector<float>> in;                                              \
+        vector<vector<float>> gold;                                            \
+                                                                               \
+        readTests<float, float, float>(TEST_DIR                                \
+                                       "/transformCoordinates/3d_matrix.test", \
+                                       inDims, in, gold);                      \
+                                                                               \
+        const array tf(inDims[0][0], inDims[0][1], &(in[0].front()));          \
+        const float d0 = in[1][0];                                             \
+        const float d1 = in[1][1];                                             \
+                                                                               \
+        const array out =                                                      \
+            transformCoordinates(toTempFormat(form, tf), d0, d1);              \
+        const array gout = transformCoordinates(tf, d0, d1);                   \
+                                                                               \
+        EXPECT_ARRAYS_EQ(out, gout);                                           \
+    }
+
+FOREACH_TEMP_FORMAT(TESTS_TEMP_FORMAT)

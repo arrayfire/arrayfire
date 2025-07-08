@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <copy.hpp>
 #include <kernel/transform.hpp>
 #include <math.hpp>
 #include <platform.hpp>
@@ -22,23 +23,27 @@ void transform(Array<T> &out, const Array<T> &in, const Array<float> &tf,
                const bool perspective) {
     out.eval();
     in.eval();
+
+    // TODO: Temporary Fix, must fix handling subarrays upstream
+    // tf has to be linear, although offset is allowed
+    const Array<float> tf_Lin = tf.isLinear() ? tf : copyArray(tf);
     tf.eval();
 
     switch (method) {
         case AF_INTERP_NEAREST:
         case AF_INTERP_LOWER:
-            getQueue().enqueue(kernel::transform<T, 1>, out, in, tf, inverse,
-                               perspective, method);
+            getQueue().enqueue(kernel::transform<T, 1>, out, in, tf_Lin,
+                               inverse, perspective, method);
             break;
         case AF_INTERP_BILINEAR:
         case AF_INTERP_BILINEAR_COSINE:
-            getQueue().enqueue(kernel::transform<T, 2>, out, in, tf, inverse,
-                               perspective, method);
+            getQueue().enqueue(kernel::transform<T, 2>, out, in, tf_Lin,
+                               inverse, perspective, method);
             break;
         case AF_INTERP_BICUBIC:
         case AF_INTERP_BICUBIC_SPLINE:
-            getQueue().enqueue(kernel::transform<T, 3>, out, in, tf, inverse,
-                               perspective, method);
+            getQueue().enqueue(kernel::transform<T, 3>, out, in, tf_Lin,
+                               inverse, perspective, method);
             break;
         default: AF_ERROR("Unsupported interpolation type", AF_ERR_ARG); break;
     }

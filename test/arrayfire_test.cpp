@@ -229,9 +229,9 @@ template<typename T>
         af::saveImage(result_path.c_str(), b.as(f32));
         af::saveImage(diff_path.c_str(), abs(a.as(f32) - b.as(f32)));
 
-        std::cout
-            << "<DartMeasurementFile type=\"image/png\" name=\"ValidImage\">"
-            << valid_path << "</DartMeasurementFile>\n";
+        std::cout << "<DartMeasurementFile type=\"image/png\" "
+                     "name=\"ValidImage\">"
+                  << valid_path << "</DartMeasurementFile>\n";
         std::cout
             << "<DartMeasurementFile type=\"image/png\" name=\"TestImage\">"
             << result_path << "</DartMeasurementFile>\n";
@@ -526,7 +526,8 @@ dim_t ravelIdx(af::dim4 coords, af::dim4 strides) {
                               0LL);
 }
 
-// Calculate a linearized index's multi-dimensonal coordinates in an af::array,
+// Calculate a linearized index's multi-dimensonal coordinates in an
+// af::array,
 //  given its dimension sizes and strides
 af::dim4 unravelIdx(dim_t idx, af::dim4 dims, af::dim4 strides) {
     af::dim4 coords;
@@ -567,8 +568,9 @@ std::string minimalDim4(af::dim4 coords, af::dim4 dims) {
     return os.str();
 }
 
-// Generates a random array. testWriteToOutputArray expects that it will receive
-// the same af_array that this generates after the af_* function is called
+// Generates a random array. testWriteToOutputArray expects that it will
+// receive the same af_array that this generates after the af_* function is
+// called
 void genRegularArray(TestOutputArrayInfo *metadata, const unsigned ndims,
                      const dim_t *const dims, const af_dtype ty) {
     metadata->init(ndims, dims, ty);
@@ -581,9 +583,9 @@ void genRegularArray(TestOutputArrayInfo *metadata, double val,
 }
 
 // Generates a large, random array, and extracts a subarray for the af_*
-// function to use. testWriteToOutputArray expects that the large array that it
-// receives is equal to the same large array with the gold array injected on the
-// same subarray location
+// function to use. testWriteToOutputArray expects that the large array that
+// it receives is equal to the same large array with the gold array injected
+// on the same subarray location
 void genSubArray(TestOutputArrayInfo *metadata, const unsigned ndims,
                  const dim_t *const dims, const af_dtype ty) {
     const dim_t pad_size = 2;
@@ -596,8 +598,9 @@ void genSubArray(TestOutputArrayInfo *metadata, const unsigned ndims,
     }
 
     // Calculate index of sub-array. These will be used also by
-    // testWriteToOutputArray so that the gold sub array will be placed in the
-    // same location. Currently, this location is the center of the large array
+    // testWriteToOutputArray so that the gold sub array will be placed in
+    // the same location. Currently, this location is the center of the
+    // large array
     af_seq subarr_idxs[4] = {af_span, af_span, af_span, af_span};
     for (uint i = 0; i < ndims; ++i) {
         af_seq idx     = {pad_size, pad_size + dims[i] - 1.0, 1.0};
@@ -620,8 +623,9 @@ void genSubArray(TestOutputArrayInfo *metadata, double val,
     }
 
     // Calculate index of sub-array. These will be used also by
-    // testWriteToOutputArray so that the gold sub array will be placed in the
-    // same location. Currently, this location is the center of the large array
+    // testWriteToOutputArray so that the gold sub array will be placed in
+    // the same location. Currently, this location is the center of the
+    // large array
     af_seq subarr_idxs[4] = {af_span, af_span, af_span, af_span};
     for (uint i = 0; i < ndims; ++i) {
         af_seq idx     = {pad_size, pad_size + dims[i] - 1.0, 1.0};
@@ -631,13 +635,14 @@ void genSubArray(TestOutputArrayInfo *metadata, double val,
     metadata->init(val, ndims, full_arr_dims, ty, &subarr_idxs[0]);
 }
 
-// Generates a reordered array. testWriteToOutputArray expects that this array
-// will still have the correct output values from the af_* function, even though
-// the array was initially reordered.
+// Generates a reordered array. testWriteToOutputArray expects that this
+// array will still have the correct output values from the af_* function,
+// even though the array was initially reordered.
 void genReorderedArray(TestOutputArrayInfo *metadata, const unsigned ndims,
                        const dim_t *const dims, const af_dtype ty) {
-    // The rest of this function assumes that dims has 4 elements. Just in case
-    // dims has < 4 elements, use another dims array that is filled with 1s
+    // The rest of this function assumes that dims has 4 elements. Just in
+    // case dims has < 4 elements, use another dims array that is filled
+    // with 1s
     dim_t all_dims[4] = {1, 1, 1, 1};
     for (uint i = 0; i < ndims; ++i) { all_dims[i] = dims[i]; }
 
@@ -648,7 +653,8 @@ void genReorderedArray(TestOutputArrayInfo *metadata, const unsigned ndims,
     uint reorder_idxs[4] = {0, 2, 1, 3};
 
     // Shape the output array such that the reordered output array will have
-    // the correct dimensions that the test asks for (i.e. must match dims arg)
+    // the correct dimensions that the test asks for (i.e. must match dims
+    // arg)
     dim_t init_dims[4] = {all_dims[0], all_dims[1], all_dims[2], all_dims[3]};
     for (uint i = 0; i < 4; ++i) { init_dims[i] = all_dims[reorder_idxs[i]]; }
     metadata->init(4, init_dims, ty);
@@ -663,8 +669,9 @@ void genReorderedArray(TestOutputArrayInfo *metadata, const unsigned ndims,
 void genReorderedArray(TestOutputArrayInfo *metadata, double val,
                        const unsigned ndims, const dim_t *const dims,
                        const af_dtype ty) {
-    // The rest of this function assumes that dims has 4 elements. Just in case
-    // dims has < 4 elements, use another dims array that is filled with 1s
+    // The rest of this function assumes that dims has 4 elements. Just in
+    // case dims has < 4 elements, use another dims array that is filled
+    // with 1s
     dim_t all_dims[4] = {1, 1, 1, 1};
     for (uint i = 0; i < ndims; ++i) { all_dims[i] = dims[i]; }
 
@@ -675,7 +682,8 @@ void genReorderedArray(TestOutputArrayInfo *metadata, double val,
     uint reorder_idxs[4] = {0, 2, 1, 3};
 
     // Shape the output array such that the reordered output array will have
-    // the correct dimensions that the test asks for (i.e. must match dims arg)
+    // the correct dimensions that the test asks for (i.e. must match dims
+    // arg)
     dim_t init_dims[4] = {all_dims[0], all_dims[1], all_dims[2], all_dims[3]};
     for (uint i = 0; i < 4; ++i) { init_dims[i] = all_dims[reorder_idxs[i]]; }
     metadata->init(val, 4, init_dims, ty);
@@ -745,8 +753,8 @@ void genTestOutputArray(af_array *out_ptr, double val, const unsigned ndims,
 
     if (metadata->getOutputArrayType() == SUB_ARRAY) {
         // There are two full arrays. One will be injected with the gold
-        // subarray, the other should have already been injected with the af_*
-        // function's output. Then we compare the two full arrays
+        // subarray, the other should have already been injected with the
+        // af_* function's output. Then we compare the two full arrays
         af_array gold_full_array = metadata->getFullOutputCopy();
         af_assign_seq(&gold_full_array, gold_full_array,
                       metadata->getSubArrayNumDims(),
@@ -1293,9 +1301,11 @@ TestOutputArrayType TestOutputArrayInfo::getOutputArrayType() {
                 return ::testing::AssertionFailure()
                        << "\nEnd of file reached, expected more data, "
                        << "following are some reasons this happens.\n"
-                       << "\t - use of template type that doesn't match data "
+                       << "\t - use of template type that doesn't match "
+                          "data "
                           "type\n"
-                       << "\t - the mtx file itself doesn't have enough data\n";
+                       << "\t - the mtx file itself doesn't have enough "
+                          "data\n";
             }
             I[i] = r - 1;
             J[i] = c - 1;
@@ -1319,9 +1329,11 @@ TestOutputArrayType TestOutputArrayInfo::getOutputArrayType() {
                 return ::testing::AssertionFailure()
                        << "\nEnd of file reached, expected more data, "
                        << "following are some reasons this happens.\n"
-                       << "\t - use of template type that doesn't match data "
+                       << "\t - use of template type that doesn't match "
+                          "data "
                           "type\n"
-                       << "\t - the mtx file itself doesn't have enough data\n";
+                       << "\t - the mtx file itself doesn't have enough "
+                          "data\n";
             }
             I[i] = r - 1;
             J[i] = c - 1;
@@ -1531,8 +1543,8 @@ vector<sparseCooValue<T>> toCooVector(const af::array &arr) {
         }
     }
 
-    // Remove zero elements from result to ensure that only non-zero elements
-    // are compared
+    // Remove zero elements from result to ensure that only non-zero
+    // elements are compared
     out.erase(std::remove_if(out.begin(), out.end(), isZero<T>), out.end());
     std::sort(begin(out), end(out));
     return out;
@@ -1584,8 +1596,8 @@ std::string printContext(const std::vector<T> &hGold, std::string goldName,
 
     // Get dim0 positions and out/reference values for the context window
     //
-    // Also get the max string length between the position and out/ref values
-    // per item so that it can be used later as the field width for
+    // Also get the max string length between the position and out/ref
+    // values per item so that it can be used later as the field width for
     // displaying each item in the context window
     for (dim_t i = 0; i < ctxElems; ++i) {
         std::ostringstream tmpOs;
@@ -2063,31 +2075,35 @@ af::array toTempFormat(tempFormat form, const af::array &in) {
             break;
         case SUB_FORMAT_dim0: {
             af::dim4 pdims(dims);
-            pdims[0] += 2;
-            af::array parent = af::randu(pdims, in.type());
-            parent(af::seq(1, dims[0]), af::span, af::span, af::span) = in;
-            ret = parent(af::seq(1, dims[0]), af::span, af::span, af::span);
+            pdims[0] *= 2;
+            af::array parent  = af::randu(pdims, in.type());
+            const af::seq dim = af::seq(dims[0]) + static_cast<double>(dims[0]);
+            parent(dim, af::span, af::span, af::span) = in;
+            ret = parent(dim, af::span, af::span, af::span);
         }; break;
         case SUB_FORMAT_dim1: {
             af::dim4 pdims(dims);
-            pdims[1] += 2;
-            af::array parent = af::randu(pdims, in.type());
-            parent(af::span, af::seq(1, dims[1]), af::span, af::span) = in;
-            ret = parent(af::span, af::seq(1, dims[1]), af::span, af::span);
+            pdims[1] *= 2;
+            const af::seq dim = af::seq(dims[1]) + static_cast<double>(dims[1]);
+            af::array parent  = af::randu(pdims, in.type());
+            parent(af::span, dim, af::span, af::span) = in;
+            ret = parent(af::span, dim, af::span, af::span);
         }; break;
         case SUB_FORMAT_dim2: {
             af::dim4 pdims(dims);
-            pdims[2] += 2;
-            af::array parent = af::randu(pdims, in.type());
-            parent(af::span, af::span, af::seq(1, dims[2]), af::span) = in;
-            ret = parent(af::span, af::span, af::seq(1, dims[2]), af::span);
+            pdims[2] *= 2;
+            const af::seq dim = af::seq(dims[2]) + static_cast<double>(dims[2]);
+            af::array parent  = af::randu(pdims, in.type());
+            parent(af::span, af::span, dim, af::span) = in;
+            ret = parent(af::span, af::span, dim, af::span);
         }; break;
         case SUB_FORMAT_dim3: {
             af::dim4 pdims(dims);
-            pdims[3] += 2;
-            af::array parent = af::randu(pdims, in.type());
-            parent(af::span, af::span, af::span, af::seq(1, dims[3])) = in;
-            ret = parent(af::span, af::span, af::span, af::seq(1, dims[3]));
+            pdims[3] *= 2;
+            const af::seq dim = af::seq(dims[3]) + static_cast<double>(dims[3]);
+            af::array parent  = af::randu(pdims, in.type());
+            parent(af::span, af::span, af::span, dim) = in;
+            ret = parent(af::span, af::span, af::span, dim);
         }; break;
         case REORDERED_FORMAT: {
             const dim_t idxs[4] = {0, 3, 1, 2};
@@ -2138,21 +2154,22 @@ void toTempFormat(tempFormat form, af_array *out, const af_array &in) {
             res = nullptr;
         }; break;
         case SUB_FORMAT_dim0: {
-            const dim_t pdims[4] = {dims[0] + 2, dims[1], dims[2], dims[3]};
+            const dim_t pdims[4] = {dims[0] * 2, dims[1], dims[2], dims[3]};
             af_array parent      = nullptr;
-            ASSERT_SUCCESS(af_randu(&parent, std::max(1u, numdims), pdims, ty));
-            const af_seq idxs[4] = {af_make_seq(1, dims[0], 1), af_span,
-                                    af_span, af_span};
-
+            ASSERT_SUCCESS(af_randu(&parent, 4, pdims, ty));
+            const af_seq idxs[4] = {af_make_seq(dims[0], 2. * dims[0] - 1., 1.),
+                                    af_span, af_span, af_span};
             ASSERT_SUCCESS(af_assign_seq(out, parent, numdims, idxs, in));
             ASSERT_SUCCESS(af_index(out, parent, numdims, idxs));
             ASSERT_SUCCESS(af_release_array(parent));
+            parent = nullptr;
         }; break;
         case SUB_FORMAT_dim1: {
-            const dim_t pdims[4] = {dims[0], dims[1] + 2, dims[2], dims[3]};
+            const dim_t pdims[4] = {dims[0], dims[1] * 2, dims[2], dims[3]};
             af_array parent      = nullptr;
-            ASSERT_SUCCESS(af_randu(&parent, std::max(2u, numdims), pdims, ty));
-            const af_seq idxs[4] = {af_span, af_make_seq(1, dims[1], 1),
+            ASSERT_SUCCESS(af_randu(&parent, 4, pdims, ty));
+            const af_seq idxs[4] = {af_span,
+                                    af_make_seq(dims[1], 2. * dims[1] - 1., 1.),
                                     af_span, af_span};
             ASSERT_SUCCESS(af_assign_seq(out, parent, numdims, idxs, in));
             ASSERT_SUCCESS(af_index(out, parent, numdims, idxs));
@@ -2160,22 +2177,24 @@ void toTempFormat(tempFormat form, af_array *out, const af_array &in) {
             parent = nullptr;
         }; break;
         case SUB_FORMAT_dim2: {
-            const dim_t pdims[4] = {dims[0], dims[1], dims[2] + 2, dims[3]};
+            const dim_t pdims[4] = {dims[0], dims[1], dims[2] * 2, dims[3]};
             af_array parent      = nullptr;
-            ASSERT_SUCCESS(af_randu(&parent, std::max(3u, numdims), pdims, ty));
+            ASSERT_SUCCESS(af_randu(&parent, 4, pdims, ty));
             const af_seq idxs[4] = {af_span, af_span,
-                                    af_make_seq(1, dims[2], 1), af_span};
+                                    af_make_seq(dims[2], 2. * dims[2] - 1., 1.),
+                                    af_span};
             ASSERT_SUCCESS(af_assign_seq(out, parent, numdims, idxs, in));
             ASSERT_SUCCESS(af_index(out, parent, numdims, idxs));
             ASSERT_SUCCESS(af_release_array(parent));
             parent = nullptr;
         }; break;
         case SUB_FORMAT_dim3: {
-            const dim_t pdims[4] = {dims[0], dims[1], dims[2], dims[3] + 2};
+            const dim_t pdims[4] = {dims[0], dims[1], dims[2], dims[3] * 2};
             af_array parent      = nullptr;
-            ASSERT_SUCCESS(af_randu(&parent, std::max(4u, numdims), pdims, ty));
-            const af_seq idxs[4] = {af_span, af_span, af_span,
-                                    af_make_seq(1, dims[3], 1)};
+            ASSERT_SUCCESS(af_randu(&parent, 4, pdims, ty));
+            const af_seq idxs[4] = {
+                af_span, af_span, af_span,
+                af_make_seq(dims[3], 2. * dims[3] - 1., 1.)};
             ASSERT_SUCCESS(af_assign_seq(out, parent, numdims, idxs, in));
             ASSERT_SUCCESS(af_index(out, parent, numdims, idxs));
             ASSERT_SUCCESS(af_release_array(parent));
