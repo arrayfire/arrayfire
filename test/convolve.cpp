@@ -1178,8 +1178,86 @@ TEST(ConvolveNN, ZeroPadding_Issue2817) {
               true);
 
     array incoming_gradient = constant(1 / 9.f, 3, 3);
-    array convolved_grad = convolve2GradientNN(incoming_gradient, signal, filter,
-                                               convolved, strides, padding, dilation,
-                                               AF_CONV_GRADIENT_FILTER);
+    array convolved_grad    = convolve2GradientNN(
+        incoming_gradient, signal, filter, convolved, strides, padding,
+        dilation, AF_CONV_GRADIENT_FILTER);
     ASSERT_EQ(sum<float>(abs(convolved - convolved_grad)) < 1E-5, true);
 }
+
+#define TESTS_TEMP_FORMATS(form)                                               \
+    TEST(TEMP_FORMAT, form##_1) {                                              \
+        vector<dim4> numDims;                                                  \
+        vector<vector<float>> in;                                              \
+        vector<vector<float>> tests;                                           \
+                                                                               \
+        readTests<float, float, int>(                                          \
+            string(TEST_DIR "/convolve/vector_same.test"), numDims, in,        \
+            tests);                                                            \
+        array signal(numDims[0], &(in[0].front()));                            \
+        array filter(numDims[1], &(in[1].front()));                            \
+                                                                               \
+        array out  = convolve1(toTempFormat(form, signal),                     \
+                               toTempFormat(form, filter), AF_CONV_DEFAULT);   \
+        array gold = convolve1(signal, filter, AF_CONV_DEFAULT);               \
+                                                                               \
+        EXPECT_ARRAYS_EQ(out, gold);                                           \
+    }                                                                          \
+                                                                               \
+    TEST(TEMP_FORMAT, form##_2) {                                              \
+        vector<dim4> numDims;                                                  \
+        vector<vector<float>> in;                                              \
+        vector<vector<float>> tests;                                           \
+                                                                               \
+        readTests<float, float, int>(                                          \
+            string(TEST_DIR "/convolve/rectangle_same_one2many.test"),         \
+            numDims, in, tests);                                               \
+        array signal(numDims[0], &(in[0].front()));                            \
+        array filter(numDims[1], &(in[1].front()));                            \
+                                                                               \
+        array out  = convolve2(toTempFormat(form, signal),                     \
+                               toTempFormat(form, filter), AF_CONV_DEFAULT);   \
+        array gold = convolve2(signal, filter, AF_CONV_DEFAULT);               \
+                                                                               \
+        EXPECT_ARRAYS_EQ(out, gold);                                           \
+    }                                                                          \
+                                                                               \
+    TEST(TEMP_FORMAT, form##_3) {                                              \
+        vector<dim4> numDims;                                                  \
+        vector<vector<float>> in;                                              \
+        vector<vector<float>> tests;                                           \
+                                                                               \
+        readTests<float, float, int>(                                          \
+            string(TEST_DIR "/convolve/cuboid_same_many2many.test"), numDims,  \
+            in, tests);                                                        \
+        array signal(numDims[0], &(in[0].front()));                            \
+        array filter(numDims[1], &(in[1].front()));                            \
+                                                                               \
+        array out  = convolve3(toTempFormat(form, signal),                     \
+                               toTempFormat(form, filter), AF_CONV_DEFAULT);   \
+        array gold = convolve3(signal, filter, AF_CONV_DEFAULT);               \
+                                                                               \
+        EXPECT_ARRAYS_EQ(out, gold);                                           \
+    }                                                                          \
+                                                                               \
+    TEST(TEMP_FORMAT, form##_separable) {                                      \
+        vector<dim4> numDims;                                                  \
+        vector<vector<float>> in;                                              \
+        vector<vector<float>> tests;                                           \
+                                                                               \
+        readTests<float, float, int>(                                          \
+            string(TEST_DIR                                                    \
+                   "/convolve/separable_conv2d_same_rectangle_batch.test"),    \
+            numDims, in, tests);                                               \
+        array signal(numDims[0], &(in[0].front()));                            \
+        array cFilter(numDims[1], &(in[1].front()));                           \
+        array rFilter(numDims[2], &(in[2].front()));                           \
+                                                                               \
+        array out =                                                            \
+            convolve(toTempFormat(form, cFilter), toTempFormat(form, rFilter), \
+                     toTempFormat(form, signal), AF_CONV_DEFAULT);             \
+        array gold = convolve(cFilter, rFilter, signal, AF_CONV_DEFAULT);      \
+                                                                               \
+        EXPECT_ARRAYS_EQ(out, gold);                                           \
+    }
+
+FOREACH_TEMP_FORMAT(TESTS_TEMP_FORMATS)

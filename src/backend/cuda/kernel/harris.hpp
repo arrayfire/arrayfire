@@ -174,7 +174,7 @@ void harris(unsigned* corners_out, float** x_out, float** y_out,
         filter.strides[k] = filter.dims[k - 1] * filter.strides[k - 1];
     }
 
-    int filter_elem   = filter.strides[3] * filter.dims[3];
+    int filter_elem   = filter.dims[0] * filter.dims[1];
     auto filter_alloc = memAlloc<convAccT>(filter_elem);
     filter.ptr        = filter_alloc.get();
     CUDA_CHECK(cudaMemcpyAsync(filter.ptr, h_filter.data(),
@@ -184,9 +184,11 @@ void harris(unsigned* corners_out, float** x_out, float** y_out,
     const unsigned border_len = filter_len / 2 + 1;
 
     Param<T> ix, iy;
-    for (dim_t i = 0; i < 4; i++) {
+    ix.dims[0] = iy.dims[0] = in.dims[0];
+    ix.strides[0] = iy.strides[0] = 1;
+    for (dim_t i = 1; i < 4; i++) {
         ix.dims[i] = iy.dims[i] = in.dims[i];
-        ix.strides[i] = iy.strides[i] = in.strides[i];
+        ix.strides[i] = iy.strides[i] = ix.strides[i - 1] * ix.dims[i - 1];
     }
     auto ix_alloc = memAlloc<T>(ix.dims[3] * ix.strides[3]);
     auto iy_alloc = memAlloc<T>(iy.dims[3] * iy.strides[3]);
@@ -198,12 +200,16 @@ void harris(unsigned* corners_out, float** x_out, float** y_out,
 
     Param<T> ixx, ixy, iyy;
     Param<T> ixx_tmp, ixy_tmp, iyy_tmp;
-    for (dim_t i = 0; i < 4; i++) {
-        ixx.dims[i] = ixy.dims[i] = iyy.dims[i] = in.dims[i];
-        ixx_tmp.dims[i] = ixy_tmp.dims[i] = iyy_tmp.dims[i] = in.dims[i];
-        ixx.strides[i] = ixy.strides[i] = iyy.strides[i] = in.strides[i];
-        ixx_tmp.strides[i] = ixy_tmp.strides[i] = iyy_tmp.strides[i] =
-            in.strides[i];
+    ixx.dims[0] = ixy.dims[0] = iyy.dims[0] = ixx_tmp.dims[0] =
+        ixy_tmp.dims[0] = iyy_tmp.dims[0] = in.dims[0];
+    ixx.strides[0] = ixy.strides[0] = iyy.strides[0] = ixx_tmp.strides[0] =
+        ixy_tmp.strides[0] = iyy_tmp.strides[0] = 1;
+    for (dim_t i = 1; i < 4; i++) {
+        ixx.dims[i] = ixy.dims[i] = iyy.dims[i] = ixx_tmp.dims[i] =
+            ixy_tmp.dims[i] = iyy_tmp.dims[i] = in.dims[i];
+        ixx.strides[i] = ixy.strides[i] = iyy.strides[i] = ixx_tmp.strides[i] =
+            ixy_tmp.strides[i]                           = iyy_tmp.strides[i] =
+                ixx.strides[i - 1] * ixx.dims[i - 1];
     }
     auto ixx_alloc = memAlloc<T>(ixx.dims[3] * ixx.strides[3]);
     auto ixy_alloc = memAlloc<T>(ixy.dims[3] * ixy.strides[3]);
@@ -214,9 +220,9 @@ void harris(unsigned* corners_out, float** x_out, float** y_out,
 
     // Compute second-order derivatives
     dim3 threads(THREADS_PER_BLOCK, 1);
-    dim3 blocks(divup(in.dims[3] * in.strides[3], threads.x), 1);
+    dim3 blocks(divup(in.dims[0] * in.dims[1], threads.x), 1);
     CUDA_LAUNCH((second_order_deriv<T>), blocks, threads, ixx.ptr, ixy.ptr,
-                iyy.ptr, in.dims[3] * in.strides[3], ix.ptr, iy.ptr);
+                iyy.ptr, in.dims[0] * in.dims[1], ix.ptr, iy.ptr);
 
     auto ixx_tmp_alloc = memAlloc<T>(ixx_tmp.dims[3] * ixx_tmp.strides[3]);
     auto ixy_tmp_alloc = memAlloc<T>(ixy_tmp.dims[3] * ixy_tmp.strides[3]);
@@ -235,7 +241,7 @@ void harris(unsigned* corners_out, float** x_out, float** y_out,
 
     // Number of corners is not known a priori, limit maximum number of corners
     // according to image dimensions
-    unsigned corner_lim = in.dims[3] * in.strides[3] * 0.2f;
+    unsigned corner_lim = in.dims[0] * in.dims[1] * 0.2f;
 
     auto d_corners_found = memAlloc<unsigned>(1);
     CUDA_CHECK(cudaMemsetAsync(d_corners_found.get(), 0, sizeof(unsigned),
@@ -245,7 +251,7 @@ void harris(unsigned* corners_out, float** x_out, float** y_out,
     auto d_y_corners    = memAlloc<float>(corner_lim);
     auto d_resp_corners = memAlloc<float>(corner_lim);
 
-    auto d_responses = memAlloc<T>(in.dims[3] * in.strides[3]);
+    auto d_responses = memAlloc<T>(in.dims[0] * in.dims[1]);
 
     // Calculate Harris responses for all pixels
     threads = dim3(BLOCK_SIZE, BLOCK_SIZE);

@@ -177,16 +177,17 @@ __device__ void load_shared_image(CParam<T> in, T *local_image, unsigned ix,
     // Copy an image patch to shared memory, with a 3-pixel edge
     if (ix < lx && iy < ly && x - 3 < in.dims[0] && y - 3 < in.dims[1]) {
         local_image[(ix) + (bx + 6) * (iy)] =
-            in.ptr[(x - 3) + in.dims[0] * (y - 3)];
+            in.ptr[in.strides[0] * (x - 3) + in.strides[1] * (y - 3)];
         if (x + lx - 3 < in.dims[0])
             local_image[(ix + lx) + (bx + 6) * (iy)] =
-                in.ptr[(x + lx - 3) + in.dims[0] * (y - 3)];
+                in.ptr[in.strides[0] * (x + lx - 3) + in.strides[1] * (y - 3)];
         if (y + ly - 3 < in.dims[1])
             local_image[(ix) + (bx + 6) * (iy + ly)] =
-                in.ptr[(x - 3) + in.dims[0] * (y + ly - 3)];
+                in.ptr[in.strides[0] * (x - 3) + in.strides[1] * (y + ly - 3)];
         if (x + lx - 3 < in.dims[0] && y + ly - 3 < in.dims[1])
             local_image[(ix + lx) + (bx + 6) * (iy + ly)] =
-                in.ptr[(x + lx - 3) + in.dims[0] * (y + ly - 3)];
+                in.ptr[in.strides[0] * (x + lx - 3) +
+                       in.strides[1] * (y + ly - 3)];
     }
 }
 

@@ -239,3 +239,41 @@ TEST(FloatFAST, CPP) {
     delete[] outOrientation;
     delete[] outSize;
 }
+
+#define TESTS_TEMP_FORMAT(form)                                               \
+    TEST(TEMP_FORMAT, form) {                                                 \
+        UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);                               \
+        IMAGEIO_ENABLED_CHECK();                                              \
+                                                                              \
+        vector<dim4> inDims;                                                  \
+        vector<string> inFiles;                                               \
+        vector<vector<float>> gold;                                           \
+                                                                              \
+        readImageTests(string(TEST_DIR "/fast/square_nonmax_float.test"),     \
+                       inDims, inFiles, gold);                                \
+        inFiles[0].insert(0, string(TEST_DIR "/fast/"));                      \
+        array in = loadImage(inFiles[0].c_str(), false);                      \
+                                                                              \
+        features feat =                                                       \
+            fast(toTempFormat(form, in), 20.0f, 9, true, 0.05f, 3);           \
+        features gfeat = fast(in, 20.0f, 9, true, 0.05f, 3);                  \
+                                                                              \
+        /* The results from fast are dependent on threads runtime, so sort by \
+         * very simple hash on all columns of feat before comparing */        \
+        array score = (feat.getX() * inDims[0].dims[1] + feat.getY());        \
+        array idx, score_sorted;                                              \
+        sort(score_sorted, idx, score);                                       \
+                                                                              \
+        array gscore = (gfeat.getX() * inDims[0].dims[1] + gfeat.getY());     \
+        array gidx, gscore_sorted;                                            \
+        sort(gscore_sorted, gidx, gscore);                                    \
+                                                                              \
+        EXPECT_ARRAYS_EQ(feat.getX()(idx), gfeat.getX()(gidx));               \
+        EXPECT_ARRAYS_EQ(feat.getY()(idx), gfeat.getY()(gidx));               \
+        EXPECT_ARRAYS_EQ(feat.getScore()(idx), gfeat.getScore()(gidx));       \
+        EXPECT_ARRAYS_EQ(feat.getOrientation()(idx),                          \
+                         gfeat.getOrientation()(gidx));                       \
+        EXPECT_ARRAYS_EQ(feat.getSize()(idx), gfeat.getSize()(gidx));         \
+    }
+
+FOREACH_TEMP_FORMAT(TESTS_TEMP_FORMAT)

@@ -119,8 +119,9 @@ void harris_response(float* x_out, float* y_out, float* score_out,
                      unsigned* usable_feat, CParam<T> image,
                      const unsigned block_size, const float k_thr,
                      const unsigned patch_size) {
-    const af::dim4 idims = image.dims();
-    const T* image_ptr   = image.get();
+    const af::dim4 idims    = image.dims();
+    const af::dim4 istrides = image.strides();
+    const T* image_ptr      = image.get();
     for (unsigned f = 0; f < total_feat; f++) {
         unsigned x, y;
         float scl = 1.f;
@@ -154,10 +155,12 @@ void harris_response(float* x_out, float* y_out, float* score_out,
             int j = k % block_size - r;
 
             // Calculate local x and y derivatives
-            float ix = image_ptr[(x + i + 1) * idims[0] + y + j] -
-                       image_ptr[(x + i - 1) * idims[0] + y + j];
-            float iy = image_ptr[(x + i) * idims[0] + y + j + 1] -
-                       image_ptr[(x + i) * idims[0] + y + j - 1];
+            float ix =
+                image_ptr[(x + i + 1) * istrides[1] + (y + j) * istrides[0]] -
+                image_ptr[(x + i - 1) * istrides[1] + (y + j) * istrides[0]];
+            float iy =
+                image_ptr[(x + i) * istrides[1] + (y + j + 1) * istrides[0]] -
+                image_ptr[(x + i) * istrides[1] + (y + j - 1) * istrides[0]];
 
             // Accumulate second order derivatives
             ixx += ix * ix;
@@ -189,8 +192,9 @@ template<typename T>
 void centroid_angle(const float* x_in, const float* y_in,
                     float* orientation_out, const unsigned total_feat,
                     CParam<T> image, const unsigned patch_size) {
-    const af::dim4 idims = image.dims();
-    const T* image_ptr   = image.get();
+    const af::dim4 idims    = image.dims();
+    const af::dim4 istrides = image.strides();
+    const T* image_ptr      = image.get();
     for (unsigned f = 0; f < total_feat; f++) {
         unsigned x = (unsigned)round(x_in[f]);
         unsigned y = (unsigned)round(y_in[f]);
@@ -205,7 +209,7 @@ void centroid_angle(const float* x_in, const float* y_in,
             int j = k % patch_size - r;
 
             // Calculate first order moments
-            T p = image_ptr[(x + i) * idims[0] + y + j];
+            T p = image_ptr[(x + i) * istrides[1] + (y + j) * istrides[0]];
             m01 += j * p;
             m10 += i * p;
         }
@@ -219,17 +223,17 @@ template<typename T>
 inline T get_pixel(unsigned x, unsigned y, const float ori, const unsigned size,
                    const int dist_x, const int dist_y, CParam<T> image,
                    const unsigned patch_size) {
-    const af::dim4 idims = image.dims();
-    const T* image_ptr   = image.get();
-    float ori_sin        = sin(ori);
-    float ori_cos        = cos(ori);
-    float patch_scl      = (float)size / (float)patch_size;
+    const af::dim4 istrides = image.strides();
+    const T* image_ptr      = image.get();
+    float ori_sin           = sin(ori);
+    float ori_cos           = cos(ori);
+    float patch_scl         = (float)size / (float)patch_size;
 
     // Calculate point coordinates based on orientation and size
     x += round(dist_x * patch_scl * ori_cos - dist_y * patch_scl * ori_sin);
     y += round(dist_x * patch_scl * ori_sin + dist_y * patch_scl * ori_cos);
 
-    return image_ptr[x * idims[0] + y];
+    return image_ptr[x * istrides[1] + y * istrides[0]];
 }
 
 template<typename T>

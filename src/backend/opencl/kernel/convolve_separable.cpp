@@ -76,9 +76,18 @@ void convSep(Param out, const Param signal, const Param filter,
                        blk_y * signal.info.dims[3] * THREADS_Y);
 
     cl::Buffer *mBuff = bufferAlloc(fLen * sizeof(accType));
-    // FIX ME: if the filter array is strided, direct might cause issues
-    getQueue().enqueueCopyBuffer(*filter.data, *mBuff, 0, 0,
-                                 fLen * sizeof(accType));
+    if (fLen == filter.info.strides[2]) {
+        // Linear 2D filter array
+        conv.copyToReadOnly(mBuff, filter.data,
+                            filter.info.offset * sizeof(accType),
+                            fLen * sizeof(accType));
+    } else {
+        // Strided 2D filter array
+        conv.copyToReadOnly2D(
+            mBuff, filter.data, filter.info.offset * sizeof(accType),
+            filter.info.strides[1] * sizeof(accType), filter.info.dims[1],
+            filter.info.dims[0] * sizeof(accType));
+    }
 
     conv(cl::EnqueueArgs(getQueue(), global, local), *out.data, out.info,
          *signal.data, signal.info, *mBuff, blk_x, blk_y);

@@ -129,17 +129,18 @@ void load_shared_image(global const T* in, KParam iInfo,
                        unsigned lx, unsigned ly) {
     // Copy an image patch to shared memory, with a 3-pixel edge
     if (ix < lx && iy < ly && x - 3 < iInfo.dims[0] && y - 3 < iInfo.dims[1]) {
+        in += iInfo.offset;
         local_image[(ix) + (bx + 6) * (iy)] =
-            in[(x - 3) + iInfo.dims[0] * (y - 3)];
+            in[(x - 3) * iInfo.strides[0] + (y - 3) * iInfo.strides[1]];
         if (x + lx - 3 < iInfo.dims[0])
             local_image[(ix + lx) + (bx + 6) * (iy)] =
-                in[(x + lx - 3) + iInfo.dims[0] * (y - 3)];
+                in[(x + lx -3) * iInfo.strides[0] + (y - 3) * iInfo.strides[1]];
         if (y + ly - 3 < iInfo.dims[1])
             local_image[(ix) + (bx + 6) * (iy + ly)] =
-                in[(x - 3) + iInfo.dims[0] * (y + ly - 3)];
+                in[(x - 3) * iInfo.strides[0] + (y + ly - 3) * iInfo.strides[1]];
         if (x + lx - 3 < iInfo.dims[0] && y + ly - 3 < iInfo.dims[1])
             local_image[(ix + lx) + (bx + 6) * (iy + ly)] =
-                in[(x + lx - 3) + iInfo.dims[0] * (y + ly - 3)];
+                in[(x + lx - 3) * iInfo.strides[0] + (y + ly - 3) * iInfo.strides[1]];
     }
 }
 
@@ -155,7 +156,7 @@ kernel void locate_features(global const T* in, KParam iInfo,
     unsigned lx = bx / 2 + 3;
     unsigned ly = by / 2 + 3;
 
-    load_shared_image(in + iInfo.offset, iInfo, local_image, ix, iy, bx, by, x,
+    load_shared_image(in, iInfo, local_image, ix, iy, bx, by, x,
                       y, lx, ly);
     barrier(CLK_LOCAL_MEM_FENCE);
     locate_features_core(local_image, score, iInfo, thr, x, y, edge);

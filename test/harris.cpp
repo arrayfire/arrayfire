@@ -220,3 +220,43 @@ TEST(FloatHarris, CPP) {
             << "at: " << elIter << endl;
     }
 }
+
+#define TESTS_TEMP_FORMAT(form)                                                \
+    TEST(TEMP_FORMAT, form) {                                                  \
+        UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);                                \
+        IMAGEIO_ENABLED_CHECK();                                               \
+                                                                               \
+        constexpr int MAX_CORNERS = 500;                                       \
+                                                                               \
+        vector<dim4> inDims;                                                   \
+        vector<string> inFiles;                                                \
+        vector<vector<float>> gold;                                            \
+                                                                               \
+        readImageTests(string(TEST_DIR "/harris/square_0_3.test"), inDims,     \
+                       inFiles, gold);                                         \
+        inFiles[0].insert(0, string(TEST_DIR "/harris/"));                     \
+        array in = loadImage(inFiles[0].c_str(), false);                       \
+                                                                               \
+        features out =                                                         \
+            harris(toTempFormat(form, in), MAX_CORNERS, 1e5f, 0.0f, 3, 0.04f); \
+        features gout = harris(in, MAX_CORNERS, 1e5f, 0.0f, 3, 0.04f);         \
+                                                                               \
+        ASSERT_GT(MAX_CORNERS, out.getNumFeatures());                          \
+                                                                               \
+        array score = out.getX() * in.dims().dims[1] + out.getY();             \
+        array idx, score_sorted;                                               \
+        sort(score_sorted, idx, score);                                        \
+                                                                               \
+        array gscore = gout.getX() * in.dims().dims[1] + gout.getY();          \
+        array gidx, gscore_sorted;                                             \
+        sort(gscore_sorted, gidx, gscore);                                     \
+                                                                               \
+        EXPECT_ARRAYS_EQ(out.getX()(idx), gout.getX()(gidx));                  \
+        EXPECT_ARRAYS_EQ(out.getY()(idx), gout.getY()(gidx));                  \
+        EXPECT_ARRAYS_EQ(out.getOrientation()(idx),                            \
+                         gout.getOrientation()(gidx));                         \
+        EXPECT_ARRAYS_EQ(out.getScore()(idx), gout.getScore()(gidx));          \
+        EXPECT_ARRAYS_EQ(out.getSize()(idx), gout.getSize()(gidx));            \
+    };
+
+FOREACH_TEMP_FORMAT(TESTS_TEMP_FORMAT)

@@ -120,7 +120,6 @@ void convolve_1d(conv_kparam_t& p, Param<T> out, CParam<T> sig, CParam<aT> filt,
                 int f1Off      = b1 * filt.strides[1];
                 const aT* fptr = filt.ptr + (f1Off + f2Off + f3Off);
 
-                // FIXME: case where filter array is strided
                 auto constMemPtr = convolve1.getDevPtr(conv_c_name);
                 convolve1.copyToReadOnly(constMemPtr,
                                          reinterpret_cast<CUdeviceptr>(fptr),
@@ -145,28 +144,40 @@ void convolve_1d(conv_kparam_t& p, Param<T> out, CParam<T> sig, CParam<aT> filt,
 
 template<typename T, typename aT>
 void conv2Helper(const conv_kparam_t& p, Param<T> out, CParam<T> sig,
-                 const aT* fptr, int f0, int f1, const bool expand) {
-    const bool isFilterSizeLt5  = (f0 <= 5 && f1 <= 5);
-    const bool isFilterGt5AndSq = (f0 == f1 && f0 > 5 && f0 < 18);
+                 const aT* fptr, const dim_t* const fdims,
+                 const dim_t* const fstrides, const bool expand) {
+    const bool isFilterSizeLt5 = (fdims[0] <= 5 && fdims[1] <= 5);
+    const bool isFilterGt5AndSq =
+        (fdims[0] == fdims[1] && fdims[0] > 5 && fdims[0] < 18);
 
     if (!(isFilterSizeLt5 || isFilterGt5AndSq)) {
         char errMessage[256];
         snprintf(errMessage, sizeof(errMessage),
-                 "\nCUDA Convolution doesn't support %dx%d kernel\n", f0, f1);
+                 "\nCUDA Convolution doesn't support %lldx%lld kernel\n",
+                 fdims[0], fdims[1]);
         CUDA_NOT_SUPPORTED(errMessage);
     }
 
     auto convolve2 = common::getKernel(
         "arrayfire::cuda::convolve2", {{convolve2_cuh_src}},
         TemplateArgs(TemplateTypename<T>(), TemplateTypename<aT>(),
-                     TemplateArg(expand), TemplateArg(f0), TemplateArg(f1)),
+                     TemplateArg(expand), TemplateArg(fdims[0]),
+                     TemplateArg(fdims[1])),
         {{DefineValue(MAX_CONV1_FILTER_LEN), DefineValue(CONV_THREADS),
           DefineValue(CONV2_THREADS_X), DefineValue(CONV2_THREADS_Y)}});
 
-    // FIXME: case where filter array is strided
     auto constMemPtr = convolve2.getDevPtr(conv_c_name);
-    convolve2.copyToReadOnly(constMemPtr, reinterpret_cast<CUdeviceptr>(fptr),
-                             f0 * f1 * sizeof(aT));
+    if (fstrides[1] == fdims[0]) {
+        // linear filter array
+        convolve2.copyToReadOnly(constMemPtr,
+                                 reinterpret_cast<CUdeviceptr>(fptr),
+                                 fdims[0] * fdims[1] * sizeof(aT));
+    } else {
+        // strided filter array
+        convolve2.copyToReadOnly2D(
+            constMemPtr, reinterpret_cast<CUdeviceptr>(fptr), 0,
+            fstrides[1] * sizeof(aT), fdims[1], fdims[0] * sizeof(aT));
+    }
 
     EnqueueArgs qArgs(p.mBlocks, p.mThreads, getActiveStream());
     convolve2(qArgs, out, sig, p.mBlk_x, p.mBlk_y, p.o[1], p.o[2], p.s[1],
@@ -192,7 +203,7 @@ void convolve_2d(conv_kparam_t& p, Param<T> out, CParam<T> sig, CParam<aT> filt,
             p.s[1] = (p.inHasNoOffset ? 0 : b2);
             p.s[2] = (p.inHasNoOffset ? 0 : b3);
 
-            conv2Helper<T, aT>(p, out, sig, fptr, filt.dims[0], filt.dims[1],
+            conv2Helper<T, aT>(p, out, sig, fptr, filt.dims, filt.strides,
                                expand);
         }
     }
@@ -218,11 +229,18 @@ void convolve_3d(conv_kparam_t& p, Param<T> out, CParam<T> sig, CParam<aT> filt,
 
         const aT* fptr = filt.ptr + f3Off;
 
-        // FIXME: case where filter array is strided
         auto constMemPtr = convolve3.getDevPtr(conv_c_name);
-        convolve3.copyToReadOnly(
-            constMemPtr, reinterpret_cast<CUdeviceptr>(fptr), filterSize);
-
+        if (filt.strides[2] == filt.dims[0] * filt.dims[1]) {
+            // linear filter array
+            convolve3.copyToReadOnly(
+                constMemPtr, reinterpret_cast<CUdeviceptr>(fptr), filterSize);
+        } else {
+            // strided filter array
+            convolve3.copyToReadOnly3D(
+                constMemPtr, reinterpret_cast<CUdeviceptr>(fptr), 0,
+                filt.strides[1] * sizeof(aT), filt.strides[2] / filt.strides[1],
+                filt.dims[2], filt.dims[1], filt.dims[0] * sizeof(aT));
+        }
         p.o[2] = (p.outHasNoOffset ? 0 : b3);
         p.s[2] = (p.inHasNoOffset ? 0 : b3);
 
@@ -321,11 +339,26 @@ void convolve2(Param<T> out, CParam<T> signal, CParam<aT> filter, int conv_dim,
 
     dim3 blocks(blk_x * signal.dims[2], blk_y * signal.dims[3]);
 
-    // FIXME: case where filter array is strided
     auto constMemPtr = convolve2_separable.getDevPtr(sconv_c_name);
-    convolve2_separable.copyToReadOnly(
-        constMemPtr, reinterpret_cast<CUdeviceptr>(filter.ptr),
-        fLen * sizeof(aT));
+    if (filter.strides[1] == filter.dims[0]) {
+        // linear filter array
+        convolve2_separable.copyToReadOnly(
+            constMemPtr, reinterpret_cast<CUdeviceptr>(filter.ptr),
+            fLen * sizeof(aT));
+    } else {
+        // strided filter array 4D
+        const aT* fptr   = filter.ptr;
+        CUdeviceptr dptr = constMemPtr;
+        for (dim_t d3 = 0; d3 < filter.dims[3]; ++d3, fptr += filter.strides[3],
+                   dptr += filter.dims[0] * filter.dims[1] * filter.dims[2] *
+                                                sizeof(aT)) {
+            convolve2_separable.copyToReadOnly3D(
+                dptr, reinterpret_cast<CUdeviceptr>(fptr), 0,
+                filter.strides[1] * sizeof(aT),
+                filter.strides[2] + filter.strides[1], filter.dims[2],
+                filter.dims[1], filter.dims[0] * sizeof(aT));
+        }
+    }
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
     convolve2_separable(qArgs, out, signal, blk_x, blk_y);

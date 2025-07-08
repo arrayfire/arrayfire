@@ -87,11 +87,16 @@ void prepareKernelArgs(conv_kparam_t& param, dim_t* oDims, const dim_t* fDims,
 
 template<typename T, typename aT>
 void convNHelper(const conv_kparam_t& param, Param& out, const Param& signal,
-                 const Param& filter, const int rank, const bool expand) {
+                 const Param& filter, const size_t srcXInBytes, const int rank,
+                 const bool expand) {
     using cl::EnqueueArgs;
     using cl::NDRange;
     using std::string;
     using std::vector;
+
+    const dim_t f0 = filter.info.dims[0];
+    const dim_t f1 = filter.info.dims[1];
+    const dim_t f2 = filter.info.dims[2];
 
     constexpr bool IsComplex =
         std::is_same<T, cfloat>::value || std::is_same<T, cdouble>::value;
@@ -116,6 +121,27 @@ void convNHelper(const conv_kparam_t& param, Param& out, const Param& signal,
 
     auto convolve = common::getKernel(
         "convolve", {{ops_cl_src, convolve_cl_src}}, tmpltArgs, compileOpts);
+
+    switch (rank) {
+        case 1:
+            convolve.copyToReadOnly(param.impulse, filter.data, srcXInBytes,
+                                    f0 * sizeof(aT));
+            break;
+        case 3:
+            if (filter.info.strides[2] == f0 * f1) {
+                // 3D linear filter array
+                convolve.copyToReadOnly(param.impulse, filter.data, srcXInBytes,
+                                        f0 * f1 * f2 * sizeof(aT));
+            } else {
+                // 3D strided filter array
+                convolve.copyToReadOnly3D(
+                    param.impulse, filter.data, srcXInBytes,
+                    filter.info.strides[1] * sizeof(aT),
+                    filter.info.strides[2] / filter.info.strides[1], f2, f1,
+                    f0 * sizeof(aT));
+            }
+            break;
+    }
 
     convolve(EnqueueArgs(getQueue(), param.global, param.local), *out.data,
              out.info, *signal.data, signal.info, cl::Local(param.loc_size),

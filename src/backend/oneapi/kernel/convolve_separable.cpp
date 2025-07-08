@@ -11,6 +11,7 @@
 #include <common/dispatch.hpp>
 #include <common/kernel_cache.hpp>
 #include <debug_oneapi.hpp>
+#include <kernel/memcopy.hpp>
 
 #include <string>
 #include <vector>
@@ -136,19 +137,6 @@ class convolveSeparableCreateKernel {
     sycl::local_accessor<T> localMem_;
 };
 
-template<typename T>
-void memcpyBuffer(sycl::buffer<T, 1> &dest, sycl::buffer<T, 1> &src,
-                  const size_t n, const size_t srcOffset) {
-    getQueue().submit([&](auto &h) {
-        sycl::accessor srcAcc{src, h, sycl::range{n}, sycl::id{srcOffset},
-                              sycl::read_only};
-        sycl::accessor destAcc{
-            dest,         h, sycl::range{n}, sycl::id{0}, sycl::write_only,
-            sycl::no_init};
-        h.copy(srcAcc, destAcc);
-    });
-}
-
 template<typename T, typename accType>
 void convSep(Param<T> out, const Param<T> signal, const Param<accType> filter,
              const int conv_dim, const bool expand) {
@@ -161,7 +149,7 @@ void convSep(Param<T> out, const Param<T> signal, const Param<accType> filter,
     constexpr int THREADS_X = 16;
     constexpr int THREADS_Y = 16;
 
-    const int fLen       = filter.info.dims[0] * filter.info.dims[1];
+    const dim_t fLen     = filter.info.dims[0] * filter.info.dims[1];
     const size_t C0_SIZE = (THREADS_X + 2 * (fLen - 1)) * THREADS_Y;
     const size_t C1_SIZE = (THREADS_Y + 2 * (fLen - 1)) * THREADS_X;
     size_t locSize       = (conv_dim == 0 ? C0_SIZE : C1_SIZE);
@@ -175,7 +163,10 @@ void convSep(Param<T> out, const Param<T> signal, const Param<accType> filter,
                               blk_y * signal.info.dims[3] * THREADS_Y);
 
     sycl::buffer<accType> mBuff = {sycl::range(fLen * sizeof(accType))};
-    memcpyBuffer(mBuff, *filter.data, fLen, 0);
+    const dim_t mstrides[4]     = {1, filter.info.dims[0], fLen, fLen};
+    const dim_t mdims[4] = {filter.info.dims[0], filter.info.dims[1], 1, 1};
+    kernel::memcopy(&mBuff, mstrides, filter.data, mdims, filter.info.strides,
+                    filter.info.offset, 2);
 
     getQueue().submit([&](auto &h) {
         sycl::accessor d_signal{*signal.data, h, sycl::read_only};
