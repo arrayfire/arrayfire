@@ -25,6 +25,12 @@ namespace opencl {
 template<typename T>
 void sort_index(Array<T> &okey, Array<uint> &oval, const Array<T> &in,
                 const uint dim, bool isAscending) {
+    
+    // TODO: fix half implementation of sort0bykey to support this
+    if (std::is_same_v<T, half>) {
+        OPENCL_NOT_SUPPORTED("sort_index with half");
+    }
+
     try {
         // okey contains values, oval contains indices
         okey = copyArray<T>(in);
