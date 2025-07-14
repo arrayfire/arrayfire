@@ -8,12 +8,17 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <common/cast.hpp>
 #include <common/half.hpp>
+#include <common/moddims.hpp>
 #include <err_opencl.hpp>
 #include <index.hpp>
 #include <sort.hpp>
 #include <sort_index.hpp>
 #include <types.hpp>
+#include <handle.hpp>
+#include <arith.hpp>
+#include <range.hpp>
 
 #include <algorithm>
 #include <cmath>
@@ -157,12 +162,39 @@ void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
         vals = values;
         idxs = indices;
     } else {
-        auto values  = createEmptyArray<T>(in.dims());
-        auto indices = createEmptyArray<unsigned>(in.dims());
-        sort_index(values, indices, in, dim, order & AF_TOPK_MIN);
-        auto indVec = indexForTopK(k);
-        vals        = index<T>(values, indVec.data());
-        idxs        = index<unsigned>(indices, indVec.data());
+        
+        if (!std::is_same_v<T, half>) {
+            auto values  = createEmptyArray<T>(in.dims());
+            auto indices = createEmptyArray<unsigned>(in.dims());
+            sort_index(values, indices, in, dim, order & AF_TOPK_MIN);
+            auto indVec = indexForTopK(k);
+            idxs        = index<unsigned>(indices, indVec.data());
+            vals        = index<T>(values, indVec.data());
+        } else {
+            // Temporary implementation for topk due half not being supported in sort_index
+            // TODO: Fix sort_index and remove this
+
+            auto values  = createEmptyArray<float>(in.dims());
+            auto indices = createEmptyArray<unsigned>(in.dims());
+            sort_index(values, indices, common::cast<float>(in), dim, order & AF_TOPK_MIN);
+
+            auto indVec = indexForTopK(k);
+            idxs        = index<unsigned>(indices, indVec.data());
+
+            // Index values from original array by using the indices from the previous resuult
+            auto len = in.elements() / in.dims()[dim];
+            auto index_dims = dim4(k, len);
+            auto new_indices = common::flat(arithOp<unsigned, af_add_t>(arithOp<unsigned, af_mul_t>(range<unsigned>(index_dims, 1), createValueArray<unsigned>(index_dims, in.dims()[dim]), index_dims), idxs, index_dims));
+            auto indVecVals = indexForTopK(k);
+            indVecVals[0].idx.arr = getHandle(new_indices);
+            indVecVals[0].isSeq = false;
+            indVecVals[0].isBatch = false;
+            
+            vals = common::modDims(index<T>(common::flat(in), indVecVals.data()), idxs.dims());
+            vals.eval();
+
+            releaseHandle<unsigned>(indVecVals[0].idx.arr);
+        }
     }
 }
 
