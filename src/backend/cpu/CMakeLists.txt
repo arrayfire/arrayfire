@@ -355,8 +355,14 @@ install(TARGETS afcpu
   LIBRARY DESTINATION ${AF_INSTALL_LIB_DIR}
   ARCHIVE DESTINATION ${AF_INSTALL_LIB_DIR}
   FRAMEWORK DESTINATION framework
-  INCLUDES DESTINATION ${AF_INSTALL_INC_DIR}
-  )
+  INCLUDES DESTINATION ${AF_INSTALL_INC_DIR})
+
+if(AF_INSTALL_STANDALONE)
+  install(TARGETS afcpu
+    RUNTIME_DEPENDENCIES
+      PRE_EXCLUDE_REGEXES ld\-linux.*;libstdc;libc\\.;libpthread;libdl;libgcc_s;librt;libm\\.so
+      DIRECTORIES $<TARGET_FILE_DIR:MKL::RT>)
+endif()
 
 source_group(include REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/include/*)
 source_group(api\\cpp REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/api/cpp/*)
