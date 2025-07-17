@@ -1,6 +1,51 @@
 Release Notes {#releasenotes}
 ==============
 
+v3.10.0
+======
+
+## Improvements
+- Added signed int8 support \PR{3661} \PR{3508} \PR{3507} \PR{3503}
+- Increased support for half (fp16) \PR{3680} \PR{3258} \PR{3561} \PR{3627} \PR{3561} \PR{3627} \PR{3559}
+- Updated oneAPI to use Intel oneAPI (R) 2025.1 \PR{3643} \PR{3573}
+- Updated cl2hpp dependency \PR{3651} \pr{3562}
+- Add support for CUDA 12.3, 12.4, 12.5, 12.6, 12.8, and 12.9 \PR{3657} \PR{3645} \PR{3641} \PR{3636} \PR{3588} \PR{3552} \PR{3586} \PR{3541} 
+- Added minimum driver version check for CUDA GPUs \PR{3648}
+- Add more examples \PR{3530} \PR{3455} \PR{3375} \PR{3612} \PR{3584} \PR{3577}
+- Updated documentation \PR{3496} \PR{3613}
+- Improved performance of matrix multiplication of sparse matrices on the OpenCL backend \PR{3608}
+- Improved cmake configure \PR{3581} \PR{3569} \PR{3567} \PR{3564} \PR{3554}
+- Loosen indexing assertions for assignments \PR{3514}
+
+## Fixes
+- Fix jit tree when doing operations containing moddims and original array \PR{3671} 
+- Fix incorrect behavior of sub-arrays with multiple functions \PR{3679} \PR{3668} \PR{3666} \PR{3665} \PR{3664} \PR{3663} \PR{3658} \PR{3659} \PR{3650} \PR{3611} \PR{3633} \PR{3602}
+- Fix half precision operations in multiple backends \PR{3676} \PR{3662}
+- Fix for join not always respecting the order of parameters \PR{3667} \PR{3513}
+- Fix for cmake building as an external project (needed by arrayfire python wheels) \PR{3669}
+- Fix for cmake build in Windows (including with vcpkg) \PR{3655} \PR{3646} \PR{3644} \PR{3512} \PR{3626} \PR{3566} \PR{3557} \pr{3591} \PR{3592}
+- Fix race condition in OpenCL flood fill \PR{3535}
+- Fix indexing array using sequences `af_seq` that have non-unit steps \PR{3587}
+- Fix padding issue convolve2GradientNN \PR{3519}
+- Fix incorrect axis values for histogram \PR{3590}
+- Fix unified exceptions errors \PR{3617}
+- Fix OpenCL memory migration on devices with different contexts \PR{3510}
+- Fix conversion of COO Sparse to Dense matrix \PR{3589} \PR{3579}
+- Fix `AF_JIT_KERNEL_TRACE` on Windows \PR{3517}
+- Fix cmake build with CUDNN \PR{3521}
+- Fix cmake build with `AF_DISABLE_CPU_ASYNC` \PR{3551}
+
+
+## Contributions
+
+Special thanks to our contributors:
+[Willy Born](https://github.com/willyborn)
+[verstatx](https://github.com/verstatx)
+[Filip Matzner](https://github.com/FloopCZ)
+[Fraser Cormack](https://github.com/frasercrmck)
+[errata-c](https://github.com/errata-c)
+[Tyler Hilbert](https://github.com/Tyler-Hilbert)
+
 v3.9.0
 ======
 
@@ -24,7 +69,7 @@ v3.9.0
 
 ## Fixes
 - Improve Errors when creating OpenCL contexts from devices \PR{3257}
-- Improvements to vcpkg builds \PR{3376 \PR{3476}
+- Improvements to vcpkg builds \PR{3376} \PR{3476}
 - Fix reduce by key when nan's are present \PR{3261}
 - Fix error in convolve where the ndims parameter was forced to be equal to 2
   \PR{3277}
