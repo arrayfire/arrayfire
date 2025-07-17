@@ -175,6 +175,19 @@ class BufferNode : public TNode<T> {
         }
         return false;
     }
+
+    virtual void modDims(const af::dim4 &newDim) override {
+        af::dim4 strides(1, 1, 1, 1);
+        for(dim_t i = 1; i < 4; ++i) {
+            strides[i] = strides[i - 1] * newDim[i - 1];
+        }
+
+        for(dim_t i = 0; i < 4; ++i) {
+            m_dims[i] = newDim[i];
+            m_strides[i] = strides[i];
+        }
+    }
+
 };
 
 }  // namespace jit
