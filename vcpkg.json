@@ -1,6 +1,6 @@
 {
     "name": "arrayfire",
-    "version": "3.9.0",
+    "version": "3.10.0",
     "homepage": "https://github.com/arrayfire/arrayfire",
     "description": "ArrayFire is a HPC general-purpose library targeting parallel and massively-parallel architectures such as CPUs, GPUs, etc.",
     "supports": "x64",
