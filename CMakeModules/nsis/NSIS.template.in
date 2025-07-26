@@ -741,7 +741,7 @@ Section "-Core installation"
 SectionEnd
 
 Section "-Visual C++ installation"
-  ExecWait "$INSTDIR\lib\vc_redist.x64.exe /install /passive"
+  ExecWait "$INSTDIR\lib\vc_redist.x64.exe /install /passive /norestart"
   Delete "$INSTDIR\lib\vc_redist.x64.exe"
 SectionEnd
 
