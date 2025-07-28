@@ -2063,13 +2063,13 @@ af::array toTempFormat(tempFormat form, const af::array &in) {
     switch (form) {
         case JIT_FORMAT:
             switch (in.type()) {
-                case b8: ret = not(in); break;
+                case b8: ret = !(in); break;
                 default: ret = in * 2;
             }
             // Make sure that the base array is <> form original
             ret.eval();
             switch (in.type()) {
-                case b8: ret = not(ret); break;
+                case b8: ret = !(ret); break;
                 default: ret /= 2;
             }
             break;
