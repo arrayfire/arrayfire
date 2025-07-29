@@ -58,11 +58,15 @@ namespace af
             struct array_proxy_impl;    //forward declaration
             array_proxy_impl *impl;     // implementation
 
-        public:
-            array_proxy(array& par, af_index_t *ssss, bool linear = false);
+        private:
             array_proxy(const array_proxy &other);
 #if AF_COMPILER_CXX_RVALUE_REFERENCES
             array_proxy(array_proxy &&other);
+#endif
+        public:
+            friend class array;
+            array_proxy(array& par, af_index_t *ssss, bool linear = false);
+#if AF_COMPILER_CXX_RVALUE_REFERENCES
             array_proxy & operator=(array_proxy &&other);
 #endif
             ~array_proxy();
