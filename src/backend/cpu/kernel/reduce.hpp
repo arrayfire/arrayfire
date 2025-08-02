@@ -17,6 +17,27 @@ namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
+// Since only 1 pass is used, the rounding errors will become
+// important because the longer the serie the larger the difference
+// between the 2 numbers to sum See:
+// https://en.wikipedia.org/wiki/Kahan_summation_algorithm to reduce
+// this error
+template<typename Ti, typename To>
+To stable_add(To &correction, To out_val, Ti in_val) {
+    // correction is zero for the first time around
+    To y = in_val - correction;
+    // Alas out_val is big, y small, so low-order digits of y are lost
+    To t = out_val + y;
+    // (t - out_val) cancels the high order part of y
+    // subtracting y recovers negative (low part of y)
+    correction = (t - out_val) - y;
+    // Algebraically, correction should always be zero.  Beware of
+    // overly-agressive optimizing compilers!
+    return t;
+    // Next time around, the lost low part will be added to y in a fresh
+    // attempt
+}
+
 template<af_op_t op, typename Ti, typename To, int D>
 struct reduce_dim {
     void operator()(Param<To> out, const dim_t outOffset, CParam<Ti> in,
@@ -56,6 +77,32 @@ struct reduce_dim<op, Ti, To, 0> {
             compute_t<To> in_val = transform(inPtr[i * stride]);
             if (change_nan) in_val = IS_NAN(in_val) ? nanval : in_val;
             out_val = reduce(in_val, out_val);
+        }
+
+        *outPtr = data_t<To>(out_val);
+    }
+};
+
+template<typename Ti, typename To>
+struct reduce_dim<af_add_t, Ti, To, 0> {
+    common::Transform<data_t<Ti>, compute_t<To>, af_add_t> transform;
+    common::Binary<compute_t<To>, af_add_t> reduce;
+    void operator()(Param<To> out, const dim_t outOffset, CParam<Ti> in,
+                    const dim_t inOffset, const int dim, bool change_nan,
+                    double nanval) {
+        const af::dim4 istrides = in.strides();
+        const af::dim4 idims    = in.dims();
+
+        data_t<To> *const outPtr      = out.get() + outOffset;
+        data_t<Ti> const *const inPtr = in.get() + inOffset;
+        dim_t stride                  = istrides[dim];
+
+        compute_t<To> out_val = common::Binary<compute_t<To>, af_add_t>::init();
+        compute_t<To> correction = scalar<compute_t<To>>(0);
+        for (dim_t i = 0; i < idims[dim]; i++) {
+            compute_t<To> in_val = transform(inPtr[i * stride]);
+            if (change_nan) in_val = IS_NAN(in_val) ? nanval : in_val;
+            out_val = stable_add(correction, out_val, in_val);
         }
 
         *outPtr = data_t<To>(out_val);
@@ -159,6 +206,55 @@ struct reduce_dim_by_key<op, Ti, Tk, To, 0> {
     }
 };
 
+template<typename Ti, typename Tk, typename To>
+struct reduce_dim_by_key<af_add_t, Ti, Tk, To, 0> {
+    common::Transform<data_t<Ti>, compute_t<To>, af_add_t> transform;
+    void operator()(Param<To> ovals, const dim_t ovOffset, CParam<Tk> keys,
+                    CParam<Ti> vals, const dim_t vOffset, int *n_reduced,
+                    const int dim, bool change_nan, double nanval) {
+        const af::dim4 vstrides = vals.strides();
+        const af::dim4 vdims    = vals.dims();
+
+        const af::dim4 ovstrides = ovals.strides();
+
+        data_t<Tk> const *const inKeysPtr = keys.get();
+        data_t<Ti> const *const inValsPtr = vals.get();
+        data_t<To> *const outValsPtr      = ovals.get();
+
+        int keyidx                = 0;
+        compute_t<Tk> current_key = compute_t<Tk>(inKeysPtr[0]);
+        compute_t<To> out_val = common::Binary<compute_t<To>, af_add_t>::init();
+        compute_t<To> correction = scalar<compute_t<To>>(0);
+
+        dim_t istride = vstrides[dim];
+        dim_t ostride = ovstrides[dim];
+
+        for (dim_t i = 0; i < vdims[dim]; i++) {
+            compute_t<Tk> keyval = inKeysPtr[i];
+
+            if (keyval == current_key) {
+                compute_t<To> in_val =
+                    transform(inValsPtr[vOffset + (i * istride)]);
+                if (change_nan) in_val = IS_NAN(in_val) ? nanval : in_val;
+                out_val = stable_add(correction, out_val, in_val);
+
+            } else {
+                outValsPtr[ovOffset + (keyidx * ostride)] = out_val;
+
+                current_key = keyval;
+                correction  = scalar<compute_t<To>>(0);
+                out_val     = transform(inValsPtr[vOffset + (i * istride)]);
+                if (change_nan) out_val = IS_NAN(out_val) ? nanval : out_val;
+                ++keyidx;
+            }
+
+            if (i == (vdims[dim] - 1)) {
+                outValsPtr[ovOffset + (keyidx * ostride)] = out_val;
+            }
+        }
+    }
+};
+
 template<af_op_t op, typename Ti, typename To>
 struct reduce_all {
     common::Transform<data_t<Ti>, compute_t<To>, op> transform;
@@ -190,6 +286,46 @@ struct reduce_all {
                             in_val = IS_NAN(in_val) ? nanval : in_val;
                         }
                         out_val = reduce(in_val, out_val);
+                    }
+                }
+            }
+        }
+
+        *outPtr = data_t<To>(out_val);
+    }
+};
+
+template<typename Ti, typename To>
+struct reduce_all<af_add_t, Ti, To> {
+    common::Transform<data_t<Ti>, compute_t<To>, af_add_t> transform;
+    void operator()(Param<To> out, CParam<Ti> in, bool change_nan,
+                    double nanval) {
+        // Decrement dimension of select dimension
+        af::dim4 dims            = in.dims();
+        af::dim4 strides         = in.strides();
+        const data_t<Ti> *inPtr  = in.get();
+        data_t<To> *const outPtr = out.get();
+
+        compute_t<To> out_val = common::Binary<compute_t<To>, af_add_t>::init();
+        compute_t<To> correction = scalar<compute_t<To>>(0);
+
+        for (dim_t l = 0; l < dims[3]; l++) {
+            dim_t off3 = l * strides[3];
+
+            for (dim_t k = 0; k < dims[2]; k++) {
+                dim_t off2 = k * strides[2];
+
+                for (dim_t j = 0; j < dims[1]; j++) {
+                    dim_t off1 = j * strides[1];
+
+                    for (dim_t i = 0; i < dims[0]; i++) {
+                        dim_t idx = i + off1 + off2 + off3;
+
+                        compute_t<To> in_val = transform(inPtr[idx]);
+                        if (change_nan) {
+                            in_val = IS_NAN(in_val) ? nanval : in_val;
+                        }
+                        out_val = stable_add(correction, out_val, in_val);
                     }
                 }
             }
