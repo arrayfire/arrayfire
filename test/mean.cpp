@@ -82,8 +82,9 @@ void meanDimTest(string pFileName, dim_t dim, bool isWeighted = false) {
     SUPPORTED_TYPE_CHECK(T);
     SUPPORTED_TYPE_CHECK(outType);
 
-    double tol = 1.0e-3;
-    if ((af_dtype)af::dtype_traits<T>::af_type == f16) tol = 4.e-3;
+    // The precision in the test files goes up to 1e-4.  The mean functions
+    // achieve 5e-5 for all types except half.
+    double tol = ((af_dtype)af::dtype_traits<T>::af_type == f16) ? 4e-3 : 1e-4;
     vector<dim4> numDims;
     vector<vector<int>> in;
     vector<vector<float>> tests;
@@ -102,7 +103,7 @@ void meanDimTest(string pFileName, dim_t dim, bool isWeighted = false) {
 
         vector<outType> outData(dims.elements());
 
-        outArray.host((void*)outData.data());
+        outArray.host((void *)outData.data());
 
         vector<outType> currGoldBar(tests[0].begin(), tests[0].end());
 
@@ -124,7 +125,7 @@ void meanDimTest(string pFileName, dim_t dim, bool isWeighted = false) {
 
         vector<outType> outData(dims.elements());
 
-        outArray.host((void*)outData.data());
+        outArray.host((void *)outData.data());
 
         vector<outType> currGoldBar(tests[0].begin(), tests[0].end());
 
@@ -169,78 +170,6 @@ TYPED_TEST(Mean, Wtd_Dim1Matrix) {
 }
 
 template<typename T>
-void meanAllTest(T const_value, dim4 dims) {
-    typedef typename meanOutType<T>::type outType;
-
-    SUPPORTED_TYPE_CHECK(T);
-    SUPPORTED_TYPE_CHECK(outType);
-
-    using af::array;
-    using af::mean;
-
-    vector<T> hundred(dims.elements(), const_value);
-
-    outType gold = outType(0);
-    // for(auto i:hundred) gold += i;
-    for (int i = 0; i < (int)hundred.size(); i++) { gold = gold + hundred[i]; }
-    gold = gold / dims.elements();
-
-    array a(dims, &(hundred.front()));
-    outType output = mean<outType>(a);
-
-    ASSERT_NEAR(::real(output), ::real(gold), 1.0e-3);
-    ASSERT_NEAR(::imag(output), ::imag(gold), 1.0e-3);
-}
-
-template<>
-void meanAllTest(half_float::half const_value, dim4 dims) {
-    SUPPORTED_TYPE_CHECK(half_float::half);
-
-    using af::array;
-    using af::mean;
-
-    vector<float> hundred(dims.elements(), const_value);
-
-    float gold = float(0);
-    for (int i = 0; i < (int)hundred.size(); i++) { gold = gold + hundred[i]; }
-    gold = gold / dims.elements();
-
-    array a         = array(dims, &(hundred.front())).as(f16);
-    half output     = mean<half>(a);
-    af_half output2 = mean<af_half>(a);
-
-    // make sure output2 and output are binary equals. This is necessary
-    // because af_half is not a complete type
-    half output2_copy;
-    memcpy(static_cast<void*>(&output2_copy), &output2, sizeof(af_half));
-    ASSERT_EQ(output, output2_copy);
-
-    ASSERT_NEAR(output, gold, 1.0e-3);
-}
-
-TEST(MeanAll, f64) { meanAllTest<double>(2.1, dim4(10, 10, 1, 1)); }
-
-TEST(MeanAll, f32) { meanAllTest<float>(2.1f, dim4(10, 5, 2, 1)); }
-
-TEST(MeanAll, f16) { meanAllTest<half>((half)0.3f, dim4(10, 5, 2, 1)); }
-
-TEST(MeanAll, s32) { meanAllTest<int>(2, dim4(5, 5, 2, 2)); }
-
-TEST(MeanAll, u32) { meanAllTest<unsigned>(2, dim4(100, 1, 1, 1)); }
-
-TEST(MeanAll, s8) { meanAllTest<schar>(2, dim4(5, 5, 2, 2)); }
-
-TEST(MeanAll, u8) { meanAllTest<uchar>(2, dim4(100, 1, 1, 1)); }
-
-TEST(MeanAll, c32) { meanAllTest<cfloat>(cfloat(2.1f), dim4(10, 5, 2, 1)); }
-
-TEST(MeanAll, s16) { meanAllTest<short>(2, dim4(5, 5, 2, 2)); }
-
-TEST(MeanAll, u16) { meanAllTest<ushort>(2, dim4(100, 1, 1, 1)); }
-
-TEST(MeanAll, c64) { meanAllTest<cdouble>(cdouble(2.1), dim4(10, 10, 1, 1)); }
-
-template<typename T>
 T random() {
     return T(std::rand() % 10);
 }
@@ -262,6 +191,105 @@ template<>
 cdouble random<cdouble>() {
     return cdouble(double(std::rand() % 10), double(std::rand() % 10));
 }
+
+template<typename T>
+void meanAllTest(T const_value, dim4 dims) {
+    UNUSED(const_value);
+    typedef typename meanOutType<T>::type outType;
+
+    SUPPORTED_TYPE_CHECK(T);
+    SUPPORTED_TYPE_CHECK(outType);
+
+    using af::array;
+    using af::mean;
+    std::srand(std::time(0));
+
+    vector<T> data(dims.elements());
+    std::generate(data.begin(), data.end(), random<T>);
+
+    // Process vector by replacing each 2 elements by its weighted mean.
+    // Repeat until only 1 element remains
+    // Weighted means is necessary since 1 element is not processed in case of
+    // odd #elements.  During the processing on the next round, the weight of
+    // this 1 element is different from the others.
+    vector<std::pair<outType, float>> meanWeight(data.size());
+    std::transform(data.cbegin(), data.cend(), meanWeight.begin(),
+                   [](auto d) { return std::make_pair((outType)d, 1.); });
+
+    auto mwEnd = meanWeight.end();
+    do {
+        auto saveIt = meanWeight.begin();
+        // When odd #elements remain, skip the first.
+        if (std::distance(saveIt, mwEnd) % 2 == 1) ++saveIt;
+        for (auto mwIt = saveIt; mwIt != mwEnd; ++mwIt, ++mwIt, ++saveIt) {
+            auto nextIt    = mwIt + 1;
+            saveIt->second = mwIt->second + nextIt->second;
+            if (saveIt->second != 0) {
+                // When the weight is 0 for both elements, we do not care about
+                // the value
+                const float nextScale = nextIt->second / saveIt->second;
+                const float currScale = 1.0 - nextScale;
+                saveIt->first =
+                    mwIt->first * currScale + nextIt->first * nextScale;
+            }
+        }
+        // From now on, only process the saved elements (#elements/2)
+        mwEnd = saveIt;
+    } while (mwEnd != meanWeight.begin() + 1);
+    outType gold = meanWeight[0].first;
+
+    array a(dims, &(data.front()));
+    outType output = mean<outType>(a);
+
+    ASSERT_NEAR(::real(output), ::real(gold), 1.e-5);
+    ASSERT_NEAR(::imag(output), ::imag(gold), 1.e-5);
+}
+template<>
+void meanAllTest(half_float::half const_value, dim4 dims) {
+    SUPPORTED_TYPE_CHECK(half_float::half);
+
+    using af::array;
+    using af::mean;
+
+    vector<float> hundred(dims.elements(), const_value);
+
+    float gold = float(0);
+    for (int i = 0; i < (int)hundred.size(); i++) { gold = gold + hundred[i]; }
+    gold = gold / dims.elements();
+
+    array a         = array(dims, &(hundred.front())).as(f16);
+    half output     = mean<half>(a);
+    af_half output2 = mean<af_half>(a);
+
+    // make sure output2 and output are binary equals. This is necessary
+    // because af_half is not a complete type
+    half output2_copy;
+    memcpy(static_cast<void *>(&output2_copy), &output2, sizeof(af_half));
+    ASSERT_EQ(output, output2_copy);
+
+    ASSERT_NEAR(output, gold, 5e-4);
+}
+TEST(MeanAll, f64) { meanAllTest<double>(2.1, dim4(10, 10, 1, 1)); }
+
+TEST(MeanAll, f32) { meanAllTest<float>(2.1f, dim4(10, 5, 2, 1)); }
+
+TEST(MeanAll, f16) { meanAllTest<half>((half)0.3f, dim4(10, 5, 2, 1)); }
+
+TEST(MeanAll, s32) { meanAllTest<int>(2, dim4(5, 5, 2, 2)); }
+
+TEST(MeanAll, u32) { meanAllTest<unsigned>(2, dim4(100, 1, 1, 1)); }
+
+TEST(MeanAll, s8) { meanAllTest<schar>(2, dim4(5, 5, 2, 2)); }
+
+TEST(MeanAll, u8) { meanAllTest<uchar>(2, dim4(100, 1, 1, 1)); }
+
+TEST(MeanAll, c32) { meanAllTest<cfloat>(cfloat(2.1f), dim4(10, 5, 2, 1)); }
+
+TEST(MeanAll, s16) { meanAllTest<short>(2, dim4(5, 5, 2, 2)); }
+
+TEST(MeanAll, u16) { meanAllTest<ushort>(2, dim4(100, 1, 1, 1)); }
+
+TEST(MeanAll, c64) { meanAllTest<cdouble>(cdouble(2.1), dim4(10, 10, 1, 1)); }
 
 template<typename T>
 class WeightedMean : public ::testing::Test {
@@ -290,29 +318,53 @@ void weightedMeanAllTest(dim4 dims) {
     std::generate(data.begin(), data.end(), random<T>);
     std::generate(wts.begin(), wts.end(), random<wtsType>);
 
-    outType wtdSum = outType(0);
-    wtsType wtsSum = wtsType(0);
+    // Process vector by replacing each 2 elements by its weighted mean.
+    // Repeat until only 1 element remains
+    vector<std::pair<outType, wtsType>> meanWeight(data.size());
+    std::transform(
+        data.cbegin(), data.cend(), wts.cbegin(), meanWeight.begin(),
+        [](auto d, auto w) { return std::make_pair((outType)d, w); });
 
-    for (int i = 0; i < (int)data.size(); i++) {
-        wtdSum = wtdSum + data[i] * wts[i];
-        wtsSum = wtsSum + wts[i];
-    }
-
-    outType gold = wtdSum / outType(wtsSum);
+    auto mwEnd = meanWeight.end();
+    do {
+        auto saveIt = meanWeight.begin();
+        // When odd #elements remaining, skip the first.
+        if (std::distance(saveIt, mwEnd) % 2 == 1) ++saveIt;
+        for (auto mwIt = saveIt; mwIt != mwEnd; ++mwIt, ++mwIt, ++saveIt) {
+            auto nextIt    = mwIt + 1;
+            saveIt->second = mwIt->second + nextIt->second;
+            if (saveIt->second != 0) {
+                // When the weight is 0 for both elements, we do not care about
+                // the value
+                const wtsType nextScale = nextIt->second / saveIt->second;
+                saveIt->first =
+                    mwIt->first + (nextIt->first - mwIt->first) * nextScale;
+            }
+        }
+        // From now on, only process the saved elements (#elements/2)
+        mwEnd = saveIt;
+    } while (mwEnd != meanWeight.begin() + 1);
+    outType gold = meanWeight[0].first;
 
     array a(dims, &(data.front()));
     array w(dims, &(wts.front()));
     outType output = mean<outType>(a, w);
 
-    ASSERT_NEAR(::real(output), ::real(gold), 1.0e-2);
-    ASSERT_NEAR(::imag(output), ::imag(gold), 1.0e-2);
+    double tol =
+        ((af_dtype)af::dtype_traits<T>::af_type == f16) ? 5.e-4 : 1.e-5;
+    ASSERT_NEAR(::real(output), ::real(gold), tol);
+    ASSERT_NEAR(::imag(output), ::imag(gold), tol);
+}
+
+TYPED_TEST(WeightedMean, Small) {
+    weightedMeanAllTest<TypeParam, float>(dim4(20, 2, 2, 2));
 }
 
 TYPED_TEST(WeightedMean, Basic) {
     weightedMeanAllTest<TypeParam, float>(dim4(32, 30, 33, 17));
 }
 
-TEST(WeightedMean, Broadacst) {
+TEST(WeightedMean, Broadcast) {
     float val = 0.5f;
     array a   = randu(4096, 32);
     array w   = constant(val, a.dims());
@@ -344,15 +396,13 @@ TEST(Mean, Issue2093) {
     float outVal;
     out.host(&outVal);
 
-    float expected = 0.0;
+    double expected = 0.0;
     for (size_t i = 0; i < NELEMS; ++i) expected += hdata[i];
     expected /= NELEMS;
-
-    ASSERT_NEAR(outVal, expected, 0.001);
+    EXPECT_NEAR(outVal, expected, 1.0e-5);
 }
 
-TEST(MeanAll, SubArray) {
-    // Fixes Issue 2636
+TEST(MeanAll, Issue2636) {
     using af::mean;
     using af::span;
     using af::sum;
@@ -379,3 +429,212 @@ TEST(MeanHalf, dim0) {
     // 0.506836
     ASSERT_ARRAYS_NEAR(m16.as(f32), m32, 0.001f);
 }
+
+#define TESTS_TEMP_FORMATS_ALL(form)                                        \
+    TEST(TEMP_FORMAT, form##_all) {                                         \
+        const dim4 dims(2, 2, 2, 2);                                        \
+        /* Make sure that when a randum numbers are used, that they differ  \
+         * from the random numbers used in the creation of sub-arrays, so   \
+         * amplify the valid values by 10x */                               \
+        const array in = randu(dims) * 10.;                                 \
+        in.eval();                                                          \
+                                                                            \
+        const float out  = af::mean<float>(toTempFormat(form, in));         \
+        const float gold = af::mean<float>(in);                             \
+                                                                            \
+        EXPECT_NEAR(out, gold, 1.0e-5);                                     \
+    }                                                                       \
+    TEST(TEMP_FORMAT, form##_all_vector) {                                  \
+        const dim4 dims(20, 1, 1, 1);                                       \
+        /* Make sure that when a randum numbers are used, that they differ  \
+         * from the random numbers used in the creation of sub-arrays, so   \
+         * amplify the valid values by 10x */                               \
+        const array in = randu(dims) * 10.;                                 \
+        in.eval();                                                          \
+                                                                            \
+        const float out  = af::mean<float>(toTempFormat(form, in));         \
+        const float gold = af::mean<float>(in);                             \
+                                                                            \
+        EXPECT_NEAR(out, gold, 1.0e-5);                                     \
+    }                                                                       \
+    TEST(TEMP_FORMAT, form##_all_weighted) {                                \
+        const dim4 dims(2, 2, 2, 2);                                        \
+        /* Make sure that when a randum numbers are used, that they differ  \
+         * from the random numbers used in the creation of sub-arrays, so   \
+         * amplify the valid values by 10x */                               \
+        const array in     = randu(dims) * 10.;                             \
+        const array weight = randu(dims) * 10.;                             \
+        af::eval(in, weight);                                               \
+                                                                            \
+        const float out  = af::mean<float>(toTempFormat(form, in),          \
+                                           toTempFormat(form, weight));     \
+        const float out2 = af::mean<float>(toTempFormat(form, in), weight); \
+        const float out3 = af::mean<float>(in, toTempFormat(form, weight)); \
+        const float gold = af::mean<float>(in, weight);                     \
+                                                                            \
+        EXPECT_NEAR(out, gold, 1.0e-5) << "in & weight TempFormat";         \
+        EXPECT_NEAR(out2, gold, 1.0e-5) << "in TempFormat & weight Linear"; \
+        EXPECT_NEAR(out3, gold, 1.0e-5) << "in Linear & weight TempFormat"; \
+    }                                                                       \
+    TEST(TEMP_FORMAT, form##_all_weighted_vector) {                         \
+        const dim4 dims(20, 1, 1, 1);                                       \
+        /* Make sure that when a randum numbers are used, that they differ  \
+         * from the random numbers used in the creation of sub-arrays, so   \
+         * amplify the valid values by 10x */                               \
+        const array in     = randu(dims) * 10.;                             \
+        const array weight = randu(dims) * 10.;                             \
+        af::eval(in, weight);                                               \
+                                                                            \
+        const float out  = af::mean<float>(toTempFormat(form, in),          \
+                                           toTempFormat(form, weight));     \
+        const float out2 = af::mean<float>(toTempFormat(form, in), weight); \
+        const float out3 = af::mean<float>(in, toTempFormat(form, weight)); \
+        const float gold = af::mean<float>(in, weight);                     \
+                                                                            \
+        EXPECT_NEAR(out, gold, 1.0e-5) << "in & weight TempFormat";         \
+        EXPECT_NEAR(out2, gold, 1.0e-5) << "in TempFormat & weight Linear"; \
+        EXPECT_NEAR(out3, gold, 1.0e-5) << "in Linear & weight TempFormat"; \
+    }                                                                       \
+                                                                            \
+    TEST(TEMP_FORMAT, form##_all_large) {                                   \
+        const dim4 dims(2, 512, 60, 1);                                     \
+        /* Make sure that when a randum numbers are used, that they differ  \
+         * from the random numbers used in the creation of sub-arrays, so   \
+         * amplify the valid values by 10x */                               \
+        const array in = randu(dims) * 10.;                                 \
+        in.eval();                                                          \
+                                                                            \
+        const float out  = af::mean<float>(toTempFormat(form, in));         \
+        const float gold = af::mean<float>(in);                             \
+                                                                            \
+        EXPECT_NEAR(out, gold, 1.0e-5);                                     \
+    }                                                                       \
+                                                                            \
+    TEST(TEMP_FORMAT, form##_all_weighted_large) {                          \
+        const dim4 dims(2, 512, 60, 1);                                     \
+        /* Make sure that when a randum numbers are used, that they differ  \
+         * from the random numbers used in the creation of sub-arrays, so   \
+         * amplify the valid values by 10x */                               \
+        const array in     = randu(dims) * 10.;                             \
+        const array weight = randu(dims) * 10.;                             \
+        af::eval(in, weight);                                               \
+                                                                            \
+        const float out  = af::mean<float>(toTempFormat(form, in),          \
+                                           toTempFormat(form, weight));     \
+        const float out2 = af::mean<float>(toTempFormat(form, in), weight); \
+        const float out3 = af::mean<float>(in, toTempFormat(form, weight)); \
+        const float gold = af::mean<float>(in, weight);                     \
+                                                                            \
+        EXPECT_NEAR(out, gold, 1.0e-5) << "in & weight TempFormat";         \
+        EXPECT_NEAR(out2, gold, 1.0e-5) << "in TempFormat & weight Linear"; \
+        EXPECT_NEAR(out3, gold, 1.0e-5) << "in Linear & weight TempFormat"; \
+    }
+
+#define TESTS_TEMP_FORMAT_dim(form, dim)                                       \
+    TEST(TEMP_FORMAT, form##_##dim) {                                          \
+        const dim4 dims(2, 2, 2, 2);                                           \
+        /* Make sure that when a randum numbers are used, that they differ     \
+         * from the random numbers used in the creation of sub-arrays, so      \
+         * amplify the valid values by 10x */                                  \
+        const array in = randu(dims) * 10.;                                    \
+        in.eval();                                                             \
+                                                                               \
+        const array out  = af::mean(toTempFormat(form, in), dim);              \
+        const array gold = af::mean(in, dim);                                  \
+                                                                               \
+        EXPECT_ARRAYS_NEAR(out, gold, 1.0e-5);                                 \
+    }                                                                          \
+    TEST(TEMP_FORMAT, form##_##dim##_vector) {                                 \
+        const dim4 dims(20, 1, 1, 1);                                          \
+        /* Make sure that when a randum numbers are used, that they differ     \
+         * from the random numbers used in the creation of sub-arrays, so      \
+         * amplify the valid values by 10x */                                  \
+        const array in = randu(dims) * 10.;                                    \
+        in.eval();                                                             \
+                                                                               \
+        const array out  = af::mean(toTempFormat(form, in), dim);              \
+        const array gold = af::mean(in, dim);                                  \
+                                                                               \
+        EXPECT_ARRAYS_NEAR(out, gold, 1.0e-5);                                 \
+    }                                                                          \
+    TEST(TEMP_FORMAT, form##_##dim##_weighted) {                               \
+        const dim4 dims(2, 2, 2, 2);                                           \
+        /* Make sure that when a randum numbers are used, that they differ     \
+         * from the random numbers used in the creation of sub-arrays, so      \
+         * amplify the valid values by 10x */                                  \
+        const array in     = randu(dims) * 10.;                                \
+        const array weight = randu(dims) * 10.;                                \
+        af::eval(in, weight);                                                  \
+                                                                               \
+        const array out =                                                      \
+            af::mean(toTempFormat(form, in), toTempFormat(form, weight), dim); \
+        const array out2 = af::mean(toTempFormat(form, in), weight, dim);      \
+        const array out3 = af::mean(in, toTempFormat(form, weight), dim);      \
+        const array gold = af::mean(in, weight, dim);                          \
+                                                                               \
+        EXPECT_ARRAYS_NEAR(out, gold, 1.0e-5) << "in & weight TempFormat";     \
+        EXPECT_ARRAYS_NEAR(out2, gold, 1.0e-5)                                 \
+            << "in TempFormat & weight Linear";                                \
+        EXPECT_ARRAYS_NEAR(out3, gold, 1.0e-5)                                 \
+            << "in Linear & weight TempFormat";                                \
+    }                                                                          \
+    TEST(TEMP_FORMAT, form##_##dim##_weighted_vector) {                        \
+        const dim4 dims(20, 1, 1, 1);                                          \
+        /* Make sure that when a randum numbers are used, that they differ     \
+         * from the random numbers used in the creation of sub-arrays, so      \
+         * amplify the valid values by 10x */                                  \
+        const array in     = randu(dims) * 10.;                                \
+        const array weight = randu(dims) * 10.;                                \
+        af::eval(in, weight);                                                  \
+                                                                               \
+        const array out =                                                      \
+            af::mean(toTempFormat(form, in), toTempFormat(form, weight), dim); \
+        const array gold = af::mean(in, weight, dim);                          \
+                                                                               \
+        EXPECT_ARRAYS_NEAR(out, gold, 1.0e-5);                                 \
+    }                                                                          \
+                                                                               \
+    TEST(TEMP_FORMAT, form##_##dim##_large) {                                  \
+        const dim4 dims(2, 512, 60, 1);                                        \
+        /* Make sure that when a randum numbers are used, that they differ     \
+         * from the random numbers used in the creation of sub-arrays, so      \
+         * amplify the valid values by 10x */                                  \
+        const array in = randu(dims) * 10.;                                    \
+        in.eval();                                                             \
+                                                                               \
+        const array out  = af::mean(toTempFormat(form, in), dim);              \
+        const array gold = af::mean(in, dim);                                  \
+                                                                               \
+        EXPECT_ARRAYS_NEAR(out, gold, 1.0e-5);                                 \
+    }                                                                          \
+                                                                               \
+    TEST(TEMP_FORMAT, form##_##dim##_weighted_large) {                         \
+        const dim4 dims(2, 512, 60, 1);                                        \
+        /* Make sure that when a randum numbers are used, that they differ     \
+         * from the random numbers used in the creation of sub-arrays, so      \
+         * amplify the valid values by 10x */                                  \
+        const array in     = randu(dims) * 10.;                                \
+        const array weight = randu(dims);                                      \
+        af::eval(in, weight);                                                  \
+                                                                               \
+        const array out =                                                      \
+            af::mean(toTempFormat(form, in), toTempFormat(form, weight), dim); \
+        const array out2 = af::mean(toTempFormat(form, in), weight, dim);      \
+        const array out3 = af::mean(in, toTempFormat(form, weight), dim);      \
+        const array gold = af::mean(in, weight, dim);                          \
+                                                                               \
+        EXPECT_ARRAYS_NEAR(out, gold, 1.0e-5) << "in & weight TempFormat";     \
+        EXPECT_ARRAYS_NEAR(out2, gold, 1.0e-5)                                 \
+            << "in TempFormat & weight Linear";                                \
+        EXPECT_ARRAYS_NEAR(out3, gold, 1.0e-5)                                 \
+            << "in Linear & weight TempFormat";                                \
+    }
+
+#define TESTS_TEMP_FORMATS_dim(form) \
+    TESTS_TEMP_FORMAT_dim(form, 0);  \
+    TESTS_TEMP_FORMAT_dim(form, 1);  \
+    TESTS_TEMP_FORMAT_dim(form, 2);  \
+    TESTS_TEMP_FORMAT_dim(form, 3);
+
+FOREACH_TEMP_FORMAT(TESTS_TEMP_FORMATS_ALL)
+FOREACH_TEMP_FORMAT(TESTS_TEMP_FORMATS_dim)
