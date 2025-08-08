@@ -38,6 +38,45 @@ struct MeanOp {
     }
 };
 
+template<typename Ti, typename To, typename Tw>
+struct MeanOpWithCorrection {
+    common::Transform<Ti, To, af_add_t> transform;
+    To runningMean;
+    Tw runningCount;
+    To correction;
+    MeanOpWithCorrection(Ti mean, Tw count)
+        : transform()
+        , runningMean(transform(mean))
+        , runningCount(count)
+        , correction(scalar<To>(0)) {}
+
+    void operator()(Ti newMean, Tw newCount) {
+        runningCount += newCount;
+        if ((newCount != 0) || (runningCount != 0)) {  //
+            // Since only 1 pass is used, the rounding errors will become
+            // important because the longer the serie the larger the
+            // difference between the 2 numbers to sum See:
+            // https://en.wikipedia.org/wiki/Kahan_summation_algorithm to
+            // reduce this error
+            // correction is zero for the first time around
+            To y =
+                (transform(newMean) - runningMean) * (newCount / runningCount) -
+                correction;
+            // Alas, runningMean is big, y small, so low-order digits of y
+            // are lost
+            To t = runningMean + y;
+            // (t - runningMean) cancels the high order part of y
+            // subtracting y recovers negative (low part of y)
+            correction = (t - runningMean) - y;
+            // Algebraically, correction should always be zero.  Beware
+            // overly-agressive optimizing compilers!
+            runningMean = t;
+            // Next time around, the lost low part will be added to y in a
+            // fresh attempt
+        }
+    }
+};
+
 template<typename T, typename Tw, int D>
 struct mean_weighted_dim {
     void operator()(Param<T> output, const dim_t outOffset,
@@ -74,7 +113,8 @@ struct mean_weighted_dim<T, Tw, 0> {
 
         dim_t istride = istrides[dim];
         dim_t wstride = wstrides[dim];
-        MeanOp<compute_t<T>, compute_t<T>, compute_t<Tw>> Op(0, 0);
+        MeanOpWithCorrection<compute_t<T>, compute_t<T>, compute_t<Tw>> Op(0,
+                                                                           0);
         for (dim_t i = 0; i < idims[dim]; i++) {
             Op(compute_t<T>(in[inOffset + i * istride]),
                compute_t<Tw>(wt[wtOffset + i * wstride]));
@@ -113,7 +153,8 @@ struct mean_dim<Ti, Tw, To, 0> {
 
         dim_t istride = istrides[dim];
         dim_t end     = inOffset + idims[dim] * istride;
-        MeanOp<compute_t<Ti>, compute_t<To>, compute_t<Tw>> Op(0, 0);
+        MeanOpWithCorrection<compute_t<Ti>, compute_t<To>, compute_t<Tw>> Op(0,
+                                                                             0);
         for (dim_t i = inOffset; i < end; i += istride) {
             Op(compute_t<Ti>(in[i]), 1);
         }
