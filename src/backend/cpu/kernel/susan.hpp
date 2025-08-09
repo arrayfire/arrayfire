@@ -62,20 +62,21 @@ void non_maximal(Param<float> xcoords, Param<float> ycoords,
     // Responses on the border don't have 8-neighbors to compare, discard them
     const unsigned r = border_len + 1;
 
-    for (dim_t y = r; y < idim1 - r; y++) {
-        for (dim_t x = r; x < idim0 - r; x++) {
-            const T v = resp_in[y * idim0 + x];
+    for (dim_t y = r; y < idim0 - r; y++) {
+        for (dim_t x = r; x < idim1 - r; x++) {
+            const T v = resp_in[x * idim0 + y];
 
             // Find maximum neighborhood response
             T max_v;
-            max_v = std::max(resp_in[(y - 1) * idim0 + x - 1],
-                             resp_in[y * idim0 + x - 1]);
-            max_v = std::max(max_v, resp_in[(y + 1) * idim0 + x - 1]);
-            max_v = std::max(max_v, resp_in[(y - 1) * idim0 + x]);
-            max_v = std::max(max_v, resp_in[(y + 1) * idim0 + x]);
-            max_v = std::max(max_v, resp_in[(y - 1) * idim0 + x + 1]);
-            max_v = std::max(max_v, resp_in[(y)*idim0 + x + 1]);
-            max_v = std::max(max_v, resp_in[(y + 1) * idim0 + x + 1]);
+            max_v = std::max(resp_in[(x - 1) * idim0 + (y - 1)],
+                             resp_in[(x - 1) * idim0 + y]);
+            max_v = std::max(max_v, resp_in[(x - 1) * idim0 + (y + 1)]);
+            max_v = std::max(max_v, resp_in[x * idim0 + (y - 1)]);
+            max_v = std::max(max_v, resp_in[x * idim0 + (y + 1)]);
+            max_v = std::max(max_v, resp_in[(x + 1) * idim0 + (y - 1)]);
+
+            max_v = std::max(max_v, resp_in[(x + 1) * idim0 + y]);
+            max_v = std::max(max_v, resp_in[(x + 1) * idim0 + (y + 1)]);
 
             // Stores corner to {x,y,resp}_out if it's response is maximum
             // compared to its 8-neighborhood and greater or equal minimum
