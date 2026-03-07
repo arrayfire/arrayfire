@@ -101,6 +101,8 @@ static const int jetsonComputeCapabilities[] = {
 
 // clang-format off
 static const cuNVRTCcompute Toolkit2MaxCompute[] = {
+    {13010, 9, 0, 0},
+    {13000, 9, 0, 0},
     {12090, 9, 0, 0},
     {12080, 9, 0, 0},
     {12070, 9, 0, 0},
@@ -147,6 +149,8 @@ struct ComputeCapabilityToStreamingProcessors {
 // clang-format off
 static const ToolkitDriverVersions
     CudaToDriverVersion[] = {
+        {13010, 580.65f, 580.65f},
+        {13000, 580.65f, 580.65f},
         {12090, 525.60f, 528.33f},
         {12080, 525.60f, 528.33f},
         {12070, 525.60f, 528.33f},
@@ -598,9 +602,15 @@ DeviceManager::DeviceManager()
                 AF_TRACE("Unsuppored device: {}", dev.prop.name);
                 continue;
             } else {
+                int clockRate;
+                #if CUDA_VERSION < 13000
+                clockRate = dev.prop.clockRate;
+                #else
+                CUDA_CHECK(cudaDeviceGetAttribute(&clockRate, cudaDevAttrClockRate, i));
+                #endif
                 dev.flops = static_cast<size_t>(dev.prop.multiProcessorCount) *
                             compute2cores(dev.prop.major, dev.prop.minor) *
-                            dev.prop.clockRate;
+                            clockRate;
                 dev.nativeId = i;
                 AF_TRACE(
                     "Found device: {} (sm_{}{}) ({:0.3} GB | ~{} GFLOPs | {} "
