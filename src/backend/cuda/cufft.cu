@@ -38,19 +38,25 @@ const char *_cufftGetResultString(cufftResult res) {
 
         case CUFFT_UNALIGNED_DATA: return "cuFFT: unaligned data (deprecated)";
 
+#ifdef CUFFT_INCOMPLETE_PARAMETER_LIST
         case CUFFT_INCOMPLETE_PARAMETER_LIST:
             return "cuFFT: call is missing parameters";
+#endif
 
         case CUFFT_INVALID_DEVICE:
             return "cuFFT: plan execution different than plan creation";
 
+#ifdef CUFFT_PARSE_ERROR
         case CUFFT_PARSE_ERROR: return "cuFFT: plan parse error";
+#endif
 
         case CUFFT_NO_WORKSPACE: return "cuFFT: no workspace provided";
 
         case CUFFT_NOT_IMPLEMENTED: return "cuFFT: not implemented";
 
+#ifdef CUFFT_LICENSE_ERROR
         case CUFFT_LICENSE_ERROR: return "cuFFT: license error";
+#endif
 
 #if CUDA_VERSION >= 8000
         case CUFFT_NOT_SUPPORTED: return "cuFFT: not supported";
