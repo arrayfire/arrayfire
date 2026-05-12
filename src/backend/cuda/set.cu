@@ -16,6 +16,7 @@
 #include <af/dim4.hpp>
 
 #include <thrust/device_ptr.h>
+#include <thrust/distance.h>
 #include <thrust/set_operations.h>
 #include <thrust/sort.h>
 #include <thrust/unique.h>
