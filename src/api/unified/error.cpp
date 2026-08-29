@@ -43,6 +43,17 @@ void af_get_last_error(char **str, dim_t *len) {
         void *vfn    = LOAD_SYMBOL();
         af_func func = nullptr;
         memcpy(&func, &vfn, sizeof(void *));
+
+        // LOAD_SYMBOL() returns null when no backend library is loaded or
+        // the symbol cannot be resolved. Unlike CALL(), this function
+        // returns void and cannot report AF_ERR_LOAD_LIB, so report an
+        // empty error rather than calling through a null pointer.
+        if (func == nullptr) {
+            if (str) { *str = NULL; }
+            if (len) { *len = 0; }
+            return;
+        }
+
         func(str, len);
     }
 }
