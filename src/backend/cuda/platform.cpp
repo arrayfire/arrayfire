@@ -287,7 +287,11 @@ void devprop(char *d_name, char *d_platform, char *d_toolkit, char *d_compute) {
     const cudaDeviceProp &dev = getDeviceProp(getActiveDeviceId());
 
     // Name
-    snprintf(d_name, 256, "%s", dev.name);
+    // af_device_info documents a recommended minimum size of 64 for d_name
+    // (see docs/details/device.dox, \defgroup device_func_prop), and the CPU
+    // and OpenCL backends honour it. Writing 256 bytes here overflowed
+    // conforming callers' buffers.
+    snprintf(d_name, 64, "%s", dev.name);
 
     // Platform
     string cudaRuntime = getCUDARuntimeVersion();
@@ -297,8 +301,10 @@ void devprop(char *d_name, char *d_platform, char *d_toolkit, char *d_compute) {
     // Compute Version
     snprintf(d_compute, 10, "%d.%d", dev.major, dev.minor);
 
-    // Sanitize input
-    for (int i = 0; i < 256; i++) {
+    // Sanitize input. The lookahead reads d_name[i + 1], so i must stop at
+    // 62 to stay inside the documented 64-byte buffer. Stopping at the
+    // terminator also avoids scanning past the end of a short device name.
+    for (int i = 0; i < 63 && d_name[i] != '\0'; i++) {
         if (d_name[i] == ' ') {
             if (d_name[i + 1] == 0 || d_name[i + 1] == ' ') {
                 d_name[i] = 0;
