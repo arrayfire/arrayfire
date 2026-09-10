@@ -13,6 +13,12 @@
 #include <common/ArrayFireTypesIO.hpp>
 #include <common/jit/NodeIO.hpp>
 #include <spdlog/fmt/bundled/format.h>
+// fmt 11 moved fmt::join from format.h to ranges.h
+#if defined(SPDLOG_FMT_EXTERNAL)
+#include <fmt/ranges.h>
+#else
+#include <spdlog/fmt/bundled/ranges.h>
+#endif
 #include <iostream>
 
 #define DBGTRACE(msg)                                              \
