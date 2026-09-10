@@ -91,6 +91,7 @@ struct ToolkitDriverVersions {
 
 // clang-format off
 static const int jetsonComputeCapabilities[] = {
+    11000,
     8070,
     7020,
     6020,
@@ -101,10 +102,10 @@ static const int jetsonComputeCapabilities[] = {
 
 // clang-format off
 static const cuNVRTCcompute Toolkit2MaxCompute[] = {
-    {13010, 9, 0, 0},
-    {13000, 9, 0, 0},
-    {12090, 9, 0, 0},
-    {12080, 9, 0, 0},
+    {13010, 12, 1, 0},
+    {13000, 12, 1, 0},
+    {12090, 12, 1, 0},
+    {12080, 12, 0, 0},
     {12070, 9, 0, 0},
     {12060, 9, 0, 0},
     {12050, 9, 0, 0},
@@ -149,7 +150,10 @@ struct ComputeCapabilityToStreamingProcessors {
 // clang-format off
 static const ToolkitDriverVersions
     CudaToDriverVersion[] = {
-        {13010, 580.65f, 580.65f},
+        // NVIDIA stopped publishing a Windows minimum with CUDA 13 (the
+        // display driver is no longer bundled with the toolkit). The Linux
+        // floor of the same driver branch (R580 / R590) is used for both.
+        {13010, 590.44f, 590.44f},
         {13000, 580.65f, 580.65f},
         {12090, 525.60f, 528.33f},
         {12080, 525.60f, 528.33f},
@@ -181,16 +185,20 @@ static const ToolkitDriverVersions
         {7000,  346.46f, 347.62f}};
 // clang-format on
 
-// Vector of minimum supported compute versions for CUDA toolkit (i+1).*
-// where i is the index of the vector
-static const std::array<int, 12> minSV{{1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 5}};
+// Minimum supported compute capability, encoded as major * 10 + minor, for
+// CUDA toolkit (i+1).* where i is the index into the array. CUDA 13 dropped
+// everything below Turing (7.5), which is the first floor with a non-zero
+// minor version.
+static const std::array<int, 13> minSV{
+    {10, 10, 10, 10, 10, 10, 20, 20, 30, 30, 30, 50, 75}};
 
 static ComputeCapabilityToStreamingProcessors gpus[] = {
     {0x10, 8},   {0x11, 8},   {0x12, 8},   {0x13, 8},   {0x20, 32},
     {0x21, 48},  {0x30, 192}, {0x32, 192}, {0x35, 192}, {0x37, 192},
     {0x50, 128}, {0x52, 128}, {0x53, 128}, {0x60, 64},  {0x61, 128},
     {0x62, 128}, {0x70, 64},  {0x75, 64},  {0x80, 64},  {0x86, 128},
-    {0x87, 128}, {0x89, 128}, {0x90, 128}, {-1, -1},
+    {0x87, 128}, {0x89, 128}, {0x90, 128}, {0xA0, 128}, {0xA3, 128},
+    {0xB0, 128}, {0xC0, 128}, {0xC1, 128}, {-1, -1},
 };
 
 // pulled from CUTIL from CUDA SDK
@@ -598,19 +606,19 @@ DeviceManager::DeviceManager()
         for (int i = 0; i < nDevices; i++) {
             cudaDevice_t dev{};
             CUDA_CHECK(cudaGetDeviceProperties(&dev.prop, i));
-            if (dev.prop.major < getMinSupportedCompute(cudaMajorVer)) {
+            if (dev.prop.major * 10 + dev.prop.minor <
+                getMinSupportedCompute(cudaMajorVer)) {
                 AF_TRACE("Unsuppored device: {}", dev.prop.name);
                 continue;
             } else {
-                int clockRate;
-                #if CUDA_VERSION < 13000
-                clockRate = dev.prop.clockRate;
-                #else
-                CUDA_CHECK(cudaDeviceGetAttribute(&clockRate, cudaDevAttrClockRate, i));
-                #endif
+                // cudaDeviceProp::clockRate was removed in CUDA 13. The
+                // device attribute is available on every supported toolkit.
+                int clockRateKHz = 0;
+                CUDA_CHECK(cudaDeviceGetAttribute(&clockRateKHz,
+                                                  cudaDevAttrClockRate, i));
                 dev.flops = static_cast<size_t>(dev.prop.multiProcessorCount) *
                             compute2cores(dev.prop.major, dev.prop.minor) *
-                            clockRate;
+                            static_cast<size_t>(clockRateKHz);
                 dev.nativeId = i;
                 AF_TRACE(
                     "Found device: {} (sm_{}{}) ({:0.3} GB | ~{} GFLOPs | {} "

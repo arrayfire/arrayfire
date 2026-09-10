@@ -15,10 +15,10 @@ if(AF_WITH_CUDNN)
   dependency_check(cuDNN_FOUND "CUDNN not found.")
 endif()
 
+include(select_compute_arch)
 include(AFcuda_helpers)
 include(FileToString)
 include(InternalUtils)
-include(select_compute_arch)
 
 # Remove cublas_device library which is no longer included with the cuda
 # toolkit. Fixes issues with older CMake versions
@@ -882,7 +882,12 @@ if(AF_INSTALL_STANDALONE)
     else()
         afcu_collect_libs(cusolver)
     endif()
-    afcu_collect_libs(cusparse)
+    if(CUDA_VERSION_MAJOR VERSION_EQUAL 13)
+        # CUDA 13.x still ships cuSPARSE with a major version of 12
+        afcu_collect_libs(cusparse LIB_MAJOR 12 LIB_MINOR 0)
+    else()
+        afcu_collect_libs(cusparse)
+    endif()
     if(CUDA_VERSION VERSION_GREATER 12.0)
       afcu_collect_libs(nvJitLink)
     endif()

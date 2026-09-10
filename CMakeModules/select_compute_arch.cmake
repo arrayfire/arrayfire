@@ -5,7 +5,7 @@
 #       - "Auto" detects local machine GPU compute arch at runtime.
 #       - "Common" and "All" cover common and entire subsets of architectures
 #      ARCH_AND_PTX : NAME | NUM.NUM | NUM.NUM(NUM.NUM) | NUM.NUM+PTX
-#      NAME: Fermi Kepler Maxwell Kepler+Tegra Kepler+Tesla Maxwell+Tegra Pascal Volta Turing Ampere
+#      NAME: Fermi Kepler Maxwell Kepler+Tegra Kepler+Tesla Maxwell+Tegra Pascal Volta Turing Ampere Hopper Blackwell
 #      NUM: Any number. Only those pairs are currently accepted by NVCC though:
 #            2.0 2.1 3.0 3.2 3.5 3.7 5.0 5.2 5.3 6.0 6.2 7.0 7.2 7.5 8.0 8.6 8.9 9.0 10.0 10.3 11.0 12.0 12.1
 #      Returns LIST of flags to be added to CUDA_NVCC_FLAGS in ${out_variable}
@@ -108,19 +108,40 @@ if(CUDA_VERSION VERSION_GREATER_EQUAL "12.0")
   set(_CUDA_MAX_COMMON_ARCHITECTURE "9.0+PTX")
   set(CUDA_LIMIT_GPU_ARCHITECTURE "9.0")
 
+  list(REMOVE_ITEM CUDA_KNOWN_GPU_ARCHITECTURES "Kepler" "Kepler+Tegra" "Kepler+Tesla")
   list(REMOVE_ITEM CUDA_ALL_GPU_ARCHITECTURES "3.5" "3.7")
 endif()
 
+# CUDA 12.8 added Blackwell (sm_100, sm_101, sm_120). Maxwell and Pascal are
+# deprecated from this release on, so they leave the "Common" set.
 if(CUDA_VERSION VERSION_GREATER_EQUAL "12.8")
   list(APPEND CUDA_KNOWN_GPU_ARCHITECTURES "Blackwell")
   list(APPEND CUDA_COMMON_GPU_ARCHITECTURES "12.0")
-  list(APPEND CUDA_ALL_GPU_ARCHITECTURES "10.0" "10.3" "11.0" "12.0")
+  list(APPEND CUDA_ALL_GPU_ARCHITECTURES "10.0" "10.1" "12.0")
 
   set(_CUDA_MAX_COMMON_ARCHITECTURE "12.0+PTX")
   set(CUDA_LIMIT_GPU_ARCHITECTURE "12.0")
 
   list(REMOVE_ITEM CUDA_COMMON_GPU_ARCHITECTURES "5.0" "5.3" "6.0" "6.1")
   list(REMOVE_ITEM CUDA_ALL_GPU_ARCHITECTURES "5.0" "5.2" "5.3" "6.0" "6.1" "6.2")
+endif()
+
+# CUDA 12.9 added sm_103 and sm_121.
+if(CUDA_VERSION VERSION_GREATER_EQUAL "12.9")
+  list(APPEND CUDA_ALL_GPU_ARCHITECTURES "10.3" "12.1")
+endif()
+
+# https://docs.nvidia.com/cuda/archive/13.0.0/cuda-toolkit-release-notes/index.html
+# CUDA 13.0 removed offline compilation for Maxwell, Pascal and Volta
+# (sm_50 through sm_72) and for sm_101; nvcc rejects them outright, so they
+# must not appear in any list handed to it. Turing (7.5) is the floor.
+# CUDA 13.0 also added sm_110 (Jetson Thor).
+if(CUDA_VERSION VERSION_GREATER_EQUAL "13.0")
+  list(APPEND CUDA_ALL_GPU_ARCHITECTURES "11.0")
+
+  list(REMOVE_ITEM CUDA_KNOWN_GPU_ARCHITECTURES "Maxwell" "Maxwell+Tegra" "Pascal" "Volta")
+  list(REMOVE_ITEM CUDA_COMMON_GPU_ARCHITECTURES "7.0")
+  list(REMOVE_ITEM CUDA_ALL_GPU_ARCHITECTURES "7.0" "7.2" "10.1")
 endif()
 
 list(APPEND CUDA_COMMON_GPU_ARCHITECTURES "${_CUDA_MAX_COMMON_ARCHITECTURE}")
@@ -280,6 +301,9 @@ function(CUDA_SELECT_NVCC_ARCH_FLAGS out_variable)
       elseif(${arch_name} STREQUAL "Hopper")
         set(arch_bin 9.0)
         set(arch_ptx 9.0)
+      elseif(${arch_name} STREQUAL "Blackwell")
+        set(arch_bin 10.0 12.0)
+        set(arch_ptx 12.0)
       else()
         message(SEND_ERROR "Unknown CUDA Architecture Name ${arch_name} in CUDA_SELECT_NVCC_ARCH_FLAGS")
       endif()
