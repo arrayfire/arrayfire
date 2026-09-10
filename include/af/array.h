@@ -655,11 +655,17 @@ namespace af
 
         /**
            Copy array data to host and return host pointer
+
+           For a sparse array the dense representation is copied, so the
+           returned buffer holds dims().elements() values.
         */
         template<typename T> T* host() const;
 
         /**
            Copy array data to existing host pointer
+
+           For a sparse array the dense representation is copied, so \p ptr
+           must hold dims().elements() values.
         */
         void host(void *ptr) const;
 
@@ -1684,7 +1690,9 @@ extern "C" {
     /**
        Copy data from an af_array to a C pointer.
 
-       Needs to used in conjunction with the two functions above
+       Needs to used in conjunction with the two functions above. For a
+       sparse array the dense representation is copied, so \p data must hold
+       af_get_elements() values.
     */
     AFAPI af_err af_get_data_ptr(void *data, const af_array arr);
 

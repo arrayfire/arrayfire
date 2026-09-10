@@ -297,6 +297,29 @@ TYPED_TEST(Sparse, EmptyDeepCopy) {
     EXPECT_EQ(0, sparseGetNNZ(b));
 }
 
+TEST(Sparse, HostOfSparseReturnsDense_ISSUE_3703) {
+    const int rows = 8, cols = 4;
+    array values  = af::constant(1.0, rows, f64);
+    array row_ptr = af::iota(dim4(rows + 1), dim4(1), s32);
+    array col_idx = af::constant(0, rows, s32);
+    array sp      = af::sparse(rows, cols, values, row_ptr, col_idx,
+                               AF_STORAGE_CSR);
+    ASSERT_TRUE(sp.issparse());
+
+    // One non-zero per row, all in column 0
+    vector<double> gold(rows * cols, 0.0);
+    for (int i = 0; i < rows; i++) { gold[i] = 1.0; }
+
+    double *h = sp.host<double>();
+    ASSERT_NE(h, nullptr);
+    for (int i = 0; i < rows * cols; i++) { ASSERT_EQ(gold[i], h[i]) << "at " << i; }
+    af::freeHost(h);
+
+    vector<double> into(rows * cols, -1.0);
+    sp.host(into.data());
+    ASSERT_EQ(gold, into);
+}
+
 TEST(Sparse, CPPSparseFromHostArrays) {
     //! [ex_sparse_host_arrays]
 
