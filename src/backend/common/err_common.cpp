@@ -8,7 +8,6 @@
  ********************************************************/
 
 #include <common/err_common.hpp>
-#include <common/graphics_common.hpp>
 #include <common/util.hpp>
 #include <type_util.hpp>
 #include <af/device.h>

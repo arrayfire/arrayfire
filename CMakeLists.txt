@@ -68,8 +68,12 @@ endif()
 find_package(CUDA 10.2)
 find_package(cuDNN 4.0)
 find_package(OpenCL 1.2)
-find_package(OpenGL)
-find_package(glad CONFIG QUIET)
+option(AF_WITH_GRAPHICS
+    "Build the graphics API (Forge, OpenGL, glad). When OFF the graphics functions return AF_ERR_NOT_CONFIGURED" ON)
+if(AF_WITH_GRAPHICS)
+  find_package(OpenGL)
+  find_package(glad CONFIG QUIET)
+endif()
 find_package(FreeImage)
 find_package(Threads)
 find_package(FFTW)
@@ -98,8 +102,9 @@ option(AF_BUILD_UNIFIED  "Build Backend-Independent ArrayFire API"   ON)
 option(AF_BUILD_DOCS     "Create ArrayFire Documentation"            ${DOXYGEN_FOUND})
 option(AF_BUILD_EXAMPLES "Build Examples"                            ON)
 option(AF_WITH_CUDNN     "Use cuDNN for convolveNN functions"        ${cuDNN_FOUND})
-option(AF_BUILD_FORGE
-    "Forge libs are not built by default as it is not link time dependency" OFF)
+cmake_dependent_option(AF_BUILD_FORGE
+    "Forge libs are not built by default as it is not link time dependency" OFF
+    "AF_WITH_GRAPHICS" OFF)
 
 option(AF_WITH_NONFREE  "Build ArrayFire nonfree algorithms"   OFF)
 option(AF_WITH_LOGGING  "Build ArrayFire with logging support" ON)
@@ -252,7 +257,9 @@ endif()
 #Configure forge submodule
 #forge is included in ALL target if AF_BUILD_FORGE is ON
 #otherwise, forge is not built at all
-include(AFconfigure_forge_dep)
+if(AF_WITH_GRAPHICS)
+  include(AFconfigure_forge_dep)
+endif()
 
 if(TARGET fmt::fmt AND AF_WITH_FMT_HEADER_ONLY)
   set_target_properties(fmt::fmt
@@ -297,7 +304,7 @@ else()
   endif()
 endif()
 
-if(NOT TARGET glad::glad)
+if(AF_WITH_GRAPHICS AND NOT TARGET glad::glad)
   af_dep_check_and_populate(${glad_prefix}
     URI https://github.com/arrayfire/glad.git
     REF main

@@ -11,16 +11,19 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
-#endif
+
 
 #include <GraphicsResourceManager.hpp>
+#endif
 #include <build_version.hpp>
 #include <common/ArrayFireTypesIO.hpp>
 #include <common/DefaultMemoryManager.hpp>
 #include <common/Logger.hpp>
 #include <common/MemoryManagerBase.hpp>
 #include <common/defines.hpp>
+#ifdef AF_WITH_GRAPHICS
 #include <common/graphics_common.hpp>
+#endif
 #include <common/host_memory.hpp>
 #include <common/util.hpp>
 #include <cublas_v2.h>  // needed for af/cuda.h
@@ -33,7 +36,9 @@
 #include <af/version.h>
 // cuda_gl_interop.h does not include OpenGL headers for ARM
 // __gl_h_ should be defined by glad.h inclusion
+#ifdef AF_WITH_GRAPHICS
 #include <cuda_gl_interop.h>
+#endif
 #include <utility.hpp>
 
 #include <nvrtc.h>
@@ -364,6 +369,7 @@ static inline bool card_compare_num(const cudaDevice_t &l,
     return false;
 }
 
+#ifdef AF_WITH_GRAPHICS
 bool DeviceManager::checkGraphicsInteropCapability() {
     static std::once_flag checkInteropFlag;
     thread_local bool capable = true;
@@ -385,6 +391,7 @@ bool DeviceManager::checkGraphicsInteropCapability() {
 
     return capable;
 }
+#endif  // AF_WITH_GRAPHICS
 
 DeviceManager &DeviceManager::getInstance() {
     static auto *my_instance = new DeviceManager();
@@ -575,7 +582,10 @@ DeviceManager::DeviceManager()
     : logger(common::loggerFactory("platform"))
     , cuDevices(0)
     , nDevices(0)
-    , fgMngr(new arrayfire::common::ForgeManager()) {
+#ifdef AF_WITH_GRAPHICS
+    , fgMngr(new arrayfire::common::ForgeManager())
+#endif
+{
     try {
         checkCudaVsDriverVersion();
 

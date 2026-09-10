@@ -61,9 +61,12 @@ class DeviceManager {
 
     void resetMemoryManagerPinned();
 
+#ifdef AF_WITH_GRAPHICS
     friend arrayfire::common::ForgeManager& forgeManager();
 
+
     friend GraphicsResourceManager& interopManager();
+#endif
 
     friend void addKernelToCache(int device, const std::string& key,
                                  const kc_entry_t entry);
@@ -130,7 +133,9 @@ class DeviceManager {
     // variables
     DeviceManager(DeviceManager const&);
     void operator=(DeviceManager const&);
+#ifdef AF_WITH_GRAPHICS
     void markDeviceForInterop(const int device, const void* wHandle);
+#endif
 
    private:
     // Attributes
@@ -145,10 +150,14 @@ class DeviceManager {
     std::vector<int> mPlatforms;
     unsigned mUserDeviceOffset;
 
+#ifdef AF_WITH_GRAPHICS
     std::unique_ptr<arrayfire::common::ForgeManager> fgMngr;
+#endif
     std::unique_ptr<MemoryManagerBase> memManager;
     std::unique_ptr<MemoryManagerBase> pinnedMemManager;
+#ifdef AF_WITH_GRAPHICS
     std::unique_ptr<GraphicsResourceManager> gfxManagers[MAX_DEVICES];
+#endif
     std::mutex mutex;
 
     // using BoostProgCache = boost::shared_ptr<boost::compute::program_cache>;

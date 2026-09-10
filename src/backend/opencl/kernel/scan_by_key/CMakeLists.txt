@@ -43,6 +43,7 @@ foreach(SBK_BINARY_OP ${SBK_BINARY_OPS})
         $<TARGET_PROPERTY:nonstd::span-lite,INTERFACE_SYSTEM_INCLUDE_DIRECTORIES>
         ${ArrayFire_BINARY_DIR}/include
       )
+    if(AF_WITH_GRAPHICS)
     if(TARGET Forge::forge)
       target_include_directories(opencl_scan_by_key_${SBK_BINARY_OP}
         SYSTEM INTERFACE
@@ -65,6 +66,7 @@ foreach(SBK_BINARY_OP ${SBK_BINARY_OPS})
         SYSTEM INTERFACE
         $<TARGET_PROPERTY:af_glad,INTERFACE_INCLUDE_DIRECTORIES>
       )
+    endif()
     endif()
 
     set_target_properties(opencl_scan_by_key_${SBK_BINARY_OP}

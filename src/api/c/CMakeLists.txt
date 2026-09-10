@@ -91,13 +91,11 @@ target_sources(c_api_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/handle.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/handle.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/harris.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/hist.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/histeq.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/histogram.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/homography.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/hsv_rgb.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/iir.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/image.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/imageio.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/imageio2.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/implicit.cpp
@@ -124,7 +122,6 @@ target_sources(c_api_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/optypes.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/orb.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/pinverse.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/plot.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/print.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/qr.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/random.cpp
@@ -149,7 +146,6 @@ target_sources(c_api_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/sparse_handle.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/stdev.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/stream.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/surface.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/susan.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/svd.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tile.cpp
@@ -162,10 +158,8 @@ target_sources(c_api_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/unary.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/unwrap.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/var.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/vector_field.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/version.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/where.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/window.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/wrap.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ycbcr_rgb.cpp
     )
@@ -205,3 +199,20 @@ target_include_directories(c_api_interface
     ${CMAKE_SOURCE_DIR}/include
     $<TARGET_PROPERTY:afcommon_interface,INTERFACE_INCLUDE_DIRECTORIES>
     )
+
+if(AF_WITH_GRAPHICS)
+  target_sources(c_api_interface
+    INTERFACE
+      ${CMAKE_CURRENT_SOURCE_DIR}/hist.cpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/image.cpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/plot.cpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/surface.cpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/vector_field.cpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/window.cpp
+  )
+else()
+  target_sources(c_api_interface
+    INTERFACE
+      ${CMAKE_CURRENT_SOURCE_DIR}/graphics_stubs.cpp
+  )
+endif()

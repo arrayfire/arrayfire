@@ -71,8 +71,6 @@ target_sources(afcpu
     gradient.hpp
     harris.cpp
     harris.hpp
-    hist_graphics.cpp
-    hist_graphics.hpp
     histogram.cpp
     histogram.hpp
     homography.cpp
@@ -83,8 +81,6 @@ target_sources(afcpu
     identity.hpp
     iir.cpp
     iir.hpp
-    image.cpp
-    image.hpp
     index.cpp
     index.hpp
     inverse.cpp
@@ -124,8 +120,6 @@ target_sources(afcpu
     ParamIterator.hpp
     platform.cpp
     platform.hpp
-    plot.cpp
-    plot.hpp
     print.hpp
     qr.cpp
     qr.hpp
@@ -173,8 +167,6 @@ target_sources(afcpu
     sparse_arith.hpp
     sparse_blas.cpp
     sparse_blas.hpp
-    surface.cpp
-    surface.hpp
     susan.cpp
     susan.hpp
     svd.cpp
@@ -195,8 +187,6 @@ target_sources(afcpu
     unwrap.cpp
     unwrap.hpp
     utility.hpp
-    vector_field.cpp
-    vector_field.hpp
     where.cpp
     where.hpp
     wrap.cpp
@@ -365,3 +355,19 @@ source_group(backend  REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/backend/com
 source_group(backend\\kernel  REGULAR_EXPRESSION ${CMAKE_CURRENT_SOURCE_DIR}/kernel/*)
 source_group("generated files" FILES ${ArrayFire_BINARY_DIR}/src/backend/build_version.hpp ${ArrayFire_BINARY_DIR}/include/af/version.h)
 source_group("" FILES CMakeLists.txt)
+
+if(AF_WITH_GRAPHICS)
+  target_sources(afcpu
+    PRIVATE
+      hist_graphics.cpp
+      hist_graphics.hpp
+      image.cpp
+      image.hpp
+      plot.cpp
+      plot.hpp
+      surface.cpp
+      surface.hpp
+      vector_field.cpp
+      vector_field.hpp
+  )
+endif()

@@ -41,6 +41,7 @@ foreach(SBK_TYPE ${SBK_TYPES})
         ${ArrayFire_BINARY_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR})
 
+    if(AF_WITH_GRAPHICS)
     if(TARGET Forge::forge)
       target_include_directories(opencl_sort_by_key_${SBK_TYPE}
         SYSTEM INTERFACE
@@ -63,6 +64,7 @@ foreach(SBK_TYPE ${SBK_TYPES})
         SYSTEM INTERFACE
           $<TARGET_PROPERTY:af_glad,INTERFACE_INCLUDE_DIRECTORIES>
       )
+    endif()
     endif()
 
     set_target_properties(opencl_sort_by_key_${SBK_TYPE}

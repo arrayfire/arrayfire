@@ -71,7 +71,9 @@ void setMemoryManagerPinned(std::unique_ptr<MemoryManagerBase> mgr);
 
 void resetMemoryManagerPinned();
 
+#ifdef AF_WITH_GRAPHICS
 arrayfire::common::ForgeManager& forgeManager();
+#endif
 
 }  // namespace cpu
 }  // namespace arrayfire

@@ -14,15 +14,18 @@
 #ifdef WITH_CUDNN
 #include <cudnn.hpp>
 #include <cudnnModule.hpp>
-#endif
+
 
 #include <GraphicsResourceManager.hpp>
+#endif
 #include <build_version.hpp>
 #include <common/DefaultMemoryManager.hpp>
 #include <common/Logger.hpp>
 #include <common/defines.hpp>
 #include <common/err_common.hpp>
+#ifdef AF_WITH_GRAPHICS
 #include <common/graphics_common.hpp>
+#endif
 #include <common/host_memory.hpp>
 #include <common/unique_handle.hpp>
 #include <common/util.hpp>
@@ -37,6 +40,7 @@
 #include <memory.hpp>
 #include <spdlog/spdlog.h>
 #include <utility.hpp>
+#include <af/array.h>
 #include <af/cuda.h>
 #include <af/device.h>
 #include <af/version.h>
@@ -499,6 +503,7 @@ void resetMemoryManagerPinned() {
     return DeviceManager::getInstance().resetMemoryManagerPinned();
 }
 
+#ifdef AF_WITH_GRAPHICS
 arrayfire::common::ForgeManager &forgeManager() {
     return *(DeviceManager::getInstance().fgMngr);
 }
@@ -516,6 +521,7 @@ GraphicsResourceManager &interopManager() {
 
     return *(inst.gfxManagers[id].get());
 }
+#endif  // AF_WITH_GRAPHICS
 
 PlanCache &fftManager() { return *(cufftManager(getActiveDeviceId()).get()); }
 

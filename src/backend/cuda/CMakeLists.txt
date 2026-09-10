@@ -26,7 +26,7 @@ if(DEFINED CUDA_cublas_device_LIBRARY AND NOT CUDA_cublas_device_LIBRARY)
   list(REMOVE_ITEM CUDA_CUBLAS_LIBRARIES ${CUDA_cublas_device_LIBRARY})
 endif()
 
-if(NOT OPENGL_FOUND)
+if(AF_WITH_GRAPHICS AND NOT OPENGL_FOUND)
   # create a dummy gl.h header to satisfy cuda_gl_interop.h requirement
   # all opengl functionality is made available via glad third party code
   # that is built along with arrayfire code base.
@@ -450,13 +450,9 @@ add_library(afcuda
     fftconvolve.hpp
     flood_fill.cpp
     flood_fill.hpp
-    GraphicsResourceManager.cpp
-    GraphicsResourceManager.hpp
     gradient.cpp
     gradient.hpp
     harris.hpp
-    hist_graphics.cpp
-    hist_graphics.hpp
     histogram.hpp
     homography.hpp
     hsv_rgb.hpp
@@ -464,8 +460,6 @@ add_library(afcuda
     identity.hpp
     iir.cpp
     iir.hpp
-    image.cpp
-    image.hpp
     index.cpp
     index.hpp
     inverse.cpp
@@ -497,8 +491,6 @@ add_library(afcuda
     orb.hpp
     platform.cpp
     platform.hpp
-    plot.cpp
-    plot.hpp
     print.hpp
     qr.cpp
     qr.hpp
@@ -532,8 +524,6 @@ add_library(afcuda
     sparse.hpp
     sparse_arith.hpp
     sparse_blas.hpp
-    surface.cpp
-    surface.hpp
     susan.cpp
     susan.hpp
     svd.cpp
@@ -553,8 +543,6 @@ add_library(afcuda
     unwrap.hpp
     utility.cpp
     utility.hpp
-    vector_field.cpp
-    vector_field.hpp
     where.cpp
     where.hpp
     wrap.cpp
@@ -926,3 +914,21 @@ mark_as_advanced(
   FETCHCONTENT_SOURCE_DIR_NV_CUB
   FETCHCONTENT_UPDATES_DISCONNECTED_NV_CUB
 )
+
+if(AF_WITH_GRAPHICS)
+  target_sources(afcuda
+    PRIVATE
+      hist_graphics.cpp
+      hist_graphics.hpp
+      image.cpp
+      image.hpp
+      plot.cpp
+      plot.hpp
+      surface.cpp
+      surface.hpp
+      vector_field.cpp
+      vector_field.hpp
+      GraphicsResourceManager.cpp
+      GraphicsResourceManager.hpp
+  )
+endif()

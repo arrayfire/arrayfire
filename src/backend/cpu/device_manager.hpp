@@ -118,7 +118,9 @@ class DeviceManager {
 
     void resetMemoryManagerPinned();
 
+#ifdef AF_WITH_GRAPHICS
     friend arrayfire::common::ForgeManager& forgeManager();
+#endif
 
     void setMemoryManager(std::unique_ptr<MemoryManagerBase> mgr);
 
@@ -137,7 +139,9 @@ class DeviceManager {
 
     // Attributes
     std::vector<queue> queues;
+#ifdef AF_WITH_GRAPHICS
     std::unique_ptr<arrayfire::common::ForgeManager> fgMngr;
+#endif
     const CPUInfo cinfo;
     std::unique_ptr<MemoryManagerBase> memManager;
     std::mutex mutex;

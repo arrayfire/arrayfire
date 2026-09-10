@@ -9,12 +9,16 @@
 
 #include <platform.hpp>
 
+#ifdef AF_WITH_GRAPHICS
 #include <GraphicsResourceManager.hpp>
+#endif
 #include <blas.hpp>
 #include <build_version.hpp>
 #include <common/DefaultMemoryManager.hpp>
 #include <common/Logger.hpp>
+#ifdef AF_WITH_GRAPHICS
 #include <common/graphics_common.hpp>
+#endif
 #include <common/host_memory.hpp>
 #include <common/util.hpp>
 #include <device_manager.hpp>
@@ -620,6 +624,7 @@ void resetMemoryManagerPinned() {
     return DeviceManager::getInstance().resetMemoryManagerPinned();
 }
 
+#ifdef AF_WITH_GRAPHICS
 arrayfire::common::ForgeManager& forgeManager() {
     return *(DeviceManager::getInstance().fgMngr);
 }
@@ -637,6 +642,7 @@ GraphicsResourceManager& interopManager() {
 
     return *(inst.gfxManagers[id].get());
 }
+#endif  // AF_WITH_GRAPHICS
 
 unique_ptr<PlanCache>& oneFFTManager(const int deviceId) {
     thread_local unique_ptr<PlanCache> caches[DeviceManager::MAX_DEVICES];

@@ -84,9 +84,12 @@ class DeviceManager {
 
     void resetMemoryManagerPinned();
 
+#ifdef AF_WITH_GRAPHICS
     friend arrayfire::common::ForgeManager& forgeManager();
 
+
     friend GraphicsResourceManager& interopManager();
+#endif
 
     friend PlanCache& fftManager();
 
@@ -161,7 +164,9 @@ class DeviceManager {
     // variables
     DeviceManager(DeviceManager const&);
     void operator=(DeviceManager const&);
+#ifdef AF_WITH_GRAPHICS
     void markDeviceForInterop(const int device, const void* wHandle);
+#endif
 
    private:
     // Attributes
@@ -177,10 +182,14 @@ class DeviceManager {
         mPlatforms;
     unsigned mUserDeviceOffset;
 
+#ifdef AF_WITH_GRAPHICS
     std::unique_ptr<arrayfire::common::ForgeManager> fgMngr;
+#endif
     std::unique_ptr<MemoryManagerBase> memManager;
     std::unique_ptr<MemoryManagerBase> pinnedMemManager;
+#ifdef AF_WITH_GRAPHICS
     std::unique_ptr<GraphicsResourceManager> gfxManagers[MAX_DEVICES];
+#endif
     std::unique_ptr<clfftSetupData> mFFTSetup;
     std::mutex mutex;
 

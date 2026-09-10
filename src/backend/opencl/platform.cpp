@@ -9,9 +9,12 @@
 
 // Include this before af/opencl.h
 // Causes conflict between system cl.hpp and opencl/cl.hpp
+#ifdef AF_WITH_GRAPHICS
 #include <common/graphics_common.hpp>
 
+
 #include <GraphicsResourceManager.hpp>
+#endif
 #include <blas.hpp>
 #include <build_version.hpp>
 #include <clfft.hpp>
@@ -743,6 +746,7 @@ void resetMemoryManagerPinned() {
     return DeviceManager::getInstance().resetMemoryManagerPinned();
 }
 
+#ifdef AF_WITH_GRAPHICS
 arrayfire::common::ForgeManager& forgeManager() {
     return *(DeviceManager::getInstance().fgMngr);
 }
@@ -760,6 +764,7 @@ GraphicsResourceManager& interopManager() {
 
     return *(inst.gfxManagers[id].get());
 }
+#endif  // AF_WITH_GRAPHICS
 
 PlanCache& fftManager() {
     thread_local PlanCache clfftManagers[DeviceManager::MAX_DEVICES];
