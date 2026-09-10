@@ -33,7 +33,6 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/DependencyModule.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/FFTPlanCache.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/HandleBase.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/InteropManager.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/KernelInterface.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Logger.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Logger.hpp
@@ -61,8 +60,6 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/dispatch.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/err_common.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/err_common.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/graphics_common.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/graphics_common.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/half.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/half.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/host_memory.cpp
@@ -102,26 +99,39 @@ if(TARGET fmt::fmt)
   )
 endif()
 
-if(TARGET glad::glad)
-  target_link_libraries(afcommon_interface INTERFACE glad::glad)
-else()
-  target_link_libraries(afcommon_interface INTERFACE af_glad)
-endif()
+if(AF_WITH_GRAPHICS)
+  target_sources(afcommon_interface
+    INTERFACE
+      ${CMAKE_CURRENT_SOURCE_DIR}/InteropManager.hpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/forge_loader.hpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/graphics_common.cpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/graphics_common.hpp
+  )
+  target_compile_definitions(afcommon_interface INTERFACE AF_WITH_GRAPHICS)
 
-if(AF_BUILD_FORGE AND NOT Forge_FOUND)
-  add_dependencies(afcommon_interface forge)
-endif()
+  if(TARGET glad::glad)
+    target_link_libraries(afcommon_interface INTERFACE glad::glad)
+  else()
+    target_link_libraries(afcommon_interface INTERFACE af_glad)
+  endif()
 
-target_include_directories(afcommon_interface
-  SYSTEM INTERFACE
-    $<$<PLATFORM_ID:Darwin>:${OPENGL_INCLUDE_DIR}>)
+  if(AF_BUILD_FORGE AND NOT Forge_FOUND)
+    add_dependencies(afcommon_interface forge)
+  endif()
+
+  target_include_directories(afcommon_interface
+    SYSTEM INTERFACE
+      $<$<PLATFORM_ID:Darwin>:${OPENGL_INCLUDE_DIR}>)
+endif()
 
 target_include_directories(afcommon_interface
   INTERFACE
     ${ArrayFire_SOURCE_DIR}/src/backend
     ${ArrayFire_BINARY_DIR}/src/backend)
 
-if(TARGET Forge::forge)
+if(NOT AF_WITH_GRAPHICS)
+  # no Forge headers needed
+elseif(TARGET Forge::forge)
   target_include_directories(afcommon_interface
     SYSTEM INTERFACE
       $<TARGET_PROPERTY:Forge::forge,INCLUDE_DIRECTORIES>

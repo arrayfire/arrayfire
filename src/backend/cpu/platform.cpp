@@ -21,7 +21,9 @@
 #include <sstream>
 #include <string>
 
+#ifdef AF_WITH_GRAPHICS
 using arrayfire::common::ForgeManager;
+#endif
 using arrayfire::common::getEnvVar;
 using arrayfire::common::ltrim;
 using arrayfire::common::MemoryManagerBase;
@@ -178,7 +180,9 @@ void resetMemoryManagerPinned() {
     return DeviceManager::getInstance().resetMemoryManagerPinned();
 }
 
+#ifdef AF_WITH_GRAPHICS
 ForgeManager& forgeManager() { return *(DeviceManager::getInstance().fgMngr); }
+#endif
 
 }  // namespace cpu
 }  // namespace arrayfire

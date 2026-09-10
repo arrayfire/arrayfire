@@ -18,8 +18,6 @@ add_library(afoneapi
   Array.hpp
   Event.cpp
   Event.hpp
-  GraphicsResourceManager.cpp
-  GraphicsResourceManager.hpp
   Module.hpp
   Param.cpp
   Param.hpp
@@ -75,8 +73,6 @@ add_library(afoneapi
   gradient.hpp
   harris.cpp
   harris.hpp
-  hist_graphics.cpp
-  hist_graphics.hpp
   histogram.cpp
   histogram.hpp
   homography.cpp
@@ -87,8 +83,6 @@ add_library(afoneapi
   identity.hpp
   iir.cpp
   iir.hpp
-  image.cpp
-  image.hpp
   index.cpp
   index.hpp
   inverse.cpp
@@ -133,8 +127,6 @@ add_library(afoneapi
   orb.hpp
   platform.cpp
   platform.hpp
-  plot.cpp
-  plot.hpp
   print.hpp
   product.cpp
   qr.cpp
@@ -184,8 +176,6 @@ add_library(afoneapi
   sparse_blas.cpp
   sparse_blas.hpp
   sum.cpp
-  surface.cpp
-  surface.hpp
   susan.cpp
   susan.hpp
   svd.cpp
@@ -204,8 +194,6 @@ add_library(afoneapi
   types.hpp
   unwrap.cpp
   unwrap.hpp
-  vector_field.cpp
-  vector_field.hpp
   where.cpp
   where.hpp
   wrap.cpp
@@ -264,6 +252,24 @@ target_sources(afoneapi
     kernel/wrap.hpp
     kernel/wrap_dilated.hpp
 )
+if(AF_WITH_GRAPHICS)
+  target_sources(afoneapi
+    PRIVATE
+      hist_graphics.cpp
+      hist_graphics.hpp
+      image.cpp
+      image.hpp
+      plot.cpp
+      plot.hpp
+      surface.cpp
+      surface.hpp
+      vector_field.cpp
+      vector_field.hpp
+      GraphicsResourceManager.cpp
+      GraphicsResourceManager.hpp
+  )
+endif()
+
 
 function(set_sycl_language)
   foreach(target ${ARGV})

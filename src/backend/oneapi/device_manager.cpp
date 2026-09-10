@@ -9,12 +9,16 @@
 
 #include <device_manager.hpp>
 
+#ifdef AF_WITH_GRAPHICS
 #include <GraphicsResourceManager.hpp>
+#endif
 #include <build_version.hpp>
 #include <common/DefaultMemoryManager.hpp>
 #include <common/Logger.hpp>
 #include <common/defines.hpp>
+#ifdef AF_WITH_GRAPHICS
 #include <common/graphics_common.hpp>
+#endif
 #include <common/host_memory.hpp>
 #include <common/util.hpp>
 #include <err_oneapi.hpp>
@@ -31,7 +35,9 @@
 #include <string>
 #include <vector>
 
+#ifdef AF_WITH_GRAPHICS
 using arrayfire::common::ForgeManager;
+#endif
 using arrayfire::common::getEnvVar;
 using std::begin;
 using std::end;
@@ -87,7 +93,10 @@ auto arrayfire_exception_handler(sycl::exception_list exceptions) {
 DeviceManager::DeviceManager()
     : logger(common::loggerFactory("platform"))
     , mUserDeviceOffset(0)
-    , fgMngr(nullptr) {
+#ifdef AF_WITH_GRAPHICS
+    , fgMngr(nullptr)
+#endif
+{
     vector<sycl::platform> platforms;
     try {
         platforms = sycl::platform::get_platforms();
@@ -98,7 +107,9 @@ DeviceManager::DeviceManager()
             AF_ERR_RUNTIME);
     }
 
+#ifdef AF_WITH_GRAPHICS
     fgMngr = std::make_unique<ForgeManager>();
+#endif
 
     AF_TRACE("Found {} sycl platforms", platforms.size());
     // Iterate through platforms, get all available devices and store them
@@ -213,11 +224,13 @@ DeviceManager::DeviceManager()
         }
     }
 
+#ifdef AF_WITH_GRAPHICS
     // Define AF_DISABLE_GRAPHICS with any value to disable initialization
     string noGraphicsENV = getEnvVar("AF_DISABLE_GRAPHICS");
     if (fgMngr->plugin().isLoaded() && noGraphicsENV.empty()) {
         // TODO: handle forge shared contexts
     }
+#endif
 
     mUserDeviceOffset = mDevices.size();
 
@@ -287,17 +300,21 @@ void DeviceManager::resetMemoryManagerPinned() {
 }
 
 DeviceManager::~DeviceManager() {
+#ifdef AF_WITH_GRAPHICS
     for (int i = 0; i < getDeviceCount(); ++i) { gfxManagers[i] = nullptr; }
+#endif
     memManager       = nullptr;
     pinnedMemManager = nullptr;
 
     // TODO: cleanup mQueues, mContexts, mDevices??
 }
 
+#ifdef AF_WITH_GRAPHICS
 void DeviceManager::markDeviceForInterop(const int device,
                                          const void* wHandle) {
     ONEAPI_NOT_SUPPORTED("");
 }
+#endif
 
 }  // namespace oneapi
 }  // namespace arrayfire

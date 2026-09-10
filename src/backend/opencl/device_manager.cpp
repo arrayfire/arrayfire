@@ -9,9 +9,12 @@
 
 // Include this before af/opencl.h
 // Causes conflict between system cl.hpp and opencl/cl.hpp
+#ifdef AF_WITH_GRAPHICS
 #include <common/graphics_common.hpp>
 
+
 #include <GraphicsResourceManager.hpp>
+#endif
 #include <blas.hpp>
 #include <build_version.hpp>
 #include <clfft.hpp>
@@ -61,11 +64,13 @@ using std::vector;
 namespace arrayfire {
 namespace opencl {
 
+#ifdef AF_WITH_GRAPHICS
 #if defined(OS_MAC)
 static const char* CL_GL_SHARING_EXT = "cl_APPLE_gl_sharing";
 #else
 static const char* CL_GL_SHARING_EXT = "cl_khr_gl_sharing";
 #endif
+#endif  // AF_WITH_GRAPHICS
 
 bool checkExtnAvailability(const Device& pDevice, const string& pName) {
     bool ret_val = false;
@@ -182,7 +187,9 @@ class deviceLess {
 DeviceManager::DeviceManager()
     : logger(common::loggerFactory("platform"))
     , mUserDeviceOffset(0)
+#ifdef AF_WITH_GRAPHICS
     , fgMngr(nullptr)
+#endif
     , mFFTSetup(new clfftSetupData) {
     vector<Platform> platforms;
     try {
@@ -203,7 +210,9 @@ DeviceManager::DeviceManager()
         }
 #endif
     }
+#ifdef AF_WITH_GRAPHICS
     fgMngr = std::make_unique<arrayfire::common::ForgeManager>();
+#endif
 
     // This is all we need because the sort takes care of the order of devices
 #ifdef OS_MAC
@@ -342,6 +351,7 @@ DeviceManager::DeviceManager()
         }
     }
 
+#ifdef AF_WITH_GRAPHICS
     // Define AF_DISABLE_GRAPHICS with any value to disable initialization
     string noGraphicsENV = getEnvVar("AF_DISABLE_GRAPHICS");
     if (fgMngr->plugin().isLoaded() && noGraphicsENV.empty()) {
@@ -357,6 +367,7 @@ DeviceManager::DeviceManager()
             }
         } catch (...) {}
     }
+#endif  // AF_WITH_GRAPHICS
 
     mUserDeviceOffset = mDevices.size();
     // Initialize FFT setup data structure
@@ -437,7 +448,9 @@ void DeviceManager::resetMemoryManagerPinned() {
 }
 
 DeviceManager::~DeviceManager() {
+#ifdef AF_WITH_GRAPHICS
     for (int i = 0; i < getDeviceCount(); ++i) { gfxManagers[i] = nullptr; }
+#endif
 #ifndef OS_WIN
     // TODO: FIXME:
     // clfftTeardown() causes a "Pure Virtual Function Called" crash on
@@ -469,6 +482,7 @@ DeviceManager::~DeviceManager() {
 #endif
 }
 
+#ifdef AF_WITH_GRAPHICS
 void DeviceManager::markDeviceForInterop(const int device,
                                          const void* wHandle) {
     try {
@@ -573,5 +587,6 @@ void DeviceManager::markDeviceForInterop(const int device,
     }
 }
 
+#endif  // AF_WITH_GRAPHICS
 }  // namespace opencl
 }  // namespace arrayfire

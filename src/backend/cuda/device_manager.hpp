@@ -41,7 +41,9 @@ class DeviceManager {
    public:
     static const int MAX_DEVICES = 16;
 
+#ifdef AF_WITH_GRAPHICS
     static bool checkGraphicsInteropCapability();
+#endif
 
     static DeviceManager& getInstance();
     ~DeviceManager();
@@ -68,9 +70,12 @@ class DeviceManager {
 
     void resetMemoryManagerPinned();
 
+#ifdef AF_WITH_GRAPHICS
     friend arrayfire::common::ForgeManager& forgeManager();
 
+
     friend GraphicsResourceManager& interopManager();
+#endif
 
     friend std::string getDeviceInfo(int device) noexcept;
 
@@ -132,13 +137,17 @@ class DeviceManager {
     int nDevices;
     cudaStream_t streams[MAX_DEVICES]{};
 
+#ifdef AF_WITH_GRAPHICS
     std::unique_ptr<arrayfire::common::ForgeManager> fgMngr;
+#endif
 
     std::unique_ptr<MemoryManagerBase> memManager;
 
     std::unique_ptr<MemoryManagerBase> pinnedMemManager;
 
+#ifdef AF_WITH_GRAPHICS
     std::unique_ptr<GraphicsResourceManager> gfxManagers[MAX_DEVICES];
+#endif
 
     std::mutex mutex;
 };

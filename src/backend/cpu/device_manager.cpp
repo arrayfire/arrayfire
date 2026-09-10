@@ -9,7 +9,9 @@
 
 #include <common/DefaultMemoryManager.hpp>
 #include <common/err_common.hpp>
+#ifdef AF_WITH_GRAPHICS
 #include <common/graphics_common.hpp>
+#endif
 #include <device_manager.hpp>
 #include <memory.hpp>
 #include <af/version.h>
@@ -124,7 +126,9 @@ namespace cpu {
 
 DeviceManager::DeviceManager()
     : queues(MAX_QUEUES)
+#ifdef AF_WITH_GRAPHICS
     , fgMngr(new common::ForgeManager())
+#endif
     , memManager(new common::DefaultMemoryManager(
           getDeviceCount(), common::MAX_BUFFERS,
           AF_MEM_DEBUG || AF_CPU_MEM_DEBUG)) {

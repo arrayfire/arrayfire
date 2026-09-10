@@ -224,14 +224,10 @@ target_sources(afopencl
     fftconvolve.hpp
     flood_fill.cpp
     flood_fill.hpp
-    GraphicsResourceManager.cpp
-    GraphicsResourceManager.hpp
     gradient.cpp
     gradient.hpp
     harris.cpp
     harris.hpp
-    hist_graphics.cpp
-    hist_graphics.hpp
     histogram.cpp
     histogram.hpp
     homography.cpp
@@ -242,8 +238,6 @@ target_sources(afopencl
     identity.hpp
     iir.cpp
     iir.hpp
-    image.cpp
-    image.hpp
     index.cpp
     index.hpp
     inverse.cpp
@@ -284,8 +278,6 @@ target_sources(afopencl
     orb.hpp
     platform.cpp
     platform.hpp
-    plot.cpp
-    plot.hpp
     print.hpp
     product.cpp
     qr.cpp
@@ -335,8 +327,6 @@ target_sources(afopencl
     sparse_blas.cpp
     sparse_blas.hpp
     sum.cpp
-    surface.cpp
-    surface.hpp
     susan.cpp
     susan.hpp
     svd.cpp
@@ -359,8 +349,6 @@ target_sources(afopencl
     unary.hpp
     unwrap.cpp
     unwrap.hpp
-    vector_field.cpp
-    vector_field.hpp
     where.cpp
     where.hpp
     wrap.cpp
@@ -543,7 +531,7 @@ target_link_libraries(afopencl
     Threads::Threads
     )
 
-if(APPLE)
+if(APPLE AND AF_WITH_GRAPHICS)
   target_link_libraries(afopencl PRIVATE OpenGL::GL)
 endif()
 
@@ -673,3 +661,21 @@ source_group(api\\c   REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/api/c/*)
 source_group(backend  REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/backend/common/*|${CMAKE_CURRENT_SOURCE_DIR}/*)
 source_group(backend\\kernel  REGULAR_EXPRESSION ${CMAKE_CURRENT_SOURCE_DIR}/kernel/*|${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key/*|${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_by_key/*)
 source_group("generated files" FILES ${ArrayFire_BINARY_DIR}/src/backend/build_version.hpp ${ArrayFire_BINARY_DIR}/include/af/version.h)
+
+if(AF_WITH_GRAPHICS)
+  target_sources(afopencl
+    PRIVATE
+      hist_graphics.cpp
+      hist_graphics.hpp
+      image.cpp
+      image.hpp
+      plot.cpp
+      plot.hpp
+      surface.cpp
+      surface.hpp
+      vector_field.cpp
+      vector_field.hpp
+      GraphicsResourceManager.cpp
+      GraphicsResourceManager.hpp
+  )
+endif()
