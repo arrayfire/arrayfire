@@ -15,7 +15,6 @@ if(AF_WITH_CUDNN)
   dependency_check(cuDNN_FOUND "CUDNN not found.")
 endif()
 
-include(select_compute_arch)
 include(AFcuda_helpers)
 include(FileToString)
 include(InternalUtils)
@@ -778,7 +777,9 @@ function(afcu_collect_libs libname)
 
   cmake_parse_arguments(cuda_args "${options}" "${single_args}" "${multi_args}" ${ARGN})
 
-  if(cuda_args_LIB_MAJOR AND cuda_args_LIB_MINOR)
+  # DEFINED, not truthiness: LIB_MINOR is legitimately 0 (cufft/cusolver/
+  # cusparse under CUDA 13 are 12.0) and a bare 0 evaluates as false.
+  if(DEFINED cuda_args_LIB_MAJOR AND DEFINED cuda_args_LIB_MINOR)
     set(lib_major ${cuda_args_LIB_MAJOR})
 	  set(lib_minor ${cuda_args_LIB_MINOR})
   else()
@@ -788,6 +789,9 @@ function(afcu_collect_libs libname)
   set(lib_version "${lib_major}.${lib_minor}")
 
   if (WIN32)
+    # CUDA 13 moved the redistributable DLLs from bin/ to bin/x64/.
+    # NO_DEFAULT_PATH keeps find_file from picking a DLL of some other
+    # toolkit off the environment PATH.
     find_file(CUDA_${libname}_LIBRARY_DLL
       NAMES
         "${PX}${libname}64_${lib_major}${SX}"
@@ -796,6 +800,8 @@ function(afcu_collect_libs libname)
         "${PX}${libname}64_${lib_major}${lib_minor}_0${SX}"
         "${PX}${libname}_${lib_major}0_0${SX}"
       PATHS ${dlib_path_prefix}
+      PATH_SUFFIXES x64
+      NO_DEFAULT_PATH
     )
     mark_as_advanced(CUDA_${libname}_LIBRARY_DLL)
     install(FILES "${CUDA_${libname}_LIBRARY_DLL}"
@@ -859,11 +865,7 @@ if(AF_INSTALL_STANDALONE)
 
   if(WIN32 OR NOT AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
     if(CUDA_VERSION_MAJOR VERSION_EQUAL 13)
-        if(CUDA_VERSION_MINOR VERSION_GREATER_EQUAL 1)
-            afcu_collect_libs(cufft LIB_MAJOR 12 LIB_MINOR 1)
-        else()
-            afcu_collect_libs(cufft LIB_MAJOR 12 LIB_MINOR 0)
-        endif()
+        afcu_collect_libs(cufft LIB_MAJOR 12 LIB_MINOR 0)
     elseif(CUDA_VERSION_MAJOR VERSION_EQUAL 12)
         afcu_collect_libs(cufft LIB_MAJOR 11 LIB_MINOR 3)
     elseif(CUDA_VERSION_MAJOR VERSION_EQUAL 11)

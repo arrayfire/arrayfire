@@ -47,6 +47,7 @@
 #include <string>
 #include <thread>
 #include <utility>
+#include <vector>
 
 using arrayfire::common::fromCudaVersion;
 using arrayfire::common::getEnvVar;
@@ -101,11 +102,14 @@ static const int jetsonComputeCapabilities[] = {
 // clang-format on
 
 // clang-format off
+// Only consulted when NVRTC cannot report its supported architectures
+// (CUDA < 11.2). Newer rows deliberately stay at 9.0: compute_90 PTX JITs on
+// every later device, which is the safe answer for a fallback.
 static const cuNVRTCcompute Toolkit2MaxCompute[] = {
-    {13010, 12, 1, 0},
-    {13000, 12, 1, 0},
-    {12090, 12, 1, 0},
-    {12080, 12, 0, 0},
+    {13010, 9, 0, 0},
+    {13000, 9, 0, 0},
+    {12090, 9, 0, 0},
+    {12080, 9, 0, 0},
     {12070, 9, 0, 0},
     {12060, 9, 0, 0},
     {12050, 9, 0, 0},
@@ -214,6 +218,7 @@ static inline int compute2cores(unsigned major, unsigned minor) {
 
 static inline int getMinSupportedCompute(int cudaMajorVer) {
     int CVSize = static_cast<int>(minSV.size());
+    if (cudaMajorVer < 1) { return minSV[0]; }
     return (cudaMajorVer > CVSize ? minSV[CVSize - 1]
                                   : minSV[cudaMajorVer - 1]);
 }
@@ -251,10 +256,59 @@ bool checkDeviceWithRuntime(int runtime, pair<int, int> compute) {
     }
 }
 
+#if CUDART_VERSION >= 11020
+/// Asks NVRTC which architectures it can compile for and lowers \p compute to
+/// the highest of them that is not above the device. Returns false when NVRTC
+/// cannot answer or when nothing it supports is at or below \p compute.
+static bool selectNvrtcCompute(pair<int, int> &compute) {
+    int numArchs = 0;
+    if (nvrtcGetNumSupportedArchs(&numArchs) != NVRTC_SUCCESS ||
+        numArchs <= 0) {
+        return false;
+    }
+    std::vector<int> archs(static_cast<size_t>(numArchs));
+    if (nvrtcGetSupportedArchs(archs.data()) != NVRTC_SUCCESS) { return false; }
+    // Entries are major * 10 + minor, sorted in ascending order
+    const int wanted = compute.first * 10 + compute.second;
+    int best         = -1;
+    for (int arch : archs) {
+        if (arch <= wanted && arch > best) { best = arch; }
+    }
+    if (best < 0) { return false; }
+    compute = make_pair(best / 10, best % 10);
+    return true;
+}
+#endif
+
 /// Check for compatible compute version based on runtime cuda toolkit version
 void checkAndSetDevMaxCompute(pair<int, int> &computeCapability) {
     auto originalCompute = computeCapability;
-    int rtCudaVer        = 0;
+
+#if CUDART_VERSION >= 11020
+    // NVRTC knows exactly which architectures it can target. That also
+    // covers gaps a single "maximum" cannot express, such as CUDA 12.8
+    // supporting 10.0 and 12.0 but neither 10.3 nor 11.0. The table lookup
+    // below is only reached when NVRTC cannot answer.
+    {
+        pair<int, int> target = computeCapability;
+        if (selectNvrtcCompute(target)) {
+            if (target != originalCompute) {
+                spdlog::get("platform")
+                    ->warn(
+                        "The compute capability of the current device({}.{}) "
+                        "is not a target supported by the CUDA runtime "
+                        "ArrayFire was built with. Using {}.{} for JIT "
+                        "compilation kernels.",
+                        originalCompute.first, originalCompute.second,
+                        target.first, target.second);
+            }
+            computeCapability = target;
+            return;
+        }
+    }
+#endif
+
+    int rtCudaVer = 0;
     CUDA_CHECK(cudaRuntimeGetVersion(&rtCudaVer));
     auto tkitMaxCompute = find_if(
         begin(Toolkit2MaxCompute), end(Toolkit2MaxCompute),
@@ -262,15 +316,13 @@ void checkAndSetDevMaxCompute(pair<int, int> &computeCapability) {
 
     bool embeddedDevice = isEmbedded(computeCapability);
 
-    // If runtime cuda version is found in toolkit array
-    // check for max possible compute for that cuda version
-    if (tkitMaxCompute != end(Toolkit2MaxCompute) &&
-        computeCapability.first >= tkitMaxCompute->major) {
-        int minorVersion = embeddedDevice ? tkitMaxCompute->embedded_minor
-                                          : tkitMaxCompute->minor;
-
-        if (computeCapability.second > minorVersion) {
-            computeCapability = make_pair(tkitMaxCompute->major, minorVersion);
+    if (tkitMaxCompute != end(Toolkit2MaxCompute)) {
+        // Runtime is in the table: never target above its maximum
+        const int minorVersion = embeddedDevice ? tkitMaxCompute->embedded_minor
+                                                : tkitMaxCompute->minor;
+        const auto maxCompute  = make_pair(tkitMaxCompute->major, minorVersion);
+        if (computeCapability > maxCompute) {
+            computeCapability = maxCompute;
             spdlog::get("platform")
                 ->warn(
                     "The compute capability for the current device({}.{}) "
@@ -282,14 +334,14 @@ void checkAndSetDevMaxCompute(pair<int, int> &computeCapability) {
                     computeCapability.first, computeCapability.second,
                     computeCapability.first, computeCapability.second);
         }
-    } else if (computeCapability.first >= Toolkit2MaxCompute[0].major) {
-        // If runtime cuda version is NOT found in toolkit array
-        // use the top most toolkit max compute
-        int minorVersion = embeddedDevice ? tkitMaxCompute->embedded_minor
-                                          : tkitMaxCompute->minor;
-        if (computeCapability.second > minorVersion) {
-            computeCapability =
-                make_pair(Toolkit2MaxCompute[0].major, minorVersion);
+    } else {
+        // Runtime is not in the table: use the newest entry's maximum
+        const cuNVRTCcompute &latest = Toolkit2MaxCompute[0];
+        const int minorVersion =
+            embeddedDevice ? latest.embedded_minor : latest.minor;
+        const auto maxCompute = make_pair(latest.major, minorVersion);
+        if (computeCapability > maxCompute) {
+            computeCapability = maxCompute;
             spdlog::get("platform")
                 ->warn(
                     "CUDA runtime version({}) not recognized. Targeting "
@@ -303,7 +355,9 @@ void checkAndSetDevMaxCompute(pair<int, int> &computeCapability) {
                     computeCapability.second, computeCapability.first,
                     computeCapability.second);
         }
-    } else if (computeCapability.first < 3) {
+    }
+
+    if (computeCapability.first < 3) {
         // all compute versions prior to Kepler, we don't support
         // don't change the computeCapability.
         spdlog::get("platform")

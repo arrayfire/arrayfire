@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <common/dispatch.hpp>
+#include <cuda.h>
 #include <debug_cuda.hpp>
 #include <err_cuda.hpp>
 #include <math.hpp>
