@@ -9,7 +9,7 @@
 
 #pragma once
 #include <common/jit/Node.hpp>
-#include <spdlog/fmt/bundled/format.h>
+#include <spdlog/fmt/fmt.h>
 
 #include <common/util.hpp>
 

@@ -12,7 +12,7 @@
 #include <boost/stacktrace.hpp>
 #include <common/ArrayFireTypesIO.hpp>
 #include <common/jit/NodeIO.hpp>
-#include <spdlog/fmt/bundled/format.h>
+#include <spdlog/fmt/fmt.h>
 // fmt 11 moved fmt::join from format.h to ranges.h
 #if defined(SPDLOG_FMT_EXTERNAL)
 #include <fmt/ranges.h>
