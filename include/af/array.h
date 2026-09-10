@@ -656,16 +656,18 @@ namespace af
         /**
            Copy array data to host and return host pointer
 
-           For a sparse array the dense representation is copied, so the
-           returned buffer holds dims().elements() values.
+           For a CSR or COO sparse array the dense representation is copied,
+           so the returned buffer holds dims().elements() values. CSC sparse
+           arrays are not supported.
         */
         template<typename T> T* host() const;
 
         /**
            Copy array data to existing host pointer
 
-           For a sparse array the dense representation is copied, so \p ptr
-           must hold dims().elements() values.
+           For a CSR or COO sparse array the dense representation is copied,
+           so \p ptr must hold dims().elements() values. CSC sparse arrays
+           are not supported.
         */
         void host(void *ptr) const;
 
@@ -1690,9 +1692,10 @@ extern "C" {
     /**
        Copy data from an af_array to a C pointer.
 
-       Needs to used in conjunction with the two functions above. For a
-       sparse array the dense representation is copied, so \p data must hold
-       af_get_elements() values.
+       Needs to used in conjunction with the two functions above. For a CSR
+       or COO sparse array the dense representation is copied, so \p data
+       must hold af_get_elements() values. CSC sparse arrays are not
+       supported.
     */
     AFAPI af_err af_get_data_ptr(void *data, const af_array arr);
 

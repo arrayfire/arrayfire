@@ -56,7 +56,13 @@ af_err af_get_data_ptr(void *data, const af_array arr) {
         // back the dense data rather than rejecting the array.
         ReleaseOnExit dense{nullptr};
         if (info.isSparse()) {
-            AF_CHECK(af_sparse_convert_to(&dense.arr, arr, AF_STORAGE_DENSE));
+            if (getSparseArrayBase(arr).getStorage() == AF_STORAGE_CSC) {
+                AF_ERROR(
+                    "Copying a CSC sparse array to the host is not supported; "
+                    "convert it to CSR or COO first",
+                    AF_ERR_NOT_SUPPORTED);
+            }
+            AF_CHECK(af_sparse_to_dense(&dense.arr, arr));
         }
         const af_array src = dense.arr ? dense.arr : arr;
 
