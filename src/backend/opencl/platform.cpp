@@ -493,8 +493,9 @@ void devprop(char* d_name, char* d_platform, char* d_toolkit, char* d_compute) {
         }
     }
 
-    // Sanitize input
-    for (int i = 0; i < 31; i++) {
+    // Sanitize input. Stop at the terminator: the lookahead reads d_name[i + 1]
+    // and the loop must not run past the end of a short device name.
+    for (int i = 0; i < 63 && d_name[i] != '\0'; i++) {
         if (d_name[i] == ' ') {
             if (d_name[i + 1] == 0 || d_name[i + 1] == ' ') {
                 d_name[i] = 0;
