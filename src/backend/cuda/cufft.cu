@@ -9,6 +9,7 @@
 
 #include <cufft.hpp>
 
+#include <cuda.h>  // CUDA_VERSION
 #include <memory.hpp>
 #include <platform.hpp>
 

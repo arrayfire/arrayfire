@@ -230,32 +230,6 @@ bool isEmbedded(pair<int, int> compute) {
                 end(jetsonComputeCapabilities), version);
 }
 
-bool checkDeviceWithRuntime(int runtime, pair<int, int> compute) {
-    auto rt = find_if(
-        begin(Toolkit2MaxCompute), end(Toolkit2MaxCompute),
-        [runtime](cuNVRTCcompute c) { return c.cudaVersion == runtime; });
-    if (rt == end(Toolkit2MaxCompute)) {
-        spdlog::get("platform")
-            ->warn(
-                "CUDA runtime version({}) not recognized. Please "
-                "create an issue or a pull request on the ArrayFire repository "
-                "to update the Toolkit2MaxCompute array with this version of "
-                "the CUDA Runtime. Continuing.",
-                fromCudaVersion(runtime));
-        return true;
-    }
-
-    if (rt->major >= compute.first) {
-        if (rt->major == compute.first) {
-            return rt->minor >= compute.second;
-        } else {
-            return true;
-        }
-    } else {
-        return false;
-    }
-}
-
 #if CUDART_VERSION >= 11020
 /// Asks NVRTC which architectures it can compile for and lowers \p compute to
 /// the highest of them that is not above the device. Returns false when NVRTC

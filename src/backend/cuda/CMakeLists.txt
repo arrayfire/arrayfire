@@ -804,6 +804,9 @@ function(afcu_collect_libs libname)
       NO_DEFAULT_PATH
     )
     mark_as_advanced(CUDA_${libname}_LIBRARY_DLL)
+    if(NOT CUDA_${libname}_LIBRARY_DLL)
+      message(FATAL_ERROR "AF_INSTALL_STANDALONE: ${libname} DLL (major ${lib_major}) not found under ${dlib_path_prefix}")
+    endif()
     install(FILES "${CUDA_${libname}_LIBRARY_DLL}"
       DESTINATION ${AF_INSTALL_BIN_DIR}
       COMPONENT cuda_dependencies)
@@ -814,10 +817,16 @@ function(afcu_collect_libs libname)
             RENAME      "${PX}${libname}.${lib_version}${SX}"
             COMPONENT   cuda_dependencies)
   else () #UNIX
+    # NO_DEFAULT_PATH: package the library of the toolkit being built
+    # against, never a distro or wheel copy found on the default paths.
     find_library(CUDA_${libname}_LIBRARY
       NAMES ${libname}
       PATHS
-        ${dlib_path_prefix})
+        ${dlib_path_prefix}
+      NO_DEFAULT_PATH)
+    if(NOT CUDA_${libname}_LIBRARY)
+      message(FATAL_ERROR "AF_INSTALL_STANDALONE: ${libname} library not found under ${dlib_path_prefix}")
+    endif()
 
     get_filename_component(outpath "${CUDA_${libname}_LIBRARY}" REALPATH)
     if(cuda_args_FULL_VERSION)
