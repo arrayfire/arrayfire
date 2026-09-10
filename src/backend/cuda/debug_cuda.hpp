@@ -29,7 +29,7 @@ template<>
 struct fmt::formatter<dim3> : fmt::formatter<std::string> {
     // parse is inherited from formatter<string_view>.
     template<typename FormatContext>
-    auto format(dim3 c, FormatContext& ctx) {
+    auto format(const dim3& c, FormatContext& ctx) const {
         std::string name = fmt::format("{} {} {}", c.x, c.y, c.z);
         return formatter<std::string>::format(name, ctx);
     }
