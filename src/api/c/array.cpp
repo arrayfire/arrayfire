@@ -36,25 +36,52 @@ using detail::uint;
 using detail::uintl;
 using detail::ushort;
 
+namespace {
+// Releases a temporary af_array when it goes out of scope
+struct ReleaseOnExit {
+    af_array arr;
+    ~ReleaseOnExit() {
+        if (arr) { af_release_array(arr); }
+    }
+};
+}  // namespace
+
 af_err af_get_data_ptr(void *data, const af_array arr) {
     try {
-        af_dtype type = getInfo(arr).getType();
+        const ArrayInfo &info = getInfo(arr, false);
+        af_dtype type         = info.getType();
+
+        // A sparse array reports the dense shape through dims() and
+        // elements(), which is what callers size their buffer from, so hand
+        // back the dense data rather than rejecting the array.
+        ReleaseOnExit dense{nullptr};
+        if (info.isSparse()) {
+            if (getSparseArrayBase(arr).getStorage() == AF_STORAGE_CSC) {
+                AF_ERROR(
+                    "Copying a CSC sparse array to the host is not supported; "
+                    "convert it to CSR or COO first",
+                    AF_ERR_NOT_SUPPORTED);
+            }
+            AF_CHECK(af_sparse_to_dense(&dense.arr, arr));
+        }
+        const af_array src = dense.arr ? dense.arr : arr;
+
         // clang-format off
         switch (type) {
-            case f32: copyData(static_cast<float*   >(data), arr); break;
-            case c32: copyData(static_cast<cfloat*  >(data), arr); break;
-            case f64: copyData(static_cast<double*  >(data), arr); break;
-            case c64: copyData(static_cast<cdouble* >(data), arr); break;
-            case b8:  copyData(static_cast<char*    >(data), arr); break;
-            case s32: copyData(static_cast<int*     >(data), arr); break;
-            case u32: copyData(static_cast<unsigned*>(data), arr); break;
-            case s8:  copyData(static_cast<schar*   >(data), arr); break;
-            case u8:  copyData(static_cast<uchar*   >(data), arr); break;
-            case s64: copyData(static_cast<intl*    >(data), arr); break;
-            case u64: copyData(static_cast<uintl*   >(data), arr); break;
-            case s16: copyData(static_cast<short*   >(data), arr); break;
-            case u16: copyData(static_cast<ushort*  >(data), arr); break;
-            case f16: copyData(static_cast<half*    >(data), arr); break;
+            case f32: copyData(static_cast<float*   >(data), src); break;
+            case c32: copyData(static_cast<cfloat*  >(data), src); break;
+            case f64: copyData(static_cast<double*  >(data), src); break;
+            case c64: copyData(static_cast<cdouble* >(data), src); break;
+            case b8:  copyData(static_cast<char*    >(data), src); break;
+            case s32: copyData(static_cast<int*     >(data), src); break;
+            case u32: copyData(static_cast<unsigned*>(data), src); break;
+            case s8:  copyData(static_cast<schar*   >(data), src); break;
+            case u8:  copyData(static_cast<uchar*   >(data), src); break;
+            case s64: copyData(static_cast<intl*    >(data), src); break;
+            case u64: copyData(static_cast<uintl*   >(data), src); break;
+            case s16: copyData(static_cast<short*   >(data), src); break;
+            case u16: copyData(static_cast<ushort*  >(data), src); break;
+            case f16: copyData(static_cast<half*    >(data), src); break;
             default: TYPE_ERROR(1, type);
         }
         // clang-format on

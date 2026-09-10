@@ -297,6 +297,63 @@ TYPED_TEST(Sparse, EmptyDeepCopy) {
     EXPECT_EQ(0, sparseGetNNZ(b));
 }
 
+TEST(Sparse, HostOfSparseReturnsDense_ISSUE_3703) {
+    SUPPORTED_TYPE_CHECK(double);
+    const int rows = 8, cols = 4;
+    array values  = af::constant(1.0, rows, f64);
+    array row_ptr = af::iota(dim4(rows + 1), dim4(1), s32);
+    array col_idx = af::constant(0, rows, s32);
+    array sp      = af::sparse(rows, cols, values, row_ptr, col_idx,
+                               AF_STORAGE_CSR);
+    ASSERT_TRUE(sp.issparse());
+
+    // One non-zero per row, all in column 0
+    vector<double> gold(rows * cols, 0.0);
+    for (int i = 0; i < rows; i++) { gold[i] = 1.0; }
+
+    double *h = sp.host<double>();
+    ASSERT_NE(h, nullptr);
+    for (int i = 0; i < rows * cols; i++) {
+        ASSERT_EQ(gold[i], h[i]) << "at " << i;
+    }
+    af::freeHost(h);
+
+    vector<double> into(rows * cols, -1.0);
+    sp.host(into.data());
+    ASSERT_EQ(gold, into);
+}
+
+TEST(Sparse, HostOfSparseMatchesDenseForEveryStorage_ISSUE_3703) {
+    const int rows = 6, cols = 5;
+    array dense = randu(rows, cols, f32);
+    // Sparsify roughly half of it
+    dense(dense < 0.5f) = 0.f;
+    vector<float> gold(rows * cols);
+    dense.host(gold.data());
+
+    const af_storage storages[] = {AF_STORAGE_CSR, AF_STORAGE_COO};
+    for (af_storage storage : storages) {
+        array sp = af::sparse(dense, storage);
+        ASSERT_TRUE(sp.issparse());
+        vector<float> got(rows * cols, -1.f);
+        sp.host(got.data());
+        ASSERT_EQ(gold, got) << "storage " << static_cast<int>(storage);
+    }
+
+    // CSC cannot be created from dense; the CSC of A is the CSR of A^T with
+    // the index arrays reinterpreted. CSC to dense is not implemented, so
+    // host() must reject it clearly rather than copy garbage.
+    array csrT = af::sparse(dense.T(), AF_STORAGE_CSR);
+    // For CSC the rowIdx argument holds the nnz row indices and the colIdx
+    // argument holds the cols + 1 column pointers
+    array csc  = af::sparse(rows, cols, sparseGetValues(csrT),
+                            sparseGetColIdx(csrT), sparseGetRowIdx(csrT),
+                            AF_STORAGE_CSC);
+    ASSERT_TRUE(csc.issparse());
+    vector<float> gotCsc(rows * cols, -1.f);
+    ASSERT_THROW(csc.host(gotCsc.data()), af::exception);
+}
+
 TEST(Sparse, CPPSparseFromHostArrays) {
     //! [ex_sparse_host_arrays]
 
