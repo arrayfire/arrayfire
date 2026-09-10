@@ -29,14 +29,26 @@ LibHandle loadLibrary(const char* library_name) {
 void unloadLibrary(LibHandle handle) { FreeLibrary(handle); }
 
 string getErrorMessage() {
-    const char* lpMsgBuf;
-    DWORD dw = GetLastError();
+    char* lpMsgBuf = nullptr;
+    DWORD dw       = GetLastError();
 
-    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
-                      FORMAT_MESSAGE_IGNORE_INSERTS,
-                  NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                  (LPTSTR)&lpMsgBuf, 0, NULL);
+    // FormatMessage only writes lpMsgBuf when it succeeds. On failure it
+    // returns 0 and leaves the pointer untouched, so it must be initialized
+    // and the result checked before it is dereferenced.
+    DWORD chars = FormatMessage(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
+            FORMAT_MESSAGE_IGNORE_INSERTS,
+        NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        reinterpret_cast<LPTSTR>(&lpMsgBuf), 0, NULL);
+
+    if (chars == 0 || lpMsgBuf == nullptr) {
+        return "Unknown error (system error code " + std::to_string(dw) + ")";
+    }
+
     string error_message(lpMsgBuf);
+    // FORMAT_MESSAGE_ALLOCATE_BUFFER allocates with LocalAlloc; the caller
+    // owns the buffer and must release it.
+    LocalFree(lpMsgBuf);
     return error_message;
 }
 
