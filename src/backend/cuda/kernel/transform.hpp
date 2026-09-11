@@ -17,6 +17,8 @@
 #include <af/defines.h>
 
 #include <algorithm>
+#include <mutex>
+#include <platform.hpp>
 
 namespace arrayfire {
 namespace cuda {
@@ -43,6 +45,7 @@ void transform(Param<T> out, CParam<T> in, CParam<float> tf, const bool inverse,
     const unsigned int tf_len = (perspective) ? 9 : 6;
 
     // Copy transform to constant memory.
+    std::unique_lock<std::mutex> lock(constantMemoryMutex());
     auto constPtr = transform.getDevPtr("c_tmat");
     transform.copyToReadOnly(constPtr, reinterpret_cast<CUdeviceptr>(tf.ptr),
                              nTfs2 * nTfs3 * tf_len * sizeof(float));
@@ -70,6 +73,7 @@ void transform(Param<T> out, CParam<T> in, CParam<float> tf, const bool inverse,
     transform(qArgs, out, in, nImg2, nImg3, nTfs2, nTfs3, batchImg2,
               blocksXPerImage, blocksYPerImage, perspective, method);
 
+    lock.unlock();
     POST_LAUNCH_CHECK();
 }
 

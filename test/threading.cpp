@@ -12,6 +12,7 @@
 #include <sparse_common.hpp>
 #include <testHelpers.hpp>
 #include <af/traits.hpp>
+#include <atomic>
 #include <chrono>
 #include <complex>
 #include <condition_variable>
@@ -55,6 +56,41 @@ void calc(ArithOp opcode, array op1, array op2, float outValue,
 
     for (unsigned i = 0; i < out.size(); ++i) ASSERT_FLOAT_EQ(out[i], outValue);
     af::sync();
+}
+
+// Each thread convolves one signal with its own filter and checks every
+// result against a reference computed up front. On backends that stage the
+// filter through memory shared by all host threads, a race hands a thread
+// another thread's filter.
+TEST(Threading, ConvolveDistinctFilterPerThread) {
+    setDevice(0);
+
+    const int nThreads   = THREAD_COUNT;
+    const int iterations = ITERATION_COUNT;
+
+    array signal = randu(96, 96);
+    vector<array> filters, expected;
+    for (int t = 0; t < nThreads; ++t) {
+        filters.push_back(constant(static_cast<float>(t + 1), 5, 5) / 25.0f);
+        expected.push_back(convolve2(signal, filters.back()));
+        expected.back().eval();
+    }
+    sync();
+
+    std::atomic<int> failures{0};
+    vector<std::thread> threads;
+    for (int t = 0; t < nThreads; ++t) {
+        threads.emplace_back([&, t]() {
+            setDevice(0);
+            for (int i = 0; i < iterations; ++i) {
+                array out  = convolve2(signal, filters[t]);
+                float diff = max<float>(abs(out - expected[t]));
+                if (diff > 1e-4f) { failures++; }
+            }
+        });
+    }
+    for (auto& th : threads) { th.join(); }
+    ASSERT_EQ(0, failures.load());
 }
 
 TEST(Threading, SimultaneousRead) {
