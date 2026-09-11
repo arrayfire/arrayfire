@@ -20,6 +20,8 @@
 #include <nvrtc_kernel_headers/convolve_separable_cuh.hpp>
 #include <traits.hpp>
 
+#include <mutex>
+
 namespace arrayfire {
 namespace cuda {
 namespace kernel {
@@ -121,6 +123,7 @@ void convolve_1d(conv_kparam_t& p, Param<T> out, CParam<T> sig, CParam<aT> filt,
                 const aT* fptr = filt.ptr + (f1Off + f2Off + f3Off);
 
                 // FIXME: case where filter array is strided
+                std::lock_guard<std::mutex> lock(constantMemoryMutex());
                 auto constMemPtr = convolve1.getDevPtr(conv_c_name);
                 convolve1.copyToReadOnly(constMemPtr,
                                          reinterpret_cast<CUdeviceptr>(fptr),
@@ -164,6 +167,7 @@ void conv2Helper(const conv_kparam_t& p, Param<T> out, CParam<T> sig,
           DefineValue(CONV2_THREADS_X), DefineValue(CONV2_THREADS_Y)}});
 
     // FIXME: case where filter array is strided
+    std::lock_guard<std::mutex> lock(constantMemoryMutex());
     auto constMemPtr = convolve2.getDevPtr(conv_c_name);
     convolve2.copyToReadOnly(constMemPtr, reinterpret_cast<CUdeviceptr>(fptr),
                              f0 * f1 * sizeof(aT));
@@ -219,6 +223,7 @@ void convolve_3d(conv_kparam_t& p, Param<T> out, CParam<T> sig, CParam<aT> filt,
         const aT* fptr = filt.ptr + f3Off;
 
         // FIXME: case where filter array is strided
+        std::lock_guard<std::mutex> lock(constantMemoryMutex());
         auto constMemPtr = convolve3.getDevPtr(conv_c_name);
         convolve3.copyToReadOnly(
             constMemPtr, reinterpret_cast<CUdeviceptr>(fptr), filterSize);
@@ -322,6 +327,7 @@ void convolve2(Param<T> out, CParam<T> signal, CParam<aT> filter, int conv_dim,
     dim3 blocks(blk_x * signal.dims[2], blk_y * signal.dims[3]);
 
     // FIXME: case where filter array is strided
+    std::lock_guard<std::mutex> lock(constantMemoryMutex());
     auto constMemPtr = convolve2_separable.getDevPtr(sconv_c_name);
     convolve2_separable.copyToReadOnly(
         constMemPtr, reinterpret_cast<CUdeviceptr>(filter.ptr),

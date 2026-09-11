@@ -407,6 +407,11 @@ cudaStream_t getStream(int device) {
 
 cudaStream_t getActiveStream() { return getStream(getActiveDeviceId()); }
 
+std::mutex &constantMemoryMutex() {
+    static std::mutex mutex;
+    return mutex;
+}
+
 cudaStream_t getQueueHandle(int device) { return getStream(device); }
 
 size_t getDeviceMemorySize(int device) {

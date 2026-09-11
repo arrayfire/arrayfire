@@ -13,6 +13,7 @@
 #include <cuda_runtime.h>
 
 #include <memory>
+#include <mutex>
 #include <string>
 #include <utility>
 
@@ -87,6 +88,13 @@ int getDeviceNativeId(int device);
 cudaStream_t getStream(int device);
 
 cudaStream_t getActiveStream();
+
+/// Serialises kernels that stage per-call data through a __constant__
+/// symbol of a cached module. The upload and the launch are both
+/// asynchronous on the device stream shared by all host threads, so two
+/// threads can interleave them and launch with each other's data. Hold this
+/// from the upload through the launch enqueue.
+std::mutex& constantMemoryMutex();
 
 /// Returns true if the buffer on device buf_device_id can be accessed by
 /// kernels on device execution_id

@@ -14,6 +14,7 @@
 #include <nvrtc_kernel_headers/morph_cuh.hpp>
 
 #include <limits>
+#include <mutex>
 
 namespace arrayfire {
 namespace cuda {
@@ -37,6 +38,7 @@ void morph(Param<T> out, CParam<T> in, CParam<T> mask, bool isDilation) {
                      TemplateArg(SeLength)),
         {{DefineValue(MAX_MORPH_FILTER_LEN)}});
 
+    std::lock_guard<std::mutex> lock(constantMemoryMutex());
     morph.copyToReadOnly(morph.getDevPtr("cFilter"),
                          reinterpret_cast<CUdeviceptr>(mask.ptr),
                          mask.dims[0] * mask.dims[1] * sizeof(T));
@@ -73,6 +75,7 @@ void morph3d(Param<T> out, CParam<T> in, CParam<T> mask, bool isDilation) {
                      TemplateArg(windLen)),
         {{DefineValue(MAX_MORPH_FILTER_LEN)}});
 
+    std::lock_guard<std::mutex> lock(constantMemoryMutex());
     morph3D.copyToReadOnly(
         morph3D.getDevPtr("cFilter"), reinterpret_cast<CUdeviceptr>(mask.ptr),
         mask.dims[0] * mask.dims[1] * mask.dims[2] * sizeof(T));
