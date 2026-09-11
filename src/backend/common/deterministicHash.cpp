@@ -9,6 +9,7 @@
 
 #include <common/deterministicHash.hpp>
 
+#include <cstdint>
 #include <nonstd/span.hpp>
 #include <numeric>
 #include <string>
