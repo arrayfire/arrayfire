@@ -220,3 +220,24 @@ TEST(FloatHarris, CPP) {
             << "at: " << elIter << endl;
     }
 }
+
+// Harris must reach every row and column of a non-square image. The OpenCL
+// responses grid was sized with the two image dimensions swapped, so corners
+// beyond the shorter dimension were never computed.
+TEST(Harris, NonSquareImage) {
+    UNSUPPORTED_BACKEND(AF_BACKEND_ONEAPI);
+    const int shapes[2][2] = {{64, 512}, {512, 64}};
+    for (const auto &shape : shapes) {
+        const int rows = shape[0], cols = shape[1];
+        array img = af::constant(0, rows, cols, f32);
+        unsigned squares = 0;
+        for (int c0 = 16; c0 + 16 < cols; c0 += 64) {
+            img(af::seq(rows / 2 - 8, rows / 2 + 8), af::seq(c0, c0 + 16)) =
+                1.f;
+            squares++;
+        }
+        features out = harris(img, 500, 1e5f, 0.0f, 3, 0.04f);
+        ASSERT_EQ(4 * squares, out.getNumFeatures())
+            << "image " << rows << "x" << cols;
+    }
+}
