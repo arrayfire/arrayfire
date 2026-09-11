@@ -114,9 +114,10 @@ void gemm(Array<To> &out, af_mat_prop optLhs, af_mat_prop optRhs,
         dim_t oOffset = out.getOffset() + z * oStrides[2] + w * oStrides[3];
 
         cl::Event event;
-        // CLBlast's half-precision GEMV returns wrong values (CNugteren/CLBlast
-        // issue 561); its GEMM does not, so keep f16 on the GEMM path even
-        // when the right-hand side is a single column.
+        // With fp16 data CLBlast's GEMV path returns wrong values on Intel GPUs
+        // while its GEMM path is correct (#3674; possibly related to
+        // CNugteren/CLBlast#561), so keep half on GEMM even for a single
+        // column.
         const bool useGemv =
             rDims[bColDim] == 1 && !std::is_same<Ti, half>::value;
         if (useGemv) {
