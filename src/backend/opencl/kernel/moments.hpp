@@ -33,10 +33,10 @@ void moments(Param out, const Param in, af_moment_type moment) {
         TemplateTypename<T>(),
         TemplateArg(out.info.dims[0]),
     };
-    std::array<std::string, 3> options = {
+    std::array<std::string, 4> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
         DefineKeyValue(MOMENTS_SZ, out.info.dims[0]),
-        getTypeBuildDefinition<T>()};
+        DefineKeyValue(THREADS, THREADS), getTypeBuildDefinition<T>()};
 
     auto momentsOp =
         common::getKernel("moments", {{moments_cl_src}}, targs, options);
