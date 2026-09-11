@@ -27,6 +27,8 @@ namespace kernel {
 
 template<typename T>
 void moments(Param out, const Param in, af_moment_type moment) {
+    // Also the kernel's local-memory row length (-D THREADS); the launch
+    // below must use the same value.
     constexpr int THREADS = 128;
 
     std::array<TemplateArg, 2> targs = {

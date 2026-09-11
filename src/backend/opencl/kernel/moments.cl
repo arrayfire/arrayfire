@@ -34,6 +34,8 @@ kernel void moments(global float *d_out, const KParam out, global const T *d_in,
     const dim_t idy = get_group_id(0);
     const int lid   = get_local_id(0);
     const int lsz   = get_local_size(0);
+    // One slot per work-item; THREADS is the launch-site local size.
+    local float wkg_moment_sum[MOMENTS_SZ][THREADS];
 
     // Every work-item in the group shares idy/idz/idw, so the whole group
     // leaves together and the barriers below stay balanced.
@@ -59,7 +61,6 @@ kernel void moments(global float *d_out, const KParam out, global const T *d_in,
         if ((moment & AF_MOMENT_M11) > 0) { acc[m++] += fx * fy * val; }
     }
 
-    local float wkg_moment_sum[MOMENTS_SZ][THREADS];
     for (int m = 0; m < MOMENTS_SZ; ++m) { wkg_moment_sum[m][lid] = acc[m]; }
     barrier(CLK_LOCAL_MEM_FENCE);
 
