@@ -807,6 +807,26 @@ TEST(Gemv, HalfScalarProduct) {
     }
 }
 
+// Random half-precision matrix times column vector, checked against the
+// same product in single precision. Exercises the single-column path that
+// #3674 hit with strided convolutions on OpenCL.
+TEST(Gemv, HalfRandomMatchesFloat_ISSUE_3674) {
+    SUPPORTED_TYPE_CHECK(half_float::half);
+
+    const int rows = 33, cols = 47;
+    array a = randu(rows, cols, f32) - 0.5f;
+    array b = randu(cols, 1, f32) - 0.5f;
+    array gold = matmul(a, b);
+
+    array a16 = a.as(f16);
+    array b16 = b.as(f16);
+    array out = matmul(a16, b16).as(f32);
+    ASSERT_ARRAYS_NEAR(gold, out, 5e-2);
+
+    array outT = matmul(transpose(a16), b16, AF_MAT_TRANS, AF_MAT_NONE).as(f32);
+    ASSERT_ARRAYS_NEAR(gold, outT, 5e-2);
+}
+
 TEST(MatrixMultiply, SameInput) {
     // Tests for an error that occured in the Intel OpenCL GPU implementation
     // that caused an error when you passed the same array as the lhs and the

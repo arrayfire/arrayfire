@@ -25,6 +25,7 @@
 // Includes one of the supported OpenCL BLAS back-ends (e.g. clBLAS, CLBlast)
 #include <cpu/cpu_blas.hpp>
 #include <magma/magma_blas.h>
+#include <type_traits>
 
 using arrayfire::common::half;
 
@@ -113,7 +114,12 @@ void gemm(Array<To> &out, af_mat_prop optLhs, af_mat_prop optRhs,
         dim_t oOffset = out.getOffset() + z * oStrides[2] + w * oStrides[3];
 
         cl::Event event;
-        if (rDims[bColDim] == 1) {
+        // CLBlast's half-precision GEMV returns wrong values (CNugteren/CLBlast
+        // issue 561); its GEMM does not, so keep f16 on the GEMM path even
+        // when the right-hand side is a single column.
+        const bool useGemv =
+            rDims[bColDim] == 1 && !std::is_same<Ti, half>::value;
+        if (useGemv) {
             dim_t incr = (optRhs == AF_MAT_NONE) ? rStrides[0] : rStrides[1];
             gpu_blas_gemv_func<Ti> gemv;
             OPENCL_BLAS_CHECK(gemv(lOpts, lDims[0], lDims[1], *alpha,
