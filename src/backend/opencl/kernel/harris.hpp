@@ -144,9 +144,9 @@ void harris(unsigned *corners_out, Param &x_out, Param &y_out, Param &resp_out,
 
     // Harris responses kernel sizes
     unsigned blk_x_hr =
-        divup(in.info.dims[0] - border_len * 2, HARRIS_THREADS_X);
+        divup(in.info.dims[1] - border_len * 2, HARRIS_THREADS_X);
     unsigned blk_y_hr =
-        divup(in.info.dims[1] - border_len * 2, HARRIS_THREADS_Y);
+        divup(in.info.dims[0] - border_len * 2, HARRIS_THREADS_Y);
     const NDRange local_hr(HARRIS_THREADS_X, HARRIS_THREADS_Y);
     const NDRange global_hr(blk_x_hr * HARRIS_THREADS_X,
                             blk_y_hr * HARRIS_THREADS_Y);
