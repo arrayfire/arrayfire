@@ -21,6 +21,7 @@
 #include <traits.hpp>
 
 #include <mutex>
+#include <platform.hpp>
 
 namespace arrayfire {
 namespace cuda {
@@ -123,7 +124,7 @@ void convolve_1d(conv_kparam_t& p, Param<T> out, CParam<T> sig, CParam<aT> filt,
                 const aT* fptr = filt.ptr + (f1Off + f2Off + f3Off);
 
                 // FIXME: case where filter array is strided
-                std::lock_guard<std::mutex> lock(constantMemoryMutex());
+                std::unique_lock<std::mutex> lock(constantMemoryMutex());
                 auto constMemPtr = convolve1.getDevPtr(conv_c_name);
                 convolve1.copyToReadOnly(constMemPtr,
                                          reinterpret_cast<CUdeviceptr>(fptr),
@@ -140,6 +141,7 @@ void convolve_1d(conv_kparam_t& p, Param<T> out, CParam<T> sig, CParam<aT> filt,
                                   p.mSharedSize);
                 convolve1(qArgs, out, sig, filt.dims[0], p.mBlk_x, p.mBlk_y,
                           p.o[0], p.o[1], p.o[2], p.s[0], p.s[1], p.s[2]);
+                lock.unlock();
                 POST_LAUNCH_CHECK();
             }
         }
@@ -167,7 +169,7 @@ void conv2Helper(const conv_kparam_t& p, Param<T> out, CParam<T> sig,
           DefineValue(CONV2_THREADS_X), DefineValue(CONV2_THREADS_Y)}});
 
     // FIXME: case where filter array is strided
-    std::lock_guard<std::mutex> lock(constantMemoryMutex());
+    std::unique_lock<std::mutex> lock(constantMemoryMutex());
     auto constMemPtr = convolve2.getDevPtr(conv_c_name);
     convolve2.copyToReadOnly(constMemPtr, reinterpret_cast<CUdeviceptr>(fptr),
                              f0 * f1 * sizeof(aT));
@@ -175,6 +177,7 @@ void conv2Helper(const conv_kparam_t& p, Param<T> out, CParam<T> sig,
     EnqueueArgs qArgs(p.mBlocks, p.mThreads, getActiveStream());
     convolve2(qArgs, out, sig, p.mBlk_x, p.mBlk_y, p.o[1], p.o[2], p.s[1],
               p.s[2]);
+    lock.unlock();
     POST_LAUNCH_CHECK();
 }
 
@@ -223,7 +226,7 @@ void convolve_3d(conv_kparam_t& p, Param<T> out, CParam<T> sig, CParam<aT> filt,
         const aT* fptr = filt.ptr + f3Off;
 
         // FIXME: case where filter array is strided
-        std::lock_guard<std::mutex> lock(constantMemoryMutex());
+        std::unique_lock<std::mutex> lock(constantMemoryMutex());
         auto constMemPtr = convolve3.getDevPtr(conv_c_name);
         convolve3.copyToReadOnly(
             constMemPtr, reinterpret_cast<CUdeviceptr>(fptr), filterSize);
@@ -235,6 +238,7 @@ void convolve_3d(conv_kparam_t& p, Param<T> out, CParam<T> sig, CParam<aT> filt,
                           p.mSharedSize);
         convolve3(qArgs, out, sig, filt.dims[0], filt.dims[1], filt.dims[2],
                   p.mBlk_x, p.o[2], p.s[2]);
+        lock.unlock();
         POST_LAUNCH_CHECK();
     }
 }
@@ -327,7 +331,7 @@ void convolve2(Param<T> out, CParam<T> signal, CParam<aT> filter, int conv_dim,
     dim3 blocks(blk_x * signal.dims[2], blk_y * signal.dims[3]);
 
     // FIXME: case where filter array is strided
-    std::lock_guard<std::mutex> lock(constantMemoryMutex());
+    std::unique_lock<std::mutex> lock(constantMemoryMutex());
     auto constMemPtr = convolve2_separable.getDevPtr(sconv_c_name);
     convolve2_separable.copyToReadOnly(
         constMemPtr, reinterpret_cast<CUdeviceptr>(filter.ptr),
@@ -335,6 +339,7 @@ void convolve2(Param<T> out, CParam<T> signal, CParam<aT> filter, int conv_dim,
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
     convolve2_separable(qArgs, out, signal, blk_x, blk_y);
+    lock.unlock();
     POST_LAUNCH_CHECK();
 }
 

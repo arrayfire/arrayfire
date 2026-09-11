@@ -93,7 +93,9 @@ cudaStream_t getActiveStream();
 /// symbol of a cached module. The upload and the launch are both
 /// asynchronous on the device stream shared by all host threads, so two
 /// threads can interleave them and launch with each other's data. Hold this
-/// from the upload through the launch enqueue.
+/// from the upload through the launch enqueue, and release it before any
+/// synchronisation. Kernels that keep a per-call flag in a __device__
+/// variable (canny, flood_fill) have the same problem and are not covered.
 std::mutex& constantMemoryMutex();
 
 /// Returns true if the buffer on device buf_device_id can be accessed by

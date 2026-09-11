@@ -65,8 +65,8 @@ void calc(ArithOp opcode, array op1, array op2, float outValue,
 TEST(Threading, ConvolveDistinctFilterPerThread) {
     setDevice(0);
 
-    const int nThreads   = 8;
-    const int iterations = 40;
+    const int nThreads   = THREAD_COUNT;
+    const int iterations = ITERATION_COUNT;
 
     array signal = randu(96, 96);
     vector<array> filters, expected;
