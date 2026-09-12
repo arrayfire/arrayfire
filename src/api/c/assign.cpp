@@ -59,6 +59,11 @@ static void assign(Array<Tout>& out, const vector<af_seq> seqs,
 
     out.eval();
 
+    // createSubArray copies a non-linear parent before slicing it, so a write
+    // through the slice would land in a temporary and be lost (#3534).
+    // Materialise the output as a linear array first.
+    if (!out.isLinear()) { out = copyArray(out); }
+
     dim4 oDims = toDims(seqs, outDs);
 
     bool isVec = true;

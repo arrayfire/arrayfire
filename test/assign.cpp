@@ -1037,3 +1037,27 @@ TEST(Index, ISSUE_2533) {
 
     ASSERT_VEC_ARRAY_EQ(gold, dim4(5, 10), a);
 }
+
+// Assigning into an array that is itself a strided view of a larger buffer
+// (here the first four rows of a 5x5) silently did nothing, because the
+// write went into a temporary copy of the view.
+TEST(Assign, IntoStridedView_ISSUE_3534) {
+    array a = af::range(dim4(5, 5));
+    a       = a.rows(0, 3);
+    a(0, 0) = 1234;
+    ASSERT_EQ(1234.f, a.scalar<float>());
+
+    array b       = af::range(dim4(5, 5));
+    b             = b.rows(1, 3);
+    b(span, 2)    = constant(-1, 3, 1);
+    vector<float> h(b.elements());
+    b.host(h.data());
+    for (int i = 0; i < 3; i++) { ASSERT_EQ(-1.f, h[i + 2 * 3]) << "row " << i; }
+    ASSERT_EQ(1.f, h[0]);
+
+    array c = af::range(dim4(5, 5));
+    c       = c.rows(0, 3);
+    array idx = af::seq(0, 1);
+    c(idx.as(s32), 0) = constant(7, 2, 1);
+    ASSERT_EQ(7.f, c.scalar<float>());
+}
