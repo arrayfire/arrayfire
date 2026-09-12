@@ -52,7 +52,7 @@ class UnaryNode : public TNode<To> {
         m_op.eval(TNode<To>::m_val, child->m_val, lim);
     }
 
-    void calc(int idx, int lim) final {
+    void calc(dim_t idx, int lim) final {
         UNUSED(idx);
         auto child = static_cast<TNode<Ti> *>(m_children[0].get());
         m_op.eval(TNode<To>::m_val, child->m_val, lim);

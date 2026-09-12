@@ -85,7 +85,7 @@ class BufferNode : public TNode<T> {
         }
     }
 
-    void calc(int idx, int lim) final {
+    void calc(dim_t idx, int lim) final {
         using Tc = compute_t<T>;
 
         T *in_ptr   = m_ptr + idx;

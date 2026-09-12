@@ -199,7 +199,7 @@ class Node {
         UNUSED(w);
     }
 
-    virtual void calc(int idx, int lim) {
+    virtual void calc(dim_t idx, int lim) {
         UNUSED(idx);
         UNUSED(lim);
     }

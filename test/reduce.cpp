@@ -2535,3 +2535,13 @@ TEST(Reduce, SNIPPET_algorithm_func_sum) {
     TEMP_FORMAT_TESTS_allTestByKey(form, anyTrueByKey);
 
 FOREACH_TEMP_FORMAT(TEMP_FORMATS_TESTS)
+
+// A single-precision sum of 1e8 ones stops at 2^24 when accumulated in one
+// pass without compensation (#3571). The result must be exact.
+TEST(Reduce, SumOfManyOnesIsExact_ISSUE_3571) {
+    const dim_t n = 100000000;
+    array ones    = constant(1.f, n);
+    ASSERT_EQ((float)n, af::sum<float>(ones));
+    ASSERT_EQ((double)n, af::sum<double>(ones));
+    ASSERT_NEAR(std::sqrt((double)n), af::norm(ones), 1e-3);
+}

@@ -199,6 +199,49 @@ struct reduce_all {
     }
 };
 
+// Summing every element in one pass loses the low-order bits once the
+// running total is large (1e9 ones summed as float stops at 2^24), so the
+// add reduction carries a Kahan correction term. See #3571.
+template<typename Ti, typename To>
+struct reduce_all<af_add_t, Ti, To> {
+    common::Transform<data_t<Ti>, compute_t<To>, af_add_t> transform;
+
+    void operator()(Param<To> out, CParam<Ti> in, bool change_nan,
+                    double nanval) {
+        af::dim4 dims            = in.dims();
+        af::dim4 strides         = in.strides();
+        const data_t<Ti> *inPtr  = in.get();
+        data_t<To> *const outPtr = out.get();
+
+        compute_t<To> out_val = common::Binary<compute_t<To>, af_add_t>::init();
+        compute_t<To> correction = compute_t<To>(0);
+
+        for (dim_t l = 0; l < dims[3]; l++) {
+            dim_t off3 = l * strides[3];
+            for (dim_t k = 0; k < dims[2]; k++) {
+                dim_t off2 = k * strides[2];
+                for (dim_t j = 0; j < dims[1]; j++) {
+                    dim_t off1 = j * strides[1];
+                    for (dim_t i = 0; i < dims[0]; i++) {
+                        dim_t idx = i + off1 + off2 + off3;
+
+                        compute_t<To> in_val = transform(inPtr[idx]);
+                        if (change_nan) {
+                            in_val = IS_NAN(in_val) ? nanval : in_val;
+                        }
+                        compute_t<To> y = in_val - correction;
+                        compute_t<To> t = out_val + y;
+                        correction      = (t - out_val) - y;
+                        out_val         = t;
+                    }
+                }
+            }
+        }
+
+        *outPtr = data_t<To>(out_val);
+    }
+};
+
 }  // namespace kernel
 }  // namespace cpu
 }  // namespace arrayfire
