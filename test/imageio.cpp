@@ -391,3 +391,34 @@ TEST(ImageIONative, SaveLoadImageNative16ColorCPP) {
 TEST(ImageIONative, SaveLoadImageNative16GrayCPP) {
     saveLoadImageNativeCPPTest<ushort>(dim4(24, 32, 1, 1));
 }
+
+// saveImage read the channel buffers back as float whatever the input type,
+// so a u8 (or f64) image was written as garbage; every real type must round
+// trip through a PNG (#3544).
+TEST(ImageIO, SaveNonFloatTypes_ISSUE_3544) {
+    IMAGEIO_ENABLED_CHECK();
+
+    const int rows = 8, cols = 8;
+    vector<float> gold(rows * cols * 3);
+    for (size_t i = 0; i < gold.size(); i++) { gold[i] = float((i * 7) % 256); }
+    array reference(rows, cols, 3, gold.data());
+
+    const af::dtype types[] = {u8, u16, s32, u32, f64, s16};
+    for (af::dtype ty : types) {
+        if (ty == f64 && !af::isDoubleAvailable(af::getDevice())) { continue; }
+        array input = reference.as(ty);
+        std::string imagename = "SaveType" + std::to_string(int(ty)) + "_" +
+                                getTestName() + "_" + getBackendName(true) +
+                                ".png";
+        saveImage(imagename.c_str(), input);
+        array out = loadImage(imagename.c_str(), true);
+        ASSERT_ARRAYS_EQ(reference, out) << "type " << int(ty);
+
+        // grayscale, through the in-memory path
+        array gray = reference(span, span, 0).as(ty);
+        void *mem  = saveImageMem(gray, AF_FIF_PNG);
+        array back = loadImageMem(mem);
+        deleteImageMem(mem);
+        ASSERT_ARRAYS_EQ(reference(span, span, 0), back) << "type " << int(ty);
+    }
+}

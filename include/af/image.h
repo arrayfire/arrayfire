@@ -42,7 +42,9 @@ AFAPI array loadImage(const char* filename, const bool is_color=false);
     C++ Interface for saving an image
 
     \param[in] filename is name of file to be loaded
-    \param[in] in is the arrayfire array to be saved as an image
+    \param[in] in is the arrayfire array to be saved as an image. Any real
+               type is accepted; values are expected in [0, 255], and an
+               array whose maximum is at most 1 is scaled by 255
 
     \ingroup imageio_func_save
 */
@@ -69,7 +71,9 @@ AFAPI array loadImageMem(const void *ptr);
 /**
     C++ Interface for saving an image to memory
 
-    \param[in] in is the arrayfire array to be saved as an image
+    \param[in] in is the arrayfire array to be saved as an image. Any real
+               type is accepted; values are expected in [0, 255], and an
+               array whose maximum is at most 1 is scaled by 255
     \param[in] format is the type of image to create in memory. The enum borrows from
     the FREE_IMAGE_FORMAT enum of FreeImage. Other values not included in imageFormat
     but included in FREE_IMAGE_FORMAT can also be passed to this function.
@@ -907,7 +911,9 @@ extern "C" {
         C Interface for saving an image
 
         \param[in] filename is name of file to be loaded
-        \param[in] in is the arrayfire array to be saved as an image
+        \param[in] in is the arrayfire array to be saved as an image. Any real
+               type is accepted; values are expected in [0, 255], and an
+               array whose maximum is at most 1 is scaled by 255
         \return     \ref AF_SUCCESS if the color transformation is successful,
         otherwise an appropriate error code is returned.
 
@@ -934,7 +940,9 @@ extern "C" {
         C Interface for saving an image to memory using FreeImage
 
         \param[out] ptr is the FIMEMORY pointer created by FreeImage.
-        \param[in] in is the arrayfire array to be saved as an image
+        \param[in] in is the arrayfire array to be saved as an image. Any real
+               type is accepted; values are expected in [0, 255], and an
+               array whose maximum is at most 1 is scaled by 255
         \param[in] format is the type of image to create in memory. The enum borrows from
         the FREE_IMAGE_FORMAT enum of FreeImage. Other values not included in af_image_format
         but included in FREE_IMAGE_FORMAT can also be passed to this function.
