@@ -50,7 +50,7 @@ class BinaryNode : public TNode<compute_t<To>> {
         m_op.eval(this->m_val, lhs->m_val, rhs->m_val, lim);
     }
 
-    void calc(int idx, int lim) final {
+    void calc(dim_t idx, int lim) final {
         UNUSED(idx);
         auto lhs = static_cast<TNode<compute_t<Ti>> *>(m_children[0].get());
         auto rhs = static_cast<TNode<compute_t<Ti>> *>(m_children[1].get());

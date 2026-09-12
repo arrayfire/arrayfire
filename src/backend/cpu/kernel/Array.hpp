@@ -157,11 +157,12 @@ void evalMultiple(std::vector<Param<T>> arrays,
     int num_nodes        = node_clones.size();
     int num_output_nodes = cloned_output_nodes.size();
     if (is_linear) {
-        int num = arrays[0].dims().elements();
-        int cnum =
-            jit::VECTOR_LENGTH * std::ceil(double(num) / jit::VECTOR_LENGTH);
-        for (int i = 0; i < cnum; i += jit::VECTOR_LENGTH) {
-            int lim = std::min(jit::VECTOR_LENGTH, num - i);
+        // dim_t throughout: arrays past 2^31 elements were silently left
+        // unevaluated when this counted in int (#3571)
+        const dim_t num = arrays[0].dims().elements();
+        for (dim_t i = 0; i < num; i += jit::VECTOR_LENGTH) {
+            int lim = static_cast<int>(
+                std::min<dim_t>(jit::VECTOR_LENGTH, num - i));
             for (int n = 0; n < num_nodes; n++) {
                 node_clones[n]->calc(i, lim);
             }
