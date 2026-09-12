@@ -595,6 +595,16 @@ af_err af_save_image(const char* filename, const af_array in_) {
             in = (in_);
         }
 
+        // The channel buffers below are read back as float, so convert
+        // whatever type was passed in (#3544: u8 input saved as zeros).
+        if (getInfo(in).getType() != f32) {
+            af_array in32 = 0;
+            AF_CHECK(af_cast(&in32, in, f32));
+            if (free_in) { AF_CHECK(af_release_array(in)); }
+            in      = in32;
+            free_in = true;
+        }
+
         // FI = row major | AF = column major
         uint nDstPitch = _.FreeImage_GetPitch(pResultBitmap.get());
         uchar* pDstLine =
@@ -908,6 +918,16 @@ af_err af_save_image_memory(void** ptr, const af_array in_,
             free_in = true;
         } else {
             in = in_;
+        }
+
+        // The channel buffers below are read back as float, so convert
+        // whatever type was passed in (#3544: u8 input saved as zeros).
+        if (getInfo(in).getType() != f32) {
+            af_array in32 = 0;
+            AF_CHECK(af_cast(&in32, in, f32));
+            if (free_in) { AF_CHECK(af_release_array(in)); }
+            in      = in32;
+            free_in = true;
         }
 
         // FI = row major | AF = column major
