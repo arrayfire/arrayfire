@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <common/dispatch.hpp>
+#include <cuda.h>
 #include <debug_cuda.hpp>
 #include <err_cuda.hpp>
 #include <math.hpp>
@@ -341,7 +342,11 @@ __global__ static void update_equiv(arrayfire::cuda::Param<T> equiv_map,
 }
 
 template<typename T>
+#if CUDA_VERSION < 13000
 struct clamp_to_one : public thrust::unary_function<T, T> {
+#else
+struct clamp_to_one {
+#endif
     __host__ __device__ T operator()(const T& in) const {
         return (in >= (T)1) ? (T)1 : in;
     }

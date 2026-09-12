@@ -47,6 +47,7 @@
 #include <string>
 #include <thread>
 #include <utility>
+#include <vector>
 
 using arrayfire::common::fromCudaVersion;
 using arrayfire::common::getEnvVar;
@@ -91,6 +92,7 @@ struct ToolkitDriverVersions {
 
 // clang-format off
 static const int jetsonComputeCapabilities[] = {
+    11000,
     8070,
     7020,
     6020,
@@ -100,7 +102,12 @@ static const int jetsonComputeCapabilities[] = {
 // clang-format on
 
 // clang-format off
+// Only consulted when NVRTC cannot report its supported architectures
+// (CUDA < 11.2). Newer rows deliberately stay at 9.0: compute_90 PTX JITs on
+// every later device, which is the safe answer for a fallback.
 static const cuNVRTCcompute Toolkit2MaxCompute[] = {
+    {13010, 9, 0, 0},
+    {13000, 9, 0, 0},
     {12090, 9, 0, 0},
     {12080, 9, 0, 0},
     {12070, 9, 0, 0},
@@ -147,6 +154,11 @@ struct ComputeCapabilityToStreamingProcessors {
 // clang-format off
 static const ToolkitDriverVersions
     CudaToDriverVersion[] = {
+        // NVIDIA stopped publishing a Windows minimum with CUDA 13 (the
+        // display driver is no longer bundled with the toolkit). The Linux
+        // floor of the same driver branch (R580 / R590) is used for both.
+        {13010, 590.44f, 590.44f},
+        {13000, 580.65f, 580.65f},
         {12090, 525.60f, 528.33f},
         {12080, 525.60f, 528.33f},
         {12070, 525.60f, 528.33f},
@@ -177,16 +189,20 @@ static const ToolkitDriverVersions
         {7000,  346.46f, 347.62f}};
 // clang-format on
 
-// Vector of minimum supported compute versions for CUDA toolkit (i+1).*
-// where i is the index of the vector
-static const std::array<int, 12> minSV{{1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 5}};
+// Minimum supported compute capability, encoded as major * 10 + minor, for
+// CUDA toolkit (i+1).* where i is the index into the array. CUDA 13 dropped
+// everything below Turing (7.5), which is the first floor with a non-zero
+// minor version.
+static const std::array<int, 13> minSV{
+    {10, 10, 10, 10, 10, 10, 20, 20, 30, 30, 30, 50, 75}};
 
 static ComputeCapabilityToStreamingProcessors gpus[] = {
     {0x10, 8},   {0x11, 8},   {0x12, 8},   {0x13, 8},   {0x20, 32},
     {0x21, 48},  {0x30, 192}, {0x32, 192}, {0x35, 192}, {0x37, 192},
     {0x50, 128}, {0x52, 128}, {0x53, 128}, {0x60, 64},  {0x61, 128},
     {0x62, 128}, {0x70, 64},  {0x75, 64},  {0x80, 64},  {0x86, 128},
-    {0x87, 128}, {0x89, 128}, {0x90, 128}, {-1, -1},
+    {0x87, 128}, {0x89, 128}, {0x90, 128}, {0xA0, 128}, {0xA3, 128},
+    {0xB0, 128}, {0xC0, 128}, {0xC1, 128}, {-1, -1},
 };
 
 // pulled from CUTIL from CUDA SDK
@@ -202,6 +218,7 @@ static inline int compute2cores(unsigned major, unsigned minor) {
 
 static inline int getMinSupportedCompute(int cudaMajorVer) {
     int CVSize = static_cast<int>(minSV.size());
+    if (cudaMajorVer < 1) { return minSV[0]; }
     return (cudaMajorVer > CVSize ? minSV[CVSize - 1]
                                   : minSV[cudaMajorVer - 1]);
 }
@@ -213,36 +230,59 @@ bool isEmbedded(pair<int, int> compute) {
                 end(jetsonComputeCapabilities), version);
 }
 
-bool checkDeviceWithRuntime(int runtime, pair<int, int> compute) {
-    auto rt = find_if(
-        begin(Toolkit2MaxCompute), end(Toolkit2MaxCompute),
-        [runtime](cuNVRTCcompute c) { return c.cudaVersion == runtime; });
-    if (rt == end(Toolkit2MaxCompute)) {
-        spdlog::get("platform")
-            ->warn(
-                "CUDA runtime version({}) not recognized. Please "
-                "create an issue or a pull request on the ArrayFire repository "
-                "to update the Toolkit2MaxCompute array with this version of "
-                "the CUDA Runtime. Continuing.",
-                fromCudaVersion(runtime));
-        return true;
-    }
-
-    if (rt->major >= compute.first) {
-        if (rt->major == compute.first) {
-            return rt->minor >= compute.second;
-        } else {
-            return true;
-        }
-    } else {
+#if CUDART_VERSION >= 11020
+/// Asks NVRTC which architectures it can compile for and lowers \p compute to
+/// the highest of them that is not above the device. Returns false when NVRTC
+/// cannot answer or when nothing it supports is at or below \p compute.
+static bool selectNvrtcCompute(pair<int, int> &compute) {
+    int numArchs = 0;
+    if (nvrtcGetNumSupportedArchs(&numArchs) != NVRTC_SUCCESS ||
+        numArchs <= 0) {
         return false;
     }
+    std::vector<int> archs(static_cast<size_t>(numArchs));
+    if (nvrtcGetSupportedArchs(archs.data()) != NVRTC_SUCCESS) { return false; }
+    // Entries are major * 10 + minor, sorted in ascending order
+    const int wanted = compute.first * 10 + compute.second;
+    int best         = -1;
+    for (int arch : archs) {
+        if (arch <= wanted && arch > best) { best = arch; }
+    }
+    if (best < 0) { return false; }
+    compute = make_pair(best / 10, best % 10);
+    return true;
 }
+#endif
 
 /// Check for compatible compute version based on runtime cuda toolkit version
 void checkAndSetDevMaxCompute(pair<int, int> &computeCapability) {
     auto originalCompute = computeCapability;
-    int rtCudaVer        = 0;
+
+#if CUDART_VERSION >= 11020
+    // NVRTC knows exactly which architectures it can target. That also
+    // covers gaps a single "maximum" cannot express, such as CUDA 12.8
+    // supporting 10.0 and 12.0 but neither 10.3 nor 11.0. The table lookup
+    // below is only reached when NVRTC cannot answer.
+    {
+        pair<int, int> target = computeCapability;
+        if (selectNvrtcCompute(target)) {
+            if (target != originalCompute) {
+                spdlog::get("platform")
+                    ->warn(
+                        "The compute capability of the current device({}.{}) "
+                        "is not a target supported by the CUDA runtime "
+                        "ArrayFire was built with. Using {}.{} for JIT "
+                        "compilation kernels.",
+                        originalCompute.first, originalCompute.second,
+                        target.first, target.second);
+            }
+            computeCapability = target;
+            return;
+        }
+    }
+#endif
+
+    int rtCudaVer = 0;
     CUDA_CHECK(cudaRuntimeGetVersion(&rtCudaVer));
     auto tkitMaxCompute = find_if(
         begin(Toolkit2MaxCompute), end(Toolkit2MaxCompute),
@@ -250,15 +290,13 @@ void checkAndSetDevMaxCompute(pair<int, int> &computeCapability) {
 
     bool embeddedDevice = isEmbedded(computeCapability);
 
-    // If runtime cuda version is found in toolkit array
-    // check for max possible compute for that cuda version
-    if (tkitMaxCompute != end(Toolkit2MaxCompute) &&
-        computeCapability.first >= tkitMaxCompute->major) {
-        int minorVersion = embeddedDevice ? tkitMaxCompute->embedded_minor
-                                          : tkitMaxCompute->minor;
-
-        if (computeCapability.second > minorVersion) {
-            computeCapability = make_pair(tkitMaxCompute->major, minorVersion);
+    if (tkitMaxCompute != end(Toolkit2MaxCompute)) {
+        // Runtime is in the table: never target above its maximum
+        const int minorVersion = embeddedDevice ? tkitMaxCompute->embedded_minor
+                                                : tkitMaxCompute->minor;
+        const auto maxCompute  = make_pair(tkitMaxCompute->major, minorVersion);
+        if (computeCapability > maxCompute) {
+            computeCapability = maxCompute;
             spdlog::get("platform")
                 ->warn(
                     "The compute capability for the current device({}.{}) "
@@ -270,14 +308,14 @@ void checkAndSetDevMaxCompute(pair<int, int> &computeCapability) {
                     computeCapability.first, computeCapability.second,
                     computeCapability.first, computeCapability.second);
         }
-    } else if (computeCapability.first >= Toolkit2MaxCompute[0].major) {
-        // If runtime cuda version is NOT found in toolkit array
-        // use the top most toolkit max compute
-        int minorVersion = embeddedDevice ? tkitMaxCompute->embedded_minor
-                                          : tkitMaxCompute->minor;
-        if (computeCapability.second > minorVersion) {
-            computeCapability =
-                make_pair(Toolkit2MaxCompute[0].major, minorVersion);
+    } else {
+        // Runtime is not in the table: use the newest entry's maximum
+        const cuNVRTCcompute &latest = Toolkit2MaxCompute[0];
+        const int minorVersion =
+            embeddedDevice ? latest.embedded_minor : latest.minor;
+        const auto maxCompute = make_pair(latest.major, minorVersion);
+        if (computeCapability > maxCompute) {
+            computeCapability = maxCompute;
             spdlog::get("platform")
                 ->warn(
                     "CUDA runtime version({}) not recognized. Targeting "
@@ -291,7 +329,9 @@ void checkAndSetDevMaxCompute(pair<int, int> &computeCapability) {
                     computeCapability.second, computeCapability.first,
                     computeCapability.second);
         }
-    } else if (computeCapability.first < 3) {
+    }
+
+    if (computeCapability.first < 3) {
         // all compute versions prior to Kepler, we don't support
         // don't change the computeCapability.
         spdlog::get("platform")
@@ -594,13 +634,19 @@ DeviceManager::DeviceManager()
         for (int i = 0; i < nDevices; i++) {
             cudaDevice_t dev{};
             CUDA_CHECK(cudaGetDeviceProperties(&dev.prop, i));
-            if (dev.prop.major < getMinSupportedCompute(cudaMajorVer)) {
+            if (dev.prop.major * 10 + dev.prop.minor <
+                getMinSupportedCompute(cudaMajorVer)) {
                 AF_TRACE("Unsuppored device: {}", dev.prop.name);
                 continue;
             } else {
+                // cudaDeviceProp::clockRate was removed in CUDA 13. The
+                // device attribute is available on every supported toolkit.
+                int clockRateKHz = 0;
+                CUDA_CHECK(cudaDeviceGetAttribute(&clockRateKHz,
+                                                  cudaDevAttrClockRate, i));
                 dev.flops = static_cast<size_t>(dev.prop.multiProcessorCount) *
                             compute2cores(dev.prop.major, dev.prop.minor) *
-                            dev.prop.clockRate;
+                            static_cast<size_t>(clockRateKHz);
                 dev.nativeId = i;
                 AF_TRACE(
                     "Found device: {} (sm_{}{}) ({:0.3} GB | ~{} GFLOPs | {} "
