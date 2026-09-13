@@ -598,9 +598,13 @@ DeviceManager::DeviceManager()
                 AF_TRACE("Unsuppored device: {}", dev.prop.name);
                 continue;
             } else {
+                int clock_rate_khz = 0;
+                CUDA_CHECK(
+                    cudaDeviceGetAttribute(&clock_rate_khz, cudaDevAttrClockRate,
+                                            i));
                 dev.flops = static_cast<size_t>(dev.prop.multiProcessorCount) *
                             compute2cores(dev.prop.major, dev.prop.minor) *
-                            dev.prop.clockRate;
+                            static_cast<size_t>(clock_rate_khz);
                 dev.nativeId = i;
                 AF_TRACE(
                     "Found device: {} (sm_{}{}) ({:0.3} GB | ~{} GFLOPs | {} "

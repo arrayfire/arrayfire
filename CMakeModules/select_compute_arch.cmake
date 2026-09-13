@@ -7,7 +7,7 @@
 #      ARCH_AND_PTX : NAME | NUM.NUM | NUM.NUM(NUM.NUM) | NUM.NUM+PTX
 #      NAME: Fermi Kepler Maxwell Kepler+Tegra Kepler+Tesla Maxwell+Tegra Pascal Volta Turing Ampere
 #      NUM: Any number. Only those pairs are currently accepted by NVCC though:
-#            2.0 2.1 3.0 3.2 3.5 3.7 5.0 5.2 5.3 6.0 6.2 7.0 7.2 7.5 8.0 8.6 9.0
+#            2.0 2.1 3.0 3.2 3.5 3.7 5.0 5.2 5.3 6.0 6.2 7.0 7.2 7.5 8.0 8.6 8.9 9.0 12.0
 #      Returns LIST of flags to be added to CUDA_NVCC_FLAGS in ${out_variable}
 #      Additionally, sets ${out_variable}_readable to the resulting numeric list
 #      Example:
@@ -229,7 +229,7 @@ function(CUDA_SELECT_NVCC_ARCH_FLAGS out_variable)
       set(add_ptx TRUE)
       set(arch_name ${CMAKE_MATCH_1})
     endif()
-    if(arch_name MATCHES "^([0-9]\\.[0-9](\\([0-9]\\.[0-9]\\))?)$")
+    if(arch_name MATCHES "^([0-9]+\\.[0-9]+(\\([0-9]+\\.[0-9]+\\))?)$")
       set(arch_bin ${CMAKE_MATCH_1})
       set(arch_ptx ${arch_bin})
     else()

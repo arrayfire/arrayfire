@@ -341,7 +341,7 @@ __global__ static void update_equiv(arrayfire::cuda::Param<T> equiv_map,
 }
 
 template<typename T>
-struct clamp_to_one : public thrust::unary_function<T, T> {
+struct clamp_to_one {
     __host__ __device__ T operator()(const T& in) const {
         return (in >= (T)1) ? (T)1 : in;
     }
