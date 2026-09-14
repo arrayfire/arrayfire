@@ -43,6 +43,22 @@ void af_get_last_error(char **str, dim_t *len) {
         void *vfn    = LOAD_SYMBOL();
         af_func func = nullptr;
         memcpy(&func, &vfn, sizeof(void *));
+
+        // LOAD_SYMBOL() returns null when no backend library is loaded or
+        // the symbol cannot be resolved. Unlike CALL(), this function
+        // returns void and cannot report AF_ERR_LOAD_LIB, so hand back an
+        // empty message the way the C API does, rather than calling
+        // through a null pointer. Callers pass the string straight to
+        // printf-style formatting, so it must not be NULL.
+        if (func == nullptr) {
+            void *empty = nullptr;
+            af_alloc_host(&empty, sizeof(char));
+            memcpy(str, &empty, sizeof(void *));
+            (*str)[0] = '\0';
+            if (len) { *len = 0; }
+            return;
+        }
+
         func(str, len);
     }
 }
