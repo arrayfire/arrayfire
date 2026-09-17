@@ -37,8 +37,8 @@ kernel void meanDim(global To *oData, KParam oInfo,
              ids[1] * oInfo.strides[1] + ids[0] + oInfo.offset;
 
 #ifdef OUTPUT_WEIGHT
-    owData += ids[3] * oInfo.strides[3] + ids[2] * oInfo.strides[2] +
-              ids[1] * oInfo.strides[1] + ids[0] + oInfo.offset;
+    owData += ids[3] * owInfo.strides[3] + ids[2] * owInfo.strides[2] +
+              ids[1] * owInfo.strides[1] + ids[0] + owInfo.offset;
 #endif
     const uint id_dim_out = ids[kDim];
 
@@ -48,8 +48,10 @@ kernel void meanDim(global To *oData, KParam oInfo,
              ids[1] * iInfo.strides[1] + ids[0] + iInfo.offset;
 
 #ifdef INPUT_WEIGHT
-    iwData += ids[3] * iInfo.strides[3] + ids[2] * iInfo.strides[2] +
-              ids[1] * iInfo.strides[1] + ids[0] + iInfo.offset;
+    iwData += ids[3] * iwInfo.strides[3] + ids[2] * iwInfo.strides[2] +
+              ids[1] * iwInfo.strides[1] + ids[0] + iwInfo.offset;
+
+    const uint iwstride_dim = iwInfo.strides[kDim];
 #endif
 
     const uint id_dim_in   = ids[kDim];
@@ -76,17 +78,19 @@ kernel void meanDim(global To *oData, KParam oInfo,
     const uint id_dim_in_start = id_dim_in + group_dim * get_local_size(1);
 
 #ifdef INPUT_WEIGHT
+    To correction = (To)(0);
     for (int id = id_dim_in_start; is_valid && (id < iInfo.dims[kDim]);
          id += group_dim * get_local_size(1)) {
         iData  = iData + group_dim * get_local_size(1) * istride_dim;
-        iwData = iwData + group_dim * get_local_size(1) * istride_dim;
-        binOp(&out_val, &out_wt, transform(*iData), *iwData);
+        iwData = iwData + group_dim * get_local_size(1) * iwstride_dim;
+        binOpWithCorr(&correction, &out_val, &out_wt, transform(*iData), *iwData);
     }
 #else
+    To correction = (To)(0);
     for (int id = id_dim_in_start; is_valid && (id < iInfo.dims[kDim]);
          id += group_dim * get_local_size(1)) {
         iData = iData + group_dim * get_local_size(1) * istride_dim;
-        binOp(&out_val, &out_wt, transform(*iData), one_Tw);
+        binOpWithCorr(&correction, &out_val, &out_wt, transform(*iData), one_Tw);
     }
 #endif
 

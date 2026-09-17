@@ -32,15 +32,70 @@ namespace oneapi {
 
 namespace kernel {
 
+// Calculates the weighted mean of 2 items with similar weight
+// INPUT
+// *lhs:    value (init 0. or first value)
+// *l_wt:   weight (init 0. or first weight)
+// rhs :    extra value
+// r_wt:    extra weight
+// OUTPUT
+// *lhs:    cumulative mean
+// *l_wt:   cumulative weight
+//
 template<typename To, typename Tw>
 void stable_mean(To *lhs, Tw *l_wt, To rhs, Tw r_wt) {
-    if (((*l_wt) != (Tw)0) || (r_wt != (Tw)0)) {
-        Tw l_scale = (*l_wt);
-        (*l_wt) += r_wt;
+    Tw l_scale = (*l_wt);
+    (*l_wt) += (r_wt);
+    if (((*l_wt) != (Tw)0) || ((r_wt) != (Tw)0)) {
         l_scale = l_scale / (*l_wt);
 
-        Tw r_scale = r_wt / (*l_wt);
-        (*lhs)     = (l_scale * *lhs) + (r_scale * rhs);
+        Tw r_scale = (r_wt) / (*l_wt);
+        (*lhs)     = (l_scale * (*lhs)) + (r_scale * (rhs));
+
+        /* Alternative, although bigger error for values of same size
+        if (r_wt != (Tw)0) {
+            (*l_wt) += r_wt;
+            Tw r_scale = r_wt / (*l_wt);
+            (*lhs)     = (*lhs) + (rhs - (*lhs)) * r_scale;
+        }
+        */
+    }
+}
+
+// Calculates the weighted mean of a series of items in 1 pass
+// INPUT
+// *c:      estimated correction from previous item (init=0.)
+// *lhs:    value (init=0.0 or first value)
+// *l_wt:   weight (init=0.0 or first weight)
+// rhs :    extra value
+// r_wt:    extra weight
+// OUTPUT
+// *c:      estimated correction for next item
+// *lhs:    cumulative mean
+// *l_wt:   cumulative weight
+//
+// Since only 1 pass is used, the rounding errors will become important because
+// the longer the serie the larger the difference between the 2 numbers to sum
+// See: https://en.wikipedia.org/wiki/Kahan_summation_algorithm to reduce this
+// error
+template<typename To, typename Tw>
+void stable_mean(To *c, To *lhs, Tw *l_wt, To rhs, Tw r_wt) {
+    (*l_wt) += (r_wt);
+    if (((*l_wt) != (Tw)0) || ((r_wt) != (Tw)0)) {
+        // (*lhs) = (*lhs) + (rhs - (*lhs)) * r_wt / (*l_wt);
+
+        // *c is zero for the first time around
+        To y = ((rhs) - (*lhs)) * ((r_wt) / (*l_wt)) - (*c);
+        // Alas, (*lhs) is big, y small, so low-order digits of y are lost
+        To t = (*lhs) + y;
+        // (t - (*lhs)) cancels the high-order part of y
+        // subtracting y recovers negative (low part of y)
+        (*c) = (t - (*lhs)) - y;
+        // Algebraically, *c should always be zero.  Beware overly-agressive
+        // optimizing compilers!
+        (*lhs) = t;
+        // Next time around, the lost low part will be added to y in a fresh
+        // attempt
     }
 }
 
@@ -92,11 +147,19 @@ class meanDimKernelSMEM {
 
         uint ooffset = ids[3] * oInfo_.strides[3] + ids[2] * oInfo_.strides[2] +
                        ids[1] * oInfo_.strides[1] + ids[0] + oInfo_.offset;
+        optr += ooffset;
+
+        Tw *owptr = nullptr;
+        if (output_weight_) {
+            uint owoffset =
+                ids[3] * owInfo_.strides[3] + ids[2] * owInfo_.strides[2] +
+                ids[1] * owInfo_.strides[1] + ids[0] + owInfo_.offset;
+            owptr = owt_.get_pointer() + owoffset;
+        }
         // There is only one element per block for out
         // There are blockDim.y elements per block for in
         // Hence increment ids[dim] just after offseting out and before
         // offsetting in
-        optr += ooffset;
 
         const uint blockIdx_dim = ids[dim];
         ids[dim]                = ids[dim] * g.get_local_range(1) + lidy;
@@ -106,13 +169,16 @@ class meanDimKernelSMEM {
         iptr += ioffset;
 
         const Tw *iwptr = nullptr;
-        Tw *owptr       = nullptr;
+        if (input_weight_) {
+            uint iwoffset =
+                ids[3] * iwInfo_.strides[3] + ids[2] * iwInfo_.strides[2] +
+                ids[1] * iwInfo_.strides[1] + ids[0] + iwInfo_.offset;
+            iwptr = iwt_.get_pointer() + iwoffset;
+        }
 
-        if (output_weight_) owptr = owt_.get_pointer() + ooffset;
-        if (input_weight_) iwptr = iwt_.get_pointer() + ioffset;
-
-        const uint id_dim_in   = ids[dim];
-        const uint istride_dim = iInfo_.strides[dim];
+        const uint id_dim_in    = ids[dim];
+        const uint istride_dim  = iInfo_.strides[dim];
+        const uint iwstride_dim = iwInfo_.strides[dim];
 
         bool is_valid = (ids[0] < iInfo_.dims[0]) &&
                         (ids[1] < iInfo_.dims[1]) &&
@@ -125,7 +191,7 @@ class meanDimKernelSMEM {
 
         if (is_valid && id_dim_in < iInfo_.dims[dim]) {
             val = transform(*iptr);
-            if (iwptr) {
+            if (input_weight_) {
                 weight = *iwptr;
             } else {
                 weight = (Tw)1;
@@ -134,19 +200,19 @@ class meanDimKernelSMEM {
 
         const uint id_dim_in_start =
             id_dim_in + offset_dim_ * g.get_local_range(1);
+        compute_t<To> correction = scalar<compute_t<To>>(0);
 
         for (int id = id_dim_in_start; is_valid && (id < iInfo_.dims[dim]);
              id += offset_dim_ * g.get_local_range(1)) {
             iptr = iptr + offset_dim_ * g.get_local_range(1) * istride_dim;
             if (input_weight_) {
                 iwptr =
-                    iwptr + offset_dim_ * g.get_local_range(1) * istride_dim;
-                stable_mean(&val, &weight, transform(*iptr),
+                    iwptr + offset_dim_ * g.get_local_range(1) * iwstride_dim;
+                stable_mean(&correction, &val, &weight, transform(*iptr),
                             compute_t<Tw>(*iwptr));
             } else {
-                // Faster version of stable_mean when iwptr is NULL
-                val    = val + (transform(*iptr) - val) / (weight + (Tw)1);
-                weight = weight + (Tw)1;
+                stable_mean(&correction, &val, &weight, transform(*iptr),
+                            compute_t<Tw>(1));
             }
         }
 
@@ -540,8 +606,7 @@ void mean_first(Param<To> out, Param<Ti> in, Param<Tw> iwt) {
                                     threads_x);
 
     if (blocks_x > 1) {
-        Param<Tw> owt;
-        owt.data = nullptr;
+        Array<Tw> owt = createEmptyArray<Tw>(dim4());
         mean_first_launcher<To, Tw, To>(out, owt, tmpOut, tmpWt, 1, blocks_y,
                                         threads_x);
     }
@@ -559,7 +624,7 @@ void mean_weighted(Param<To> out, Param<Ti> in, Param<Tw> iwt, int dim) {
 
 template<typename Ti, typename Tw, typename To>
 void mean(Param<To> out, Param<Ti> in, int dim) {
-    Param<Tw> dummy_weight;
+    Array<Tw> dummy_weight = createEmptyArray<Tw>(dim4());
     mean_weighted<Ti, Tw, To>(out, in, dummy_weight, dim);
 }
 
@@ -567,17 +632,17 @@ template<typename T, typename Tw>
 T mean_all_weighted(Param<T> in, Param<Tw> iwt) {
     uintl in_elements =
         in.info.dims[0] * in.info.dims[1] * in.info.dims[2] * in.info.dims[3];
-    // FIXME: Use better heuristics to get to the optimum number
-    if (in_elements > 4096) {
-        bool in_is_linear = (in.info.strides[0] == 1);
-        bool wt_is_linear = (iwt.info.strides[0] == 1);
-        for (int k = 1; k < 4; k++) {
-            in_is_linear &= (in.info.strides[k] ==
-                             (in.info.strides[k - 1] * in.info.dims[k - 1]));
-            wt_is_linear &= (iwt.info.strides[k] ==
-                             (iwt.info.strides[k - 1] * iwt.info.dims[k - 1]));
-        }
+    bool in_is_linear = in.info.strides[0] == 1;
+    bool wt_is_linear = iwt.info.strides[0] == 1;
+    for (int k = 1; k < 4; k++) {
+        in_is_linear &= (in.info.strides[k] ==
+                         (in.info.strides[k - 1] * in.info.dims[k - 1]));
+        wt_is_linear &= (iwt.info.strides[k] ==
+                         (iwt.info.strides[k - 1] * iwt.info.dims[k - 1]));
+    }
 
+    // FIXME: Use better heuristics to get to the optimum number
+    if (in_elements > 4096 || !in_is_linear || !wt_is_linear) {
         if (in_is_linear && wt_is_linear) {
             in.info.dims[0] = in_elements;
             for (int k = 1; k < 4; k++) {
@@ -610,21 +675,21 @@ T mean_all_weighted(Param<T> in, Param<Tw> iwt) {
 
         compute_t<T> val;
         auto tmpOut_get = tmpOut.get();
-        auto tmpWt_get = tmpWt.get();
+        auto tmpWt_get  = tmpWt.get();
         getQueue()
             .submit([&](sycl::handler &h) {
-                auto acc_in =
-                    tmpOut_get->get_host_access(h, sycl::read_only);
-                auto acc_wt =
-                    tmpWt_get->get_host_access(h, sycl::read_only);
+                auto acc_in = tmpOut_get->get_host_access(h, sycl::read_only);
+                auto acc_wt = tmpWt_get->get_host_access(h, sycl::read_only);
 
                 h.host_task([acc_in, acc_wt, tmp_elements, &val] {
                     val = static_cast<compute_t<T>>(acc_in[0]);
                     compute_t<Tw> weight =
                         static_cast<compute_t<Tw>>(acc_wt[0]);
+                    compute_t<T> correction = static_cast<compute_t<T>>(0);
 
                     for (int i = 1; i < tmp_elements; i++) {
-                        stable_mean(&val, &weight, compute_t<T>(acc_in[i]),
+                        stable_mean(&correction, &val, &weight,
+                                    compute_t<T>(acc_in[i]),
                                     compute_t<Tw>(acc_wt[i]));
                     }
                 });
@@ -639,13 +704,18 @@ T mean_all_weighted(Param<T> in, Param<Tw> iwt) {
                     h, sycl::range{in_elements}, sycl::read_only);
                 auto acc_wt = iwt.data->get_host_access(
                     h, sycl::range{in_elements}, sycl::read_only);
+                dim_t offset_in = in.info.offset;
+                dim_t offset_wt = iwt.info.offset;
 
-                h.host_task([acc_in, acc_wt, in_elements, &val]() {
-                    val                  = acc_in[0];
-                    compute_t<Tw> weight = acc_wt[0];
+                h.host_task([acc_in, offset_in, acc_wt, offset_wt, in_elements,
+                             &val]() {
+                    val                     = acc_in[offset_in];
+                    compute_t<Tw> weight    = acc_wt[offset_wt];
+                    compute_t<T> correction = static_cast<compute_t<T>>(0);
                     for (int i = 1; i < in_elements; i++) {
-                        stable_mean(&val, &weight, compute_t<T>(acc_in[i]),
-                                    compute_t<Tw>(acc_wt[i]));
+                        stable_mean(&correction, &val, &weight,
+                                    compute_t<T>(acc_in[i + offset_in]),
+                                    compute_t<Tw>(acc_wt[i + offset_wt]));
                     }
                 });
             })
@@ -688,7 +758,7 @@ To mean_all(Param<Ti> in) {
         Array<To> tmpOut = createEmptyArray<To>(outDims);
         Array<Tw> tmpCt  = createEmptyArray<Tw>(outDims);
 
-        Param<Tw> iwt;
+        Array<Tw> iwt = createEmptyArray<Tw>(dim4());
         mean_first_launcher<Ti, Tw, To>(tmpOut, tmpCt, in, iwt, blocks_x,
                                         blocks_y, threads_x);
 
@@ -696,20 +766,20 @@ To mean_all(Param<Ti> in) {
 
         compute_t<To> val;
         auto tmpOut_get = tmpOut.get();
-        auto tmpCt_get = tmpCt.get();
+        auto tmpCt_get  = tmpCt.get();
         getQueue()
             .submit([&](sycl::handler &h) {
-                auto out =
-                    tmpOut_get->get_host_access(h, sycl::read_only);
-                auto ct =
-                    tmpCt_get->get_host_access(h, sycl::read_only);
+                auto out = tmpOut_get->get_host_access(h, sycl::read_only);
+                auto ct  = tmpCt_get->get_host_access(h, sycl::read_only);
 
                 h.host_task([out, ct, tmp_elements, &val] {
                     val                  = static_cast<compute_t<To>>(out[0]);
                     compute_t<Tw> weight = static_cast<compute_t<Tw>>(ct[0]);
+                    compute_t<To> correction = scalar<compute_t<To>>(0);
 
                     for (int i = 1; i < tmp_elements; i++) {
-                        stable_mean(&val, &weight, compute_t<To>(out[i]),
+                        stable_mean(&correction, &val, &weight,
+                                    compute_t<To>(out[i]),
                                     compute_t<Tw>(ct[i]));
                     }
                 });
@@ -720,16 +790,19 @@ To mean_all(Param<Ti> in) {
         compute_t<To> val;
         getQueue()
             .submit([&](sycl::handler &h) {
-                auto acc_in =
-                    in.data->get_host_access(h, sycl::read_only);
-                h.host_task([acc_in, in_elements, &val]() {
+                auto acc_in     = in.data->get_host_access(h, sycl::read_only);
+                dim_t offset_in = in.info.offset;
+                h.host_task([acc_in, offset_in, in_elements, &val]() {
                     common::Transform<Ti, compute_t<To>, af_add_t> transform;
                     compute_t<Tw> count = static_cast<compute_t<Tw>>(1);
 
-                    val                  = transform(acc_in[0]);
-                    compute_t<Tw> weight = count;
-                    for (int i = 1; i < in_elements; i++) {
-                        stable_mean(&val, &weight, transform(acc_in[i]), count);
+                    val                      = transform(acc_in[offset_in]);
+                    compute_t<Tw> weight     = count;
+                    compute_t<To> correction = static_cast<compute_t<To>>(0);
+                    for (int i = 1 + offset_in; i < in_elements + offset_in;
+                         i++) {
+                        stable_mean(&correction, &val, &weight,
+                                    transform(acc_in[i]), count);
                     }
                 });
             })

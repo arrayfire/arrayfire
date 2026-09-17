@@ -63,32 +63,35 @@ Array<T> mean(const Array<T> &in, const Array<Tw> &wt, const int dim) {
 
 template<typename T, typename Tw>
 T mean(const Array<T> &in, const Array<Tw> &wt) {
-    using MeanOpT = kernel::MeanOp<compute_t<T>, compute_t<T>, compute_t<Tw>>;
+    using MeanOpT =
+        kernel::MeanOpWithCorrection<compute_t<T>, compute_t<T>, compute_t<Tw>>;
     in.eval();
     wt.eval();
     getQueue().sync();
 
-    af::dim4 dims    = in.dims();
-    af::dim4 strides = in.strides();
-    const T *inPtr   = in.get();
-    const Tw *wtPtr  = wt.get();
+    const af::dim4 &dims     = in.dims();
+    const af::dim4 &istrides = in.strides();
+    const af::dim4 &wstrides = wt.strides();
+    const T *inPtr           = in.get();
+    const Tw *wtPtr          = wt.get();
 
-    auto input  = compute_t<T>(inPtr[0]);
-    auto weight = compute_t<Tw>(wtPtr[0]);
-    MeanOpT Op(input, weight);
-
+    // Split workload in equal parts, to improve accuracy or larger arrays
+    MeanOpT Op(0, 0);
     for (dim_t l = 0; l < dims[3]; l++) {
-        dim_t off3 = l * strides[3];
+        dim_t ioff3 = l * istrides[3];
+        dim_t woff3 = l * wstrides[3];
 
         for (dim_t k = 0; k < dims[2]; k++) {
-            dim_t off2 = k * strides[2];
+            dim_t ioff2 = k * istrides[2];
+            dim_t woff2 = k * wstrides[2];
 
             for (dim_t j = 0; j < dims[1]; j++) {
-                dim_t off1 = j * strides[1];
+                dim_t ioff1 = j * istrides[1];
+                dim_t woff1 = j * wstrides[1];
 
                 for (dim_t i = 0; i < dims[0]; i++) {
-                    dim_t idx = i + off1 + off2 + off3;
-                    Op(compute_t<T>(inPtr[idx]), compute_t<Tw>(wtPtr[idx]));
+                    Op(compute_t<T>(inPtr[i + ioff1 + ioff2 + ioff3]),
+                       compute_t<Tw>(wtPtr[i + woff1 + woff2 + woff3]));
                 }
             }
         }
@@ -99,16 +102,16 @@ T mean(const Array<T> &in, const Array<Tw> &wt) {
 
 template<typename Ti, typename Tw, typename To>
 To mean(const Array<Ti> &in) {
-    using MeanOpT = kernel::MeanOp<compute_t<Ti>, compute_t<To>, compute_t<Tw>>;
+    using MeanOpT = kernel::MeanOpWithCorrection<compute_t<Ti>, compute_t<To>,
+                                                 compute_t<Tw>>;
     in.eval();
     getQueue().sync();
 
-    af::dim4 dims    = in.dims();
-    af::dim4 strides = in.strides();
-    const Ti *inPtr  = in.get();
+    const af::dim4 &dims    = in.dims();
+    const af::dim4 &strides = in.strides();
+    const Ti *inPtr         = in.get();
 
     MeanOpT Op(0, 0);
-
     for (dim_t l = 0; l < dims[3]; l++) {
         dim_t off3 = l * strides[3];
 
@@ -120,7 +123,7 @@ To mean(const Array<Ti> &in) {
 
                 for (dim_t i = 0; i < dims[0]; i++) {
                     dim_t idx = i + off1 + off2 + off3;
-                    Op(compute_t<Ti>(inPtr[idx]), 1);
+                    Op(compute_t<Ti>(inPtr[idx]), 1.);
                 }
             }
         }

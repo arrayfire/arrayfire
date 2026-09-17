@@ -39,13 +39,40 @@ namespace kernel {
 
 template<typename To, typename Tw>
 __device__ __host__ void stable_mean(To *lhs, Tw *l_wt, To rhs, Tw r_wt) {
-    if (((*l_wt) != (Tw)0) || (r_wt != (Tw)0)) {
-        Tw l_scale = (*l_wt);
-        (*l_wt) += r_wt;
+    Tw l_scale = (*l_wt);
+    (*l_wt) += (r_wt);
+    if (((*l_wt) != (Tw)0) || ((r_wt) != (Tw)0)) {
         l_scale = l_scale / (*l_wt);
 
-        Tw r_scale = r_wt / (*l_wt);
-        (*lhs)     = (l_scale * *lhs) + (r_scale * rhs);
+        Tw r_scale = (r_wt) / (*l_wt);
+        (*lhs)     = (l_scale * (*lhs)) + (r_scale * (rhs));
+    }
+}
+
+template<typename To, typename Tw>
+__device__ __host__ void stable_mean(To *c, To *lhs, Tw *l_wt, To rhs,
+                                     Tw r_wt) {
+    (*l_wt) += (r_wt);
+    if (((*l_wt) != (Tw)0) || ((r_wt) != (Tw)0)) {
+        // Since only 1 pass is used, the rounding errors will become important
+        // because the longer the serie the larger the difference between the 2
+        // numbers to sum See:
+        // https://en.wikipedia.org/wiki/Kahan_summation_algorithm to reduce
+        // this error
+        // (*lhs) = (*lhs) + (rhs - (*lhs)) * r_wt / (*l_wt);
+
+        // *c is zero for the first time around
+        To y = ((r_wt) / (*l_wt)) * ((rhs) - (*lhs)) - (*c);
+        // Alas, (*lhs) is big, y small, so low-order digits of y are lost
+        To t = (*lhs) + y;
+        // (t - (*lhs)) cancels the high-order part of y
+        // subtracting y recovers negative (low part of y)
+        (*c) = (t - (*lhs)) - y;
+        // Algebraically, *c should always be zero.  Beware overly-agressive
+        // optimizing compilers!
+        (*lhs) = t;
+        // Next time around, the lost low part will be added to y in a fresh
+        // attempt
     }
 }
 
@@ -74,24 +101,32 @@ __global__ static void mean_dim_kernel(Param<To> out, Param<Tw> owt,
 
     int ooffset = ids[3] * out.strides[3] + ids[2] * out.strides[2] +
                   ids[1] * out.strides[1] + ids[0];
+    optr += ooffset;
+    if (owptr != NULL) {
+        int owoffset = ids[3] * owt.strides[3] + ids[2] * owt.strides[2] +
+                       ids[1] * owt.strides[1] + ids[0];
+        owptr += owoffset;
+    }
+
     // There is only one element per block for out
     // There are blockDim.y elements per block for in
     // Hence increment ids[dim] just after offseting out and before offsetting
     // in
-    optr += ooffset;
-    if (owptr != NULL) owptr += ooffset;
-
     const uint blockIdx_dim = ids[dim];
-
-    ids[dim] = ids[dim] * blockDim.y + tidy;
+    ids[dim]                = ids[dim] * blockDim.y + tidy;
 
     int ioffset = ids[3] * in.strides[3] + ids[2] * in.strides[2] +
                   ids[1] * in.strides[1] + ids[0];
     iptr += ioffset;
-    if (iwptr != NULL) iwptr += ioffset;
+    if (iwptr != NULL) {
+        int iwoffset = ids[3] * iwt.strides[3] + ids[2] * iwt.strides[2] +
+                       ids[1] * iwt.strides[1] + ids[0];
+        iwptr += iwoffset;
+    }
 
-    const uint id_dim_in   = ids[dim];
-    const uint istride_dim = in.strides[dim];
+    const uint id_dim_in    = ids[dim];
+    const uint istride_dim  = in.strides[dim];
+    const uint iwstride_dim = iwt.strides[dim];
 
     bool is_valid = (ids[0] < in.dims[0]) && (ids[1] < in.dims[1]) &&
                     (ids[2] < in.dims[2]) && (ids[3] < in.dims[3]);
@@ -106,7 +141,7 @@ __global__ static void mean_dim_kernel(Param<To> out, Param<Tw> owt,
         if (iwptr != NULL) {
             weight = *iwptr;
         } else {
-            weight = (Tw)1;
+            weight = compute_t<Tw>(1);
         }
     }
 
@@ -115,16 +150,17 @@ __global__ static void mean_dim_kernel(Param<To> out, Param<Tw> owt,
     __shared__ compute_t<To> s_val[THREADS_X * DIMY];
     __shared__ compute_t<Tw> s_idx[THREADS_X * DIMY];
 
+    compute_t<To> correction = scalar<compute_t<To>>(0);
     for (int id = id_dim_in_start; is_valid && (id < in.dims[dim]);
          id += offset_dim * blockDim.y) {
         iptr = iptr + offset_dim * blockDim.y * istride_dim;
         if (iwptr != NULL) {
-            iwptr = iwptr + offset_dim * blockDim.y * istride_dim;
-            stable_mean(&val, &weight, transform(*iptr), compute_t<Tw>(*iwptr));
+            iwptr = iwptr + offset_dim * blockDim.y * iwstride_dim;
+            stable_mean(&correction, &val, &weight, transform(*iptr),
+                        compute_t<Tw>(*iwptr));
         } else {
-            // Faster version of stable_mean when iwptr is NULL
-            val    = val + (transform(*iptr) - val) / (weight + (Tw)1);
-            weight = weight + (Tw)1;
+            stable_mean(&correction, &val, &weight, transform(*iptr),
+                        compute_t<Tw>(1));
         }
     }
 
@@ -299,16 +335,16 @@ __global__ static void mean_first_kernel(Param<To> out, Param<Tw> owt,
     __shared__ compute_t<To> s_val[THREADS_PER_BLOCK];
     __shared__ compute_t<Tw> s_idx[THREADS_PER_BLOCK];
 
+    compute_t<To> correction = scalar<compute_t<To>>(0);
     if (iwptr != NULL) {
         for (int id = xid + DIMX; id < lim; id += DIMX) {
-            stable_mean(&val, &weight, transform(iptr[id]),
+            stable_mean(&correction, &val, &weight, transform(iptr[id]),
                         compute_t<Tw>(iwptr[id]));
         }
     } else {
         for (int id = xid + DIMX; id < lim; id += DIMX) {
-            // Faster version of stable_mean when iwptr is NULL
-            val    = val + (transform(iptr[id]) - val) / (weight + (Tw)1);
-            weight = weight + (Tw)1;
+            stable_mean(&correction, &val, &weight, transform(iptr[id]),
+                        compute_t<Tw>(1));
         }
     }
 
@@ -406,8 +442,7 @@ void mean_first(Param<To> out, CParam<Ti> in, CParam<Tw> iwt) {
                                     threads_x);
 
     if (blocks_x > 1) {
-        Param<Tw> owt;
-        owt.ptr = NULL;
+        Array<Tw> owt = createEmptyArray<Tw>(dim4());
         mean_first_launcher<To, Tw, To>(out, owt, tmpOut, tmpWt, 1, blocks_y,
                                         threads_x);
     }
@@ -425,7 +460,7 @@ void mean_weighted(Param<To> out, CParam<Ti> in, CParam<Tw> iwt, int dim) {
 
 template<typename Ti, typename Tw, typename To>
 void mean(Param<To> out, CParam<Ti> in, int dim) {
-    Param<Tw> dummy_weight;
+    Array<Tw> dummy_weight = createEmptyArray<Tw>(dim4());
     mean_weighted<Ti, Tw, To>(out, in, dummy_weight, dim);
 }
 
@@ -433,17 +468,16 @@ template<typename T, typename Tw>
 T mean_all_weighted(CParam<T> in, CParam<Tw> iwt) {
     int in_elements = in.dims[0] * in.dims[1] * in.dims[2] * in.dims[3];
 
-    // FIXME: Use better heuristics to get to the optimum number
-    if (in_elements > 4096) {
-        bool in_is_linear = (in.strides[0] == 1);
-        bool wt_is_linear = (iwt.strides[0] == 1);
-        for (int k = 1; k < 4; k++) {
-            in_is_linear &=
-                (in.strides[k] == (in.strides[k - 1] * in.dims[k - 1]));
-            wt_is_linear &=
-                (iwt.strides[k] == (iwt.strides[k - 1] * iwt.dims[k - 1]));
-        }
+    bool in_is_linear = (in.strides[0] == 1);
+    bool wt_is_linear = (iwt.strides[0] == 1);
+    for (int k = 1; k < 4; k++) {
+        in_is_linear &= (in.strides[k] == (in.strides[k - 1] * in.dims[k - 1]));
+        wt_is_linear &=
+            (iwt.strides[k] == (iwt.strides[k - 1] * iwt.dims[k - 1]));
+    }
 
+    // FIXME: Use better heuristics to get to the optimum number
+    if (in_elements > 4096 || !in_is_linear || !wt_is_linear) {
         if (in_is_linear && wt_is_linear) {
             in.dims[0] = in_elements;
             for (int k = 1; k < 4; k++) {
@@ -487,9 +521,11 @@ T mean_all_weighted(CParam<T> in, CParam<Tw> iwt) {
 
         compute_t<T> val     = static_cast<compute_t<T>>(h_ptr[0]);
         compute_t<Tw> weight = static_cast<compute_t<Tw>>(h_wptr[0]);
+        compute_t<T> correction =
+            common::Binary<compute_t<T>, af_add_t>::init();
 
         for (int i = 1; i < tmp_elements; i++) {
-            stable_mean(&val, &weight, compute_t<T>(h_ptr[i]),
+            stable_mean(&correction, &val, &weight, compute_t<T>(h_ptr[i]),
                         compute_t<Tw>(h_wptr[i]));
         }
 
@@ -508,8 +544,10 @@ T mean_all_weighted(CParam<T> in, CParam<Tw> iwt) {
 
         compute_t<T> val     = static_cast<compute_t<T>>(h_ptr[0]);
         compute_t<Tw> weight = static_cast<compute_t<Tw>>(h_wptr[0]);
+        compute_t<T> correction =
+            common::Binary<compute_t<T>, af_add_t>::init();
         for (int i = 1; i < in_elements; i++) {
-            stable_mean(&val, &weight, compute_t<T>(h_ptr[i]),
+            stable_mean(&correction, &val, &weight, compute_t<T>(h_ptr[i]),
                         compute_t<Tw>(h_wptr[i]));
         }
 
@@ -566,9 +604,11 @@ To mean_all(CParam<Ti> in) {
 
         compute_t<To> val    = static_cast<compute_t<To>>(h_ptr[0]);
         compute_t<Tw> weight = static_cast<compute_t<Tw>>(h_cptr[0]);
+        compute_t<To> correction =
+            common::Binary<compute_t<To>, af_add_t>::init();
 
         for (int i = 1; i < tmp_elements; i++) {
-            stable_mean(&val, &weight, compute_t<To>(h_ptr[i]),
+            stable_mean(&correction, &val, &weight, compute_t<To>(h_ptr[i]),
                         compute_t<Tw>(h_cptr[i]));
         }
 
@@ -583,11 +623,13 @@ To mean_all(CParam<Ti> in) {
 
         common::Transform<Ti, compute_t<To>, af_add_t> transform;
         compute_t<Tw> count = static_cast<compute_t<Tw>>(1);
+        compute_t<To> correction =
+            common::Binary<compute_t<To>, af_add_t>::init();
 
         compute_t<To> val    = transform(h_ptr[0]);
         compute_t<Tw> weight = count;
         for (int i = 1; i < in_elements; i++) {
-            stable_mean(&val, &weight, transform(h_ptr[i]), count);
+            stable_mean(&correction, &val, &weight, transform(h_ptr[i]), count);
         }
 
         return static_cast<To>(val);
