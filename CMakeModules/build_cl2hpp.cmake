@@ -25,9 +25,11 @@ if(NOT TARGET OpenCL::cl2hpp)
     set_target_properties(cl2hpp OpenCL::cl2hpp PROPERTIES
       INTERFACE_INCLUDE_DIRECTORIES ${cl2hpp_header_file_path})
   elseif (NOT TARGET OpenCL::cl2hpp OR NOT TARGET cl2hpp)
+    # This version is known to work, newer versions currently
+    # do not and will require fixes to address changed interfaces
     af_dep_check_and_populate(${cl2hpp_prefix}
       URI https://github.com/KhronosGroup/OpenCL-CLHPP.git
-      REF v2024.10.24)
+      REF v2022.09.30)
 
     find_path(cl2hpp_var
       NAMES CL/cl2.hpp
