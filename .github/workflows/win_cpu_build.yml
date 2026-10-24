@@ -41,7 +41,8 @@ jobs:
               run: python .github/scripts/check_matrix_data.py
 
             - name: VCPKG Binary Cache
-              uses: actions/cache@v6.1.0
+              id: vcpkg-cache
+              uses: actions/cache/restore@v6.1.0
               with:
                   path: ~/AppData/Local/vcpkg/archives
                   key: windows-vcpkg-${{ env.VCPKG_TOOL_REF }}-${{ steps.baseline.outputs.commit }}-${{ hashFiles('vcpkg.json', 'CMakeModules/vcpkg/**') }}
@@ -68,6 +69,13 @@ jobs:
                       -DBUILDNAME:STRING="$buildname" `
                       -DAF_COMPUTE_LIBRARY:STRING="FFTW/LAPACK/BLAS"
                   if ($LASTEXITCODE) { exit $LASTEXITCODE }
+
+            - name: Save VCPKG Binary Cache
+              if: steps.vcpkg-cache.outputs.cache-hit != 'true'
+              uses: actions/cache/save@v6.1.0
+              with:
+                  path: ~/AppData/Local/vcpkg/archives
+                  key: windows-vcpkg-${{ env.VCPKG_TOOL_REF }}-${{ steps.baseline.outputs.commit }}-${{ hashFiles('vcpkg.json', 'CMakeModules/vcpkg/**') }}
 
             - name: Cache Matrix Fixtures
               if: steps.mtx-cache.outputs.cache-hit != 'true'
