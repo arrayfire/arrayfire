@@ -35,7 +35,7 @@ if("cblas" IN_LIST FEATURES)
     endif()
 endif()
 
-set(USE_OPTIMIZED_BLAS OFF) 
+set(USE_OPTIMIZED_BLAS OFF)
 if("noblas" IN_LIST FEATURES)
     set(USE_OPTIMIZED_BLAS ON)
 endif()
@@ -43,10 +43,10 @@ endif()
 set(VCPKG_CRT_LINKAGE_BACKUP ${VCPKG_CRT_LINKAGE})
 vcpkg_find_fortran(FORTRAN_CMAKE)
 if(VCPKG_USE_INTERNAL_Fortran)
-    if(VCPKG_CRT_LINKAGE_BACKUP STREQUAL static) 
+    if(VCPKG_CRT_LINKAGE_BACKUP STREQUAL static)
     # If openblas has been built with static crt linkage we cannot use it with gfortran!
-        set(USE_OPTIMIZED_BLAS OFF) 
-        #Cannot use openblas from vcpkg if we are building with gfortran here. 
+        set(USE_OPTIMIZED_BLAS OFF)
+        #Cannot use openblas from vcpkg if we are building with gfortran here.
         if("noblas" IN_LIST FEATURES)
             message(FATAL_ERROR "Feature 'noblas' cannot be used without supplying an external fortran compiler")
         endif()
