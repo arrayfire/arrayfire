@@ -31,6 +31,8 @@ To stable_add(To &correction, To out_val, Ti in_val) {
     // (t - out_val) cancels the high order part of y
     // subtracting y recovers negative (low part of y)
     correction = (t - out_val) - y;
+    // An infinite sum must not poison the next correction with inf - inf.
+    if (IS_NAN(correction)) { correction = scalar<To>(0); }
     // Algebraically, correction should always be zero.  Beware of
     // overly-agressive optimizing compilers!
     return t;

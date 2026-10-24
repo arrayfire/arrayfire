@@ -18,6 +18,7 @@
 #include <cmath>
 #include <functional>
 #include <iostream>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -32,6 +33,40 @@ using std::cout;
 using std::endl;
 using std::string;
 using std::vector;
+
+template<typename T>
+void checkNonFiniteSums() {
+    SUPPORTED_TYPE_CHECK(T);
+    const float inf      = std::numeric_limits<float>::infinity();
+    const uint keyData[] = {0, 0};
+    array keys(2, keyData);
+    for (T first : {T(inf), T(-inf)}) {
+        const T values[] = {first, T(1)};
+        array input(2, values);
+        EXPECT_EQ(first, af::sum<T>(input));
+        EXPECT_EQ(first, af::sum(input, 0).template scalar<T>());
+        array outputKeys, outputValues;
+        af::sumByKey(outputKeys, outputValues, keys, input);
+        EXPECT_EQ(first, outputValues.template scalar<T>());
+    }
+    for (T second : {T(-inf), T(std::numeric_limits<float>::quiet_NaN())}) {
+        const T values[] = {T(inf), second};
+        array input(2, values);
+        EXPECT_TRUE(std::isnan(::real<T>(af::sum<T>(input))));
+        EXPECT_TRUE(
+            std::isnan(::real<T>(af::sum(input, 0).template scalar<T>())));
+        array outputKeys, outputValues;
+        af::sumByKey(outputKeys, outputValues, keys, input);
+        EXPECT_TRUE(std::isnan(::real<T>(outputValues.template scalar<T>())));
+    }
+}
+
+TEST(Reduce, SumPreservesNonFiniteValues) {
+    checkNonFiniteSums<float>();
+    checkNonFiniteSums<double>();
+    checkNonFiniteSums<cfloat>();
+    checkNonFiniteSums<cdouble>();
+}
 
 template<typename T>
 class Reduce : public ::testing::Test {};
