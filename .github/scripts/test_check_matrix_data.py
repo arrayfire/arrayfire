@@ -1,4 +1,8 @@
+import hashlib
+import io
+import json
 import pathlib
+import tarfile
 import tempfile
 import unittest
 
@@ -31,6 +35,38 @@ class MatrixCacheTests(unittest.TestCase):
         matrix.touch()
         with self.assertRaisesRegex(RuntimeError, "tests remain enabled"):
             check_cache(self.repo, self.cache, lambda: "The collection is offline")
+
+    def make_bundle(self):
+        directory = self.repo / ".github/fixtures"
+        directory.mkdir(parents=True)
+        archive = directory / "matrixmarket.tar.gz"
+        payload = b"matrix fixture"
+        relative = "JGD_Kocay/Trec4/Trec4.mtx"
+        with tarfile.open(archive, "w:gz") as bundle:
+            member = tarfile.TarInfo(relative)
+            member.size = len(payload)
+            bundle.addfile(member, io.BytesIO(payload))
+        (directory / "matrixmarket.json").write_text(json.dumps({
+            "archive_sha256": hashlib.sha256(archive.read_bytes()).hexdigest(),
+            "files": {relative: {"bytes": len(payload), "sha256": hashlib.sha256(payload).hexdigest()}}
+        }), encoding="utf-8")
+        return archive, payload
+
+    def test_verified_bundle_restores_without_network(self):
+        _, payload = self.make_bundle()
+
+        def no_network():
+            self.fail("The bundle must work during a provider outage")
+
+        self.assertIn("bundled", check_cache(self.repo, self.cache, no_network))
+        self.assertEqual((self.cache / "JGD_Kocay/Trec4/Trec4.mtx").read_bytes(), payload)
+
+    def test_corrupt_bundle_is_rejected_before_cache_writes(self):
+        archive, _ = self.make_bundle()
+        archive.write_bytes(b"corrupt archive")
+        with self.assertRaisesRegex(RuntimeError, "checksum mismatch"):
+            check_cache(self.repo, self.cache)
+        self.assertFalse(self.cache.exists())
 
 
 if __name__ == "__main__":
