@@ -205,6 +205,9 @@ jobs:
                   cd ${GITHUB_WORKSPACE}/build
                   if [ "$CC" == 'icx' ] || [ "$USE_MKL" == true ]; then source /opt/intel/oneapi/setvars.sh; fi
                   ${CMAKE_PROGRAM} --build . --parallel 2
+                  if [ "$RUNNER_OS" == 'macOS' ]; then
+                      export DYLD_LIBRARY_PATH="$(brew --prefix)/lib${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}"
+                  fi
                   ctest -M Experimental -T Start -T Test --track ${CTEST_DASHBOARD} --output-on-failure --no-tests=error -R cpu -j2
 
             - name: Submit Dashboard Results
