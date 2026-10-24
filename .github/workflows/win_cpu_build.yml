@@ -45,7 +45,10 @@ jobs:
               uses: actions/cache/restore@v6.1.0
               with:
                   path: ~/AppData/Local/vcpkg/archives
-                  key: windows-vcpkg-${{ env.VCPKG_TOOL_REF }}-${{ steps.baseline.outputs.commit }}-${{ hashFiles('vcpkg.json', 'CMakeModules/vcpkg/**') }}
+                  key: windows-vcpkg-${{ env.VCPKG_TOOL_REF }}-${{ steps.baseline.outputs.commit }}-${{ hashFiles('vcpkg.json', 'CMakeModules/vcpkg/**') }}-${{ github.run_id }}-${{ github.run_attempt }}
+                  restore-keys: |
+                      windows-vcpkg-${{ env.VCPKG_TOOL_REF }}-${{ steps.baseline.outputs.commit }}-${{ hashFiles('vcpkg.json', 'CMakeModules/vcpkg/**') }}-
+                      windows-vcpkg-${{ env.VCPKG_TOOL_REF }}-${{ steps.baseline.outputs.commit }}-
 
             - name: Install VCPKG
               shell: pwsh
@@ -71,11 +74,11 @@ jobs:
                   if ($LASTEXITCODE) { exit $LASTEXITCODE }
 
             - name: Save VCPKG Binary Cache
-              if: steps.vcpkg-cache.outputs.cache-hit != 'true'
+              if: always() && !cancelled() && steps.vcpkg-cache.outputs.cache-hit != 'true'
               uses: actions/cache/save@v6.1.0
               with:
                   path: ~/AppData/Local/vcpkg/archives
-                  key: windows-vcpkg-${{ env.VCPKG_TOOL_REF }}-${{ steps.baseline.outputs.commit }}-${{ hashFiles('vcpkg.json', 'CMakeModules/vcpkg/**') }}
+                  key: windows-vcpkg-${{ env.VCPKG_TOOL_REF }}-${{ steps.baseline.outputs.commit }}-${{ hashFiles('vcpkg.json', 'CMakeModules/vcpkg/**') }}-${{ github.run_id }}-${{ github.run_attempt }}
 
             - name: Cache Matrix Fixtures
               if: steps.mtx-cache.outputs.cache-hit != 'true'
