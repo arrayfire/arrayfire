@@ -37,6 +37,7 @@ using std::vector;
 template<typename T>
 void checkNonFiniteSums() {
     SUPPORTED_TYPE_CHECK(T);
+    using Base           = typename af::dtype_traits<T>::base_type;
     const float inf      = std::numeric_limits<float>::infinity();
     const uint keyData[] = {0, 0};
     array keys(2, keyData);
@@ -58,6 +59,19 @@ void checkNonFiniteSums() {
         array outputKeys, outputValues;
         af::sumByKey(outputKeys, outputValues, keys, input);
         EXPECT_TRUE(std::isnan(::real<T>(outputValues.template scalar<T>())));
+    }
+    const Base maximum           = std::numeric_limits<Base>::max();
+    const uint overflowKeyData[] = {0, 0, 0};
+    array overflowKeys(3, overflowKeyData);
+    for (Base limit : {maximum, -maximum}) {
+        const T values[] = {T(limit), T(limit), T(1)};
+        const T expected = T(limit > 0 ? inf : -inf);
+        array input(3, values);
+        EXPECT_EQ(expected, af::sum<T>(input));
+        EXPECT_EQ(expected, af::sum(input, 0).template scalar<T>());
+        array outputKeys, outputValues;
+        af::sumByKey(outputKeys, outputValues, overflowKeys, input);
+        EXPECT_EQ(expected, outputValues.template scalar<T>());
     }
 }
 

@@ -12,6 +12,8 @@
 #include <common/Binary.hpp>
 #include <common/Transform.hpp>
 #include <common/half.hpp>
+#include <cmath>
+#include <complex>
 
 namespace arrayfire {
 namespace cpu {
@@ -31,8 +33,11 @@ To stable_add(To &correction, To out_val, Ti in_val) {
     // (t - out_val) cancels the high order part of y
     // subtracting y recovers negative (low part of y)
     correction = (t - out_val) - y;
-    // An infinite sum must not poison the next correction with inf - inf.
-    if (IS_NAN(correction)) { correction = scalar<To>(0); }
+    // Keep overflow and infinite inputs from poisoning later additions.
+    if (!std::isfinite(std::real(correction)) ||
+        !std::isfinite(std::imag(correction))) {
+        correction = scalar<To>(0);
+    }
     // Algebraically, correction should always be zero.  Beware of
     // overly-agressive optimizing compilers!
     return t;
