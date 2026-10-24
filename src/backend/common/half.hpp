@@ -881,9 +881,7 @@ AF_CONSTEXPR T half2int(native_half_t value) {
     else AF_IF_CONSTEXPR(std::is_same<T, int>::value) {
         return __half2int_rn(value);
     }
-    else {
-        return __half2uint_rn(value);
-    }
+    else { return __half2uint_rn(value); }
 #elif defined(AF_ONEAPI)
     return static_cast<T>(value);
 #else

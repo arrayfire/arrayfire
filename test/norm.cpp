@@ -49,7 +49,8 @@ double cpu_norm1_impl(af::dim4 &dims, std::vector<T> &value) {
 }
 
 template<typename T>
-double cpu_norm_pq_impl(af::dim4 &dims, std::vector<T> &value, double p, double q) {
+double cpu_norm_pq_impl(af::dim4 &dims, std::vector<T> &value, double p,
+                        double q) {
     int N = dims[0];
     int M = dims[1];
 
@@ -57,8 +58,10 @@ double cpu_norm_pq_impl(af::dim4 &dims, std::vector<T> &value, double p, double 
     for (int n = 0; n < N; n++) {
         T *columnN = value.data() + n * M;
         double sum = 0;
-        
-        for (int m = 0; m < M; m++) { sum += std::pow(std::abs(columnN[m]), p); }
+
+        for (int m = 0; m < M; m++) {
+            sum += std::pow(std::abs(columnN[m]), p);
+        }
 
         norm += std::pow(sum, q / p);
     }
@@ -75,9 +78,9 @@ double cpu_norm1(af::array &value) {
         value.host(values.data());
         norm1 = cpu_norm1_impl<half_float::half>(dims, values);
     } else if (value.type() == c32 || value.type() == c64) {
-        vector<complex<double> > values(value.elements());
+        vector<complex<double>> values(value.elements());
         value.as(c64).host(values.data());
-        norm1 = cpu_norm1_impl<complex<double> >(dims, values);
+        norm1 = cpu_norm1_impl<complex<double>>(dims, values);
     } else {
         vector<double> values(value.elements());
         value.as(f64).host(values.data());
@@ -94,9 +97,9 @@ double cpu_norm_pq(af::array &value, double p, double q) {
         value.host(values.data());
         norm2 = cpu_norm_pq_impl<half_float::half>(dims, values, p, q);
     } else if (value.type() == c32 || value.type() == c64) {
-        vector<complex<double> > values(value.elements());
+        vector<complex<double>> values(value.elements());
         value.as(c64).host(values.data());
-        norm2 = cpu_norm_pq_impl<complex<double> >(dims, values, p, q);
+        norm2 = cpu_norm_pq_impl<complex<double>>(dims, values, p, q);
     } else {
         vector<double> values(value.elements());
         value.as(f64).host(values.data());
@@ -124,9 +127,9 @@ double cpu_norm_inf(af::array &value) {
     double norm_inf;
     af::dim4 dims = value.dims();
     if (value.type() == c32 || value.type() == c64) {
-        vector<complex<double> > values(value.elements());
+        vector<complex<double>> values(value.elements());
         value.as(c64).host(values.data());
-        norm_inf = cpu_norm_inf_impl<complex<double> >(dims, values);
+        norm_inf = cpu_norm_inf_impl<complex<double>>(dims, values);
     } else {
         vector<double> values(value.elements());
         value.as(f64).host(values.data());
@@ -137,7 +140,7 @@ double cpu_norm_inf(af::array &value) {
 
 using norm_params = std::tuple<af::dim4, af::dtype>;
 class Norm
-    : public ::testing::TestWithParam<std::tuple<af::dim4, af::dtype> > {};
+    : public ::testing::TestWithParam<std::tuple<af::dim4, af::dtype>> {};
 
 INSTANTIATE_TEST_CASE_P(
     Norm, Norm,
@@ -187,7 +190,7 @@ TEST_P(Norm, Random_AF_NORM_VECTOR_1) {
     if (get<1>(param) == f64) SUPPORTED_TYPE_CHECK(double);
 
     af::dim4 dims = get<0>(param);
-    dims[1] = 1; // Test a vector
+    dims[1]       = 1;  // Test a vector
 
     array in      = af::randu(dims, get<1>(param)) - 0.5f;
     double result = norm(in, AF_NORM_VECTOR_1);
@@ -203,11 +206,11 @@ TEST_P(Norm, Random_AF_NORM_VECTOR_INF) {
     if (get<1>(param) == f64) SUPPORTED_TYPE_CHECK(double);
 
     af::dim4 dims = get<0>(param);
-    dims[1] = 1; // Test a vector
+    dims[1]       = 1;  // Test a vector
 
-    array in      = af::randu(dims, get<1>(param)) - 0.5f;
-    double result = norm(in, AF_NORM_VECTOR_INF);
-    double norm_inf  = cpu_norm_inf(in);
+    array in        = af::randu(dims, get<1>(param)) - 0.5f;
+    double result   = norm(in, AF_NORM_VECTOR_INF);
+    double norm_inf = cpu_norm_inf(in);
 
     ASSERT_NEAR(norm_inf, result, 2e-4);
 }
@@ -219,11 +222,12 @@ TEST_P(Norm, Random_AF_NORM_VECTOR_2) {
     if (get<1>(param) == f64) SUPPORTED_TYPE_CHECK(double);
 
     af::dim4 dims = get<0>(param);
-    dims[1] = 1; // Test a vector
+    dims[1]       = 1;  // Test a vector
 
     array in      = af::randu(dims, get<1>(param)) - 0.5f;
     double result = norm(in, AF_NORM_VECTOR_2);
-    double norm2  = cpu_norm_pq(in, 1, 2); // vectors lie in first dims so swap p and q
+    double norm2 =
+        cpu_norm_pq(in, 1, 2);  // vectors lie in first dims so swap p and q
 
     ASSERT_NEAR(norm2, result, 3e-4);
 }
@@ -235,11 +239,12 @@ TEST_P(Norm, Random_AF_NORM_VECTOR_P_P_EQUAL_3_POINT_5) {
     if (get<1>(param) == f64) SUPPORTED_TYPE_CHECK(double);
 
     af::dim4 dims = get<0>(param);
-    dims[1] = 1; // Test a vector
+    dims[1]       = 1;  // Test a vector
 
     array in      = af::randu(dims, get<1>(param)) - 0.5f;
     double result = norm(in, AF_NORM_VECTOR_P, 3.5);
-    double normp  = cpu_norm_pq(in, 1, 3.5); // vectors lie in first dims so swap p and q
+    double normp =
+        cpu_norm_pq(in, 1, 3.5);  // vectors lie in first dims so swap p and q
 
     ASSERT_NEAR(normp, result, 3e-4);
 }

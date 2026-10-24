@@ -454,7 +454,7 @@ template<typename T>
 struct generateConsq {
     T vals;
 
-    generateConsq(T v_i = 0) : vals(v_i) {};
+    generateConsq(T v_i = 0) : vals(v_i){};
 
     T operator()() { return vals++; }
 };
@@ -463,7 +463,7 @@ template<typename T>
 struct generateConst {
     T vals;
 
-    generateConst(T v_i) : vals(v_i) {};
+    generateConst(T v_i) : vals(v_i){};
 
     T operator()() { return vals; }
 };

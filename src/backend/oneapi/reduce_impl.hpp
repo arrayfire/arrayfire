@@ -60,8 +60,8 @@ void reduceBlocksByKey(sycl::buffer<int> &reduced_block_sizes,
 
     auto keys_out_get = keys_out.get();
     auto vals_out_get = vals_out.get();
-    auto keys_get = keys.get();
-    auto vals_get = vals.get();
+    auto keys_get     = keys.get();
+    auto vals_get     = vals.get();
     getQueue().submit([&](sycl::handler &h) {
         sycl::accessor<int> reduced_block_sizes_acc{reduced_block_sizes, h};
         write_accessor<Tk> keys_out_acc{*keys_out_get, h};
@@ -106,8 +106,8 @@ void reduceBlocksByKeyDim(sycl::buffer<int> &reduced_block_sizes,
 
     auto keys_out_get = keys_out.get();
     auto vals_out_get = vals_out.get();
-    auto keys_get = keys.get();
-    auto vals_get = vals.get();
+    auto keys_get     = keys.get();
+    auto vals_get     = vals.get();
     getQueue().submit([&](sycl::handler &h) {
         sycl::accessor<int> reduced_block_sizes_acc{reduced_block_sizes, h};
         write_accessor<Tk> keys_out_acc{*keys_out_get, h};
@@ -144,7 +144,7 @@ void finalBoundaryReduce(sycl::buffer<int> &reduced_block_sizes, Array<Tk> keys,
     sycl::range<1> global(local[0] * numBlocks);
 
     auto vals_out_get = vals_out.get();
-    auto keys_get = keys.get();
+    auto keys_get     = keys.get();
     getQueue().submit([&](sycl::handler &h) {
         write_accessor<int> reduced_block_sizes_acc{reduced_block_sizes, h};
         read_accessor<Tk> keys_acc{*keys_get, h};
@@ -169,7 +169,7 @@ void finalBoundaryReduceDim(sycl::buffer<int> &reduced_block_sizes,
         vals_out.dims()[dim_ordering[2]] * vals_out.dims()[dim_ordering[3]]);
 
     auto vals_out_get = vals_out.get();
-    auto keys_get = keys.get();
+    auto keys_get     = keys.get();
     getQueue().submit([&](sycl::handler &h) {
         write_accessor<int> reduced_block_sizes_acc{reduced_block_sizes, h};
         read_accessor<Tk> keys_acc{*keys_get, h};
@@ -195,8 +195,8 @@ void compact(sycl::buffer<int> reduced_block_sizes, Array<Tk> &keys_out,
 
     auto keys_out_get = keys_out.get();
     auto vals_out_get = vals_out.get();
-    auto keys_get = keys.get();
-    auto vals_get = vals.get();
+    auto keys_get     = keys.get();
+    auto vals_get     = vals.get();
     getQueue().submit([&](sycl::handler &h) {
         read_accessor<int> reduced_block_sizes_acc{reduced_block_sizes, h};
         write_accessor<Tk> keys_out_acc{*keys_out_get, h};
@@ -225,8 +225,8 @@ void compactDim(sycl::buffer<int> &reduced_block_sizes, Array<Tk> &keys_out,
 
     auto keys_out_get = keys_out.get();
     auto vals_out_get = vals_out.get();
-    auto keys_get = keys.get();
-    auto vals_get = vals.get();
+    auto keys_get     = keys.get();
+    auto vals_get     = vals.get();
     getQueue().submit([&](sycl::handler &h) {
         read_accessor<int> reduced_block_sizes_acc{reduced_block_sizes, h};
         write_accessor<Tk> keys_out_acc{*keys_out_get, h};

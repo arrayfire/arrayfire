@@ -251,10 +251,10 @@ void reduce_all_launcher_default(Param<To> out, Param<Ti> in,
     }
 
     Array<To> tmp = createEmptyArray<To>(tmp_elements);
-    auto tmp_get = tmp.get();
-    
+    auto tmp_get  = tmp.get();
+
     Array<unsigned> retirementCount = createValueArray<unsigned>(1, 0);
-    auto ret_get = retirementCount.get();
+    auto ret_get                    = retirementCount.get();
 
     getQueue().submit([&](sycl::handler &h) {
         write_accessor<To> out_acc{*out.data, h};
