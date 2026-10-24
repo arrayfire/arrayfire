@@ -61,7 +61,8 @@ array new_means(array data, array clusters, int k) {
 void kmeans(array &means, array &clusters, const array in, int k,
             int iter = 100) {
     unsigned n = in.dims(0);  // Num of data points
-    unsigned d = in.dims(2);  // Num of features (will only be 1 in spider image example)
+    unsigned d =
+        in.dims(2);  // Num of features (will only be 1 in spider image example)
 
     // reshape input
     array data = in * 0;

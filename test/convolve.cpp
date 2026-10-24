@@ -1178,8 +1178,8 @@ TEST(ConvolveNN, ZeroPadding_Issue2817) {
               true);
 
     array incoming_gradient = constant(1 / 9.f, 3, 3);
-    array convolved_grad = convolve2GradientNN(incoming_gradient, signal, filter,
-                                               convolved, strides, padding, dilation,
-                                               AF_CONV_GRADIENT_FILTER);
+    array convolved_grad    = convolve2GradientNN(
+        incoming_gradient, signal, filter, convolved, strides, padding,
+        dilation, AF_CONV_GRADIENT_FILTER);
     ASSERT_EQ(sum<float>(abs(convolved - convolved_grad)) < 1E-5, true);
 }

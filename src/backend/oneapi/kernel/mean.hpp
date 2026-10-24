@@ -610,13 +610,11 @@ T mean_all_weighted(Param<T> in, Param<Tw> iwt) {
 
         compute_t<T> val;
         auto tmpOut_get = tmpOut.get();
-        auto tmpWt_get = tmpWt.get();
+        auto tmpWt_get  = tmpWt.get();
         getQueue()
             .submit([&](sycl::handler &h) {
-                auto acc_in =
-                    tmpOut_get->get_host_access(h, sycl::read_only);
-                auto acc_wt =
-                    tmpWt_get->get_host_access(h, sycl::read_only);
+                auto acc_in = tmpOut_get->get_host_access(h, sycl::read_only);
+                auto acc_wt = tmpWt_get->get_host_access(h, sycl::read_only);
 
                 h.host_task([acc_in, acc_wt, tmp_elements, &val] {
                     val = static_cast<compute_t<T>>(acc_in[0]);
@@ -696,13 +694,11 @@ To mean_all(Param<Ti> in) {
 
         compute_t<To> val;
         auto tmpOut_get = tmpOut.get();
-        auto tmpCt_get = tmpCt.get();
+        auto tmpCt_get  = tmpCt.get();
         getQueue()
             .submit([&](sycl::handler &h) {
-                auto out =
-                    tmpOut_get->get_host_access(h, sycl::read_only);
-                auto ct =
-                    tmpCt_get->get_host_access(h, sycl::read_only);
+                auto out = tmpOut_get->get_host_access(h, sycl::read_only);
+                auto ct  = tmpCt_get->get_host_access(h, sycl::read_only);
 
                 h.host_task([out, ct, tmp_elements, &val] {
                     val                  = static_cast<compute_t<To>>(out[0]);
@@ -720,8 +716,7 @@ To mean_all(Param<Ti> in) {
         compute_t<To> val;
         getQueue()
             .submit([&](sycl::handler &h) {
-                auto acc_in =
-                    in.data->get_host_access(h, sycl::read_only);
+                auto acc_in = in.data->get_host_access(h, sycl::read_only);
                 h.host_task([acc_in, in_elements, &val]() {
                     common::Transform<Ti, compute_t<To>, af_add_t> transform;
                     compute_t<Tw> count = static_cast<compute_t<Tw>>(1);

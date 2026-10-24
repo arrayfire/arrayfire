@@ -8,8 +8,8 @@
  ********************************************************/
 
 #pragma once
-#include <optypes.hpp>
 #include <common/half.hpp>
+#include <optypes.hpp>
 
 using arrayfire::common::half;
 

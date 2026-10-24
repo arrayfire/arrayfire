@@ -122,12 +122,12 @@ class BufferNodeBase : public common::Node {
 
     virtual void modDims(const af::dim4 &newDim) override {
         af::dim4 strides(1, 1, 1, 1);
-        for(dim_t i = 1; i < 4; ++i) {
+        for (dim_t i = 1; i < 4; ++i) {
             strides[i] = strides[i - 1] * newDim[i - 1];
         }
 
-        for(dim_t i = 0; i < 4; ++i) {
-            m_param.dims[i] = newDim[i];
+        for (dim_t i = 0; i < 4; ++i) {
+            m_param.dims[i]    = newDim[i];
             m_param.strides[i] = strides[i];
         }
     }

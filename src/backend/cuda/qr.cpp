@@ -71,11 +71,10 @@ template<typename T>
 struct mqr_buf_func_def_t {
     using mqr_buf_func_def = cusolverStatus_t (*)(cusolverDnHandle_t,
                                                   cublasSideMode_t,
-                                                  cublasOperation_t, int, int, int,
-                                                  const T *, int, const T *, T *,
-                                                  int, int *);
+                                                  cublasOperation_t, int, int,
+                                                  int, const T *, int,
+                                                  const T *, T *, int, int *);
 };
-
 
 #define QR_FUNC_DEF(FUNC)                                         \
     template<typename T>                                          \
@@ -165,7 +164,7 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in) {
 
     CUSOLVER_CHECK(mqr_buf_func<T>()(
         solverDnHandle(), CUBLAS_SIDE_LEFT, CUBLAS_OP_N, q.dims()[0],
-	q.dims()[1], min(M, N), in_copy.get(), in_copy.strides()[1], t.get(),
+        q.dims()[1], min(M, N), in_copy.get(), in_copy.strides()[1], t.get(),
         q.get(), q.strides()[1], &lwork));
 
     workspace = memAlloc<T>(lwork);

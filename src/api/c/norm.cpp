@@ -39,8 +39,8 @@ using detail::scalar;
 
 template<typename T>
 using normReductionResult =
-    typename std::conditional<std::is_same<T, arrayfire::common::half>::value, float,
-                              T>::type;
+    typename std::conditional<std::is_same<T, arrayfire::common::half>::value,
+                              float, T>::type;
 
 template<typename T>
 double matrixNorm(const Array<T> &A, double p) {
@@ -141,7 +141,9 @@ af_err af_norm(double *out, const af_array in, const af_norm_type type,
             case f64: *out = norm<double>(in, type, p, q); break;
             case c32: *out = norm<cfloat>(in, type, p, q); break;
             case c64: *out = norm<cdouble>(in, type, p, q); break;
-            case f16: *out = norm<arrayfire::common::half>(in, type, p, q); break;
+            case f16:
+                *out = norm<arrayfire::common::half>(in, type, p, q);
+                break;
             default: TYPE_ERROR(1, i_type);
         }
     }
