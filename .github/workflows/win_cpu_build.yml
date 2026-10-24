@@ -14,6 +14,8 @@ jobs:
         runs-on: windows-2022
         env:
           VCPKG_DEFAULT_TRIPLET: x64-windows
+          # vcpkg 2026.10.16 supplies current MSYS2 tools; vcpkg.json pins ports.
+          VCPKG_TOOL_REF: 9eec002df1cd109f8f104cd966a763daf9751489
         steps:
             - name: Checkout Repository
               uses: actions/checkout@master
@@ -31,16 +33,14 @@ jobs:
               uses: actions/cache@v6.1.0
               with:
                   path: ~/AppData/Local/vcpkg/archives
-                  key: windows-vcpkg-${{ steps.baseline.outputs.commit }}-${{ hashFiles('vcpkg.json', 'CMakeModules/vcpkg/**') }}
+                  key: windows-vcpkg-${{ env.VCPKG_TOOL_REF }}-${{ steps.baseline.outputs.commit }}-${{ hashFiles('vcpkg.json', 'CMakeModules/vcpkg/**') }}
 
             - name: Install VCPKG
               shell: pwsh
-              env:
-                  VCPKG_BASELINE: ${{ steps.baseline.outputs.commit }}
               run: |
                   git clone https://github.com/microsoft/vcpkg.git $env:VCPKG_ROOT
                   if ($LASTEXITCODE) { exit $LASTEXITCODE }
-                  git -C $env:VCPKG_ROOT checkout $env:VCPKG_BASELINE
+                  git -C $env:VCPKG_ROOT checkout $env:VCPKG_TOOL_REF
                   if ($LASTEXITCODE) { exit $LASTEXITCODE }
                   & "$env:VCPKG_ROOT/bootstrap-vcpkg.bat" -disableMetrics
                   if ($LASTEXITCODE) { exit $LASTEXITCODE }

@@ -54,7 +54,7 @@ jobs:
         needs: [clang-format, documentation]
         env:
           NINJA_VER: 1.10.2
-          CMAKE_VER: 3.16.3
+          CMAKE_VER: 3.28.6
         strategy:
             fail-fast: false
             matrix:
@@ -84,13 +84,12 @@ jobs:
                   chmod +x ninja
                   ${GITHUB_WORKSPACE}/ninja --version
 
-            - name: Download CMake 3.16.3 for Linux
-              if: matrix.os != 'macos-latest'
+            - name: Download CMake
               env:
                   OS_NAME: ${{ matrix.os }}
                   CC: ${{ matrix.compiler }}
               run: |
-                  cmake_suffix=$(if [ $OS_NAME == 'macos-latest' ]; then echo "Darwin-x86_64"; else echo "Linux-x86_64"; fi)
+                  cmake_suffix=$(if [ $OS_NAME == 'macos-latest' ]; then echo "macos-universal"; else echo "linux-x86_64"; fi)
                   cmake_url=$(echo "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VER}/cmake-${CMAKE_VER}-${cmake_suffix}.tar.gz")
                   wget --quiet "${cmake_url}"
                   tar -xf ./cmake-${CMAKE_VER}-${cmake_suffix}.tar.gz
@@ -116,7 +115,6 @@ jobs:
               if: matrix.os == 'macos-latest'
               run: |
                   brew install boost fontconfig glfw freeimage fftw lapack openblas expat
-                  echo "CMAKE_PROGRAM=cmake" >> $GITHUB_ENV
 
             - name: Install Common Dependencies for Ubuntu
               if: matrix.os == 'ubuntu-22.04'
