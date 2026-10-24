@@ -29,6 +29,17 @@ jobs:
                   "commit=$baseline" >> $env:GITHUB_OUTPUT
                   "VCPKG_ROOT=$env:RUNNER_TEMP/arrayfire-vcpkg" >> $env:GITHUB_ENV
 
+            - name: Restore Matrix Fixtures
+              id: mtx-cache
+              uses: actions/cache/restore@v6.1.0
+              with:
+                  path: build/extern/matrixmarket
+                  key: arrayfire-matrix-fixtures-${{ hashFiles('test/CMakeModules/download_sparse_datasets.cmake') }}
+                  enableCrossOsArchive: true
+
+            - name: Check Matrix Fixture Availability
+              run: python .github/scripts/check_matrix_data.py
+
             - name: VCPKG Binary Cache
               uses: actions/cache@v6.1.0
               with:
@@ -57,6 +68,14 @@ jobs:
                       -DBUILDNAME:STRING="$buildname" `
                       -DAF_COMPUTE_LIBRARY:STRING="FFTW/LAPACK/BLAS"
                   if ($LASTEXITCODE) { exit $LASTEXITCODE }
+
+            - name: Cache Matrix Fixtures
+              if: steps.mtx-cache.outputs.cache-hit != 'true'
+              uses: actions/cache/save@v6.1.0
+              with:
+                  path: build/extern/matrixmarket
+                  key: arrayfire-matrix-fixtures-${{ hashFiles('test/CMakeModules/download_sparse_datasets.cmake') }}
+                  enableCrossOsArchive: true
 
             - name: Build and Test
               shell: pwsh

@@ -35,6 +35,9 @@ jobs:
                   sudo apt-get -qq update
                   sudo apt-get install -y doxygen graphviz libboost-dev
 
+            - name: Check Matrix Cache Guard
+              run: python3 -m unittest discover -s .github/scripts -p 'test_*.py'
+
             - name: Configure
               run: |
                   mkdir build && cd build && unset VCPKG_ROOT
@@ -73,6 +76,17 @@ jobs:
         steps:
             - name: Checkout Repository
               uses: actions/checkout@master
+
+            - name: Restore Matrix Fixtures
+              id: mtx-cache
+              uses: actions/cache/restore@v6.1.0
+              with:
+                  path: build/extern/matrixmarket
+                  key: arrayfire-matrix-fixtures-${{ hashFiles('test/CMakeModules/download_sparse_datasets.cmake') }}
+                  enableCrossOsArchive: true
+
+            - name: Check Matrix Fixture Availability
+              run: python3 .github/scripts/check_matrix_data.py
 
             - name: Download Ninja
               env:
@@ -164,7 +178,7 @@ jobs:
                   buildname="$buildname-cpu-$BLAS_BACKEND"
                   cmake_rpath=$(if [ $OS_NAME == 'macos-latest' ]; then echo "-DCMAKE_INSTALL_RPATH=/opt/arrayfire/lib"; fi)
                   if [ "$CC" == 'icx' ] || [ "$USE_MKL" == true ]; then source /opt/intel/oneapi/setvars.sh; fi
-                  mkdir build && cd build && unset VCPKG_ROOT
+                  mkdir -p build && cd build && unset VCPKG_ROOT
                   ${CMAKE_PROGRAM} -G Ninja \
                       -DCMAKE_MAKE_PROGRAM:FILEPATH=${GITHUB_WORKSPACE}/ninja \
                       -DAF_BUILD_CUDA:BOOL=OFF -DAF_BUILD_OPENCL:BOOL=OFF \
@@ -174,6 +188,14 @@ jobs:
                       "$cmake_rpath" \
                       -DBUILDNAME:STRING=${buildname} ..
                   echo "CTEST_DASHBOARD=${dashboard}" >> $GITHUB_ENV
+
+            - name: Cache Matrix Fixtures
+              if: steps.mtx-cache.outputs.cache-hit != 'true'
+              uses: actions/cache/save@v6.1.0
+              with:
+                  path: build/extern/matrixmarket
+                  key: arrayfire-matrix-fixtures-${{ hashFiles('test/CMakeModules/download_sparse_datasets.cmake') }}
+                  enableCrossOsArchive: true
 
             - name: Build and Test
               env:
