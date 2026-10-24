@@ -428,13 +428,13 @@ TEST(IndexedReduce, MaxCplxPreferSmallerIdxIfEqual) {
                            0.0224, 0.0363, 0.0104, 0.0302, 0.0142,  \
                            0.0217, 0.0409, 0.0398, 0.0302, 0.0144}; \
     array a(5, 5, test_data);                                       \
-    array a_sub = a(seq(1, 3), seq(2,4))
+    array a_sub = a(seq(1, 3), seq(2, 4))
 
 TEST(IndexedReduce, max_subarray_all) {
     SUBA_TEST_DATA;
 
-    float gold_max_val = 0.0409;
-    unsigned gold_max_idx   = 6;
+    float gold_max_val    = 0.0409;
+    unsigned gold_max_idx = 6;
 
     float max_val;
     unsigned max_idx;
@@ -447,8 +447,8 @@ TEST(IndexedReduce, max_subarray_all) {
 TEST(IndexedReduce, min_subarray_all) {
     SUBA_TEST_DATA;
 
-    float gold_min_val = 0.0104;
-    unsigned gold_min_idx   = 4;
+    float gold_min_val    = 0.0104;
+    unsigned gold_min_idx = 4;
 
     float min_val;
     unsigned min_idx;
@@ -461,7 +461,7 @@ TEST(IndexedReduce, min_subarray_all) {
 TEST(IndexedReduce, max_subarray_0) {
     SUBA_TEST_DATA;
 
-    float gold_val[3] = {0.0394, 0.0363, 0.0409};
+    float gold_val[3]    = {0.0394, 0.0363, 0.0409};
     unsigned gold_idx[3] = {1, 0, 0};
 
     array val;
@@ -473,7 +473,7 @@ TEST(IndexedReduce, max_subarray_0) {
     val.host(&h_val);
     idx.host(&h_idx);
 
-    for(int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 3; ++i) {
         ASSERT_FLOAT_EQ(h_val[i], gold_val[i]);
         ASSERT_EQ(h_idx[i], gold_idx[i]);
     }
@@ -482,7 +482,7 @@ TEST(IndexedReduce, max_subarray_0) {
 TEST(IndexedReduce, min_subarray_0) {
     SUBA_TEST_DATA;
 
-    float gold_val[3] = {0.0297, 0.0104, 0.0302};
+    float gold_val[3]    = {0.0297, 0.0104, 0.0302};
     unsigned gold_idx[3] = {2, 1, 2};
 
     array val;
@@ -494,7 +494,7 @@ TEST(IndexedReduce, min_subarray_0) {
     val.host(&h_val);
     idx.host(&h_idx);
 
-    for(int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 3; ++i) {
         ASSERT_FLOAT_EQ(h_val[i], gold_val[i]);
         ASSERT_EQ(h_idx[i], gold_idx[i]);
     }
@@ -503,7 +503,7 @@ TEST(IndexedReduce, min_subarray_0) {
 TEST(IndexedReduce, max_subarray_1) {
     SUBA_TEST_DATA;
 
-    float gold_val[3] = {0.0409, 0.0398, 0.0302};
+    float gold_val[3]    = {0.0409, 0.0398, 0.0302};
     unsigned gold_idx[3] = {2, 2, 1};
 
     array val;
@@ -515,7 +515,7 @@ TEST(IndexedReduce, max_subarray_1) {
     val.host(&h_val);
     idx.host(&h_idx);
 
-    for(int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 3; ++i) {
         ASSERT_FLOAT_EQ(h_val[i], gold_val[i]);
         ASSERT_EQ(h_idx[i], gold_idx[i]);
     }
@@ -524,7 +524,7 @@ TEST(IndexedReduce, max_subarray_1) {
 TEST(IndexedReduce, min_subarray_1) {
     SUBA_TEST_DATA;
 
-    float gold_val[3] = {0.0353, 0.0104, 0.0297};
+    float gold_val[3]    = {0.0353, 0.0104, 0.0297};
     unsigned gold_idx[3] = {0, 1, 0};
 
     array val;
@@ -536,18 +536,19 @@ TEST(IndexedReduce, min_subarray_1) {
     val.host(&h_val);
     idx.host(&h_idx);
 
-    for(int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 3; ++i) {
         ASSERT_FLOAT_EQ(h_val[i], gold_val[i]);
         ASSERT_EQ(h_idx[i], gold_idx[i]);
     }
 }
 
-//Ensure that array is evaluated before reducing
+// Ensure that array is evaluated before reducing
 TEST(IndexedReduce, reduce_jit_array) {
-    af::array jit(af::dim4(2),{1.0f, 2.0f});
+    af::array jit(af::dim4(2), {1.0f, 2.0f});
     jit += af::constant(1.0f, af::dim4(2));
-    float val; unsigned idx;
-    float gold_val = 2.0f;
+    float val;
+    unsigned idx;
+    float gold_val    = 2.0f;
     unsigned gold_idx = 0;
     af::min(&val, &idx, jit);
     ASSERT_EQ(val, gold_val);

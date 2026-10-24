@@ -45,7 +45,6 @@ using std::swap;
 template<typename T>
 Array<T> pointList(const Array<T>& in, const Array<uint>& x,
                    const Array<uint>& y) {
-
     // TODO: Temporary Fix, must fix handling subarrays upstream
     // Array<T> has to be a basic array, to be accepted as af_index
     Array<uint> x_ = (x.getOffset() == 0 && x.isLinear()) ? x : copyArray(x);
@@ -157,7 +156,7 @@ af_array ccHelper(const Array<T>& img, const Array<uint>& seedx,
 
     Array<CT> segmented = floodFill(in, seedx, seedy, CT(1), lower, upper);
 
-    if (std::abs<CT>(s1var) < epsilon) {
+    if (std::abs(s1var) < epsilon) {
         // If variance is close to zero, stop after initial segmentation
         return getHandle(labelSegmented(segmented));
     }
@@ -188,7 +187,7 @@ af_array ccHelper(const Array<T>& img, const Array<uint>& seedx,
         if (newLow > minSeedIntensity) { newLow = minSeedIntensity; }
         if (newHigh < maxSeedIntensity) { newHigh = maxSeedIntensity; }
 
-        if (std::abs<CT>(validsVar) < epsilon) {
+        if (std::abs(validsVar) < epsilon) {
             // If variance is close to zero, discontinue iterating.
             continueLoop = false;
         }

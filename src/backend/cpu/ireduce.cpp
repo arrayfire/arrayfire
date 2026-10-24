@@ -64,7 +64,7 @@ T ireduce_all(unsigned *loc, const Array<T> &in) {
     af::dim4 dims    = in.dims();
     af::dim4 strides = in.strides();
     const T *inPtr   = in.get();
-    dim_t idx = 0;
+    dim_t idx        = 0;
 
     kernel::MinMaxOp<op, T> Op(inPtr[0], 0);
 

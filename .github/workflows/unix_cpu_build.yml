@@ -25,24 +25,18 @@ jobs:
 
     documentation:
         name: Documentation
-        runs-on: ubuntu-20.04
-        env:
-          DOXYGEN_VER: 1.8.18
+        runs-on: ubuntu-24.04
         steps:
             - name: Checkout Repository
               uses: actions/checkout@master
 
-            - name: Install Doxygen
+            - name: Install Documentation Dependencies
               run: |
-                  wget --quiet https://sourceforge.net/projects/doxygen/files/rel-${DOXYGEN_VER}/doxygen-${DOXYGEN_VER}.linux.bin.tar.gz
-                  mkdir doxygen
-                  tar -xf doxygen-${DOXYGEN_VER}.linux.bin.tar.gz -C doxygen --strip 1
-
-            - name: Install Boost
-              run: |
-                  sudo add-apt-repository ppa:mhier/libboost-latest
                   sudo apt-get -qq update
-                  sudo apt-get install -y libboost1.74-dev
+                  sudo apt-get install -y doxygen graphviz libboost-dev
+
+            - name: Check Matrix Cache Guard
+              run: python3 -m unittest discover -s .github/scripts -p 'test_*.py'
 
             - name: Configure
               run: |
@@ -50,7 +44,7 @@ jobs:
                   cmake -DAF_BUILD_CPU:BOOL=OFF -DAF_BUILD_CUDA:BOOL=OFF \
                         -DAF_BUILD_OPENCL:BOOL=OFF -DAF_BUILD_UNIFIED:BOOL=OFF \
                         -DAF_BUILD_EXAMPLES:BOOL=OFF -DBUILD_TESTING:BOOL=OFF \
-                        -DDOXYGEN_EXECUTABLE:FILEPATH=${GITHUB_WORKSPACE}/doxygen/bin/doxygen ..
+                        -DDOXYGEN_EXECUTABLE:FILEPATH=/usr/bin/doxygen ..
 
             - name: Build
               run: |
@@ -63,12 +57,12 @@ jobs:
         needs: [clang-format, documentation]
         env:
           NINJA_VER: 1.10.2
-          CMAKE_VER: 3.16.3
+          CMAKE_VER: 3.28.6
         strategy:
             fail-fast: false
             matrix:
                 blas_backend: [Atlas, MKL, OpenBLAS]
-                os: [ubuntu-20.04, macos-latest]
+                os: [ubuntu-22.04, macos-latest]
                 compiler: [gcc, clang, icx]
                 exclude:
                     - os: macos-latest
@@ -83,6 +77,17 @@ jobs:
             - name: Checkout Repository
               uses: actions/checkout@master
 
+            - name: Restore Matrix Fixtures
+              id: mtx-cache
+              uses: actions/cache/restore@v6.1.0
+              with:
+                  path: build/extern/matrixmarket
+                  key: arrayfire-matrix-fixtures-${{ hashFiles('test/CMakeModules/download_sparse_datasets.cmake') }}
+                  enableCrossOsArchive: true
+
+            - name: Check Matrix Fixture Availability
+              run: python3 .github/scripts/check_matrix_data.py
+
             - name: Download Ninja
               env:
                   OS_NAME: ${{ matrix.os }}
@@ -93,13 +98,12 @@ jobs:
                   chmod +x ninja
                   ${GITHUB_WORKSPACE}/ninja --version
 
-            - name: Download CMake 3.16.3 for Linux
-              if: matrix.os != 'macos-latest'
+            - name: Download CMake
               env:
                   OS_NAME: ${{ matrix.os }}
                   CC: ${{ matrix.compiler }}
               run: |
-                  cmake_suffix=$(if [ $OS_NAME == 'macos-latest' ]; then echo "Darwin-x86_64"; else echo "Linux-x86_64"; fi)
+                  cmake_suffix=$(if [ $OS_NAME == 'macos-latest' ]; then echo "macos-universal"; else echo "linux-x86_64"; fi)
                   cmake_url=$(echo "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VER}/cmake-${CMAKE_VER}-${cmake_suffix}.tar.gz")
                   wget --quiet "${cmake_url}"
                   tar -xf ./cmake-${CMAKE_VER}-${cmake_suffix}.tar.gz
@@ -125,10 +129,9 @@ jobs:
               if: matrix.os == 'macos-latest'
               run: |
                   brew install boost fontconfig glfw freeimage fftw lapack openblas expat
-                  echo "CMAKE_PROGRAM=cmake" >> $GITHUB_ENV
 
             - name: Install Common Dependencies for Ubuntu
-              if: matrix.os == 'ubuntu-20.04' || matrix.os == 'ubuntu-22.04'
+              if: matrix.os == 'ubuntu-22.04'
               run: |
                   sudo add-apt-repository ppa:mhier/libboost-latest
                   sudo apt-get -qq update
@@ -175,7 +178,7 @@ jobs:
                   buildname="$buildname-cpu-$BLAS_BACKEND"
                   cmake_rpath=$(if [ $OS_NAME == 'macos-latest' ]; then echo "-DCMAKE_INSTALL_RPATH=/opt/arrayfire/lib"; fi)
                   if [ "$CC" == 'icx' ] || [ "$USE_MKL" == true ]; then source /opt/intel/oneapi/setvars.sh; fi
-                  mkdir build && cd build && unset VCPKG_ROOT
+                  mkdir -p build && cd build && unset VCPKG_ROOT
                   ${CMAKE_PROGRAM} -G Ninja \
                       -DCMAKE_MAKE_PROGRAM:FILEPATH=${GITHUB_WORKSPACE}/ninja \
                       -DAF_BUILD_CUDA:BOOL=OFF -DAF_BUILD_OPENCL:BOOL=OFF \
@@ -186,6 +189,14 @@ jobs:
                       -DBUILDNAME:STRING=${buildname} ..
                   echo "CTEST_DASHBOARD=${dashboard}" >> $GITHUB_ENV
 
+            - name: Cache Matrix Fixtures
+              if: steps.mtx-cache.outputs.cache-hit != 'true'
+              uses: actions/cache/save@v6.1.0
+              with:
+                  path: build/extern/matrixmarket
+                  key: arrayfire-matrix-fixtures-${{ hashFiles('test/CMakeModules/download_sparse_datasets.cmake') }}
+                  enableCrossOsArchive: true
+
             - name: Build and Test
               env:
                   CC: ${{ matrix.compiler }}
@@ -193,4 +204,14 @@ jobs:
               run: |
                   cd ${GITHUB_WORKSPACE}/build
                   if [ "$CC" == 'icx' ] || [ "$USE_MKL" == true ]; then source /opt/intel/oneapi/setvars.sh; fi
-                  ctest -D Experimental --track ${CTEST_DASHBOARD} -T Test -T Submit -R cpu -j2
+                  ${CMAKE_PROGRAM} --build . --parallel 2
+                  if [ "$RUNNER_OS" == 'macOS' ]; then
+                      export DYLD_LIBRARY_PATH="$(brew --prefix)/lib${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}"
+                  fi
+                  ctest -M Experimental -T Start -T Test --track ${CTEST_DASHBOARD} --output-on-failure --no-tests=error -R cpu -j2
+
+            - name: Submit Dashboard Results
+              continue-on-error: true
+              run: |
+                  cd ${GITHUB_WORKSPACE}/build
+                  ctest -M Experimental -T Submit --track ${CTEST_DASHBOARD}

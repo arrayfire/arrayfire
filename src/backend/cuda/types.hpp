@@ -84,7 +84,7 @@ inline const char *shortname<char>(bool caps) {
 }
 template<>
 inline const char *shortname<schar>(bool caps) {
-    return caps ? "A" : "a"; // TODO
+    return caps ? "A" : "a";  // TODO
 }
 template<>
 inline const char *shortname<uchar>(bool caps) {

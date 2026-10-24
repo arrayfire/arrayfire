@@ -18,8 +18,8 @@ using af::dim4;
 using af::dtype_traits;
 using af::identity;
 using af::randu;
-using af::span;
 using af::seq;
+using af::span;
 
 #define SPARSE_TESTS(T, eps)                                                \
     TEST(Sparse, T##Square) { sparseTester<T>(1000, 1000, 100, 5, eps); }   \
@@ -111,36 +111,38 @@ TEST(Sparse, ISSUE_1745) {
 }
 
 TEST(Sparse, offsets_work_csr_to_dense_ISSUE_1918) {
-    array reference(2,2);
+    array reference(2, 2);
     reference(0, span) = 0;
     reference(1, span) = 2;
-    float value[] = { 1, 1, 2, 2 };
-    int row_csr[] = { 0, 2, 2, 0, 0, 2 };
-    int col[] = { 0, 1, 0, 1 };
+    float value[]      = {1, 1, 2, 2};
+    int row_csr[]      = {0, 2, 2, 0, 0, 2};
+    int col[]          = {0, 1, 0, 1};
     array values(4, 1, value, afHost);
     array rows_csr(6, 1, row_csr, afHost);
     array cols(4, 1, col, afHost);
     array S_csr;
-  
-    S_csr = sparse(2, 2, values(seq(2, 3)), rows_csr(seq(3, 5)), cols(seq(2, 3)));
+
+    S_csr =
+        sparse(2, 2, values(seq(2, 3)), rows_csr(seq(3, 5)), cols(seq(2, 3)));
     array output_csr = dense(S_csr);
 
     EXPECT_ARRAYS_EQ(reference, output_csr);
 }
 
 TEST(Sparse, offsets_work_coo_to_dense_ISSUE_1918) {
-    array reference(2,2);
+    array reference(2, 2);
     reference(0, span) = 0;
     reference(1, span) = 2;
-    float value[] = { 1, 1, 2, 2 };
-    int row_coo[] = { 0, 0, 1, 1 };
-    int col[] = { 0, 1, 0, 1 };
+    float value[]      = {1, 1, 2, 2};
+    int row_coo[]      = {0, 0, 1, 1};
+    int col[]          = {0, 1, 0, 1};
     array values(4, 1, value, afHost);
     array rows_coo(4, 1, row_coo, afHost);
     array cols(4, 1, col, afHost);
     array S_coo;
-  
-    S_coo = sparse(2, 2, values(seq(2, 3)), rows_coo(seq(2, 3)), cols(seq(2, 3)), AF_STORAGE_COO);
+
+    S_coo            = sparse(2, 2, values(seq(2, 3)), rows_coo(seq(2, 3)),
+                              cols(seq(2, 3)), AF_STORAGE_COO);
     array output_coo = dense(S_coo);
 
     EXPECT_ARRAYS_EQ(reference, output_coo);
