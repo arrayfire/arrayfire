@@ -204,4 +204,11 @@ jobs:
               run: |
                   cd ${GITHUB_WORKSPACE}/build
                   if [ "$CC" == 'icx' ] || [ "$USE_MKL" == true ]; then source /opt/intel/oneapi/setvars.sh; fi
-                  ctest -D Experimental --track ${CTEST_DASHBOARD} -T Test -T Submit -R cpu -j2
+                  ${CMAKE_PROGRAM} --build . --parallel 2
+                  ctest -M Experimental -T Start -T Test --track ${CTEST_DASHBOARD} --output-on-failure --no-tests=error -R cpu -j2
+
+            - name: Submit Dashboard Results
+              continue-on-error: true
+              run: |
+                  cd ${GITHUB_WORKSPACE}/build
+                  ctest -M Experimental -T Submit --track ${CTEST_DASHBOARD}
