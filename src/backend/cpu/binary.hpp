@@ -89,7 +89,7 @@ LOGIC_CPLX_FN(double, af_or_t, ||)
 
 template<typename T>
 static T __mod(T lhs, T rhs) {
-    return lhs % rhs; // Same as other backends
+    return lhs % rhs;  // Same as other backends
 }
 
 template<typename T>

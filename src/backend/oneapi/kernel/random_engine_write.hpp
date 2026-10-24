@@ -7,8 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 #pragma once
-#include <sycl/sycl.hpp>
 #include <math.hpp>
+#include <sycl/sycl.hpp>
 
 namespace arrayfire {
 namespace oneapi {
@@ -74,11 +74,12 @@ static double getDoubleNegative11(uint num1, uint num2) {
 
 // Generates rationals in (0, 1]
 sycl::half getHalf01(uint num, uint index) {
-    sycl::half v = static_cast<sycl::half>(min(MAX_INT_BEFORE_INFINITY,
-                       static_cast<ushort>(num >> (16U * (index & 1U)) & 0x0000ffff)));
+    sycl::half v = static_cast<sycl::half>(
+        min(MAX_INT_BEFORE_INFINITY,
+            static_cast<ushort>(num >> (16U * (index & 1U)) & 0x0000ffff)));
 
-    const sycl::half half_factor{1.526e-5}; // (1 / (USHRT_MAX + 1))
-    const sycl::half half_half_factor{7.6e-6}; // (0.5 * half_factor)
+    const sycl::half half_factor{1.526e-5};     // (1 / (USHRT_MAX + 1))
+    const sycl::half half_half_factor{7.6e-6};  // (0.5 * half_factor)
     return sycl::fma(v, half_factor, half_half_factor);
 }
 
@@ -88,11 +89,13 @@ sycl::half oneMinusGetHalf01(uint num, uint index) {
 
 // Generates rationals in (-1, 1]
 sycl::half getHalfNegative11(uint num, uint index) {
-    sycl::half v = static_cast<sycl::half>(min(MAX_INT_BEFORE_INFINITY,
-                       static_cast<ushort>(num >> (16U * (index & 1U)) & 0x0000ffff)));
+    sycl::half v = static_cast<sycl::half>(
+        min(MAX_INT_BEFORE_INFINITY,
+            static_cast<ushort>(num >> (16U * (index & 1U)) & 0x0000ffff)));
 
-    const sycl::half signed_half_factor{3.05e-5}; // (1 / (SHRT_MAX + 1))
-    const sycl::half signed_half_half_factor{1.526e-5}; // (0.5 * signed_half_factor)
+    const sycl::half signed_half_factor{3.05e-5};  // (1 / (SHRT_MAX + 1))
+    const sycl::half signed_half_half_factor{
+        1.526e-5};  // (0.5 * signed_half_factor)
     return sycl::fma(v, signed_half_factor, signed_half_half_factor);
 }
 

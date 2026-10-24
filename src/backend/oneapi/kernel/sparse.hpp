@@ -101,7 +101,8 @@ class csr2DenseCreateKernel {
    public:
     csr2DenseCreateKernel(write_accessor<T> output, read_accessor<T> values,
                           read_accessor<int> rowidx, read_accessor<int> colidx,
-                          const int M, const int v_off, const int r_off, const int c_off)
+                          const int M, const int v_off, const int r_off,
+                          const int c_off)
         : output_(output)
         , values_(values)
         , rowidx_(rowidx)
@@ -120,7 +121,8 @@ class csr2DenseCreateKernel {
             int colStart = rowidx_[rowId + r_off_];
             int colEnd   = rowidx_[rowId + r_off_ + 1];
             for (int colId = colStart + lid; colId < colEnd; colId += THREADS) {
-                output_[rowId + colidx_[colId + c_off_] * M_] = values_[colId + v_off_];
+                output_[rowId + colidx_[colId + c_off_] * M_] =
+                    values_[colId + v_off_];
             }
         }
     }
@@ -191,13 +193,14 @@ class dense2csrCreateKernel {
         if (gidy >= (unsigned)valinfo_.dims[1]) return;
 
         int rowoff       = rowptr_[gidx];
-        auto svalptr_ptr   = svalptr_.get_pointer();
+        auto svalptr_ptr = svalptr_.get_pointer();
         auto scolptr_ptr = scolptr_.get_pointer();
 
-        auto dvalptr_ptr   = dvalptr_.get_pointer();
+        auto dvalptr_ptr = dvalptr_.get_pointer();
         auto dcolptr_ptr = dcolptr_.get_pointer();
 
-        T val = dvalptr_ptr[gidx + gidy * (unsigned)valinfo_.strides[1] + valinfo_.offset];
+        T val = dvalptr_ptr[gidx + gidy * (unsigned)valinfo_.strides[1] +
+                            valinfo_.offset];
 
         if constexpr (std::is_same_v<decltype(val), std::complex<float>> ||
                       std::is_same_v<decltype(val), std::complex<double>>) {
@@ -206,7 +209,8 @@ class dense2csrCreateKernel {
             if (val == 0) return;
         }
 
-        int oloc              = dcolptr_ptr[gidx + gidy * colinfo_.strides[1] + colinfo_.offset];
+        int oloc =
+            dcolptr_ptr[gidx + gidy * colinfo_.strides[1] + colinfo_.offset];
         svalptr_ptr[oloc + rowoff - 1] = val;
         scolptr_ptr[oloc + rowoff - 1] = gidy;
     }
