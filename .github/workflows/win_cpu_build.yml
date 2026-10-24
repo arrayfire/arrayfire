@@ -10,8 +10,8 @@ name: ci
 
 jobs:
     window_build_cpu:
-        name: CPU (fftw, OpenBLAS, windows-latest)
-        runs-on: windows-latest
+        name: CPU (fftw, OpenBLAS, windows-2022)
+        runs-on: windows-2022
         env:
           VCPKG_DEFAULT_TRIPLET: x64-windows
         steps:
@@ -28,7 +28,7 @@ jobs:
                   "VCPKG_ROOT=$env:RUNNER_TEMP/arrayfire-vcpkg" >> $env:GITHUB_ENV
 
             - name: VCPKG Binary Cache
-              uses: actions/cache@v4
+              uses: actions/cache@v6.1.0
               with:
                   path: ~/AppData/Local/vcpkg/archives
                   key: windows-vcpkg-${{ steps.baseline.outputs.commit }}-${{ hashFiles('vcpkg.json', 'CMakeModules/vcpkg/**') }}
@@ -38,7 +38,7 @@ jobs:
               env:
                   VCPKG_BASELINE: ${{ steps.baseline.outputs.commit }}
               run: |
-                  git clone --filter=blob:none https://github.com/microsoft/vcpkg.git $env:VCPKG_ROOT
+                  git clone https://github.com/microsoft/vcpkg.git $env:VCPKG_ROOT
                   if ($LASTEXITCODE) { exit $LASTEXITCODE }
                   git -C $env:VCPKG_ROOT checkout $env:VCPKG_BASELINE
                   if ($LASTEXITCODE) { exit $LASTEXITCODE }
