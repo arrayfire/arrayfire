@@ -13,60 +13,56 @@ jobs:
         name: CPU (fftw, OpenBLAS, windows-latest)
         runs-on: windows-latest
         env:
-          VCPKG_HASH: 9d47b24eacbd1cd94f139457ef6cd35e5d92cc84
           VCPKG_DEFAULT_TRIPLET: x64-windows
         steps:
             - name: Checkout Repository
               uses: actions/checkout@master
 
-            - name: VCPKG Cache
-              uses: actions/cache@v3
-              id: vcpkg-cache
-              with:
-                path: ~/vcpkg
-                key: vcpkg-deps-${{ env.VCPKG_HASH }}
-
-            - name: Install VCPKG Dependencies
-              if: steps.vcpkg-cache.outputs.cache-hit != 'true'
+            - name: Read VCPKG Baseline
+              id: baseline
+              shell: pwsh
               run: |
-                pushd .
-                cd ~
-                git clone --quiet --recursive https://github.com/microsoft/vcpkg.git
-                cd vcpkg
-                git checkout $env:VCPKG_HASH
-                .\bootstrap-vcpkg.bat
-                popd
-                mkdir build && cd build && set VCPKG_ROOT=
-                cmake .. -G "Visual Studio 17 2022" -A x64 `
-                      -DVCPKG_ROOT:PATH=~/vcpkg `
-                      -DAF_BUILD_CUDA:BOOL=OFF -DAF_BUILD_OPENCL:BOOL=OFF `
-                      -DAF_BUILD_UNIFIED:BOOL=OFF -DAF_BUILD_FORGE:BOOL=ON `
-                      -DBUILDNAME:STRING="$buildname" `
-                      -DAF_COMPUTE_LIBRARY:STRING="FFTW/LAPACK/BLAS"
+                  $baseline = (Get-Content vcpkg.json -Raw | ConvertFrom-Json).'builtin-baseline'
+                  if ($baseline -notmatch '^[0-9a-f]{40}$') { throw 'Invalid vcpkg baseline' }
+                  "commit=$baseline" >> $env:GITHUB_OUTPUT
+                  "VCPKG_ROOT=$env:RUNNER_TEMP/arrayfire-vcpkg" >> $env:GITHUB_ENV
+
+            - name: VCPKG Binary Cache
+              uses: actions/cache@v4
+              with:
+                  path: ~/AppData/Local/vcpkg/archives
+                  key: windows-vcpkg-${{ steps.baseline.outputs.commit }}-${{ hashFiles('vcpkg.json', 'CMakeModules/vcpkg/**') }}
+
+            - name: Install VCPKG
+              shell: pwsh
+              env:
+                  VCPKG_BASELINE: ${{ steps.baseline.outputs.commit }}
+              run: |
+                  git clone --filter=blob:none https://github.com/microsoft/vcpkg.git $env:VCPKG_ROOT
+                  if ($LASTEXITCODE) { exit $LASTEXITCODE }
+                  git -C $env:VCPKG_ROOT checkout $env:VCPKG_BASELINE
+                  if ($LASTEXITCODE) { exit $LASTEXITCODE }
+                  & "$env:VCPKG_ROOT/bootstrap-vcpkg.bat" -disableMetrics
+                  if ($LASTEXITCODE) { exit $LASTEXITCODE }
 
             - name: CMake Configure
+              shell: pwsh
               run: |
-                  $ref = $env:GITHUB_REF | %{ if ($_ -match "refs/pull/[0-9]+/merge") { $_;} }
-                  $prnum = $ref | %{$_.Split("/")[2]}
-                  $branch = git branch --show-current
-                  $buildname = if($prnum -eq $null) { $branch } else { "PR-$prnum" }
-                  $dashboard = if($prnum -eq $null) { "Continuous" } else { "Experimental" }
-                  $buildname = "$buildname-cpu-openblas"
-                  if((Test-Path build) -eq 0) {
-                      mkdir build
-                  }
-                  cd build && set VCPKG_ROOT=
-                  cmake .. -G "Visual Studio 17 2022" -A x64 `
-                      -DVCPKG_ROOT:PATH=~/vcpkg `
+                  $buildname = "PR-${{ github.event.number }}-cpu-openblas"
+                  if ('${{ github.event_name }}' -eq 'push') { $buildname = 'master-cpu-openblas' }
+                  cmake -S . -B build -G "Visual Studio 17 2022" -A x64 `
+                      "-DVCPKG_ROOT:PATH=$env:VCPKG_ROOT" `
                       -DAF_BUILD_CUDA:BOOL=OFF -DAF_BUILD_OPENCL:BOOL=OFF `
                       -DAF_BUILD_UNIFIED:BOOL=OFF -DAF_BUILD_FORGE:BOOL=ON `
                       -DBUILDNAME:STRING="$buildname" `
                       -DAF_COMPUTE_LIBRARY:STRING="FFTW/LAPACK/BLAS"
-                  echo "CTEST_DASHBOARD=${dashboard}" >> $env:GITHUB_ENV
+                  if ($LASTEXITCODE) { exit $LASTEXITCODE }
 
             - name: Build and Test
+              shell: pwsh
               run: |
-                  cd build
-                  $build_path = (pwd).Path
-                  $Env:PATH += ";$build_path/vcpkg_installed/x64-windows/bin"
-                  ctest -D Experimental --track ${CTEST_DASHBOARD} -T Test -T Submit -C RelWithDebInfo -R cpu -E pinverse -j2
+                  cmake --build build --config RelWithDebInfo --parallel 2
+                  if ($LASTEXITCODE) { exit $LASTEXITCODE }
+                  $env:PATH += ";$env:GITHUB_WORKSPACE/build/vcpkg_installed/x64-windows/bin"
+                  ctest --test-dir build -C RelWithDebInfo -R cpu -E pinverse --output-on-failure -j2
+                  if ($LASTEXITCODE) { exit $LASTEXITCODE }
