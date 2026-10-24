@@ -129,7 +129,7 @@ af_print(pi);
 #### Contact Us
 
 * If you need to contact us, visit our [contact us
-  page](http://arrayfire.com/company/#contact).
+  page](https://arrayfire.com/company/#contact-us).
 
 #### Email
 
