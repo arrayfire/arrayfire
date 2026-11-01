@@ -30,7 +30,8 @@ namespace cuda {
 
 // clang-format off
 // Latest version from each minor releases are enlisted below
-constexpr std::array<common::Version, 11> cudnnVersions = {
+constexpr std::array<common::Version, 12> cudnnVersions = {
+    Version(9, 27, 0),
     Version(8, 0,  1),
     Version(7, 6,  5),
     Version(7, 5,  1),
@@ -50,9 +51,12 @@ spdlog::logger* cudnnModule::getLogger() const noexcept {
 }
 
 Version cudnnVersionComponents(size_t version) {
-    int major = static_cast<int>(version / 1000);
-    int minor = static_cast<int>((version - (major * 1000)) / 100);
-    int patch = static_cast<int>(version - (major * 1000) - (minor * 100));
+    // cuDNN 9 encodes its version as major * 10000 + minor * 100 + patch
+    // instead of major * 1000 + minor * 100 + patch
+    const int majorScale = version >= 10000 ? 10000 : 1000;
+    int major            = static_cast<int>(version / majorScale);
+    int minor = static_cast<int>((version - (major * majorScale)) / 100);
+    int patch = static_cast<int>(version - (major * majorScale) - (minor * 100));
     return {major, minor, patch};
 }
 
@@ -73,8 +77,9 @@ Version getCudnnVersion(const LibHandle& handle) {
 }
 
 cudnnModule::cudnnModule()
-    : module({"cudnn"}, {"", "64_8", "64_7", "64_6", "64_5", "64_4"}, {""},
-             cudnnVersions.size(), cudnnVersions.data(), getCudnnVersion) {
+    : module({"cudnn"}, {"", "64_9", "64_8", "64_7", "64_6", "64_5", "64_4"},
+             {""}, cudnnVersions.size(), cudnnVersions.data(),
+             getCudnnVersion) {
     if (!module.isLoaded()) {
         AF_TRACE(
             "WARNING: Unable to load cuDNN: {}"

@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <common/dispatch.hpp>
+#include <cuda.h>
 #include <debug_cuda.hpp>
 #include <err_cuda.hpp>
 #include <math.hpp>
@@ -21,7 +22,7 @@
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/scan.h>
 #include <thrust/sort.h>
-#include <thrust/system/cuda/detail/par.h>
+#include <thrust/system/cuda/execution_policy.h>
 #include <thrust/transform_scan.h>
 
 static const int THREADS_X = 16;
@@ -341,7 +342,11 @@ __global__ static void update_equiv(arrayfire::cuda::Param<T> equiv_map,
 }
 
 template<typename T>
+#if CUDA_VERSION < 13000
 struct clamp_to_one : public thrust::unary_function<T, T> {
+#else
+struct clamp_to_one {
+#endif
     __host__ __device__ T operator()(const T& in) const {
         return (in >= (T)1) ? (T)1 : in;
     }

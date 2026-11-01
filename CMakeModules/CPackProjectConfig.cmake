@@ -161,8 +161,8 @@ if(NOT CPACK_GENERATOR MATCHES "DEB")
     DESCRIPTION "ArrayFire development files including headers and configuration files"
     EXPANDED)
 
-  if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR
-     CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+  if(CPACK_CMAKE_BUILD_TYPE STREQUAL "Debug" OR
+     CPACK_CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     cpack_add_component_group(debug
       DISPLAY_NAME "ArrayFire Debug Symbols"
       DESCRIPTION "ArrayFire Debug symbols")
@@ -476,8 +476,8 @@ endif()
 # Debug symbols in debian installers are created using the DEBINFO property
 if(NOT APPLE AND
    NOT CPACK_GENERATOR MATCHES "DEB")
-  if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR
-     CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+  if(CPACK_CMAKE_BUILD_TYPE STREQUAL "Debug" OR
+     CPACK_CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     af_component(
       COMPONENT afoneapi_debug_symbols
       DISPLAY_NAME "oneAPI Debug Symbols"

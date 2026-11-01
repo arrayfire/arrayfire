@@ -87,13 +87,15 @@ pkg_check_modules(PC_CUDNN QUIET cuDNN)
 
 find_package(CUDA QUIET)
 
+# cuDNN 9 installers keep a tree for each supported CUDA toolkit, such as
+# include/13.4, lib/13.4/x64 and bin/13.4/x64, under cuDNN_ROOT_DIR
 find_path(cuDNN_INCLUDE_DIRS
   NAMES cudnn.h
   HINTS
     ${cuDNN_ROOT_DIR}
     ${PC_CUDNN_INCLUDE_DIRS}
     ${CUDA_TOOLKIT_INCLUDE}
-  PATH_SUFFIXES include
+  PATH_SUFFIXES include include/${CUDA_VERSION}
   DOC "cuDNN include directory path." )
 
 if(cuDNN_INCLUDE_DIRS)
@@ -149,7 +151,7 @@ if(cuDNN_INCLUDE_DIRS)
         $ENV{LD_LIBRARY_PATH}
         ${libpath_cudart}
         ${CMAKE_INSTALL_PREFIX}
-      PATH_SUFFIXES lib lib64 bin lib/x64 bin/x64
+      PATH_SUFFIXES lib lib64 bin lib/x64 bin/x64 lib/${CUDA_VERSION}/x64
       DOC "cudnn${cudnn_lib_name_infix} link library." )
     mark_as_advanced(cuDNN${LIB_INFIX}_LINK_LIBRARY)
 
@@ -162,7 +164,7 @@ if(cuDNN_INCLUDE_DIRS)
         $ENV{PATH}
         ${libpath_cudart}
         ${CMAKE_INSTALL_PREFIX}
-      PATH_SUFFIXES lib lib64 bin lib/x64 bin/x64
+      PATH_SUFFIXES lib lib64 bin lib/x64 bin/x64 bin/${CUDA_VERSION}/x64
       DOC "cudnn${cudnn_lib_name_infix} Windows DLL." )
       mark_as_advanced(cuDNN${LIB_INFIX}_DLL_LIBRARY)
     endif()
@@ -180,6 +182,11 @@ if(cuDNN_INCLUDE_DIRS)
     af_find_cudnn_libs("_adv")
     af_find_cudnn_libs("_cnn")
     af_find_cudnn_libs("_ops")
+    af_find_cudnn_libs("_graph")
+    af_find_cudnn_libs("_heuristic")
+    af_find_cudnn_libs("_engines_precompiled")
+    af_find_cudnn_libs("_engines_runtime_compiled")
+    af_find_cudnn_libs("_engines_tensor_ir")
   endif()
 endif()
 

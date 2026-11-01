@@ -74,6 +74,7 @@ macro(to_cpack_variable variable)
 endmacro()
 
 to_cpack_variable(AF_COMPUTE_LIBRARY)
+to_cpack_variable(CMAKE_BUILD_TYPE)
 to_cpack_variable(ArrayFire_SOURCE_DIR)
 to_cpack_variable(ArrayFire_BINARY_DIR)
 to_cpack_variable(CUDA_VERSION_MAJOR)

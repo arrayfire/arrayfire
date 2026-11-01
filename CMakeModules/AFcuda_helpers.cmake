@@ -5,6 +5,13 @@
 # The complete license agreement can be obtained at:
 # http://arrayfire.com/licenses/BSD-3-Clause
 
+# FindCUDA ships its own, older select_compute_arch.cmake that defines the
+# same cuda_select_nvcc_arch_flags function. Ours must be included after
+# find_package(CUDA) and before the call below, otherwise CMake's copy runs
+# and rejects two-digit architectures (12.0) and names it does not know
+# (Blackwell).
+include(select_compute_arch)
+
 find_program(NVPRUNE NAMES nvprune)
 cuda_select_nvcc_arch_flags(cuda_architecture_flags ${CUDA_architecture_build_targets})
 set(cuda_architecture_flags ${cuda_architecture_flags} CACHE INTERNAL "CUDA compute flags" FORCE)
