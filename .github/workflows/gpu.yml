@@ -1,0 +1,315 @@
+name: GPU tests
+
+# Builds one commit for each requested leg (a CUDA version, or OpenCL) on standard
+# runners, then runs ArrayFire's tests of each leg on a GPU runner. The scripts and
+# build settings come from the ref this workflow runs on; only the source tree
+# comes from the requested commit. Callers must run from a trusted ref, never from
+# a pull request.
+#
+# One approval covers every leg: the approve job uses the gpu-tests environment,
+# so it waits until one of the environment's required reviewers approves it, and
+# every test job waits for it. It starts with the builds, so a reviewer can approve
+# while they run. The test jobs start once every build has finished, since a job
+# that needs a matrix job waits for all of its legs, and each uses only its own
+# leg's build: a failed build fails its own leg, which costs about a minute of the
+# GPU runner, and the other legs go on. The legs run on GPU runners at the same
+# time, as many as the runner group allows.
+#
+# Repository variables: AF_CI_GPU_TESTS ('true' turns the jobs on) and
+# AF_CI_GPU_RUNNER (the label of the GPU runners). test-requests.yml reads
+# AF_CI_CUDA_VERSIONS, the CUDA versions a request tests by default.
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: Full 40-character SHA of the commit to test
+        required: true
+        type: string
+      backends:
+        description: The backends to test
+        default: cuda
+        type: choice
+        options: [cuda, opencl, cuda opencl]
+      cuda-versions:
+        description: CUDA toolkit versions, separated by spaces, e.g. 12.9 13.4
+        default: '12.9'
+        type: string
+      cuda-architectures:
+        description: GPU architectures to build for (the T4 is 7.5)
+        default: '7.5'
+        type: string
+  workflow_call:
+    inputs:
+      sha:
+        description: Full 40-character SHA of the commit to test
+        required: true
+        type: string
+      backends:
+        description: The backends to test, cuda, opencl or both, separated by a space
+        default: cuda
+        type: string
+      cuda-versions:
+        description: CUDA toolkit versions, separated by spaces
+        default: '12.9'
+        type: string
+      cuda-architectures:
+        description: GPU architectures to build for (the T4 is 7.5)
+        default: '7.5'
+        type: string
+    outputs:
+      test-summary:
+        description: One line with each leg's result; empty when the jobs did not run
+        value: ${{ jobs.summary.outputs.summary }}
+      test-report:
+        description: A Markdown list with each leg's result and failed tests
+        value: ${{ jobs.summary.outputs.report }}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gpu-tests-${{ inputs.sha }}-${{ inputs.backends }}-${{ inputs.cuda-versions }}
+  cancel-in-progress: false
+
+env:
+  SHA: ${{ inputs.sha }}
+  AF_CI_CUDA_ARCHITECTURES: ${{ inputs.cuda-architectures }}
+
+jobs:
+  plan:
+    if: vars.AF_CI_GPU_TESTS == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      legs: ${{ steps.plan.outputs.legs }}
+    steps:
+      - id: plan
+        name: Check the inputs and list the legs
+        env:
+          BACKENDS: ${{ inputs.backends }}
+          CUDA_VERSIONS: ${{ inputs.cuda-versions }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          fail() { echo "::error::$*"; exit 1; }
+          [[ $SHA =~ ^[0-9a-fA-F]{40}$ ]] || fail "sha must be a full 40-character commit SHA, not '$SHA'"
+          [[ $AF_CI_CUDA_ARCHITECTURES =~ ^[0-9.\;+A-Za-z]+$ ]] ||
+            fail "cuda-architectures must be a list like 7.5;8.9"
+          [[ $EVENT != pull_request* ]] ||
+            fail "the scripts would come from a pull request; call this from a trusted ref"
+          legs=()
+          for backend in $BACKENDS; do
+            case $backend in
+              cuda)
+                [[ -n ${CUDA_VERSIONS// } ]] || fail "testing CUDA needs cuda-versions"
+                for version in $CUDA_VERSIONS; do
+                  [[ $version =~ ^[0-9]+\.[0-9]+$ ]] ||
+                    fail "cuda-versions must list versions like 12.9 13.4, not '$CUDA_VERSIONS'"
+                  legs+=("{\"id\":\"cuda-$version\",\"name\":\"CUDA $version\",\"job\":\"linux-cuda-gpu\",\"cuda\":\"$version\"}")
+                done
+                ;;
+              opencl) legs+=('{"id":"opencl","name":"OpenCL","job":"linux-opencl-gpu","cuda":""}') ;;
+              *) fail "backends must be cuda, opencl or both, not '$BACKENDS'" ;;
+            esac
+          done
+          ((${#legs[@]})) || fail "backends must be cuda, opencl or both, not '$BACKENDS'"
+          json=$(printf '%s\n' "${legs[@]}" | jq -sc 'unique_by(.id)')
+          echo "Legs: $(jq -r 'map(.name) | join(", ")' <<< "$json")"
+          echo "legs=$json" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: build (${{ matrix.leg.name }})
+    needs: plan
+    strategy:
+      fail-fast: false
+      matrix:
+        leg: ${{ fromJSON(needs.plan.outputs.legs) }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      AF_CI_SOURCE_DIR: ${{ github.workspace }}/under-test
+      AF_CI_CCACHE_DIR: ${{ github.workspace }}/build/ccache
+      AF_CI_CUDA_VERSION: ${{ matrix.leg.cuda }}
+      CCACHE_MAXSIZE: 1G
+      CMAKE_BUILD_PARALLEL_LEVEL: 4
+      JOB: ${{ matrix.leg.job }}
+      LEG: ${{ matrix.leg.id }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check out the commit under test
+        run: .github/scripts/checkout-commit.sh "$SHA" "$AF_CI_SOURCE_DIR"
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: build/ccache
+          key: ccache-gpu-${{ matrix.leg.id }}-${{ inputs.sha }}
+          restore-keys: ccache-gpu-${{ matrix.leg.id }}-
+      - name: Build
+        run: .github/scripts/ci.sh --docker "$JOB-build"
+      # Only a build of this ref's own commit saves the ccache: any other commit
+      # could plant entries in it.
+      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: inputs.sha == github.sha
+        with:
+          path: build/ccache
+          key: ccache-gpu-${{ matrix.leg.id }}-${{ inputs.sha }}
+      # An unzipped artifact takes its file's name, so each leg's archive gets its own.
+      - name: Name the archive after the leg
+        run: mv "under-test/build/ci-$JOB.tar.zst" "under-test/build/gpu-build-$LEG.tar.zst"
+      # Kept as long as the test jobs can wait for their approval: 30 days, after
+      # which GitHub fails the waiting jobs.
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !env.ACT }}
+        with:
+          path: under-test/build/gpu-build-${{ matrix.leg.id }}.tar.zst
+          archive: false
+          retention-days: 30
+          if-no-files-found: error
+
+  # The one approval for every leg of the run.
+  approve:
+    if: vars.AF_CI_GPU_TESTS == 'true' && vars.AF_CI_GPU_RUNNER != ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    environment: gpu-tests
+    steps:
+      - name: Approved
+        run: echo "A reviewer approved the GPU tests of $SHA."
+
+  test:
+    name: test (${{ matrix.leg.name }})
+    needs: [plan, build, approve]
+    # Every leg, once approved, whatever the other legs' builds did.
+    if: ${{ !cancelled() && needs.plan.result == 'success' && needs.approve.result == 'success' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        leg: ${{ fromJSON(needs.plan.outputs.legs) }}
+    runs-on: ${{ vars.AF_CI_GPU_RUNNER }}
+    # A run took up to 9 min on an RTX 4070 Ti: 2–3 min of packages, 4–6 min of tests.
+    # A T4 runs the tests slower.
+    timeout-minutes: 45
+    env:
+      AF_CI_SOURCE_DIR: ${{ github.workspace }}/under-test
+      AF_CI_CUDA_VERSION: ${{ matrix.leg.cuda }}
+      JOB: ${{ matrix.leg.job }}
+      LEG: ${{ matrix.leg.id }}
+      NAME: ${{ matrix.leg.name }}
+    steps:
+      # First, so that a leg whose build failed stops before anything else.
+      - id: archive
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: gpu-build-${{ matrix.leg.id }}.tar.zst
+          path: ${{ runner.temp }}/archive
+      - name: Check the GPU and Docker's access to it
+        run: |
+          if ! nvidia-smi > /dev/null; then
+            echo "nvidia-smi failed; loading the NVIDIA kernel modules and trying again"
+            sudo modprobe nvidia || true
+            sudo modprobe nvidia_uvm || true
+          fi
+          nvidia-smi
+          docker info --format 'Docker runtimes: {{range $name, $_ := .Runtimes}}{{$name}} {{end}}(default: {{.DefaultRuntime}})'
+          nvidia-ctk --version || echo "nvidia-ctk, NVIDIA's container toolkit, isn't on the PATH"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check out the commit under test
+        run: |
+          .github/scripts/checkout-commit.sh "$SHA" "$AF_CI_SOURCE_DIR"
+          mkdir -p "$AF_CI_SOURCE_DIR/build"
+          mv "$RUNNER_TEMP/archive/gpu-build-$LEG.tar.zst" "$AF_CI_SOURCE_DIR/build/ci-$JOB.tar.zst"
+      - name: Test
+        run: .github/scripts/ci.sh --docker "$JOB-test"
+      - name: Summarize the results
+        if: ${{ !cancelled() }}
+        env:
+          ARCHIVE: ${{ steps.archive.outcome }}
+        run: |
+          log=$AF_CI_SOURCE_DIR/build/ci-$JOB/ctest.log
+          counts=
+          [[ -f $log ]] &&
+            counts=$(sed -n 's/.* tests passed, \([0-9]*\) tests\{0,1\} failed out of \([0-9]*\)$/\1 \2/p' "$log")
+          if [[ $ARCHIVE != success ]]; then
+            line="$NAME: build failed"
+          elif [[ ! -f $log ]]; then
+            line="$NAME: the tests did not run"
+          elif [[ -z $counts ]]; then
+            line="$NAME: the test run did not finish"
+          else
+            read -r failed total <<< "$counts"
+            line="$NAME: $((total - failed)) of $total passed"
+            failures=$(sed -n '/The following tests FAILED/,$s/^[[:space:]]*[0-9]* - \([^ ]*\) .*/\1/p' "$log" |
+                       paste -sd, - | sed 's/,/, /g')
+            [[ -z $failures ]] || line+="; failed: $failures"
+          fi
+          mkdir -p "$RUNNER_TEMP/legs"
+          echo "$line" > "$RUNNER_TEMP/legs/$LEG.txt"
+          {
+            echo "### $NAME tests of $SHA"
+            echo "$line"
+            [[ ! -f $log ]] || grep -E 'tests passed|Total Test time' "$log" || true
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !cancelled() && !env.ACT }}
+        with:
+          name: gpu-leg-${{ matrix.leg.id }}
+          path: ${{ runner.temp }}/legs/${{ matrix.leg.id }}.txt
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !cancelled() && !env.ACT }}
+        with:
+          name: gpu-test-results-${{ matrix.leg.id }}
+          path: |
+            under-test/build/ci-${{ matrix.leg.job }}/junit.xml
+            under-test/build/ci-${{ matrix.leg.job }}/ctest.log
+            under-test/build/ci-${{ matrix.leg.job }}/Testing/Temporary/LastTest.log
+          if-no-files-found: ignore
+
+  # Every leg's result, for the caller's commit status and comment.
+  summary:
+    needs: [plan, approve, test]
+    if: always() && needs.plan.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      summary: ${{ steps.summary.outputs.summary }}
+      report: ${{ steps.summary.outputs.report }}
+    steps:
+      # Finds nothing when no test job got as far as its summary.
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        continue-on-error: true
+        with:
+          pattern: gpu-leg-*
+          merge-multiple: true
+          path: legs
+      - id: summary
+        name: Summarize every leg
+        env:
+          LEGS: ${{ needs.plan.outputs.legs }}
+          APPROVAL: ${{ needs.approve.result }}
+        run: |
+          summary='' report=''
+          while IFS=$'\t' read -r leg name; do
+            if [[ -f legs/$leg.txt ]]; then
+              line=$(< "legs/$leg.txt")
+            elif [[ $APPROVAL != success ]]; then
+              line="$name: not run (approval: $APPROVAL)"
+            else
+              line="$name: not run"
+            fi
+            summary+="${summary:+; }${line%%; failed:*}"
+            report+="- $line"$'\n'
+          done < <(jq -r '.[] | [.id, .name] | @tsv' <<< "$LEGS")
+          delimiter=END_$(openssl rand -hex 16)
+          {
+            echo "summary=$summary"
+            echo "report<<$delimiter"
+            printf '%s' "$report"
+            echo "$delimiter"
+          } >> "$GITHUB_OUTPUT"
+          {
+            echo "### GPU tests of $SHA"
+            printf '%s' "$report"
+          } >> "$GITHUB_STEP_SUMMARY"
