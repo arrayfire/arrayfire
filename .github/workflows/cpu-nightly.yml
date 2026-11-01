@@ -1,0 +1,73 @@
+name: CPU nightly
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  linux:
+    name: ${{ matrix.job }}
+    if: github.event_name != 'schedule' || github.repository == 'arrayfire/arrayfire'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        job: [linux-icx-mkl, linux-gcc-openblas-floor]
+    env:
+      AF_CI_CCACHE_DIR: ${{ github.workspace }}/build/ccache
+      CCACHE_MAXSIZE: 500M
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: build/ccache
+          key: ccache-${{ matrix.job }}-${{ github.sha }}
+          restore-keys: ccache-${{ matrix.job }}-
+      - name: Build and test
+        run: .github/scripts/ci.sh --docker ${{ matrix.job }}
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !cancelled() && !env.ACT }}
+        with:
+          name: junit-${{ matrix.job }}
+          path: build/ci-${{ matrix.job }}/junit.xml
+          if-no-files-found: ignore
+
+  # The newest toolchains may break before master is fixed, so this job may fail
+  # without failing the run.
+  linux-next:
+    name: linux-gcc-openblas-next
+    if: github.event_name != 'schedule' || github.repository == 'arrayfire/arrayfire'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    continue-on-error: true
+    env:
+      AF_CI_CCACHE_DIR: ${{ github.workspace }}/build/ccache
+      CCACHE_MAXSIZE: 500M
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: build/ccache
+          key: ccache-linux-gcc-openblas-next-${{ github.sha }}
+          restore-keys: ccache-linux-gcc-openblas-next-
+      - name: Build and test
+        run: .github/scripts/ci.sh --docker linux-gcc-openblas-next
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !cancelled() && !env.ACT }}
+        with:
+          name: junit-linux-gcc-openblas-next
+          path: build/ci-linux-gcc-openblas-next/junit.xml
+          if-no-files-found: ignore

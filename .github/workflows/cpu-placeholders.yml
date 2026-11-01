@@ -1,0 +1,28 @@
+name: CPU tests (pull request)
+
+# A pull request needs every required check to pass before it can join the merge
+# queue, but the CPU tests run only in the queue (cpu.yml). These jobs give the
+# pull request the same check names and pass at once. They must not run on
+# merge_group, where a passing job of the same name could hide a failing one.
+on:
+  pull_request:
+    branches:
+      - master
+
+permissions: {}
+
+jobs:
+  placeholder:
+    name: ${{ matrix.job }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    strategy:
+      matrix:
+        job:
+          - linux-gcc-openblas
+          - linux-clang-openblas
+          - macos-arm64-clang-accelerate
+          - windows-msvc-openblas
+    steps:
+      - name: Runs in the merge queue
+        run: echo "The CPU tests run in the merge queue. To run them on this pull request now, comment /cpu-tests."
