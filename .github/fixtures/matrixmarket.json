@@ -1,0 +1,87 @@
+{
+  "source": "https://sparse.tamu.edu/",
+  "archive_sha256": "a6806c0e5f47be63f60713686382414f372bc98afe7410cbafe72362fcc22c84",
+  "files": {
+    "JGD_Kocay/Trec4/Trec4.mtx": {
+      "sha256": "c33e82bc1728021c4a29937f502a610dda9c7a81748bff47badc65e4bf3b7408",
+      "bytes": 2263,
+      "rows": 2,
+      "columns": 3,
+      "entries": 3,
+      "download_url": "https://sparse.tamu.edu/MM/JGD_Kocay/Trec4.tar.gz",
+      "original_archive_sha256": "f49eedd1c2904df742cd492e0e30fc928bcf904f0ec1c4225a05c9e8d8f1e30d"
+    },
+    "HB/bcsstm02/bcsstm02.mtx": {
+      "sha256": "c8c629d8ea30269b3ee71a0fce17914e463359e817ae4553d3745b98f0cddae1",
+      "bytes": 1884,
+      "rows": 66,
+      "columns": 66,
+      "entries": 66,
+      "download_url": "https://sparse.tamu.edu/MM/HB/bcsstm02.tar.gz",
+      "original_archive_sha256": "72897c2859efed23dad58748683dc094fbbf2ea63532f83b8deedbcb961c7c98"
+    },
+    "HB/young4c/young4c.mtx": {
+      "sha256": "06db1d6ff551065237809e3d79991e1788ab24eae295a1cd3eb37dab342a59e5",
+      "bytes": 61922,
+      "rows": 841,
+      "columns": 841,
+      "entries": 4089,
+      "download_url": "https://sparse.tamu.edu/MM/HB/young4c.tar.gz",
+      "original_archive_sha256": "1f53a17ddfc4fdfd291db74ef02eb8c3edfc65b799e62a9feb3794fe42e05c3e"
+    },
+    "LPnetlib/lpi_vol1/lpi_vol1.mtx": {
+      "sha256": "325ad6f923f11926add3481621f90eb08003377f69377756477fc05067bac3e0",
+      "bytes": 23421,
+      "rows": 323,
+      "columns": 464,
+      "entries": 1646,
+      "download_url": "https://sparse.tamu.edu/MM/LPnetlib/lpi_vol1.tar.gz",
+      "original_archive_sha256": "0e9a9897560ad0829030dad1adea06cd4fb0dd50fcc3910132d9bc00f1db6bc9"
+    },
+    "LPnetlib/lpi_qual/lpi_qual.mtx": {
+      "sha256": "195e2e19664ebf88fb0eeb25e882934fb05e176d7c0b867752a7610caa57dbde",
+      "bytes": 23342,
+      "rows": 323,
+      "columns": 464,
+      "entries": 1646,
+      "download_url": "https://sparse.tamu.edu/MM/LPnetlib/lpi_qual.tar.gz",
+      "original_archive_sha256": "54fb7b137891c1d82fe349854d0a7719cfe1e8dab1e23ab3e4ec230a29341873"
+    },
+    "Sandia/oscil_dcop_12/oscil_dcop_12.mtx": {
+      "sha256": "8da3dcf47cc90668c9d808c389b261e0ef32cb6411095810f96a71cde9161155",
+      "bytes": 31102,
+      "rows": 430,
+      "columns": 430,
+      "entries": 1544,
+      "download_url": "https://sparse.tamu.edu/MM/Sandia/oscil_dcop_12.tar.gz",
+      "original_archive_sha256": "fad82385c1d134640e581f698eac6e835a2d9d9a9b7d6db9892d4b9919630da7"
+    },
+    "Sandia/oscil_dcop_42/oscil_dcop_42.mtx": {
+      "sha256": "a1cfe04f2891763afea28064ca8c1f3337e86aac652fdcdf86afe81577966cbf",
+      "bytes": 31086,
+      "rows": 430,
+      "columns": 430,
+      "entries": 1544,
+      "download_url": "https://sparse.tamu.edu/MM/Sandia/oscil_dcop_42.tar.gz",
+      "original_archive_sha256": "3a7fce53d2bfbe26dd0bde2995f7b52078ac33359ced79680581ce90fced0b17"
+    },
+    "QCD/conf6_0-4x4-20/conf6_0-4x4-20.mtx": {
+      "sha256": "cffe2924b9f21f869b2ee8fb8d00b042653ac1a62775d5ac40d0b6d1c527a152",
+      "bytes": 5087623,
+      "rows": 3072,
+      "columns": 3072,
+      "entries": 119808,
+      "download_url": "https://sparse.tamu.edu/MM/QCD/conf6_0-4x4-20.tar.gz",
+      "original_archive_sha256": "f6be76ab90502bbd6d645d6cc925ff01efac8d5437927b9e0ebfb57f07b7a4bc"
+    },
+    "QCD/conf6_0-4x4-30/conf6_0-4x4-30.mtx": {
+      "sha256": "5ede088c30cd221bad591af166b76f38e5005e86d9a6f610b3b046815fc95738",
+      "bytes": 5087643,
+      "rows": 3072,
+      "columns": 3072,
+      "entries": 119808,
+      "download_url": "https://sparse.tamu.edu/MM/QCD/conf6_0-4x4-30.tar.gz",
+      "original_archive_sha256": "6c8576ee077339c96747b861a298dc774a1dff7aaf9a1068b91932f89e48ff96"
+    }
+  }
+}
