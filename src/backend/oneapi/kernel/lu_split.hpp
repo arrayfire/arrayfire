@@ -77,7 +77,7 @@ class luSplitKernel {
                             Yd_u[ox] = Yd_i[ox];
                     } else if (ox == oy) {
                         if (same_dims || oy < lInfo_.dims[1])
-                            Yd_l[ox] = scalar<T>(1.0);
+                            Yd_l[ox] = scalar<T>(1);
                         if (!same_dims || ox < uInfo_.dims[0])
                             Yd_u[ox] = Yd_i[ox];
                     }

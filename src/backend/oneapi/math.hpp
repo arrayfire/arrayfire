@@ -102,21 +102,11 @@ inline auto is_nan<cdouble>(const cdouble &in) -> bool {
     return sycl::isnan(real(in)) || sycl::isnan(imag(in));
 }
 
-template<typename T>
-static T scalar(double val) {
+// The argument keeps its own type. A double parameter makes every kernel that
+// calls this require fp64, which throws on devices without double support
+template<typename T, typename Ti>
+static T scalar(Ti val) {
     return (T)(val);
-}
-
-template<>
-inline cfloat scalar<cfloat>(double val) {
-    cfloat cval(static_cast<float>(val));
-    return cval;
-}
-
-template<>
-inline cdouble scalar<cdouble>(double val) {
-    cdouble cval(val);
-    return cval;
 }
 
 template<typename To, typename Ti>
