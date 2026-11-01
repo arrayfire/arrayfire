@@ -1,5 +1,4 @@
-Interoperability with CUDA {#interop_cuda}
-========
+\page interop_cuda Interoperability with CUDA
 
 Although ArrayFire is quite extensive, there remain many cases in which you
 may want to write custom kernels in CUDA or [OpenCL](\ref interop_opencl).

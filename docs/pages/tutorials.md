@@ -1,4 +1,4 @@
-# Tutorials {#tutorials}
+\page tutorials Tutorials
 
 * [Installation](\ref installing)
 * [Using on Linux](\ref using_on_linux)

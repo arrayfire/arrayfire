@@ -1,5 +1,4 @@
-Introduction to Vectorization {#vectorization}
-===================
+\page vectorization Introduction to Vectorization
 
 Programmers and Data Scientists want to take advantage of fast and parallel
 computational devices. Writing vectorized code is necessary to get
