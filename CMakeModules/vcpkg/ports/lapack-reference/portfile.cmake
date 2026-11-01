@@ -123,6 +123,7 @@ if("cblas" IN_LIST FEATURES)
 endif()
 #vcpkg_fixup_pkgconfig()
 
+# The lapack metaport owns lapack.pc and requires lapack-reference
 file(RENAME "${CURRENT_PACKAGES_DIR}/lib/pkgconfig/lapack.pc" "${CURRENT_PACKAGES_DIR}/lib/pkgconfig/lapack-reference.pc")
 if(EXISTS "${CURRENT_PACKAGES_DIR}/debug/lib/pkgconfig/lapack.pc")
     file(RENAME "${CURRENT_PACKAGES_DIR}/debug/lib/pkgconfig/lapack.pc" "${CURRENT_PACKAGES_DIR}/debug/lib/pkgconfig/lapack-reference.pc")
@@ -157,5 +158,6 @@ if(VCPKG_TARGET_IS_WINDOWS)
     endif()
 endif()
 
+# The lapack metaport copies these into share/lapack
 file(COPY ${CMAKE_CURRENT_LIST_DIR}/vcpkg-cmake-wrapper.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT}/wrapper)
 file(COPY ${CMAKE_CURRENT_LIST_DIR}/FindLAPACK.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT})

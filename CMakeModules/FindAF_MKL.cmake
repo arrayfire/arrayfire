@@ -304,7 +304,9 @@ function(find_mkl_library)
         ${CMAKE_SHARED_LIBRARY_PREFIX}${mkl_args_LIBRARY_NAME}${CMAKE_SHARED_LIBRARY_SUFFIX}
         ${CMAKE_SHARED_LIBRARY_PREFIX}${mkl_args_LIBRARY_NAME}${md_suffix}${CMAKE_SHARED_LIBRARY_SUFFIX}
         ${CMAKE_SHARED_LIBRARY_PREFIX}${mkl_args_LIBRARY_NAME}.2${CMAKE_SHARED_LIBRARY_SUFFIX}
+        ${CMAKE_SHARED_LIBRARY_PREFIX}${mkl_args_LIBRARY_NAME}.3${CMAKE_SHARED_LIBRARY_SUFFIX}
         ${CMAKE_SHARED_LIBRARY_PREFIX}${mkl_args_LIBRARY_NAME}.5${CMAKE_SHARED_LIBRARY_SUFFIX}
+        ${CMAKE_SHARED_LIBRARY_PREFIX}${mkl_args_LIBRARY_NAME}.6${CMAKE_SHARED_LIBRARY_SUFFIX}
         ${CMAKE_SHARED_LIBRARY_PREFIX}${mkl_args_LIBRARY_NAME}12${CMAKE_SHARED_LIBRARY_SUFFIX}
         lib${mkl_args_LIBRARY_NAME}${md_suffix}${CMAKE_SHARED_LIBRARY_SUFFIX}
         $ENV{LIB}
@@ -380,7 +382,9 @@ else()
   find_mkl_library(NAME InterfaceLP LIBRARY_NAME mkl_intel_lp64 SEARCH_STATIC)
 endif()
 
-set(MKL_KernelLibraries "mkl_def;mkl_mc;mkl_mc3;mkl_avx;mkl_avx2;mkl_avx512")
+set(MKL_KernelLibraries "mkl_def;mkl_mc;mkl_mc3;mkl_avx;mkl_avx2;mkl_avx512;mkl_avx10"
+                        "mkl_vml_def;mkl_vml_mc3;mkl_vml_avx2;mkl_vml_avx512"
+                        "mkl_vml_avx10;mkl_vml_cmpt")
 
 foreach(lib ${MKL_KernelLibraries})
   find_mkl_library(NAME ${lib} LIBRARY_NAME ${lib} DLL_ONLY)
@@ -395,7 +399,7 @@ foreach(lib ${MKL_KernelLibraries})
 endforeach()
 
 set(MKL_RUNTIME_KERNEL_LIBRARIES "${MKL_RUNTIME_KERNEL_LIBRARIES_TMP}" CACHE STRING
-    "MKL kernel libraries targeting different CPU architectures")
+    "MKL kernel libraries targeting different CPU architectures" FORCE)
 mark_as_advanced(MKL_RUNTIME_KERNEL_LIBRARIES)
 
 # Bypass developer warning that the first argument to find_package_handle_standard_args (MKL_...) does not match

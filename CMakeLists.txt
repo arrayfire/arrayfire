@@ -53,7 +53,10 @@ endif()
 if(CMAKE_SYCL_COMPILER)
   get_filename_component(SYCL_COMPILER_NAME ${CMAKE_SYCL_COMPILER} NAME)
 endif()
-if(SYCL_COMPILER_NAME STREQUAL "dpcpp" OR SYCL_COMPILER_NAME STREQUAL "dpcpp.exe"
+# CMAKE_SYCL_COMPILER is not set until src/backend/oneapi enables SYCL, so also
+# check AF_BUILD_ONEAPI for the selection to be the same on the first configure
+if(AF_BUILD_ONEAPI
+   OR SYCL_COMPILER_NAME STREQUAL "dpcpp" OR SYCL_COMPILER_NAME STREQUAL "dpcpp.exe"
    OR SYCL_COMPILER_NAME STREQUAL "icpx" OR SYCL_COMPILER_NAME STREQUAL "icx.exe")
   set(MKL_THREAD_LAYER "TBB" CACHE STRING "The thread layer to choose for MKL")
   set(TBB_ROOT "$ENV{TBBROOT}")
@@ -254,10 +257,23 @@ endif()
 #otherwise, forge is not built at all
 include(AFconfigure_forge_dep)
 
+set(af_fmt fmt::fmt)
 if(TARGET fmt::fmt AND AF_WITH_FMT_HEADER_ONLY)
   set_target_properties(fmt::fmt
     PROPERTIES
       INTERFACE_COMPILE_DEFINITIONS "FMT_HEADER_ONLY=1")
+
+  # fmt::fmt still links the fmt library. Packaged spdlog targets also link it
+  if(TARGET fmt::fmt-header-only)
+    set(af_fmt fmt::fmt-header-only)
+    if(TARGET spdlog::spdlog_header_only)
+      get_target_property(spdlog_libs spdlog::spdlog_header_only INTERFACE_LINK_LIBRARIES)
+      list(TRANSFORM spdlog_libs REPLACE "^fmt::fmt$" "fmt::fmt-header-only")
+      set_target_properties(spdlog::spdlog_header_only
+        PROPERTIES
+          INTERFACE_LINK_LIBRARIES "${spdlog_libs}")
+    endif()
+  endif()
 endif()
 
 if(TARGET spdlog::spdlog OR AF_WITH_EXTERNAL_PACKAGES_ONLY)
@@ -539,6 +555,51 @@ if(WIN32 AND AF_INSTALL_STANDALONE)
   get_filename_component(MSVC_REDIST_INSTALLER ${MSVC_REDIST} NAME)
   install(PROGRAMS ${MSVC_REDIST} COMPONENT common_backend_dependencies
           DESTINATION ${AF_INSTALL_BIN_DIR})
+
+  # Collect whatever the backends and FreeImage import that no other component
+  # installs: package manager DLLs, compiler runtimes, FreeImage's codecs.
+  # Libraries loaded at runtime don't appear in import tables, so MKL's kernels
+  # are listed in FindAF_MKL and cuDNN's in src/backend/cuda/CMakeLists.txt
+  get_filename_component(af_compiler_bin_dir "${CMAKE_CXX_COMPILER}" DIRECTORY)
+  set(af_runtime_libs "")
+  set(af_runtime_dirs "\"${af_compiler_bin_dir}\"")
+  foreach(mkl_dll MKL_Core_DLL_LIBRARY MKL_ThreadingLibrary_DLL_LIBRARY)
+    if(${mkl_dll})
+      get_filename_component(mkl_dll_dir "${${mkl_dll}}" DIRECTORY)
+      string(APPEND af_runtime_dirs " \"${mkl_dll_dir}\"")
+    endif()
+  endforeach()
+  foreach(backend ${built_backends})
+    string(APPEND af_runtime_libs " \"$<TARGET_FILE:${backend}>\"")
+  endforeach()
+  foreach(dep spdlog::spdlog fmt::fmt FreeImage::FreeImage)
+    if(TARGET ${dep})
+      get_target_property(dep_type ${dep} TYPE)
+      if(dep_type STREQUAL "SHARED_LIBRARY")
+        string(APPEND af_runtime_dirs " \"$<TARGET_FILE_DIR:${dep}>\"")
+        if(dep STREQUAL "FreeImage::FreeImage")
+          string(APPEND af_runtime_libs " \"$<TARGET_FILE:${dep}>\"")
+        endif()
+      endif()
+    endif()
+  endforeach()
+  install(CODE "
+    file(GET_RUNTIME_DEPENDENCIES
+      LIBRARIES ${af_runtime_libs}
+      DIRECTORIES ${af_runtime_dirs}
+      PRE_EXCLUDE_REGEXES
+        \"^api-ms-\" \"^ext-ms-\" \"^af\" \"^opencl\" \"^libiomp5md\" \"^mkl_\"
+        \"^cu(blas|fft|solver|sparse)\" \"^nv(rtc|jitlink)\"
+      POST_EXCLUDE_REGEXES \"[Ss][Yy][Ss][Tt][Ee][Mm]32\"
+      RESOLVED_DEPENDENCIES_VAR af_resolved_deps
+      UNRESOLVED_DEPENDENCIES_VAR af_unresolved_deps)
+    if(af_unresolved_deps)
+      message(FATAL_ERROR \"AF_INSTALL_STANDALONE: DLLs not found: \${af_unresolved_deps}\")
+    endif()
+    file(INSTALL \${af_resolved_deps}
+      DESTINATION \"\${CMAKE_INSTALL_PREFIX}/${AF_INSTALL_BIN_DIR}\"
+      TYPE SHARED_LIBRARY)"
+    COMPONENT common_backend_dependencies)
 endif()
 
 if(BUILD_WITH_MKL AND AF_INSTALL_STANDALONE)
@@ -596,6 +657,12 @@ if(BUILD_WITH_MKL AND AF_INSTALL_STANDALONE)
       COMPONENT mkl_dependencies)
     if(AF_BUILD_ONEAPI)
       if(WIN32)
+        # The mkl_sycl DLLs import mkl_tbb_thread, which is only installed by
+        # the TBB thread layer
+        if(NOT MKL_THREAD_LAYER STREQUAL "TBB")
+          message(FATAL_ERROR "AF_INSTALL_STANDALONE with AF_BUILD_ONEAPI requires "
+                              "MKL_THREAD_LAYER=TBB, not ${MKL_THREAD_LAYER}")
+        endif()
         get_filename_component(mkl_sycl_lapack ${MKL_SyclLapack_DLL_LIBRARY} REALPATH)
         get_filename_component(mkl_sycl_dft ${MKL_SyclDft_DLL_LIBRARY} REALPATH)
         get_filename_component(mkl_sycl_blas ${MKL_SyclBlas_DLL_LIBRARY} REALPATH)

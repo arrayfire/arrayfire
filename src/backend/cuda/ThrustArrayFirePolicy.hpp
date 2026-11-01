@@ -13,6 +13,7 @@
 #include <memory.hpp>
 #include <platform.hpp>
 #include <thrust/memory.h>
+#include <thrust/pair.h>
 #include <thrust/system/cuda/execution_policy.h>
 
 namespace arrayfire {

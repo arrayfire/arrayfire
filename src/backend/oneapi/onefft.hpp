@@ -10,7 +10,11 @@
 
 #include <common/FFTPlanCache.hpp>
 #include <memory.hpp>
+#if __has_include(<oneapi/mkl/dfti.hpp>)
 #include <oneapi/mkl/dfti.hpp>
+#else
+#include <oneapi/mkl/dft.hpp>
+#endif
 
 #include <cstdint>
 

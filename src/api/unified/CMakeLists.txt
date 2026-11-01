@@ -98,7 +98,7 @@ target_link_libraries(af
 if(TARGET fmt::fmt)
   target_link_libraries(af
     PRIVATE
-      fmt::fmt
+      ${af_fmt}
   )
 endif()
 

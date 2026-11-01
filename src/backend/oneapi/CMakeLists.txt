@@ -312,6 +312,11 @@ add_library(ArrayFire::afoneapi ALIAS afoneapi)
 
 arrayfire_set_default_cxx_flags(afoneapi)
 
+# Device debug info makes afoneapi.dll exceed the 2GB limit on Windows. Keep the
+# host debug info for the PDBs. This must follow /Zi on the command line
+set(sycl_no_device_debug
+  "$<$<AND:$<PLATFORM_ID:Windows>,$<CONFIG:RelWithDebInfo>>:-Xsycl-target-frontend;-g0>")
+
 include("${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key/CMakeLists.txt")
 
 target_include_directories(afoneapi
@@ -334,6 +339,7 @@ target_compile_options(afoneapi
   $<$<COMPILE_LANGUAGE:SYCL>:
     -fno-sycl-id-queries-fit-in-int
     -sycl-std=2020
+    ${sycl_no_device_debug}
     $<$<PLATFORM_ID:Linux>: -fno-sycl-rdc>
     >
 )
@@ -378,7 +384,11 @@ target_link_libraries(afoneapi
     afoneapi)
 
 
-#af_split_debug_info(afoneapi ${AF_INSTALL_LIB_DIR})
+# The custom SYCL language doesn't enable this for TARGET_PDB_FILE
+if(MSVC)
+  set(CMAKE_SYCL_LINKER_SUPPORTS_PDB ON)
+endif()
+af_split_debug_info(afoneapi ${AF_INSTALL_LIB_DIR})
 
 install(TARGETS afoneapi
   EXPORT ArrayFireoneAPITargets
