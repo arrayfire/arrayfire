@@ -1,0 +1,135 @@
+name: Claude
+
+# Claude answers "@claude" in issues, pull requests and review comments, as
+# ArrayFire's own GitHub App and with only the tools listed below. It is off unless
+# the repository variable AF_CI_CLAUDE is 'true'. These events run the workflow from
+# the default branch. Claude edits, commits and pushes in the working tree that the
+# action checks out at the workspace root; it builds and tests only with the trusted
+# ci.sh from a second checkout of the default branch (trusted/), which builds a copy
+# of the working tree without .git, in a container that gets no token. It requests
+# the CPU or GPU tests only through the trusted request-tests.sh, which can post
+# nothing but such a request.
+#
+# Settings: variables AF_CI_CLAUDE, AF_CI_CLAUDE_BOT (the App's bot login, e.g.
+# arrayfire-claude[bot]) and AF_CI_CLAUDE_BOT_ID (its user ID); optionally
+# AF_CI_CLAUDE_MODEL, AF_CI_CLAUDE_MODELS and AF_CI_CLAUDE_EFFORT (claude-model.py).
+# Secrets of the environment "claude": ANTHROPIC_API_KEY, AF_CLAUDE_APP_ID and
+# AF_CLAUDE_APP_PRIVATE_KEY.
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  issues:
+    types: [opened, assigned]
+
+permissions: {}
+
+jobs:
+  claude:
+    # The action itself rejects anyone without write access; this saves starting a
+    # runner for comments from people outside the project. Assigning needs triage access.
+    if: >-
+      vars.AF_CI_CLAUDE == 'true' && (
+        (github.event_name == 'issues' &&
+         (github.event.action == 'assigned' ||
+          contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.issue.author_association)) &&
+         (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude'))) ||
+        (github.event_name != 'issues' &&
+         contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association) &&
+         contains(github.event.comment.body, '@claude')))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    environment: claude
+    # One Claude run per issue or pull request at a time; a later request waits.
+    concurrency:
+      group: claude-${{ github.event.issue.number || github.event.pull_request.number }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+    steps:
+      # Full history, so that the lint check finds the merge-base with the default
+      # branch; the action fetches the pull request's branch itself.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          path: trusted
+          persist-credentials: false
+      - name: Keep the trusted checkout out of the working tree's git status
+        run: echo /trusted/ >> .git/info/exclude
+      - id: model
+        name: Choose the model
+        env:
+          AF_CI_CLAUDE_MODEL: ${{ vars.AF_CI_CLAUDE_MODEL }}
+          AF_CI_CLAUDE_MODELS: ${{ vars.AF_CI_CLAUDE_MODELS }}
+          AF_CI_CLAUDE_EFFORT: ${{ vars.AF_CI_CLAUDE_EFFORT }}
+        run: python3 trusted/.github/scripts/claude-model.py
+      - name: Check the App identity settings
+        env:
+          BOT: ${{ vars.AF_CI_CLAUDE_BOT }}
+          BOT_ID: ${{ vars.AF_CI_CLAUDE_BOT_ID }}
+        run: |
+          [[ $BOT == *'[bot]' && $BOT_ID =~ ^[0-9]+$ ]] ||
+            { echo "::error::set AF_CI_CLAUDE_BOT and AF_CI_CLAUDE_BOT_ID to the App's bot login and user ID"; exit 1; }
+      # Only master's own builds save this cache (cpu.yml); Claude's builds only read it.
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/ccache
+          key: ccache-linux-gcc-openblas-${{ github.sha }}
+          restore-keys: ccache-linux-gcc-openblas-
+      - id: app-token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          app-id: ${{ secrets.AF_CLAUDE_APP_ID }}
+          private-key: ${{ secrets.AF_CLAUDE_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-issues: write
+          permission-pull-requests: write
+          permission-actions: read
+          permission-checks: read
+      - name: Refuse the requested model
+        if: steps.model.outputs.decision == 'refuse'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          NUMBER: ${{ steps.model.outputs.number }}
+          REPLY: ${{ steps.model.outputs.reply }}
+        run: gh api --method POST "repos/$GITHUB_REPOSITORY/issues/$NUMBER/comments" -f body="$REPLY"
+      - if: steps.model.outputs.decision == 'run'
+        uses: anthropics/claude-code-action@925afb53776cf1a2b738c6bdbed37b4d4000ef13 # v1.0.262
+        env:
+          # ci.sh, as Claude runs it: the working tree at the workspace root, built
+          # from a copy without .git under the runner's temporary directory.
+          AF_CI_SOURCE_DIR: ${{ github.workspace }}
+          AF_CI_CLEAN_EXPORT: 1
+          AF_CI_EXPORT_DIR: ${{ runner.temp }}
+          AF_CI_CCACHE_DIR: ${{ runner.temp }}/ccache
+          CCACHE_MAXSIZE: 500M
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ steps.app-token.outputs.token }}
+          trigger_phrase: '@claude'
+          bot_name: ${{ vars.AF_CI_CLAUDE_BOT }}
+          bot_id: ${{ vars.AF_CI_CLAUDE_BOT_ID }}
+          # Claude's attribution in its commits (a Co-Authored-By trailer) stays on:
+          # no settings here change it.
+          #
+          # Claude's tools must not reach the credentials around it: the process
+          # environment, /proc, the runner's temporary directory, dotfiles in the home
+          # directory. Three layers: the file tools refuse every path outside the
+          # working directories (settings below); deny rules for those places, which
+          # also cover cat, head and the other file commands Claude Code recognizes in
+          # Bash; and deny rules for the commands that print the environment, git's
+          # config and remote URLs (where a push token may sit), or copy a file into a
+          # commit message. The rehearsal reads these same strings.
+          settings: '{"permissions": {"blockReadsOutsideWorkingDirectories": true}}'
+          claude_args: >-
+            --model ${{ steps.model.outputs.model }}
+            ${{ steps.model.outputs.effort && format('--effort {0}', steps.model.outputs.effort) || '' }}
+            --max-turns 40
+            --allowedTools "Read,Glob,Grep,Edit,Write,Bash(trusted/.github/scripts/ci.sh --docker *),Bash(trusted/.github/scripts/request-tests.sh *),Bash(git status *),Bash(git diff *),Bash(git log *),Bash(git show *),Bash(git add *),Bash(git commit *),Bash(git push *),Bash(gh pr view *),Bash(gh run view * --log-failed)"
+            --disallowedTools "Edit(.github/**),Edit(trusted/**),Read(.git/**),Read(//proc/**),Read(//sys/**),Read(~/.*),Read(~/.*/**),Read(//home/runner/work/_temp/**),WebFetch,WebSearch,Bash(env),Bash(env *),Bash(printenv),Bash(printenv *),Bash(set),Bash(export),Bash(export -p),Bash(declare),Bash(declare *),Bash(typeset),Bash(typeset *),Bash(compgen *),Bash(ps *),Bash(strings *),Bash(xxd *),Bash(od *),Bash(git commit *-F*),Bash(git commit *--file*),Bash(git commit *--template*),Bash(git remote *),Bash(git config *),Bash(git ls-remote *),Bash(git var *),Bash(git credential *)"
+            --append-system-prompt "Working rules for ArrayFire: Reproduce and check CI failures only with trusted/.github/scripts/ci.sh --docker <job>, run from the workspace root, for example trusted/.github/scripts/ci.sh --docker lint or trusted/.github/scripts/ci.sh --docker linux-gcc-openblas; it builds a copy of your working tree, so git add new files first. Never run the build or the tests any other way, and never edit anything under .github/. After you push, run trusted/.github/scripts/request-tests.sh cpu to request the CPU tests on the pull request; that script is the only way to post a request. Request the GPU tests with trusted/.github/scripts/request-tests.sh gpu only when the change touches GPU code (the CUDA, OpenCL or oneAPI backends) and the CPU tests are green on the pushed commit; a maintainer approves every GPU run, so don't ask for it in comments."
