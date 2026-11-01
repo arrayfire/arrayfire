@@ -1,8 +1,8 @@
 name: Test requests
 
 # A "/cpu-tests" or "/gpu-tests" comment on a pull request asks for the CPU or GPU
-# tests of its head commit. This workflow runs from the default branch, so the
-# pull request can't change it. test-requests.py decides
+# tests of its head commit. This workflow runs from the default branch, so neither
+# the pull request nor the Claude App can change it. test-requests.py decides
 # whether the request is allowed and pins the head SHA; cpu.yml or gpu.yml then
 # builds and tests exactly that commit, and the result goes to the cpu-tests or
 # gpu-tests commit status and a comment. Nothing from the pull request is checked
@@ -12,7 +12,7 @@ on:
     types: [created]
 
 # Request runs are named "/cpu-tests on #<number> by <login>", or the same with
-# /gpu-tests.
+# /gpu-tests; the GPU quotas look for that.
 run-name: >-
   ${{ startsWith(github.event.comment.body, '/gpu-tests') && '/gpu-tests' ||
       startsWith(github.event.comment.body, '/cpu-tests') && '/cpu-tests' || 'comment' }}
@@ -29,9 +29,11 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
+      actions: read
       checks: read
       contents: read
       pull-requests: read
+      statuses: read
     outputs:
       decision: ${{ steps.decide.outputs.decision }}
       command: ${{ steps.decide.outputs.command }}
@@ -53,6 +55,9 @@ jobs:
           AF_CI_GPU_RUNNER: ${{ vars.AF_CI_GPU_RUNNER }}
           AF_CI_CUDA_VERSIONS: ${{ vars.AF_CI_CUDA_VERSIONS }}
           AF_CI_ACCELERATOR_BUILDS: ${{ vars.AF_CI_ACCELERATOR_BUILDS }}
+          AF_CI_CLAUDE_BOT: ${{ vars.AF_CI_CLAUDE_BOT }}
+          AF_CI_GPU_AI_PER_PR_DAY: ${{ vars.AF_CI_GPU_AI_PER_PR_DAY }}
+          AF_CI_GPU_AI_PER_DAY: ${{ vars.AF_CI_GPU_AI_PER_DAY }}
         run: python3 .github/scripts/test-requests.py decide
 
   reply:
@@ -74,7 +79,7 @@ jobs:
           REPLY: ${{ needs.decide.outputs.reply }}
         run: python3 .github/scripts/test-requests.py reply
 
-  # Its success marks an accepted request in the run history.
+  # Its success marks an accepted request in the run history, which the GPU quotas count.
   accepted:
     needs: decide
     if: needs.decide.outputs.decision == 'accept'

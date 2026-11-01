@@ -9,6 +9,7 @@ test-requests.py as the workflow's jobs do, on fixtures, with some writes failin
 """
 import contextlib
 import copy
+import datetime
 import importlib.util
 import io
 import json
@@ -28,13 +29,16 @@ spec = importlib.util.spec_from_file_location("test_requests", SCRIPT)
 test_requests = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(test_requests)
 
+NOW = datetime.datetime(2026, 10, 25, 12, 0, tzinfo=datetime.timezone.utc)
+BOT = "arrayfire-claude[bot]"
 HEAD = "cd211d5b8660761d1665be52ace5ff680856ba06"
 # An earlier head of the pull request, green on every check; it must not count.
 STALE_HEAD = "0" * 40
 PR = 3715
-SETTINGS = {"gpu_tests": "true", "gpu_runner": "gpu-t4", "accelerator_builds": "true", "cuda_versions": ""}
+SETTINGS = {"gpu_tests": "true", "gpu_runner": "gpu-t4", "accelerator_builds": "true", "bot": BOT,
+            "per_pr_day": 2, "per_day": 6, "cuda_versions": "", "run_id": "900"}
 ASSOCIATION = {"maintainer-a": "MEMBER", "admin-b": "OWNER", "writer-c": "COLLABORATOR",
-               "reader-d": "COLLABORATOR", "triager-e": "COLLABORATOR",
+               "reader-d": "COLLABORATOR", "triager-e": "COLLABORATOR", BOT: "NONE",
                "contributor-g": "CONTRIBUTOR", "github-actions[bot]": "NONE"}
 
 
@@ -47,11 +51,32 @@ def event(login, body="/gpu-tests", author="maintainer-a", association=None, pul
                         "author_association": association or ASSOCIATION.get(login, "NONE")}}
 
 
+def run(run_id, hours_ago, pr, accepted=True, command="/gpu-tests", legs=()):
+    """A request run in the history; legs are the GPU legs it ran, each a build and a test job."""
+    created = (NOW - datetime.timedelta(hours=hours_ago)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return ({"id": run_id, "actor": {"login": BOT}, "created_at": created,
+             "display_title": f"{command} on #{pr} by {BOT}"},
+            [{"name": "decide", "conclusion": "success"},
+             {"name": "accepted", "conclusion": "success" if accepted else "skipped"}]
+            + [{"name": f"gpu / {job} ({leg})", "conclusion": "success"}
+               for leg in legs for job in ("build", "test")])
+
+
+def comment_run(run_id, pr):
+    # A run for an ordinary comment; even a stray "accepted" job in it must not count.
+    request, jobs = run(run_id, 1, pr)
+    return {**request, "display_title": f"comment on #{pr} by {BOT}"}, jobs
+
+
 def checks(app="github-actions", **conclusions):
     """The light checks on a commit; a conclusion of None means still running."""
     names = ("lint", "docs", "workflows")
     return [{"id": 10 + i, "name": name, "app": {"slug": app},
              "conclusion": conclusions.get(name, "success")} for i, name in enumerate(names)]
+
+
+def status(state, creator="github-actions[bot]", context="cpu-tests"):
+    return {"context": context, "state": state, "creator": {"login": creator}}
 
 
 def changed(*paths, renamed_from=None):
@@ -68,15 +93,24 @@ SHARED_HEADER = "include/af/array.h"
 DOCS = ("docs/pages/install.md", "README.md")
 
 
-def answers(author="maintainer-a", check_runs=None, files=None):
-    """API answers; by default the light checks passed on HEAD, and the pull request changes
-    one file of the CUDA backend."""
+def answers(author="maintainer-a", check_runs=None, statuses=None, runs=(), files=None):
+    """API answers; statuses are newest first, by default CPU tests passed on HEAD, and the
+    pull request changes one file of the CUDA backend."""
     return {"permissions": {"maintainer-a": "maintain", "admin-b": "admin", "writer-c": "write",
                             "reader-d": "read", "triager-e": "triage"},
             "pull": {"number": PR, "head": {"sha": HEAD}, "base": {"ref": "master"}, "user": {"login": author}},
             "check_runs": {HEAD: checks() if check_runs is None else check_runs,
                            STALE_HEAD: checks()},
+            "statuses": {HEAD: [status("success"), status("pending")] if statuses is None else statuses,
+                         STALE_HEAD: [status("success")]},
+            "runs": [r for r, _ in runs], "jobs": {str(r["id"]): jobs for r, jobs in runs},
             "files": changed(CUDA_FILE) if files is None else files}
+
+
+def red_after_green():
+    # An older green run of lint, then a red re-run: the latest counts.
+    return checks(lint="failure") + [
+        {"id": 5, "name": "lint", "app": {"slug": "github-actions"}, "conclusion": "success"}]
 
 
 def accept(command, backends="", cuda_versions="", accelerators=False, macos_windows=False):
@@ -123,6 +157,10 @@ CASES = [
      refuse("cpu", "light-checks-pending"), None),
     ("cpu: someone else's pull request is not the author's", event("reader-d", "/cpu-tests"),
      answers(), {}, refuse("cpu", "not-allowed"), None),
+    # /cpu-tests: the Claude bot
+    ("cpu: Claude bot is accepted on Linux", event(BOT, "/cpu-tests"), answers(check_runs=[]), {},
+     accept("cpu"), [f"pull {PR}", COMPARE]),
+    # /cpu-tests: anyone else
     ("cpu: stranger is ignored silently", event("contributor-g", "/cpu-tests"), answers(), {},
      ignore("stranger", "cpu"), []),
     ("cpu: stranger's malformed request gets no usage reply", event("contributor-g", "/cpu-tests now"),
@@ -143,6 +181,53 @@ CASES = [
     ("gpu: triage role is refused", event("triager-e"), answers(), {}, refuse("gpu", "not-allowed"), None),
     ("gpu: stranger is ignored silently", event("contributor-g"), answers(), {},
      ignore("stranger", "gpu"), []),
+    # /gpu-tests: the Claude bot
+    ("gpu: Claude bot is accepted when eligible", event(BOT),
+     answers(runs=[run(101, 3, PR), run(102, 5, 3700), run(103, 8, 3701), run(104, 1, PR, accepted=False)]),
+     {}, accept("gpu", "cuda", "12.9"), None),
+    ("gpu: Claude bot is accepted on its own PR", event(BOT, author=BOT), answers(author=BOT), {},
+     accept("gpu", "cuda", "12.9"), None),
+    ("gpu: Claude bot is refused when its CPU tests are red", event(BOT),
+     answers(statuses=[status("failure"), status("success"), status("pending")]), {},
+     refuse("gpu", "cpu-not-green"), None),
+    ("gpu: Claude bot is refused when its CPU tests never ran", event(BOT),
+     answers(statuses=[status("success", context="other")]), {}, refuse("gpu", "cpu-not-green"), None),
+    ("gpu: a cpu-tests status posted by the bot itself doesn't count", event(BOT),
+     answers(statuses=[status("success", creator=BOT), status("failure")]), {},
+     refuse("gpu", "cpu-not-green"), None),
+    ("gpu: Claude bot is refused when a light check is red", event(BOT),
+     answers(check_runs=red_after_green()), {}, refuse("gpu", "cpu-not-green"), None),
+    ("gpu: Claude bot is refused when a light check is missing", event(BOT),
+     answers(check_runs=[c for c in checks() if c["name"] != "docs"]), {},
+     refuse("gpu", "cpu-not-green"), None),
+    ("gpu: Claude bot is refused over the per-PR quota", event(BOT),
+     answers(runs=[run(101, 2, PR), run(102, 20, PR)]), {}, refuse("gpu", "pr-quota"), None),
+    ("gpu: per-PR quota counts only the last 24 h", event(BOT),
+     answers(runs=[run(101, 2, PR), run(102, 25, PR)]), {}, accept("gpu", "cuda", "12.9"), None),
+    ("gpu: plain comments by the bot are not requests", event(BOT),
+     answers(runs=[comment_run(200 + i, PR) for i in range(5)]), {}, accept("gpu", "cuda", "12.9"), None),
+    ("gpu: a request that ran several legs counts once", event(BOT),
+     answers(runs=[run(101, 2, PR, legs=("CUDA 12.9", "CUDA 13.4", "OpenCL"))]), {},
+     accept("gpu", "cuda", "12.9"), None),
+    ("gpu: two requests with several legs reach the per-PR quota", event(BOT),
+     answers(runs=[run(101 + i, 2 + i, PR, legs=("CUDA 12.9", "OpenCL")) for i in range(2)]), {},
+     refuse("gpu", "pr-quota"), None),
+    ("gpu: Claude bot's request on a docs-only change starts nothing", event(BOT),
+     answers(files=changed(*DOCS)), {}, refuse("gpu", "no-gpu-changes"), None),
+    ("gpu: CPU requests don't count against the GPU quota", event(BOT),
+     answers(runs=[run(300 + i, 1, PR, command="/cpu-tests") for i in range(5)]), {},
+     accept("gpu", "cuda", "12.9"), None),
+    ("gpu: Claude bot is refused over the daily quota", event(BOT),
+     answers(runs=[run(100 + i, i + 1, 3000 + i) for i in range(6)]), {}, refuse("gpu", "daily-quota"),
+     None),
+    ("gpu: daily quota follows AF_CI_GPU_AI_PER_DAY", event(BOT),
+     answers(runs=[run(100 + i, i + 1, 3000 + i) for i in range(6)]), {"per_day": 10},
+     accept("gpu", "cuda", "12.9"), None),
+    ("gpu: Claude bot is refused on an external contributor's PR", event(BOT),
+     answers(author="outsider-f"), {}, refuse("gpu", "external-author"), None),
+    ("gpu: a user named like the bot is not the bot", event("arrayfire-claude"), answers(), {},
+     ignore("stranger", "gpu"), []),
+    # /gpu-tests: settings and syntax, all answered without an API call
     ("gpu: gate off answers disabled without any API call", event("maintainer-a"), answers(),
      {"gpu_tests": ""}, refuse("gpu", "disabled"), []),
     ("gpu: no GPU runner configured is refused up front", event("maintainer-a"), answers(),
@@ -268,7 +353,7 @@ def behind_case(name, ev, changes, line, warning):
     api = test_requests.Fixtures({**answers(), **changes})
     output = io.StringIO()
     with contextlib.redirect_stdout(output):
-        result = test_requests.decide(ev, SETTINGS, api)
+        result = test_requests.decide(ev, SETTINGS, api, NOW)
     printed = output.getvalue()
     warned = printed.startswith(f"::warning::GitHub API GET compare/master...{HEAD} failed: HTTP 404: Not Found")
     ok = (result["action"] == "accept" and f"compare master...{HEAD}" in api.calls
@@ -279,6 +364,31 @@ def behind_case(name, ev, changes, line, warning):
           + (f"\n     printed: {printed.strip()}" if printed.strip() else "")
           + f"\n     reply: {result['reply']}")
     return ok
+
+
+def run_listing():
+    """GitHub.request_runs asks for the bot's runs only and follows every page."""
+    class Paged(test_requests.GitHub):
+        def __init__(self):
+            super().__init__("arrayfire/arrayfire", "")
+            self.paths = []
+
+        def call(self, method, path, body=None):
+            self.paths.append(path)
+            if len(self.paths) > 5:
+                raise RuntimeError("the run listing does not stop paging")
+            page = urllib.parse.parse_qs(urllib.parse.urlsplit(path).query)["page"][0]
+            return {"workflow_runs": [{"id": i} for i in range(100 if page == "1" else 7)]}
+
+    api = Paged()
+    runs = api.request_runs(BOT, NOW - datetime.timedelta(hours=24))
+    actual = (len(runs), len(api.paths), "actor=arrayfire-claude%5Bbot%5D" in api.paths[0],
+              "created=%3E%3D2026-10-24T12%3A00%3A00Z" in api.paths[0])
+    expected = (107, 2, True, True)
+    print(f"{'ok  ' if actual == expected else 'FAIL'} run listing filters by actor and reads every page\n"
+          f"     expected: runs, requests, actor filter, 24 h window = {expected}\n"
+          f"     actual:   runs, requests, actor filter, 24 h window = {actual}")
+    return actual == expected
 
 
 def api_error_annotation():
@@ -450,10 +560,10 @@ def show(values):
 
 
 def main():
-    results = []
+    results = [run_listing()]
     for name, ev, api_answers, changes, expected, expected_calls in CASES:
         api = test_requests.Fixtures(copy.deepcopy(api_answers))
-        result = test_requests.decide(ev, {**SETTINGS, **changes}, api)
+        result = test_requests.decide(ev, {**SETTINGS, **changes}, api, NOW)
         actual = (result["action"], result["reason"], result["command"], result["sha"], result["backends"],
                   result["cuda_versions"], result["accelerators"], result["macos_windows"])
         ok = actual == expected
