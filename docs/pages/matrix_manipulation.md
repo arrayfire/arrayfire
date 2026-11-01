@@ -1,5 +1,4 @@
-Array and Matrix Manipulation {#matrixmanipulation}
-===================
+\page matrixmanipulation Array and Matrix Manipulation
 
 ArrayFire provides several different methods for
 [manipulating arrays and matrices](\ref manip_mat). The functionality includes:
@@ -18,7 +17,7 @@ ArrayFire provides several different methods for
 
 Below we provide several examples of these functions and their use.
 
-## flat()
+# flat()
 
 The __flat()__ function flattens an array to one dimension:
 
@@ -48,7 +47,7 @@ The flat function can be called from C and C++ as follows:
 > __array af::flat(const array& in)__
 > --  C++ interface for flat() function
 
-## flip()
+# flip()
 
 The __flip()__ function flips the contents of an array along a chosen dimension.
 In the example below, we show the 5x2 array flipped along the zeroth (i.e.
@@ -85,7 +84,7 @@ The flip function can be called from C and C++ as follows:
 > __array af::flip(const array &in, const unsigned dim)__
 > --  C++ interface for flip()
 
-## join()
+# join()
 
 The __join()__ function joins arrays along a specific dimension. The C++
 interface can join up to four arrays whereas the C interface supports up to 10
@@ -139,7 +138,7 @@ and in C++:
 > --  Joins 4 arrays along a dimension
 
 
-## moddims()
+# moddims()
 
 The __moddims()__ function changes the dimensions of an array without changing
 its data or order. Note that this function modifies only the _metadata_
@@ -190,7 +189,7 @@ And several overloaded candidates in the C++ API:
 > __array af::moddims(const array &in, const dim_t d0, const dim_t d1=1, const dim_t d2=1, const dim_t d3=1)__
 > --  mods dimensions of an array
 
-## reorder()
+# reorder()
 
 The __reorder()__ function modifies the order of data within an array by
 exchanging data according to the change in dimensionality. The linear ordering
@@ -237,7 +236,7 @@ The reorder function has several candidates functions in the C/C++ APIs:
 > __array af::reorder(const array &in, const unsigned x, const unsigned y=1, const unsigned z=2, const unsigned w=3)__
 > --  Reorders dimensions of an array
 
-## shift()
+# shift()
 
 The __shift()__ function shifts data in a circular buffer fashion along a
 chosen dimension. Consider the following example:
@@ -268,7 +267,7 @@ The shift function can be called from C and C++ as follows:
 > __array af::shift(const array &in, const int x, const int y=0, const int z=0, const int w=0)__
 > --  Shifts array along specified dimensions
 
-## tile()
+# tile()
 
 The __tile()__ function repeats an array along the specified dimension.
 For example below we show how to tile an array along the zeroth and first
@@ -328,7 +327,7 @@ The C++ interface has two overloads
 > __array af::tile(const array &in, const dim4 &dims)__
 > --  Tile an array according to a dim4 object
 
-## transpose()
+# transpose()
 
 The __transpose()__ function performs a standard matrix transpose. The input
 array must have the dimensions of a 2D-matrix.
@@ -371,7 +370,7 @@ Here is an example of how the shorthand versions might be used:
 
 \snippet test/matrix_manipulation.cpp ex_matrix_manipulation_transpose
 
-## array()
+# array()
 
 [array()](\ref af::array) can be used to create a (shallow) copy of a matrix
 with different dimensions. The total number of elements must remain the same.

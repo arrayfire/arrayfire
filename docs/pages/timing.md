@@ -1,5 +1,4 @@
-Timing ArrayFire Code {#timing}
-================
+\page timing Timing ArrayFire Code
 
 In performance-sensitive applications, it is vital to profile and measure the
 execution time of operations. ArrayFire provides mechanisms to achieve this.
@@ -20,7 +19,7 @@ The following describes how to time ArrayFire code using the eval and sync
 functions along with the timer and timeit functions. A final note on kernel
 caching also provides helpful details about ArrayFire runtimes.
 
-## Using ArrayFire eval and sync functions
+# Using ArrayFire eval and sync functions
 
 ArrayFire provides functions to force the evaluation of lazy functions and to
 block until all asynchoronous operations complete.
@@ -53,7 +52,7 @@ block until all asynchoronous operations complete.
    af::sync();  // Waits for all previous operations to complete.
    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-## Using ArrayFire timer and timeit functions
+# Using ArrayFire timer and timeit functions
 
 ArrayFire provides a simple timer functions that returns the current time in
 seconds.
@@ -140,7 +139,7 @@ seconds.
        (test machine: Core i7 920 @ 2.67GHz with a Tesla C2070)
 
 
-## A note on kernel caching
+# A note on kernel caching
 
 The first run of ArrayFire code exercises any JIT compilation in the
 application, automatically saving a cache of the compilation to

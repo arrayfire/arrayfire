@@ -1,4 +1,4 @@
-# ArrayFire Installer {#installing}
+\page installing ArrayFire Installer
 
 Installing ArrayFire couldn't be easier. Navigate to
 https://arrayfire.com/download and download the appropriate installer for the

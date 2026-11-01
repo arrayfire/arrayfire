@@ -1,5 +1,4 @@
-Indexing {#indexing}
-========
+\page indexing Indexing
 
 Indexing in ArrayFire is a powerful but easy to abuse feature of the af::array
 class. This feature allows you to reference or copy subsections of a larger array
@@ -51,7 +50,7 @@ this which also allows you to index the last element of the array.
 
 \snippet test/index.cpp index_tutorial_negative_indexing
 
-## Indexing slices and subarrays
+# Indexing slices and subarrays
 
 You can access regions of the array via the af::seq and af::span objects. The
 span objects allows you to select the entire set of elements across a particular
@@ -117,7 +116,7 @@ A(seq(1, end, 2), span) =
 \end{bmatrix}
 \f]
 
-## Indexing using af::array
+# Indexing using af::array
 
 You can also index using other af::array objects. ArrayFire performs a Cartesian
 product of the input arrays.
@@ -199,7 +198,7 @@ out =
 \end{bmatrix}
 \f]
 
-## References and copies
+# References and copies
 
 All ArrayFire indexing functions return af::array(technically its an array_proxy
 class) objects. These objects may be new arrays or they may reference the
@@ -228,7 +227,7 @@ Notice that even though the copy3 array is referencing continuous memory in the
 original array, a new array is created because we used an array to index into
 the af::array.
 
-## Assignment
+# Assignment
 
 An assignment on an af::array will replace the array with the result of the
 expression on the right hand side of the equal(=) operator. This means that the
@@ -315,7 +314,7 @@ A =
 \end{bmatrix}
 \f]
 
-## Member functions
+# Member functions
 
 There are several member functions which allow you to index into an af::array. These
 functions have similar functionality but may be easier to parse for some.

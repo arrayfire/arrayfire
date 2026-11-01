@@ -1,5 +1,4 @@
-Release Notes {#releasenotes}
-==============
+\page releasenotes Release Notes
 
 v3.10.0
 ======
@@ -8,7 +7,7 @@ v3.10.0
 - Added signed int8 support \PR{3661} \PR{3508} \PR{3507} \PR{3503}
 - Increased support for half (fp16) \PR{3680} \PR{3258} \PR{3561} \PR{3627} \PR{3561} \PR{3627} \PR{3559}
 - Updated oneAPI to use Intel oneAPI (R) 2025.1 \PR{3643} \PR{3573}
-- Updated cl2hpp dependency \PR{3651} \pr{3562}
+- Updated cl2hpp dependency \PR{3651} \PR{3562}
 - Add support for CUDA 12.3, 12.4, 12.5, 12.6, 12.8, and 12.9 \PR{3657} \PR{3645} \PR{3641} \PR{3636} \PR{3588} \PR{3552} \PR{3586} \PR{3541} 
 - Added minimum driver version check for CUDA GPUs \PR{3648}
 - Add more examples \PR{3530} \PR{3455} \PR{3375} \PR{3612} \PR{3584} \PR{3577}
@@ -23,7 +22,7 @@ v3.10.0
 - Fix half precision operations in multiple backends \PR{3676} \PR{3662}
 - Fix for join not always respecting the order of parameters \PR{3667} \PR{3513}
 - Fix for cmake building as an external project (needed by arrayfire python wheels) \PR{3669}
-- Fix for cmake build in Windows (including with vcpkg) \PR{3655} \PR{3646} \PR{3644} \PR{3512} \PR{3626} \PR{3566} \PR{3557} \pr{3591} \PR{3592}
+- Fix for cmake build in Windows (including with vcpkg) \PR{3655} \PR{3646} \PR{3644} \PR{3512} \PR{3626} \PR{3566} \PR{3557} \PR{3591} \PR{3592}
 - Fix race condition in OpenCL flood fill \PR{3535}
 - Fix indexing array using sequences `af_seq` that have non-unit steps \PR{3587}
 - Fix padding issue convolve2GradientNN \PR{3519}

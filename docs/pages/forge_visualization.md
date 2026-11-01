@@ -1,5 +1,4 @@
-Visualizing af::array with Forge {#forge_visualization}
-===================
+\page forge_visualization Visualizing af::array with Forge
 
 Arrayfire as a library aims to provide a robust and easy to use platform for
 high-performance, parallel and GPU computing.

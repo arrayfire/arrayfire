@@ -815,7 +815,7 @@ SHOW_NAMESPACES        = YES
 # by doxygen. Whatever the program writes to standard output is used as the file
 # version. For an example see the documentation.
 
-FILE_VERSION_FILTER    = "/bin/sh -c 'git log --pretty=\"format:%ci, (build %h)\" -1' \"${1}\""
+FILE_VERSION_FILTER    = "git log --pretty=\"format:%ci, (build %h)\" -1 --"
 
 # The LAYOUT_FILE tag can be used to specify a layout file which will be parsed
 # by doxygen. The layout file controls the global structure of the generated

@@ -1,5 +1,4 @@
-Getting Started {#gettingstarted}
-===============
+\page gettingstarted Getting Started
 
 [TOC]
 

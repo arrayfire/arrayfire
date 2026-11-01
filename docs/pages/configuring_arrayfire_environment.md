@@ -1,5 +1,4 @@
-Configuring ArrayFire Environment {#configuring_environment}
-===============================================================================
+\page configuring_environment Configuring ArrayFire Environment
 
 This page lists environment and runtime configurations that will help enhance
 your experience with ArrayFire.
