@@ -56,7 +56,7 @@ CI runs in three tiers:
     the check of the bundled DLLs;
   - `accelerators (linux-opencl)` and `accelerators (linux-oneapi)`.
 
-  Maintainers with write access can ask on any pull request. The pull
+  Maintainers with write access and the Claude bot can ask on any pull request. The pull
   request's author can ask on their own pull request once the light checks have run on it.
   Requests by anyone other than a maintainer run the Linux jobs only. The result appears as
   the `cpu-tests` status and a comment.

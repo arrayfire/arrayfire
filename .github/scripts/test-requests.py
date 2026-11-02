@@ -18,6 +18,7 @@ decide() depends only on the event, the settings and the API answers. With
 AF_CI_REQUEST_FIXTURES naming a JSON file of API answers, those replace GitHub and
 nothing is written; that is honoured only in act runs (ACT=true).
 """
+import datetime
 import io
 import json
 import os
@@ -56,8 +57,8 @@ WRITE_ROLES = {"admin", "maintain", "write"}
 # Commenters who get an answer besides the pull request's author; others are
 # ignored, so that nobody can make the workflow spam a pull request.
 KNOWN = {"OWNER", "MEMBER", "COLLABORATOR"}
-# The account of GitHub Actions' own token, which posts this workflow's comments: they are
-# ignored.
+# The account of GitHub Actions' own token: its comments are ignored, and only its
+# cpu-tests statuses, which this workflow posts, count.
 ACTIONS_BOT = "github-actions[bot]"
 
 
@@ -93,7 +94,7 @@ def legs(backends, cuda_versions):
     return ", ".join(names[:-1]) + " and " + names[-1] if len(names) > 1 else "".join(names)
 
 
-def decide(event, settings, api):
+def decide(event, settings, api, now):
     """Returns the decision on one issue_comment event; asks api only what it needs."""
     issue = event.get("issue") or {}
     comment = event.get("comment") or {}
@@ -109,8 +110,10 @@ def decide(event, settings, api):
     if not word:
         return decision("ignore", "not-a-request")
     command = word.group(1)
+    bot = settings["bot"]
+    is_bot = bool(bot) and login == bot
     is_author = login == (issue.get("user") or {}).get("login")
-    if not (is_author or comment.get("author_association") in KNOWN):
+    if not (is_bot or is_author or comment.get("author_association") in KNOWN):
         return decision("ignore", "stranger", command=command)
 
     def reply(reason, text):
@@ -125,11 +128,11 @@ def decide(event, settings, api):
     if not match or command == "gpu" and match.group(1) == "opencl" and match.group(2):
         return reply("usage", USAGE[command])
 
-    writer = api.permission(login) in WRITE_ROLES
-    if command == "gpu" and not writer:
+    writer = not is_bot and api.permission(login) in WRITE_ROLES
+    if command == "gpu" and not (writer or is_bot):
         return reply("not-allowed",
                      f"Sorry @{login}, only maintainers with write access can request GPU tests.")
-    if command == "cpu" and not (writer or is_author):
+    if command == "cpu" and not (writer or is_bot or is_author):
         return reply("not-allowed",
                      f"Sorry @{login}, CPU tests can be requested by maintainers with write access "
                      "and by the pull request's author.")
@@ -138,7 +141,7 @@ def decide(event, settings, api):
     pull = api.pull(number)
     sha = pull["head"]["sha"]
     if command == "cpu":
-        if not writer:
+        if not (writer or is_bot):
             checks = latest_light_checks(api, sha)
             pending = [name for name in LIGHT_CHECKS if (checks.get(name) or {}).get("conclusion") is None]
             if pending:
@@ -157,6 +160,12 @@ def decide(event, settings, api):
                         f"{what} requested by @{login} for `{sha}`, the head of this pull request "
                         "now. Later pushes are not part of this run." + behind_note(api, pull),
                         command, sha, accelerators=accelerators, macos_windows=writer)
+
+    if is_bot:
+        refusal = bot_refusal(settings, api, number, pull, sha, now)
+        if refusal:
+            reason, text = refusal
+            return reply(reason, f"Not starting GPU tests for `{sha}`: {text}")
 
     files = api.files(number)
     chosen = select(files)
@@ -225,6 +234,44 @@ def latest_light_checks(api, sha):
     return latest
 
 
+def bot_refusal(settings, api, number, pull, sha, now):
+    """The limits on the Claude App's own GPU requests; None when within them."""
+    checks = latest_light_checks(api, sha)
+    red = [name for name in LIGHT_CHECKS if (checks.get(name) or {}).get("conclusion") != "success"]
+    cpu_tests = next((status["state"] for status in api.statuses(sha)
+                      if status["context"] == "cpu-tests"
+                      and status["creator"]["login"] == ACTIONS_BOT), None)
+    if cpu_tests != "success":
+        red.append("cpu-tests")
+    if red:
+        return "cpu-not-green", "these checks are not green on it: " + ", ".join(red) + "."
+
+    since = now - datetime.timedelta(hours=24)
+    accepted = [run for run in api.request_runs(settings["bot"], since)
+                if run["actor"]["login"] == settings["bot"]
+                and run["display_title"].startswith("/gpu-tests on #")
+                and str(run["id"]) != settings["run_id"]
+                and parse_time(run["created_at"]) >= since
+                and any(job["name"] == "accepted" and job["conclusion"] != "skipped"
+                        for job in api.run_jobs(run["id"]))]
+    on_this_pr = [run for run in accepted if re.search(rf"#{number}\b", run["display_title"])]
+    if len(on_this_pr) >= settings["per_pr_day"]:
+        return "pr-quota", (f"{len(on_this_pr)} requests on this pull request in the last 24 hours "
+                            f"reached the limit of {settings['per_pr_day']}.")
+    if len(accepted) >= settings["per_day"]:
+        return "daily-quota", (f"{len(accepted)} requests in the last 24 hours reached the "
+                               f"daily limit of {settings['per_day']}.")
+
+    author = pull["user"]["login"]
+    if author != settings["bot"] and api.permission(author) not in WRITE_ROLES:
+        return "external-author", f"its author @{author} has no write access."
+    return None
+
+
+def parse_time(text):
+    return datetime.datetime.fromisoformat(text.replace("Z", "+00:00"))
+
+
 def annotate(level, text):
     """Prints text as an annotation of the run (level is error or warning)."""
     text = text.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
@@ -283,6 +330,24 @@ class GitHub:
     def check_runs(self, sha):
         return self.call("GET", f"commits/{sha}/check-runs?per_page=100")["check_runs"]
 
+    def statuses(self, sha):
+        """The commit statuses of sha, newest first."""
+        return self.call("GET", f"commits/{sha}/statuses?per_page=100")
+
+    def request_runs(self, actor, since):
+        query = urllib.parse.urlencode({"event": "issue_comment", "actor": actor, "per_page": 100,
+                                        "created": ">=" + since.strftime("%Y-%m-%dT%H:%M:%SZ")})
+        runs = []
+        for page in range(1, 51):
+            batch = self.call("GET", f"actions/workflows/test-requests.yml/runs?{query}&page={page}")
+            runs += batch["workflow_runs"]
+            if len(batch["workflow_runs"]) < 100:
+                return runs
+        raise RuntimeError("over 5000 request runs in 24 hours; not guessing the quota")
+
+    def run_jobs(self, run_id):
+        return self.call("GET", f"actions/runs/{run_id}/jobs?per_page=100")["jobs"]
+
     def compare(self, base, head):
         """How far head is ahead of and behind base; a failure is only a warning."""
         return self.call("GET", f"compare/{urllib.parse.quote(base, safe='')}...{head}", level="warning")
@@ -334,6 +399,18 @@ class Fixtures:
         self.calls.append(f"check-runs {sha}")
         return self.answers.get("check_runs", {}).get(sha, [])
 
+    def statuses(self, sha):
+        self.calls.append(f"statuses {sha}")
+        return self.answers.get("statuses", {}).get(sha, [])
+
+    def request_runs(self, actor, since):
+        self.calls.append(f"request-runs {actor}")
+        return self.answers.get("runs", [])
+
+    def run_jobs(self, run_id):
+        self.calls.append(f"jobs {run_id}")
+        return self.answers.get("jobs", {}).get(str(run_id), [])
+
     def files(self, number):
         self.calls.append(f"files {number}")
         return self.answers.get("files", [])
@@ -366,7 +443,11 @@ def settings_from_env():
     return {"gpu_tests": os.environ.get("AF_CI_GPU_TESTS", ""),
             "gpu_runner": os.environ.get("AF_CI_GPU_RUNNER", ""),
             "accelerator_builds": os.environ.get("AF_CI_ACCELERATOR_BUILDS", ""),
-            "cuda_versions": os.environ.get("AF_CI_CUDA_VERSIONS", "")}
+            "bot": os.environ.get("AF_CI_CLAUDE_BOT", ""),
+            "per_pr_day": int(os.environ.get("AF_CI_GPU_AI_PER_PR_DAY") or 2),
+            "per_day": int(os.environ.get("AF_CI_GPU_AI_PER_DAY") or 6),
+            "cuda_versions": os.environ.get("AF_CI_CUDA_VERSIONS", ""),
+            "run_id": os.environ.get("GITHUB_RUN_ID", "")}
 
 
 def write_outputs(values):
@@ -410,7 +491,7 @@ def main(command):
                f"{os.environ.get('GITHUB_REPOSITORY', '')}/actions/runs/{os.environ.get('GITHUB_RUN_ID', '')}")
 
     if command == "decide":
-        result = decide(event, settings_from_env(), api)
+        result = decide(event, settings_from_env(), api, datetime.datetime.now(datetime.timezone.utc))
         print(f"decision: {result['action']} ({result['reason']}) command={result['command'] or '-'} "
               f"sha={result['sha'] or '-'} backends={result['backends'] or '-'} "
               f"cuda-versions={result['cuda_versions'] or '-'} "
