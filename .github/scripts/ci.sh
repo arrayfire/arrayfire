@@ -181,6 +181,10 @@ fi
 
 if [[ $job == windows-* ]]; then
   export VCPKG_ROOT=${VCPKG_ROOT:-$HOME/vcpkg}
+  # The presets' x64-windows-release triplet, from this repository rather than the tree
+  # under test, so that commits that predate it build with it too.
+  triplets=$(cygpath -m "$root/.github/vcpkg-triplets")
+  export VCPKG_OVERLAY_TRIPLETS=$triplets${VCPKG_OVERLAY_TRIPLETS:+;$VCPKG_OVERLAY_TRIPLETS}
 fi
 
 if [[ -n $deps ]]; then
