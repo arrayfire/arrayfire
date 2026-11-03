@@ -127,20 +127,24 @@ their source and citations. While no commit is pinned, the Matrix Market tests a
 turn them on, set `commit` in the manifest to a full arrayfire-data commit SHA. To try a local
 checkout of arrayfire-data, set `AF_CI_MTX_SOURCE` to its `matrixmarket/` directory as a
 `file://` URL (with `--docker`, a path inside the container). To build a `ci-*` preset
-without `ci.sh`, let the check turn the tests on or off:
+without `ci.sh`, let the check turn the tests on or off when configuring:
 
     AF_CI_MTX_FILES=$(python3 .github/scripts/check-matrix-data.py . build/<preset>) \
-      cmake --workflow --preset <preset>
+      cmake --preset <preset>
+    cmake --build --preset <preset>
+    ctest --preset <preset>
 
 The build tree goes to `build/<preset>` and test results to `build/<preset>/junit.xml`. With
 `--docker`, `ci.sh` picks the build parallelism from the memory the container can use and
 prints its choice; set `CMAKE_BUILD_PARALLEL_LEVEL` to choose it yourself.
 
 Without `--docker`, `ci.sh` first installs the job's packages with apt, Homebrew or vcpkg;
-`--no-deps` skips that. The build itself is a CMake workflow preset, which needs CMake 3.25 or
-newer, for example:
+`--no-deps` skips that. The build itself uses the job's `ci-<job>` configure, build and test
+presets, and needs CMake 3.21 or newer, for example:
 
-    cmake --workflow --preset ci-linux-gcc-openblas
+    cmake --preset ci-linux-gcc-openblas
+    cmake --build --preset ci-linux-gcc-openblas
+    ctest --preset ci-linux-gcc-openblas --output-junit junit.xml
 
 `lint` checks the formatting of the lines you changed since the default branch with
 clang-format 15.0.7.
