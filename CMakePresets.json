@@ -389,14 +389,14 @@
         "lhs": "${hostSystemName}",
         "rhs": "Windows"
       },
-      "description": "CPU backend with MSVC and vcpkg's OpenBLAS, LAPACK and FFTW. Needs VCPKG_ROOT",
+      "description": "CPU backend with MSVC and vcpkg's OpenBLAS, LAPACK and FFTW, built for release only. Needs VCPKG_ROOT, and .github/vcpkg-triplets in VCPKG_OVERLAY_TRIPLETS (ci.sh sets it)",
       "generator": "Visual Studio 17 2022",
       "architecture": {
         "value": "x64",
         "strategy": "set"
       },
       "cacheVariables": {
-        "VCPKG_TARGET_TRIPLET": "x64-windows",
+        "VCPKG_TARGET_TRIPLET": "x64-windows-release",
         "CMAKE_VS_GLOBALS": "UseMultiToolTask=true;EnforceProcessCountAcrossBuilds=true",
         "has_all_warnings_flag": "OFF"
       },
@@ -413,12 +413,12 @@
         "lhs": "${hostSystemName}",
         "rhs": "Windows"
       },
-      "description": "CUDA backend and its tests with MSVC, Ninja and vcpkg, for compute capability 7.5. Builds without a GPU. Run it in Visual Studio's x64 developer environment, with CUDA_PATH and VCPKG_ROOT set",
+      "description": "CUDA backend and its tests with MSVC, Ninja and vcpkg, for compute capability 7.5. Builds without a GPU. Run it in Visual Studio's x64 developer environment, with CUDA_PATH and VCPKG_ROOT set and .github/vcpkg-triplets in VCPKG_OVERLAY_TRIPLETS (ci.sh sets it)",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "cl",
         "CMAKE_CXX_COMPILER": "cl",
         "CMAKE_CUDA_COMPILER": "$env{CUDA_PATH}/bin/nvcc.exe",
-        "VCPKG_TARGET_TRIPLET": "x64-windows",
+        "VCPKG_TARGET_TRIPLET": "x64-windows-release",
         "AF_BUILD_CPU": "OFF",
         "AF_BUILD_CUDA": "ON",
         "AF_BUILD_FORGE": "OFF",
@@ -550,7 +550,7 @@
       "configurePreset": "ci-windows-msvc-openblas",
       "configuration": "RelWithDebInfo",
       "environment": {
-        "PATH": "${sourceDir}/build/${presetName}/vcpkg_installed/x64-windows/bin;$penv{PATH}"
+        "PATH": "${sourceDir}/build/${presetName}/vcpkg_installed/x64-windows-release/bin;$penv{PATH}"
       },
       "filter": {
         "exclude": {
