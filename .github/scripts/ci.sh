@@ -231,6 +231,20 @@ gpu_tests() {
     --output-junit "$gpu_build/junit.xml" 2>&1 | tee "$gpu_build/ctest.log"
 }
 
+# Configures and builds the job's ci-<job> preset, then runs its tests with JUnit output,
+# except for the compile-only jobs. Steps rather than a workflow preset, so that the presets
+# keep format 2 (CMake 3.20); ctest's --output-junit needs CMake 3.21. Each step returns on
+# failure, since set -e doesn't apply when the caller tests the result (linux-cuda).
+presets() {
+  local preset=ci-$1
+  cmake --preset "$preset" || return
+  cmake --build --preset "$preset" || return
+  case $1 in
+    linux-cuda|linux-opencl|linux-oneapi|windows-cuda|docs) ;;
+    *) ctest --preset "$preset" --output-junit "$source/build/$preset/junit.xml" ;;
+  esac
+}
+
 case $job in
   lint)
     if [[ -n ${AF_LINT_DIFF:-} ]]; then
@@ -244,7 +258,7 @@ case $job in
     # shellcheck disable=SC1091
     source /opt/intel/oneapi/setvars.sh --force > /dev/null
     set -eu
-    cmake --workflow --preset "ci-$job"
+    presets "$job"
     ;;
   linux-gcc-openblas-floor)
     # CMake 3.16 cannot read presets; these settings mirror the
@@ -276,12 +290,12 @@ case $job in
     # installers get instead: the default architecture list and the bundled CUDA
     # libraries. Both run, and the job fails if either failed.
     status=0
-    cmake --workflow --preset ci-linux-cuda || status=$?
+    presets linux-cuda || status=$?
     "$scripts/check-cuda-release.sh" "$source" "$source/build/ci-linux-cuda-release" || status=1
     exit "$status"
     ;;
   windows-cuda)
-    cmake --workflow --preset ci-windows-cuda
+    presets windows-cuda
     # The CUDA DLLs that the installers bundle (AF_INSTALL_STANDALONE=ON, component
     # cuda_dependencies), from the toolkit's bin\ or, from CUDA 13 on, bin\x64\.
     # Only the install rules change, so nothing is rebuilt.
@@ -357,6 +371,6 @@ case $job in
     AF_OPENCL_DEVICE_TYPE=GPU gpu_tests
     ;;
   *)
-    cmake --workflow --preset "ci-$job"
+    presets "$job"
     ;;
 esac

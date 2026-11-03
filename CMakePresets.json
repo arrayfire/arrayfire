@@ -1,8 +1,8 @@
 {
-  "version": 6,
+  "version": 2,
   "cmakeMinimumRequired": {
     "major": 3,
-    "minor": 25,
+    "minor": 20,
     "patch": 0
   },
   "configurePresets": [
@@ -288,11 +288,6 @@
       "name": "ci-linux",
       "hidden": true,
       "inherits": "ci",
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Linux"
-      },
       "description": "Common settings of the Linux CPU CI configurations"
     },
     {
@@ -371,11 +366,6 @@
     {
       "name": "ci-macos-arm64-clang-accelerate",
       "inherits": "ci",
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      },
       "description": "CPU backend with Apple Clang, Accelerate and FFTW",
       "cacheVariables": {
         "CMAKE_DISABLE_FIND_PACKAGE_fmt": "ON"
@@ -384,11 +374,6 @@
     {
       "name": "ci-windows-msvc-openblas",
       "inherits": "ci",
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Windows"
-      },
       "description": "CPU backend with MSVC and vcpkg's OpenBLAS, LAPACK and FFTW, built for release only. Needs VCPKG_ROOT, and .github/vcpkg-triplets in VCPKG_OVERLAY_TRIPLETS (ci.sh sets it)",
       "generator": "Visual Studio 17 2022",
       "architecture": {
@@ -408,11 +393,6 @@
     {
       "name": "ci-windows-cuda",
       "inherits": "ci",
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Windows"
-      },
       "description": "CUDA backend and its tests with MSVC, Ninja and vcpkg, for compute capability 7.5. Builds without a GPU. Run it in Visual Studio's x64 developer environment, with CUDA_PATH and VCPKG_ROOT set and .github/vcpkg-triplets in VCPKG_OVERLAY_TRIPLETS (ci.sh sets it)",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "cl",
@@ -503,8 +483,7 @@
       "name": "ci",
       "hidden": true,
       "output": {
-        "outputOnFailure": true,
-        "outputJUnitFile": "${sourceDir}/build/${presetName}/junit.xml"
+        "outputOnFailure": true
       },
       "execution": {
         "jobs": 2,
@@ -557,175 +536,6 @@
           "name": "pinverse"
         }
       }
-    }
-  ],
-  "workflowPresets": [
-    {
-      "name": "ci-linux-gcc-openblas",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "ci-linux-gcc-openblas"
-        },
-        {
-          "type": "build",
-          "name": "ci-linux-gcc-openblas"
-        },
-        {
-          "type": "test",
-          "name": "ci-linux-gcc-openblas"
-        }
-      ]
-    },
-    {
-      "name": "ci-linux-gcc-openblas-next",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "ci-linux-gcc-openblas-next"
-        },
-        {
-          "type": "build",
-          "name": "ci-linux-gcc-openblas-next"
-        },
-        {
-          "type": "test",
-          "name": "ci-linux-gcc-openblas-next"
-        }
-      ]
-    },
-    {
-      "name": "ci-linux-clang-openblas",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "ci-linux-clang-openblas"
-        },
-        {
-          "type": "build",
-          "name": "ci-linux-clang-openblas"
-        },
-        {
-          "type": "test",
-          "name": "ci-linux-clang-openblas"
-        }
-      ]
-    },
-    {
-      "name": "ci-linux-icx-mkl",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "ci-linux-icx-mkl"
-        },
-        {
-          "type": "build",
-          "name": "ci-linux-icx-mkl"
-        },
-        {
-          "type": "test",
-          "name": "ci-linux-icx-mkl"
-        }
-      ]
-    },
-    {
-      "name": "ci-linux-cuda",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "ci-linux-cuda"
-        },
-        {
-          "type": "build",
-          "name": "ci-linux-cuda"
-        }
-      ]
-    },
-    {
-      "name": "ci-linux-opencl",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "ci-linux-opencl"
-        },
-        {
-          "type": "build",
-          "name": "ci-linux-opencl"
-        }
-      ]
-    },
-    {
-      "name": "ci-linux-oneapi",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "ci-linux-oneapi"
-        },
-        {
-          "type": "build",
-          "name": "ci-linux-oneapi"
-        }
-      ]
-    },
-    {
-      "name": "ci-macos-arm64-clang-accelerate",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "ci-macos-arm64-clang-accelerate"
-        },
-        {
-          "type": "build",
-          "name": "ci-macos-arm64-clang-accelerate"
-        },
-        {
-          "type": "test",
-          "name": "ci-macos-arm64-clang-accelerate"
-        }
-      ]
-    },
-    {
-      "name": "ci-windows-msvc-openblas",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "ci-windows-msvc-openblas"
-        },
-        {
-          "type": "build",
-          "name": "ci-windows-msvc-openblas"
-        },
-        {
-          "type": "test",
-          "name": "ci-windows-msvc-openblas"
-        }
-      ]
-    },
-    {
-      "name": "ci-windows-cuda",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "ci-windows-cuda"
-        },
-        {
-          "type": "build",
-          "name": "ci-windows-cuda"
-        }
-      ]
-    },
-    {
-      "name": "ci-docs",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "ci-docs"
-        },
-        {
-          "type": "build",
-          "name": "ci-docs"
-        }
-      ]
     }
   ]
 }
