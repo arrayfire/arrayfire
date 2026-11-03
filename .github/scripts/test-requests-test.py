@@ -102,14 +102,32 @@ CASES = [
     # /cpu-tests: writers
     ("cpu: maintainer is accepted, with macOS and Windows", event("maintainer-a", "/cpu-tests"),
      answers(), {}, accept("cpu", macos_windows=True), ["permission maintainer-a", f"pull {PR}", COMPARE]),
+    ("cpu: maintainer naming the head's SHA is accepted, with macOS and Windows",
+     event("maintainer-a", f"/cpu-tests {HEAD}"), answers(), {}, accept("cpu", macos_windows=True),
+     ["permission maintainer-a", f"pull {PR}", COMPARE]),
+    ("cpu: the head's SHA in capitals counts", event("maintainer-a", f"/cpu-tests {HEAD.upper()}"),
+     answers(), {}, accept("cpu", macos_windows=True), None),
+    ("cpu: a SHA that is no longer the head is refused before anything starts",
+     event("maintainer-a", f"/cpu-tests {STALE_HEAD}"), answers(), {}, refuse("cpu", "head-moved"),
+     ["permission maintainer-a", f"pull {PR}"]),
+    ("cpu: a short SHA gets the usage", event("maintainer-a", f"/cpu-tests {HEAD[:12]}"), answers(), {},
+     refuse("cpu", "usage"), []),
     ("cpu: writer's /cpu-tests all adds the accelerator builds", event("writer-c", "/cpu-tests all"),
      answers(), {}, accept("cpu", accelerators=True, macos_windows=True), None),
+    ("cpu: writer's /cpu-tests all <SHA> adds the accelerator builds",
+     event("writer-c", f"/cpu-tests all {HEAD}"), answers(), {},
+     accept("cpu", accelerators=True, macos_windows=True), None),
+    ("cpu: the SHA before `all` gets the usage", event("writer-c", f"/cpu-tests {HEAD} all"), answers(), {},
+     refuse("cpu", "usage"), []),
     ("cpu: /cpu-tests all says when accelerator builds are disabled", event("writer-c", "/cpu-tests all"),
      answers(), {"accelerator_builds": ""}, accept("cpu", accelerators=True, macos_windows=True), None),
     # /cpu-tests: the pull request's own author without write access
     ("cpu: author without write access, light checks done, is accepted on Linux",
      event("contributor-g", "/cpu-tests", author="contributor-g"), answers(author="contributor-g"), {},
      accept("cpu"), ["permission contributor-g", f"pull {PR}", f"check-runs {HEAD}", COMPARE]),
+    ("cpu: author without write access naming the head's SHA still runs Linux only",
+     event("contributor-g", f"/cpu-tests {HEAD}", author="contributor-g"), answers(author="contributor-g"),
+     {}, accept("cpu"), None),
     ("cpu: first-time author whose light checks never ran is refused",
      event("newcomer-h", "/cpu-tests", author="newcomer-h", association="FIRST_TIME_CONTRIBUTOR"),
      answers(author="newcomer-h", check_runs=[]), {}, refuse("cpu", "light-checks-pending"), None),
@@ -186,6 +204,14 @@ CASES = [
      accept("gpu", "cuda opencl", "12.9"), GPU_ACCEPTED),
     ("gpu form: extra spaces between the words are fine", event("maintainer-a", "/gpu-tests   all   cuda=13.4  "),
      answers(), {}, accept("gpu", "cuda opencl", "13.4"), GPU_ACCEPTED),
+    ("gpu form: the head's SHA alone lets the changed files choose", event("maintainer-a", f"/gpu-tests {HEAD}"),
+     answers(), {}, accept("gpu", "cuda", "12.9"), GPU_ACCEPTED),
+    ("gpu form: `/gpu-tests all cuda=13.4 <SHA>` names the head",
+     event("maintainer-a", f"/gpu-tests all cuda=13.4 {HEAD}"), answers(), {},
+     accept("gpu", "cuda opencl", "13.4"), GPU_ACCEPTED),
+    ("gpu form: a SHA that is no longer the head is refused before anything starts",
+     event("maintainer-a", f"/gpu-tests all {STALE_HEAD}"), answers(), {}, refuse("gpu", "head-moved"),
+     ["permission maintainer-a", f"pull {PR}"]),
 
     # /gpu-tests without a backend: the changed files choose
     ("gpu files: a docs-only change gets a reply and starts nothing", event("maintainer-a"),
@@ -431,8 +457,11 @@ COMPAT_CASES = [
 
 
 def compat_case(name, smi, toolkit, code, printed):
-    process = subprocess.run(["bash", CUDA_COMPAT, toolkit], input=f"Sat Oct 31 2026\n{smi}\n",
-                             capture_output=True, text=True, timeout=60)
+    # By name from its own directory: on Windows, "bash" can be WSL's, which can't open a
+    # C:\ path but starts in the translated working directory.
+    process = subprocess.run(["bash", os.path.basename(CUDA_COMPAT), toolkit],
+                             input=f"Sat Oct 31 2026\n{smi}\n", capture_output=True, text=True,
+                             timeout=60, cwd=os.path.dirname(CUDA_COMPAT))
     actual = (process.returncode, process.stdout.strip())
     ok = actual == (code, printed)
     print(f"{'ok  ' if ok else 'FAIL'} {name}\n"
@@ -464,6 +493,8 @@ def main():
             ok = ok and any(f"`{file['filename']}`" in result["reply"]
                             or f"`{file.get('previous_filename')}`" in result["reply"]
                             for file in api_answers["files"])
+        if result["reason"] == "head-moved":
+            ok = ok and HEAD in result["reply"]
         if result["reason"] == "no-gpu-changes":
             ok = ok and "`/gpu-tests all`" in result["reply"]
         if result["action"] == "ignore":

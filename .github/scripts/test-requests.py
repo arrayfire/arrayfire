@@ -28,12 +28,22 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-COMMANDS = {"cpu": re.compile(r"/cpu-tests(?:\s+(all))?"),
-            "gpu": re.compile(r"/gpu-tests(?:\s+(cuda|opencl|all))?(?:\s+cuda=(\d+\.\d+))?")}
-USAGE = {"cpu": "Usage: `/cpu-tests`, or `/cpu-tests all` to add the CUDA, OpenCL and oneAPI builds.",
-         "gpu": "Usage: `/gpu-tests [cuda|opencl|all] [cuda=<major.minor>]`. Without `cuda`, `opencl` "
-                "or `all`, the changed files choose the backends; `cuda=13.4` tests CUDA 13.4 only, "
-                "and `all cuda=13.4` adds OpenCL."}
+# A request may end with the full SHA of the head commit it is for. The head is read when the
+# request is decided, a few seconds after the comment, so a push in between would otherwise
+# be tested in its place. A named SHA that is no longer the head refuses the request; that
+# matters most for a maintainer's /cpu-tests, whose macOS and Windows jobs build on the runner
+# itself, where the code could reach the cache credentials of master's scope. Only the full
+# SHA counts: the author knows the head in advance and could make a commit that shares a
+# short prefix.
+COMMANDS = {"cpu": re.compile(r"/cpu-tests(?:\s+(all))?(?:\s+([0-9a-fA-F]{40}))?"),
+            "gpu": re.compile(r"/gpu-tests(?:\s+(cuda|opencl|all))?(?:\s+cuda=(\d+\.\d+))?"
+                              r"(?:\s+([0-9a-fA-F]{40}))?")}
+NAMED_SHA = {"cpu": 2, "gpu": 3}  # the group of COMMANDS[command] that holds the named SHA
+USAGE = {"cpu": "Usage: `/cpu-tests [all] [<full head SHA>]`. `all` adds the CUDA, OpenCL and oneAPI "
+                "builds; a named SHA must still be the head.",
+         "gpu": "Usage: `/gpu-tests [cuda|opencl|all] [cuda=<major.minor>] [<full head SHA>]`. Without "
+                "`cuda`, `opencl` or `all`, the changed files choose the backends; `cuda=13.4` tests "
+                "CUDA 13.4 only, and `all cuda=13.4` adds OpenCL. A named SHA must still be the head."}
 DEFAULT_CUDA_VERSION = "12.9"  # without AF_CI_CUDA_VERSIONS
 BACKENDS = {"cuda": ("cuda",), "opencl": ("opencl",), "all": ("cuda", "opencl")}
 # The GPU backends a changed file can affect; the first matching rule wins, and a file
@@ -137,6 +147,12 @@ def decide(event, settings, api):
     number = issue["number"]
     pull = api.pull(number)
     sha = pull["head"]["sha"]
+    named = (match.group(NAMED_SHA[command]) or "").lower()
+    if named and named != sha:
+        return reply("head-moved",
+                     f"Not starting {command.upper()} tests: the request names `{named}`, but the head "
+                     f"of this pull request is now `{sha}`. Review the new commits, then ask again "
+                     "with the new SHA.")
     if command == "cpu":
         if not writer:
             checks = latest_light_checks(api, sha)

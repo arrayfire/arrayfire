@@ -58,10 +58,13 @@ CI runs in three tiers:
 
   Maintainers with write access can ask on any pull request. The pull
   request's author can ask on their own pull request once the light checks have run on it.
-  Requests by anyone other than a maintainer run the Linux jobs only. The result appears as
-  the `cpu-tests` status and a comment.
+  Requests by anyone other than a maintainer run the Linux jobs only, which run in containers.
+  The macOS and Windows jobs, and `windows-cuda`, build on the runner itself, so a maintainer
+  should review the code first, and can name the reviewed head's full SHA to make sure that is
+  what runs: `/cpu-tests <sha>` or `/cpu-tests all <sha>`. The result appears as the
+  `cpu-tests` status and a comment.
 - **The GPU tests** run only on request: a maintainer with write access comments
-  `/gpu-tests [cuda|opencl|all] [cuda=<major.minor>]`.
+  `/gpu-tests [cuda|opencl|all] [cuda=<major.minor>] [<sha>]`.
   - `/gpu-tests` alone lets the pull request's changed files choose. Changes to
     `src/backend/cuda/`, `include/af/cuda.h`, `test/cuda.cu` or CUDA's CMake helpers test CUDA;
     changes to `src/backend/opencl/`, `include/af/opencl.h`, the OpenCL interop tests or
@@ -86,14 +89,21 @@ CI runs in three tiers:
   about three times that. The builds run on standard runners, which cost nothing for a
   public repository.
 
-Requests test the exact commit that is the pull request's head at that moment, with the CI
-scripts from `master`. When the pull request's branch is behind `master`, the reply says by how
+Requests test the exact commit that is the pull request's head when the request is handled,
+a few seconds after the comment, with the CI scripts from `master`. A request that ends with
+a full commit SHA is refused if that commit is no longer the head, so that a push made just
+after the comment can't take the reviewed commit's place. When the pull request's branch is behind `master`, the reply says by how
 many commits: CI fixes made on `master` since then reach the test only after "Update branch".
 Maintainers can also start the "CPU tests" or "GPU tests" workflow by
 hand with a commit SHA. The GPU tests are off until the repository variable `AF_CI_GPU_TESTS`
 is `true` and `AF_CI_GPU_RUNNER` names the GPU runners' label. `/cpu-tests` also uses the CMake presets from `master`, while the merge
 queue uses the pull request's own, so a change to `CMakePresets.json` is really tested in the
 merge queue.
+
+GitHub attaches a comment-triggered run to the latest commit on `master`, so a request's jobs
+also appear among that commit's checks, failed ones too, until the next merge. They don't
+count toward any required check; the pull request's result is its `cpu-tests` or `gpu-tests`
+status.
 
 ## Running the CI Checks Locally ##
 
