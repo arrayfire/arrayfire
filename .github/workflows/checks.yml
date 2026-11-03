@@ -1,0 +1,62 @@
+name: Checks
+
+# The light checks that run on every push: the formatting of the changed lines,
+# the documentation, and the workflows and CI scripts. The CPU tests run in the
+# merge queue or on request (cpu.yml).
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  merge_group:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check formatting of the changed lines
+        env:
+          AF_LINT_BASE: >-
+            ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha ||
+                github.event.before }}
+        run: .github/scripts/ci.sh --docker lint
+
+  docs:
+    name: docs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build the documentation
+        run: .github/scripts/ci.sh --docker docs
+
+  workflows:
+    name: workflows
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Lint the workflows and CI scripts and test the request policy
+        run: .github/scripts/ci.sh --docker workflows
+      - name: Check the macOS job's scripts under bash 3.2
+        timeout-minutes: 2
+        run: .github/scripts/check-bash32.sh
