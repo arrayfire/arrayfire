@@ -95,7 +95,7 @@ Array<T> join(const int jdim, const Array<T> &first, const Array<T> &second) {
         if (1LL + jdim >= first.ndims() && first.isLinear()) {
             // first & out are linear
             auto first_array = first.get();
-            auto out_array = out.get();
+            auto out_array   = out.get();
             getQueue().submit([&](sycl::handler &h) {
                 sycl::range sz(first.elements());
                 sycl::id src_offset(first.getOffset());
@@ -128,7 +128,7 @@ Array<T> join(const int jdim, const Array<T> &first, const Array<T> &second) {
         if (1LL + jdim >= second.ndims() && second.isLinear()) {
             // second & out are linear
             auto second_array = second.get();
-            auto out_array = out.get();
+            auto out_array    = out.get();
             getQueue().submit([&](sycl::handler &h) {
                 sycl::range sz(second.elements());
                 sycl::id src_offset(second.getOffset());
@@ -225,10 +225,8 @@ void join(Array<T> &out, const int jdim, const vector<Array<T>> &inputs) {
                             sycl::range sz(in->elements());
                             sycl::id src_offset(in->getOffset());
                             sycl::accessor offset_acc_src =
-                                in_array
-                                    ->template get_access<
-                                        sycl::access_mode::read>(h, sz,
-                                                                 src_offset);
+                                in_array->template get_access<
+                                    sycl::access_mode::read>(h, sz, src_offset);
                             sycl::id dst_offset(outputIt->info.offset);
                             sycl::accessor offset_acc_dst =
                                 outputIt->data->template get_access<
