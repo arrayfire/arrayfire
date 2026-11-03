@@ -7,7 +7,7 @@
 
 af_dep_check_and_populate(${clfft_prefix}
   URI https://github.com/arrayfire/clFFT.git
-  REF arrayfire-release
+  REF b2715e98b750a21b92d87f612b22844b1cdb1c4a
 )
 
 set(current_build_type ${BUILD_SHARED_LIBS})
