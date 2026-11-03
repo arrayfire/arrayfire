@@ -53,6 +53,13 @@ set(CPACK_PACKAGE_VERSION_MAJOR "${ArrayFire_VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${ArrayFire_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${ArrayFire_VERSION_PATCH}")
 
+# Windows installers bundle the libraries of one CUDA toolkit, so each toolkit
+# we release for needs its own file name
+if(WIN32 AND AF_BUILD_CUDA)
+  set(CPACK_PACKAGE_FILE_NAME
+    "${LIBRARY_NAME}-${ArrayFire_VERSION}-CUDA-${CUDA_VERSION_MAJOR}.${CUDA_VERSION_MINOR}-win64")
+endif()
+
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "${LIBRARY_NAME}")
 
 set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
