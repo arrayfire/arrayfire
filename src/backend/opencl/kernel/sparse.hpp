@@ -86,9 +86,9 @@ void csr2dense(Param output, const Param values, const Param rowIdx,
 
     csr2dense(cl::EnqueueArgs(getQueue(), global, local), *output.data,
               *values.data, *rowIdx.data, *colIdx.data, M,
-	      static_cast<int>(values.info.offset),
-	      static_cast<int>(rowIdx.info.offset),
-	      static_cast<int>(colIdx.info.offset));
+              static_cast<int>(values.info.offset),
+              static_cast<int>(rowIdx.info.offset),
+              static_cast<int>(colIdx.info.offset));
     CL_DEBUG_FINISH(getQueue());
 }
 

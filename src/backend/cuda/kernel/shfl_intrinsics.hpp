@@ -65,8 +65,7 @@ inline __device__ cfloat shfl_down_sync(cfloat var, int delta) {
 }
 // specialization for cdouble
 template<>
-inline __device__ cdouble shfl_down_sync(cdouble var,
-                                         int delta) {
+inline __device__ cdouble shfl_down_sync(cdouble var, int delta) {
 #if (CUDA_VERSION >= 9000)
     cdouble res = {__shfl_down_sync(FULL_MASK, var.x, delta),
                    __shfl_down_sync(FULL_MASK, var.y, delta)};

@@ -32,7 +32,7 @@ void cscmv(Param out, const Param &values, const Param &colIdx,
            bool is_conj) {
     // TODO: rows_per_group limited by register pressure. Find better way to
     // handle this.
-    constexpr int threads_per_g = 64;
+    constexpr int threads_per_g  = 64;
     constexpr int rows_per_group = 64;
 
     const bool use_alpha = (alpha != scalar<T>(1.0));
@@ -40,12 +40,12 @@ void cscmv(Param out, const Param &values, const Param &colIdx,
 
     cl::NDRange local(threads_per_g);
 
-    int K        = colIdx.info.dims[0] - 1;
-    int M        = out.info.dims[0];
+    int K = colIdx.info.dims[0] - 1;
+    int M = out.info.dims[0];
 
     std::array<TemplateArg, 5> targs = {
-        TemplateTypename<T>(),       TemplateArg(use_alpha),
-        TemplateArg(is_conj), TemplateArg(rows_per_group),
+        TemplateTypename<T>(), TemplateArg(use_alpha),
+        TemplateArg(is_conj),  TemplateArg(rows_per_group),
         TemplateArg(local[0]),
     };
     std::array<std::string, 9> options = {
@@ -59,7 +59,7 @@ void cscmv(Param out, const Param &values, const Param &colIdx,
         DefineKeyValue(IS_LONG, (islong<T>() ? 1 : 0)),
         getTypeBuildDefinition<T>()};
 
-    if(use_beta) {
+    if (use_beta) {
         std::array<TemplateArg, 4> targs_beta = {
             TemplateTypename<T>(), TemplateArg(is_conj),
             TemplateArg(rows_per_group), TemplateArg(local[0])};
@@ -75,8 +75,10 @@ void cscmv(Param out, const Param &values, const Param &colIdx,
 
         int groups_x = divup(M, rows_per_group * threads_per_g);
         cl::NDRange global(local[0] * groups_x, 1);
-        auto cscmvBeta = common::getKernel("cscmv_beta", {{cscmv_cl_src}}, targs_beta, options_beta);
-        cscmvBeta(cl::EnqueueArgs(getQueue(), global, local), *out.data, M, beta);
+        auto cscmvBeta = common::getKernel("cscmv_beta", {{cscmv_cl_src}},
+                                           targs_beta, options_beta);
+        cscmvBeta(cl::EnqueueArgs(getQueue(), global, local), *out.data, M,
+                  beta);
 
     } else {
         getQueue().enqueueFillBuffer(*out.data, 0, 0, M * sizeof(T));

@@ -165,8 +165,10 @@ string getDeviceInfo() noexcept {
             info << " (";
             if (device->has(aspect::fp64)) { info << "fp64 "; }
             if (device->has(aspect::fp16) &&
-                device->get_info<sycl::info::device::native_vector_width_half>() != 0)
-                { info << "fp16 "; }
+                device->get_info<
+                    sycl::info::device::native_vector_width_half>() != 0) {
+                info << "fp16 ";
+            }
             info << "\b)";
 #ifndef NDEBUG
             info << " -- ";
@@ -389,7 +391,9 @@ bool isHalfSupported(unsigned device) {
 
     common::lock_guard_t lock(devMngr.deviceMutex);
     return devMngr.mDevices[device]->has(sycl::aspect::fp16) &&
-           devMngr.mDevices[device]->get_info<sycl::info::device::native_vector_width_half>() != 0;
+           devMngr.mDevices[device]
+                   ->get_info<sycl::info::device::native_vector_width_half>() !=
+               0;
 }
 
 void devprop(char* d_name, char* d_platform, char* d_toolkit, char* d_compute) {

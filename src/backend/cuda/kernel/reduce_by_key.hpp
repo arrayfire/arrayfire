@@ -66,8 +66,8 @@ __global__ void test_needs_reduction(int *needs_another_reduction,
 
     if (tid < n) { k = keys_in.ptr[tid]; }
 
-    int update_key = (k == shfl_down_sync(k, 1)) &&
-                     (tid < (n - 1)) && ((threadIdx.x % 32) < 31);
+    int update_key = (k == shfl_down_sync(k, 1)) && (tid < (n - 1)) &&
+                     ((threadIdx.x % 32) < 31);
     int remaining_updates = any_sync(update_key);
 
     __syncthreads();
@@ -267,8 +267,7 @@ __global__ static void reduce_blocks_by_key(int *reduced_block_sizes,
         int eq_check, update_key;
 #pragma unroll
         for (int delta = 1; delta < 32; delta <<= 1) {
-            eq_check =
-                (unique_id == shfl_down_sync(unique_id, delta));
+            eq_check = (unique_id == shfl_down_sync(unique_id, delta));
 
             // checks if this thread should perform a reduction
             update_key =
@@ -494,8 +493,7 @@ __global__ static void reduce_blocks_dim_by_key(
         int eq_check, update_key;
 #pragma unroll
         for (int delta = 1; delta < 32; delta <<= 1) {
-            eq_check =
-                (unique_id == shfl_down_sync(unique_id, delta));
+            eq_check = (unique_id == shfl_down_sync(unique_id, delta));
 
             // checks if this thread should perform a reduction
             update_key =

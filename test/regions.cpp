@@ -71,7 +71,7 @@ void regionsTest(string pTestFile, af_connectivity connectivity,
     }
 
     ASSERT_SUCCESS(af_regions(&outArray, inArray, connectivity,
-                               (af_dtype)dtype_traits<T>::af_type));
+                              (af_dtype)dtype_traits<T>::af_type));
 
     // Get result
     T* outData = new T[idims.elements()];

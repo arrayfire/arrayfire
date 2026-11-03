@@ -223,10 +223,9 @@ T getScalar(const Array<T> &in) {
     auto in_get = in.get();
     getQueue()
         .submit([&](sycl::handler &h) {
-            auto acc_in =
-                in_get->template get_access<sycl::access::mode::read>(
-                    h, sycl::range{1},
-                    sycl::id{static_cast<uintl>(in.getOffset())});
+            auto acc_in = in_get->template get_access<sycl::access::mode::read>(
+                h, sycl::range{1},
+                sycl::id{static_cast<uintl>(in.getOffset())});
             h.copy(acc_in, &retVal);
         })
         .wait();

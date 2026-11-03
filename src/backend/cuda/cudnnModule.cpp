@@ -56,7 +56,8 @@ Version cudnnVersionComponents(size_t version) {
     const int majorScale = version >= 10000 ? 10000 : 1000;
     int major            = static_cast<int>(version / majorScale);
     int minor = static_cast<int>((version - (major * majorScale)) / 100);
-    int patch = static_cast<int>(version - (major * majorScale) - (minor * 100));
+    int patch =
+        static_cast<int>(version - (major * majorScale) - (minor * 100));
     return {major, minor, patch};
 }
 
