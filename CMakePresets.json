@@ -80,7 +80,7 @@
       "description": "Build CPU Backend with FFTW and a BLAS library using Ninja Generator in Debug Configuration",
       "inherits": "ninja-cpu-mkl-debug",
       "cacheVariables": {
-        "AF_COMPUTE_LIBRARY": "FFTW/LAPCK/BLAS"
+        "AF_COMPUTE_LIBRARY": "FFTW/LAPACK/BLAS"
       }
     },
     {
@@ -128,7 +128,7 @@
       "description": "Build OpenCL Backend in debug configuration using Ninja Generator",
       "inherits": "ninja-opencl-mkl-debug",
       "cacheVariables": {
-        "AF_COMPUTE_LIBRARY": "FFTW/LAPCK/BLAS"
+        "AF_COMPUTE_LIBRARY": "FFTW/LAPACK/BLAS"
       }
     },
     {
@@ -163,7 +163,7 @@
         "description": "Build all feasible backends using Ninja Generator in Debug Configuraiton",
         "inherits": "ninja-all-mkl-debug",
         "cacheVariables": {
-            "AF_COMPUTE_LIBRARY": "FFTW/LAPCK/BLAS"
+            "AF_COMPUTE_LIBRARY": "FFTW/LAPACK/BLAS"
         }
     },
     {
