@@ -262,8 +262,21 @@ Module compileModule(const string &moduleKey, span<const string> sources,
 
     int device       = getActiveDeviceId();
     auto computeFlag = getComputeCapability(device);
+    // When NVRTC supports the device's own architecture, let NVRTC emit SASS
+    // directly. PTX would have to be assembled by the driver, which rejects
+    // PTX newer than itself even though CUDA minor version compatibility
+    // allows a toolkit newer than the driver.
+#if CUDA_VERSION >= 11010
+    const cudaDeviceProp &prop = getDeviceProp(device);
+    const bool emitSASS =
+        computeFlag.first == prop.major && computeFlag.second == prop.minor;
+#else
+    const bool emitSASS = false;
+#endif
     array<char, 32> arch;
-    snprintf(arch.data(), arch.size(), "--gpu-architecture=compute_%d%d",
+    snprintf(arch.data(), arch.size(),
+             emitSASS ? "--gpu-architecture=sm_%d%d"
+                      : "--gpu-architecture=compute_%d%d",
              computeFlag.first, computeFlag.second);
     vector<const char *> compiler_options = {
         arch.data(),
@@ -296,35 +309,49 @@ Module compileModule(const string &moduleKey, span<const string> sources,
     NVRTC_COMPILE_CHECK(nvrtcCompileProgram(prog, compiler_options.size(),
                                             compiler_options.data()));
     auto compile_end = high_resolution_clock::now();
-    size_t ptx_size;
-    vector<char> ptx;
-    NVRTC_CHECK(nvrtcGetPTXSize(prog, &ptx_size));
-    ptx.resize(ptx_size);
-    NVRTC_CHECK(nvrtcGetPTX(prog, ptx.data()));
 
     char linkInfo[linkLogSize]  = {0};
     char linkError[linkLogSize] = {0};
 
-    CUlinkState linkState;
-    CUjit_option linkOptions[] = {
-        CU_JIT_INFO_LOG_BUFFER, CU_JIT_INFO_LOG_BUFFER_SIZE_BYTES,
-        CU_JIT_ERROR_LOG_BUFFER, CU_JIT_ERROR_LOG_BUFFER_SIZE_BYTES,
-        CU_JIT_LOG_VERBOSE};
-
-    void *linkOptionValues[] = {
-        linkInfo, reinterpret_cast<void *>(linkLogSize), linkError,
-        reinterpret_cast<void *>(linkLogSize), reinterpret_cast<void *>(1)};
+    CUlinkState linkState = nullptr;
+    void *cubin           = nullptr;
+    size_t cubinSize      = 0;
+    vector<char> sass;
 
     auto link = high_resolution_clock::now();
-    CU_LINK_CHECK(cuLinkCreate(5, linkOptions, linkOptionValues, &linkState));
-    CU_LINK_CHECK(cuLinkAddData(linkState, CU_JIT_INPUT_PTX, (void *)ptx.data(),
-                                ptx.size(), moduleKey.c_str(), 0, NULL, NULL));
+#if CUDA_VERSION >= 11010
+    if (emitSASS) {
+        NVRTC_CHECK(nvrtcGetCUBINSize(prog, &cubinSize));
+        sass.resize(cubinSize);
+        NVRTC_CHECK(nvrtcGetCUBIN(prog, sass.data()));
+        cubin = sass.data();
+    }
+#endif
+    if (!emitSASS) {
+        size_t ptx_size;
+        vector<char> ptx;
+        NVRTC_CHECK(nvrtcGetPTXSize(prog, &ptx_size));
+        ptx.resize(ptx_size);
+        NVRTC_CHECK(nvrtcGetPTX(prog, ptx.data()));
 
-    void *cubin = nullptr;
-    size_t cubinSize;
+        CUjit_option linkOptions[] = {
+            CU_JIT_INFO_LOG_BUFFER, CU_JIT_INFO_LOG_BUFFER_SIZE_BYTES,
+            CU_JIT_ERROR_LOG_BUFFER, CU_JIT_ERROR_LOG_BUFFER_SIZE_BYTES,
+            CU_JIT_LOG_VERBOSE};
+
+        void *linkOptionValues[] = {
+            linkInfo, reinterpret_cast<void *>(linkLogSize), linkError,
+            reinterpret_cast<void *>(linkLogSize), reinterpret_cast<void *>(1)};
+
+        CU_LINK_CHECK(
+            cuLinkCreate(5, linkOptions, linkOptionValues, &linkState));
+        CU_LINK_CHECK(cuLinkAddData(linkState, CU_JIT_INPUT_PTX,
+                                    (void *)ptx.data(), ptx.size(),
+                                    moduleKey.c_str(), 0, NULL, NULL));
+        CU_LINK_CHECK(cuLinkComplete(linkState, &cubin, &cubinSize));
+    }
 
     CUmodule modOut = nullptr;
-    CU_LINK_CHECK(cuLinkComplete(linkState, &cubin, &cubinSize));
     CU_CHECK(cuModuleLoadData(&modOut, cubin));
     auto link_end = high_resolution_clock::now();
 
@@ -391,7 +418,7 @@ Module compileModule(const string &moduleKey, span<const string> sources,
     }
 #endif
 
-    CU_LINK_CHECK(cuLinkDestroy(linkState));
+    if (linkState) { CU_LINK_CHECK(cuLinkDestroy(linkState)); }
     NVRTC_CHECK(nvrtcDestroyProgram(&prog));
 
     // skip --std=c++14 because it will stay the same. It doesn't
