@@ -3,12 +3,14 @@
 #   -- Selects GPU arch flags for nvcc based on target_CUDA_architectures
 #      target_CUDA_architectures : Auto | Common | All | LIST(ARCH_AND_PTX ...)
 #       - "Auto" detects local machine GPU compute arch at runtime.
-#       - "Common" and "All" cover common and entire subsets of architectures
+#       - "Common" covers the common subset of architectures.
+#       - "All" covers every architecture this toolkit can target, plus PTX.
+#         Use it for release builds, because "Auto" targets the local GPU only.
 #      ARCH_AND_PTX : NAME | NUM.NUM | NUM.NUM(NUM.NUM) | NUM.NUM+PTX
 #      NAME: Fermi Kepler Maxwell Kepler+Tegra Kepler+Tesla Maxwell+Tegra Pascal Volta Turing Ampere Hopper Blackwell
 #      NUM: Any number. Only those pairs are currently accepted by NVCC though:
 #            2.0 2.1 3.0 3.2 3.5 3.7 5.0 5.2 5.3 6.0 6.1 6.2 7.0 7.2 7.5 8.0 8.6 8.7 8.8 8.9 9.0
-#            10.0 10.1 10.3 11.0 12.0 12.1
+#            10.0 10.1 10.3 10.7 11.0 12.0 12.1
 #
 #      CUDA_COMMON_GPU_ARCHITECTURES and the NAME mappings are what reach nvcc.
 #      CUDA_ALL_GPU_ARCHITECTURES is the set nvcc for this toolkit accepts; it
@@ -158,6 +160,11 @@ if(CUDA_VERSION VERSION_GREATER_EQUAL "13.0")
   list(REMOVE_ITEM CUDA_ALL_GPU_ARCHITECTURES "5.0" "5.2" "5.3" "6.0" "6.1" "6.2" "7.0" "7.2" "10.1")
 endif()
 
+# CUDA 13.4 added sm_107 (Rubin).
+if(CUDA_VERSION VERSION_GREATER_EQUAL "13.4")
+  list(APPEND CUDA_ALL_GPU_ARCHITECTURES "10.7")
+endif()
+
 list(APPEND CUDA_COMMON_GPU_ARCHITECTURES "${_CUDA_MAX_COMMON_ARCHITECTURE}")
 
 # Check with: cmake -DCUDA_VERSION=7.0 -P select_compute_arch.cmake
@@ -267,7 +274,7 @@ function(CUDA_SELECT_NVCC_ARCH_FLAGS out_variable)
   set(cuda_arch_ptx)
 
   if("${CUDA_ARCH_LIST}" STREQUAL "All")
-    set(CUDA_ARCH_LIST ${CUDA_KNOWN_GPU_ARCHITECTURES})
+    set(CUDA_ARCH_LIST ${CUDA_ALL_GPU_ARCHITECTURES} "${_CUDA_MAX_COMMON_ARCHITECTURE}")
   elseif("${CUDA_ARCH_LIST}" STREQUAL "Common")
     set(CUDA_ARCH_LIST ${CUDA_COMMON_GPU_ARCHITECTURES})
   elseif("${CUDA_ARCH_LIST}" STREQUAL "Auto")

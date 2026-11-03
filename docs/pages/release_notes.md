@@ -1,5 +1,33 @@
 \page releasenotes Release Notes
 
+v3.10.1
+======
+
+## Improvements
+- Added support for CUDA 13.0 through 13.4
+- Added support for NVIDIA Rubin GPUs (compute capability 10.7) with CUDA 13.4
+- Added support for the per-toolkit layout of cuDNN 9 installers. Set
+  `cuDNN_ROOT_DIR` to the cuDNN install directory, such as
+  `C:/Program Files/NVIDIA/CUDNN/v9.27`
+- Windows installers are now published for CUDA 12.9 and CUDA 13.4, and the
+  toolkit version is part of the installer name
+- `CUDA_architecture_build_targets=All` now targets every architecture supported
+  by the CUDA toolkit, plus PTX
+
+## Compatibility
+- The CUDA 13.4 installer requires a GPU driver from the R615 branch or newer,
+  because ArrayFire's JIT generates PTX with the bundled NVRTC
+- CUDA 13 removed Maxwell, Pascal and Volta GPUs. Use the CUDA 12.9 installer
+  for these GPUs
+
+## Fixes
+- Fix oneAPI errors on devices without double precision support
+- Fix fast math being enabled in the CPU and OpenCL backends when building with
+  the Intel oneAPI compiler on Windows
+- Fix the CUDA compiler being taken from the PATH instead of the selected CUDA
+  toolkit when several toolkits are installed
+- Fix broken page links in the documentation and docs generation on Windows
+
 v3.10.0
 ======
 

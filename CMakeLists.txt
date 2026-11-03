@@ -15,7 +15,7 @@ include(CheckLanguage)
 include(CMakeModules/AF_vcpkg_options.cmake)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
-project(ArrayFire VERSION 3.10.0 LANGUAGES C CXX)
+project(ArrayFire VERSION 3.10.1 LANGUAGES C CXX)
 
 include(AFconfigure_deps_vars)
 include(AFBuildConfigurations)
@@ -182,6 +182,13 @@ option(AF_WITH_STATIC_FREEIMAGE "Use Static FreeImage Lib" OFF)
 set(AF_WITH_CPUID ON CACHE BOOL "Build with CPUID integration")
 
 if(AF_BUILD_CUDA)
+  # check_language() takes the first nvcc on the PATH. With several toolkits
+  # installed that can differ from the toolkit FindCUDA chose for the libraries
+  # and headers, so use the compiler from that toolkit.
+  if(CUDA_NVCC_EXECUTABLE AND NOT CMAKE_CUDA_COMPILER)
+    set(CMAKE_CUDA_COMPILER ${CUDA_NVCC_EXECUTABLE} CACHE STRING "CUDA compiler executable")
+  endif()
+
   check_language(CUDA)
   if(CMAKE_CUDA_COMPILER)
     enable_language(CUDA)
@@ -191,6 +198,16 @@ if(AF_BUILD_CUDA)
     enable_language(CUDA)
   else()
     message(WARNING "No CUDA support")
+  endif()
+
+  if(CMAKE_CUDA_COMPILER_VERSION AND CUDA_VERSION)
+    string(REGEX MATCH "^[0-9]+\\.[0-9]+" cuda_compiler_version "${CMAKE_CUDA_COMPILER_VERSION}")
+    if(NOT cuda_compiler_version VERSION_EQUAL CUDA_VERSION)
+      message(FATAL_ERROR
+        "The CUDA compiler (${CMAKE_CUDA_COMPILER_VERSION}) does not match the "
+        "CUDA toolkit (${CUDA_VERSION}). Configure in a new build directory, or "
+        "set CMAKE_CUDA_COMPILER to the nvcc of that toolkit.")
+    endif()
   endif()
 endif()
 
@@ -589,7 +606,7 @@ if(WIN32 AND AF_INSTALL_STANDALONE)
       DIRECTORIES ${af_runtime_dirs}
       PRE_EXCLUDE_REGEXES
         \"^api-ms-\" \"^ext-ms-\" \"^af\" \"^opencl\" \"^libiomp5md\" \"^mkl_\"
-        \"^cu(blas|fft|solver|sparse)\" \"^nv(rtc|jitlink)\"
+        \"^cu(blas|fft|solver|sparse)\" \"^nv(rtc|jitlink|cuda)\"
       POST_EXCLUDE_REGEXES \"[Ss][Yy][Ss][Tt][Ee][Mm]32\"
       RESOLVED_DEPENDENCIES_VAR af_resolved_deps
       UNRESOLVED_DEPENDENCIES_VAR af_unresolved_deps)
