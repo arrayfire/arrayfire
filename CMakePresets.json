@@ -1,8 +1,8 @@
 {
-  "version": 2,
+  "version": 6,
   "cmakeMinimumRequired": {
     "major": 3,
-    "minor": 20,
+    "minor": 25,
     "patch": 0
   },
   "configurePresets": [
@@ -219,41 +219,513 @@
         }
     },
     {
-      "name": "msvc2019",
+      "name": "msvc2022",
       "hidden": true,
-      "description": "Base preset for Visual Studio 16 2019 generator.",
-      "generator": "Visual Studio 16 2019",
+      "description": "Base preset for Visual Studio 17 2022 generator.",
+      "generator": "Visual Studio 17 2022",
       "architecture": "x64"
     },
     {
-      "name": "msvc2019-cpu-mkl",
-      "description": "Build CPU Backend using Intel MKL with MSVC 2019 Generator",
-      "inherits": [ "msvc2019", "ninja-cpu-mkl-debug" ]
+      "name": "msvc2022-cpu-mkl",
+      "description": "Build CPU Backend using Intel MKL with MSVC 2022 Generator",
+      "inherits": [ "msvc2022", "ninja-cpu-mkl-debug" ]
     },
     {
-      "name": "msvc2019-cuda",
-      "description": "Build CUDA Backend with MSVC 2019 Generator",
-      "inherits": [ "msvc2019", "ninja-cuda-debug" ]
+      "name": "msvc2022-cuda",
+      "description": "Build CUDA Backend with MSVC 2022 Generator",
+      "inherits": [ "msvc2022", "ninja-cuda-debug" ]
     },
     {
-      "name": "msvc2019-opencl-mkl",
-      "description": "Build OpenCL Backend with MSVC 2019 Generator. Uses MKL for CPU fallback.",
-      "inherits": [ "msvc2019", "ninja-opencl-mkl-debug" ]
+      "name": "msvc2022-opencl-mkl",
+      "description": "Build OpenCL Backend with MSVC 2022 Generator. Uses MKL for CPU fallback.",
+      "inherits": [ "msvc2022", "ninja-opencl-mkl-debug" ]
     },
     {
-      "name": "msvc2019-all-mkl",
-      "description": "Build all feasible Backends with MSVC 2019 Generator. Uses MKL for CPU fallback.",
-      "inherits": [ "msvc2019", "ninja-all-mkl-debug" ]
+      "name": "msvc2022-all-mkl",
+      "description": "Build all feasible Backends with MSVC 2022 Generator. Uses MKL for CPU fallback.",
+      "inherits": [ "msvc2022", "ninja-all-mkl-debug" ]
     },
     {
-      "name": "msvc2019-all-mkl-local-install",
-      "description": "Build all feasible Backends with MSVC 2019 Generator. Installs to specified path prefix.",
-      "inherits": [ "msvc2019", "ninja-all-mkl-local-install" ]
+      "name": "msvc2022-all-mkl-local-install",
+      "description": "Build all feasible Backends with MSVC 2022 Generator. Installs to specified path prefix.",
+      "inherits": [ "msvc2022", "ninja-all-mkl-local-install" ]
     },
     {
-      "name": "msvc2019-all-mkl-standalone-install",
-      "description": "Build all feasible Backends with MSVC 2019 Generator. Also packages dependencies while installing to specified path prefix.",
-      "inherits": [ "msvc2019", "ninja-all-mkl-standalone-install" ]
+      "name": "msvc2022-all-mkl-standalone-install",
+      "description": "Build all feasible Backends with MSVC 2022 Generator. Also packages dependencies while installing to specified path prefix.",
+      "inherits": [ "msvc2022", "ninja-all-mkl-standalone-install" ]
+    },
+    {
+      "name": "ci",
+      "hidden": true,
+      "description": "Common settings of the CPU CI configurations",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "AF_BUILD_CPU": "ON",
+        "AF_BUILD_CUDA": "OFF",
+        "AF_BUILD_OPENCL": "OFF",
+        "AF_BUILD_ONEAPI": "OFF",
+        "AF_BUILD_UNIFIED": "OFF",
+        "AF_BUILD_FORGE": "ON",
+        "AF_BUILD_EXAMPLES": "ON",
+        "AF_BUILD_DOCS": "OFF",
+        "AF_TEST_WITH_MTX_FILES": "$env{AF_CI_MTX_FILES}",
+        "FETCHCONTENT_SOURCE_DIR_MTXDOWNLOAD_JGD_KOCAY_TREC4": "${sourceDir}/build/${presetName}/extern/matrixmarket/JGD_Kocay/Trec4",
+        "FETCHCONTENT_SOURCE_DIR_MTXDOWNLOAD_HB_BCSSTM02": "${sourceDir}/build/${presetName}/extern/matrixmarket/HB/bcsstm02",
+        "FETCHCONTENT_SOURCE_DIR_MTXDOWNLOAD_HB_YOUNG4C": "${sourceDir}/build/${presetName}/extern/matrixmarket/HB/young4c",
+        "FETCHCONTENT_SOURCE_DIR_MTXDOWNLOAD_LPNETLIB_LPI_VOL1": "${sourceDir}/build/${presetName}/extern/matrixmarket/LPnetlib/lpi_vol1",
+        "FETCHCONTENT_SOURCE_DIR_MTXDOWNLOAD_LPNETLIB_LPI_QUAL": "${sourceDir}/build/${presetName}/extern/matrixmarket/LPnetlib/lpi_qual",
+        "FETCHCONTENT_SOURCE_DIR_MTXDOWNLOAD_SANDIA_OSCIL_DCOP_12": "${sourceDir}/build/${presetName}/extern/matrixmarket/Sandia/oscil_dcop_12",
+        "FETCHCONTENT_SOURCE_DIR_MTXDOWNLOAD_SANDIA_OSCIL_DCOP_42": "${sourceDir}/build/${presetName}/extern/matrixmarket/Sandia/oscil_dcop_42",
+        "FETCHCONTENT_SOURCE_DIR_MTXDOWNLOAD_QCD_CONF6_0-4X4-20": "${sourceDir}/build/${presetName}/extern/matrixmarket/QCD/conf6_0-4x4-20",
+        "FETCHCONTENT_SOURCE_DIR_MTXDOWNLOAD_QCD_CONF6_0-4X4-30": "${sourceDir}/build/${presetName}/extern/matrixmarket/QCD/conf6_0-4x4-30",
+        "AF_COMPUTE_LIBRARY": "FFTW/LAPACK/BLAS"
+      }
+    },
+    {
+      "name": "ci-linux",
+      "hidden": true,
+      "inherits": "ci",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "description": "Common settings of the Linux CPU CI configurations"
+    },
+    {
+      "name": "ci-linux-gcc-openblas",
+      "inherits": "ci-linux",
+      "description": "CPU backend with GCC, OpenBLAS, LAPACKE and FFTW",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++"
+      }
+    },
+    {
+      "name": "ci-linux-gcc-openblas-next",
+      "inherits": "ci-linux-gcc-openblas",
+      "description": "Same as ci-linux-gcc-openblas in its own build tree, for newer distributions"
+    },
+    {
+      "name": "ci-linux-clang-openblas",
+      "inherits": "ci-linux",
+      "description": "CPU backend with Clang, OpenBLAS, LAPACKE and FFTW",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++"
+      }
+    },
+    {
+      "name": "ci-linux-icx-mkl",
+      "inherits": "ci-linux",
+      "description": "CPU backend with the Intel oneAPI compiler and oneMKL. Run it after sourcing the oneAPI setvars.sh script",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "icx",
+        "CMAKE_CXX_COMPILER": "icpx",
+        "AF_COMPUTE_LIBRARY": "Intel-MKL"
+      }
+    },
+    {
+      "name": "ci-linux-cuda",
+      "inherits": "ci-linux",
+      "description": "CUDA backend with GCC. Builds without a GPU, for compute capabilities 7.5, 8.9 and 9.0 through ArrayFire's option and Blackwell's 10.0 and 12.0 through nvcc flags, since the option rejects two-digit majors on master",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_CUDA_COMPILER": "/usr/local/cuda/bin/nvcc",
+        "AF_BUILD_CPU": "OFF",
+        "AF_BUILD_CUDA": "ON",
+        "AF_WITH_CUDNN": "OFF",
+        "CUDA_architecture_build_targets": "7.5;8.9;9.0",
+        "CMAKE_CUDA_FLAGS": "-gencode=arch=compute_100,code=sm_100 -gencode=arch=compute_120,code=sm_120"
+      }
+    },
+    {
+      "name": "ci-linux-opencl",
+      "inherits": "ci-linux",
+      "description": "OpenCL backend with GCC, using OpenBLAS, LAPACKE and FFTW for its CPU fallbacks",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++",
+        "AF_BUILD_CPU": "OFF",
+        "AF_BUILD_OPENCL": "ON"
+      }
+    },
+    {
+      "name": "ci-linux-oneapi",
+      "inherits": "ci-linux",
+      "description": "oneAPI backend with the Intel oneAPI compiler and oneMKL. Run it after sourcing the oneAPI setvars.sh script",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "icx",
+        "CMAKE_CXX_COMPILER": "icpx",
+        "CMAKE_SYCL_COMPILER": "icpx",
+        "CMAKE_SYCL_COMPILE_OBJECT": "ccache <CMAKE_SYCL_COMPILER> <DEFINES> <INCLUDES> <FLAGS> -o <OBJECT> -c <SOURCE>",
+        "AF_BUILD_CPU": "OFF",
+        "AF_BUILD_ONEAPI": "ON",
+        "AF_COMPUTE_LIBRARY": "Intel-MKL"
+      }
+    },
+    {
+      "name": "ci-macos-arm64-clang-accelerate",
+      "inherits": "ci",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      },
+      "description": "CPU backend with Apple Clang, Accelerate and FFTW",
+      "cacheVariables": {
+        "CMAKE_DISABLE_FIND_PACKAGE_fmt": "ON"
+      }
+    },
+    {
+      "name": "ci-windows-msvc-openblas",
+      "inherits": "ci",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "description": "CPU backend with MSVC and vcpkg's OpenBLAS, LAPACK and FFTW. Needs VCPKG_ROOT",
+      "generator": "Visual Studio 17 2022",
+      "architecture": {
+        "value": "x64",
+        "strategy": "set"
+      },
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "x64-windows",
+        "CMAKE_VS_GLOBALS": "UseMultiToolTask=true;EnforceProcessCountAcrossBuilds=true",
+        "has_all_warnings_flag": "OFF"
+      },
+      "environment": {
+        "CFLAGS": "/W3",
+        "CXXFLAGS": "/W3"
+      }
+    },
+    {
+      "name": "ci-windows-cuda",
+      "inherits": "ci",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "description": "CUDA backend and its tests with MSVC, Ninja and vcpkg, for compute capability 7.5. Builds without a GPU. Run it in Visual Studio's x64 developer environment, with CUDA_PATH and VCPKG_ROOT set",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "cl",
+        "CMAKE_CXX_COMPILER": "cl",
+        "CMAKE_CUDA_COMPILER": "$env{CUDA_PATH}/bin/nvcc.exe",
+        "VCPKG_TARGET_TRIPLET": "x64-windows",
+        "AF_BUILD_CPU": "OFF",
+        "AF_BUILD_CUDA": "ON",
+        "AF_BUILD_FORGE": "OFF",
+        "AF_BUILD_EXAMPLES": "OFF",
+        "AF_WITH_CUDNN": "OFF",
+        "CUDA_architecture_build_targets": "7.5",
+        "has_all_warnings_flag": "OFF"
+      },
+      "environment": {
+        "CFLAGS": "/W3",
+        "CXXFLAGS": "/W3"
+      }
+    },
+    {
+      "name": "ci-docs",
+      "description": "Documentation only. Needs Doxygen",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "AF_BUILD_CPU": "OFF",
+        "AF_BUILD_CUDA": "OFF",
+        "AF_BUILD_OPENCL": "OFF",
+        "AF_BUILD_ONEAPI": "OFF",
+        "AF_BUILD_UNIFIED": "OFF",
+        "AF_BUILD_FORGE": "OFF",
+        "AF_BUILD_EXAMPLES": "OFF",
+        "AF_BUILD_DOCS": "ON",
+        "BUILD_TESTING": "OFF"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "ci-linux-gcc-openblas",
+      "configurePreset": "ci-linux-gcc-openblas"
+    },
+    {
+      "name": "ci-linux-gcc-openblas-next",
+      "configurePreset": "ci-linux-gcc-openblas-next"
+    },
+    {
+      "name": "ci-linux-clang-openblas",
+      "configurePreset": "ci-linux-clang-openblas"
+    },
+    {
+      "name": "ci-linux-icx-mkl",
+      "configurePreset": "ci-linux-icx-mkl"
+    },
+    {
+      "name": "ci-linux-cuda",
+      "configurePreset": "ci-linux-cuda"
+    },
+    {
+      "name": "ci-linux-opencl",
+      "configurePreset": "ci-linux-opencl"
+    },
+    {
+      "name": "ci-linux-oneapi",
+      "configurePreset": "ci-linux-oneapi"
+    },
+    {
+      "name": "ci-macos-arm64-clang-accelerate",
+      "configurePreset": "ci-macos-arm64-clang-accelerate"
+    },
+    {
+      "name": "ci-windows-msvc-openblas",
+      "configurePreset": "ci-windows-msvc-openblas",
+      "configuration": "RelWithDebInfo"
+    },
+    {
+      "name": "ci-windows-cuda",
+      "configurePreset": "ci-windows-cuda"
+    },
+    {
+      "name": "ci-docs",
+      "configurePreset": "ci-docs",
+      "targets": [ "docs" ]
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "ci",
+      "hidden": true,
+      "output": {
+        "outputOnFailure": true,
+        "outputJUnitFile": "${sourceDir}/build/${presetName}/junit.xml"
+      },
+      "execution": {
+        "jobs": 2,
+        "noTestsAction": "error"
+      },
+      "environment": {
+        "OPENBLAS_NUM_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      }
+    },
+    {
+      "name": "ci-linux-gcc-openblas",
+      "inherits": "ci",
+      "configurePreset": "ci-linux-gcc-openblas"
+    },
+    {
+      "name": "ci-linux-gcc-openblas-next",
+      "inherits": "ci",
+      "configurePreset": "ci-linux-gcc-openblas-next"
+    },
+    {
+      "name": "ci-linux-clang-openblas",
+      "inherits": "ci",
+      "configurePreset": "ci-linux-clang-openblas"
+    },
+    {
+      "name": "ci-linux-icx-mkl",
+      "inherits": "ci",
+      "configurePreset": "ci-linux-icx-mkl"
+    },
+    {
+      "name": "ci-macos-arm64-clang-accelerate",
+      "inherits": "ci",
+      "configurePreset": "ci-macos-arm64-clang-accelerate",
+      "environment": {
+        "DYLD_FALLBACK_LIBRARY_PATH": "/opt/homebrew/lib:/usr/local/lib:/usr/lib",
+        "GTEST_FILTER": "-Large/MeanVarFloat.*/Sample1Ddim*:Large/MeanVarInt.*/Sample1Ddim*:Large/MeanVarUnsignedInt.*/Sample1Ddim*:Large/MeanVarShort.*/Sample1Ddim*:Large/MeanVarUnsignedShort.*/Sample1Ddim*"
+      }
+    },
+    {
+      "name": "ci-windows-msvc-openblas",
+      "inherits": "ci",
+      "configurePreset": "ci-windows-msvc-openblas",
+      "configuration": "RelWithDebInfo",
+      "environment": {
+        "PATH": "${sourceDir}/build/${presetName}/vcpkg_installed/x64-windows/bin;$penv{PATH}"
+      },
+      "filter": {
+        "exclude": {
+          "name": "pinverse"
+        }
+      }
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "ci-linux-gcc-openblas",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "ci-linux-gcc-openblas"
+        },
+        {
+          "type": "build",
+          "name": "ci-linux-gcc-openblas"
+        },
+        {
+          "type": "test",
+          "name": "ci-linux-gcc-openblas"
+        }
+      ]
+    },
+    {
+      "name": "ci-linux-gcc-openblas-next",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "ci-linux-gcc-openblas-next"
+        },
+        {
+          "type": "build",
+          "name": "ci-linux-gcc-openblas-next"
+        },
+        {
+          "type": "test",
+          "name": "ci-linux-gcc-openblas-next"
+        }
+      ]
+    },
+    {
+      "name": "ci-linux-clang-openblas",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "ci-linux-clang-openblas"
+        },
+        {
+          "type": "build",
+          "name": "ci-linux-clang-openblas"
+        },
+        {
+          "type": "test",
+          "name": "ci-linux-clang-openblas"
+        }
+      ]
+    },
+    {
+      "name": "ci-linux-icx-mkl",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "ci-linux-icx-mkl"
+        },
+        {
+          "type": "build",
+          "name": "ci-linux-icx-mkl"
+        },
+        {
+          "type": "test",
+          "name": "ci-linux-icx-mkl"
+        }
+      ]
+    },
+    {
+      "name": "ci-linux-cuda",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "ci-linux-cuda"
+        },
+        {
+          "type": "build",
+          "name": "ci-linux-cuda"
+        }
+      ]
+    },
+    {
+      "name": "ci-linux-opencl",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "ci-linux-opencl"
+        },
+        {
+          "type": "build",
+          "name": "ci-linux-opencl"
+        }
+      ]
+    },
+    {
+      "name": "ci-linux-oneapi",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "ci-linux-oneapi"
+        },
+        {
+          "type": "build",
+          "name": "ci-linux-oneapi"
+        }
+      ]
+    },
+    {
+      "name": "ci-macos-arm64-clang-accelerate",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "ci-macos-arm64-clang-accelerate"
+        },
+        {
+          "type": "build",
+          "name": "ci-macos-arm64-clang-accelerate"
+        },
+        {
+          "type": "test",
+          "name": "ci-macos-arm64-clang-accelerate"
+        }
+      ]
+    },
+    {
+      "name": "ci-windows-msvc-openblas",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "ci-windows-msvc-openblas"
+        },
+        {
+          "type": "build",
+          "name": "ci-windows-msvc-openblas"
+        },
+        {
+          "type": "test",
+          "name": "ci-windows-msvc-openblas"
+        }
+      ]
+    },
+    {
+      "name": "ci-windows-cuda",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "ci-windows-cuda"
+        },
+        {
+          "type": "build",
+          "name": "ci-windows-cuda"
+        }
+      ]
+    },
+    {
+      "name": "ci-docs",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "ci-docs"
+        },
+        {
+          "type": "build",
+          "name": "ci-docs"
+        }
+      ]
     }
   ]
 }
