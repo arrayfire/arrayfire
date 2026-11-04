@@ -105,7 +105,7 @@ namespace af
     /// C++ Interface to calculate the remainder.
     ///
     /// For integers, it returns the same output as modulus (% operator)
-    /// For floating point numbers, it returns the same as std::remainder from <cmath>
+    /// For floating point numbers, it returns the same as std::remainder from `<cmath>`
     /// 
     /// \param[in] lhs numerator; can be an array or a scalar
     /// \param[in] rhs denominator; can be an array or a scalar
@@ -125,7 +125,7 @@ namespace af
     /// C++ Interface to calculate the modulus.
     ///
     /// For integers, it returns the same output as modulus (% operator)
-    /// For floating point numbers, it returns the same as std::fmod from <cmath>
+    /// For floating point numbers, it returns the same as std::fmod from `<cmath>`
     ///
     /// \param[in] lhs dividend; can be an array or a scalar
     /// \param[in] rhs divisor; can be an array or a scalar

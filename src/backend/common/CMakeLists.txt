@@ -98,7 +98,7 @@ target_link_libraries(afcommon_interface
 if(TARGET fmt::fmt)
   target_link_libraries(afcommon_interface
     INTERFACE
-      fmt::fmt
+      ${af_fmt}
   )
 endif()
 

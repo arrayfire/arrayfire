@@ -427,7 +427,7 @@ static void csrCalcOutNNZ(Param<int> outRowIdx, unsigned &nnzC, const uint M,
     auto global = sycl::range(divup(M, local[0]) * local[0]);
 
     Array<unsigned> out = createValueArray<unsigned>(1, 0);
-    auto out_get = out.get();
+    auto out_get        = out.get();
 
     getQueue().submit([&](auto &h) {
         sycl::accessor d_out{*out_get, h, sycl::write_only};

@@ -48,17 +48,17 @@ struct Transform<Ti, To, af_max_t> {
 
 template<typename Ti, typename To>
 struct Transform<Ti, To, af_or_t> {
-    __DH__ To operator()(Ti in) { return (in != scalar<Ti>(0.)); }
+    __DH__ To operator()(Ti in) { return (in != scalar<Ti>(0)); }
 };
 
 template<typename Ti, typename To>
 struct Transform<Ti, To, af_and_t> {
-    __DH__ To operator()(Ti in) { return (in != scalar<Ti>(0.)); }
+    __DH__ To operator()(Ti in) { return (in != scalar<Ti>(0)); }
 };
 
 template<typename Ti, typename To>
 struct Transform<Ti, To, af_notzero_t> {
-    __DH__ To operator()(Ti in) { return (in != scalar<Ti>(0.)); }
+    __DH__ To operator()(Ti in) { return (in != scalar<Ti>(0)); }
 };
 
 }  // namespace common

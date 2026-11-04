@@ -63,13 +63,13 @@ template<typename Ty, typename Tp>
 inline static Ty cubicInterpFunc(Ty val[4], Tp xratio, bool spline) {
     Ty a0, a1, a2, a3;
     if (spline) {
-        a0 = scalar<Ty>(-0.5) * val[0] + scalar<Ty>(1.5) * val[1] +
-             scalar<Ty>(-1.5) * val[2] + scalar<Ty>(0.5) * val[3];
+        a0 = scalar<Ty>(-0.5f) * val[0] + scalar<Ty>(1.5f) * val[1] +
+             scalar<Ty>(-1.5f) * val[2] + scalar<Ty>(0.5f) * val[3];
 
-        a1 = scalar<Ty>(1.0) * val[0] + scalar<Ty>(-2.5) * val[1] +
-             scalar<Ty>(2.0) * val[2] + scalar<Ty>(-0.5) * val[3];
+        a1 = scalar<Ty>(1.f) * val[0] + scalar<Ty>(-2.5f) * val[1] +
+             scalar<Ty>(2.f) * val[2] + scalar<Ty>(-0.5f) * val[3];
 
-        a2 = scalar<Ty>(-0.5) * val[0] + scalar<Ty>(0.5) * val[2];
+        a2 = scalar<Ty>(-0.5f) * val[0] + scalar<Ty>(0.5f) * val[2];
 
         a3 = val[1];
     } else {

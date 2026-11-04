@@ -178,11 +178,12 @@ af_err af_lookup(af_array* out, const af_array in, const af_array indices,
         ARG_ASSERT(2, (idxType != b8));
 
         af_array output = 0;
-        af_array idx = 0;
+        af_array idx    = 0;
 
         if (!idxInfo.isColumn()) {
-            // Force a deep copy to flatten the array and handle subarrays of not column vector arrays correctly
-            AF_CHECK(af_copy_array(&idx, indices)); 
+            // Force a deep copy to flatten the array and handle subarrays of
+            // not column vector arrays correctly
+            AF_CHECK(af_copy_array(&idx, indices));
         } else {
             idx = indices;
         }
@@ -204,7 +205,8 @@ af_err af_lookup(af_array* out, const af_array in, const af_array indices,
         std::swap(*out, output);
 
         if (idx != indices) {
-            AF_CHECK(af_release_array(idx)); // Release indices array if a copy has been made
+            AF_CHECK(af_release_array(
+                idx));  // Release indices array if a copy has been made
         }
     }
     CATCHALL;

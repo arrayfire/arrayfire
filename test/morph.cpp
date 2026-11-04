@@ -487,13 +487,13 @@ TEST(Morph, EdgeIssue1564) {
     array input(10, 10, inputData);
     int maskData[3 * 3] = {1, 1, 1, 1, 0, 1, 1, 1, 1};
     array mask(3, 3, maskData);
-    
+
     array dilated = dilate(input.as(b8), mask.as(b8));
 
     size_t nElems = dilated.elements();
     vector<char> outData(nElems);
     dilated.host((void*)outData.data());
-    
+
     for (size_t i = 0; i < nElems; ++i) {
         ASSERT_EQ((int)outData[i], goldData[i]);
     }

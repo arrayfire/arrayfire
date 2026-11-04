@@ -1,5 +1,4 @@
-Using ArrayFire with Microsoft Windows and Visual Studio {#using_on_windows}
-============================================================================
+\page using_on_windows Using ArrayFire with Microsoft Windows and Visual Studio
 
 If you have not already done so, please make sure you have installed,
 configured, and tested ArrayFire following the [installation

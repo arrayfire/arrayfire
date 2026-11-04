@@ -1,5 +1,4 @@
-Using ArrayFire on OSX {#using_on_osx}
-======================================
+\page using_on_osx Using ArrayFire on OSX
 
 Once you have [installed](\ref installing) ArrayFire on your system, the next
 thing to do is set up your build system. On OSX, you may create ArrayFire
@@ -7,7 +6,7 @@ project using almost any editor, compiler, or build system. The only requirement
 is that you can include the ArrayFire header directory, and link with the
 ArrayFire library you intend to use.
 
-## The big picture {#big-picture-osx}
+# The big picture {#big-picture-osx}
 
 By default, the ArrayFire OSX installer will place several files in your
 computer's `/opt/arrayfire` directory. The installer will populate this
@@ -26,11 +25,11 @@ any build system to create and compile projects that use ArrayFire. Among the
 many possible build systems on Linux we suggest using ArrayFire with either
 CMake or Makefiles with CMake being our preferred build system.
 
-## Build Instructions:
+# Build Instructions:
 * [CMake](#CMake)
 * [Makefiles](#Makefiles)
 
-## CMake {#CMake}
+# CMake {#CMake}
 
 The CMake build system can be used to create ArrayFire projects. As [discussed
 above](#big-picture-osx), ArrayFire ships with a series of CMake scripts to make
@@ -80,7 +79,7 @@ you would modify the `cmake` command above to contain the following definition:
 
 You can also specify this information in the `ccmake` command-line interface.
 
-## Makefiles {#Makefiles}
+# Makefiles {#Makefiles}
 
 Building ArrayFire projects with Makefiles is fairly similar to CMake except you
 must specify all paths and libraries manually.

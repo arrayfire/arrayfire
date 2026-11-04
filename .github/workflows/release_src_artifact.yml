@@ -1,92 +1,60 @@
+name: Release source tarball
+
 on:
   push:
-    # Sequence of patterns matched against refs/tags
     tags:
-    - 'v*' # Push events to tag names starting with v
+      - 'v*'
+  # Builds the tarball without publishing it.
+  workflow_dispatch:
 
-name: ci
+permissions:
+  contents: read
 
 jobs:
-    upload_src_tarball:
-        name: Upload release source tarball
-        runs-on: ubuntu-latest
-        steps:
-            - name: Fetch Repo Info
-              run: |
-                  tag=$(echo ${GITHUB_REF} | awk '{split($0, a, "/"); print a[3]}')
-                  ver=${tag:1}
-                  response=$(curl https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/tags/${tag})
-                  id_line=$(echo "${response}" | grep -m 1 "id.:")
-                  rel_id=$(echo "${id_line}" | awk '{split($0, a, ":"); split(a[2], b, ","); print b[1]}')
-                  trimmed_rel_id=$(echo "${rel_id}" | awk '{gsub(/^[ \t]+/,""); print $0 }')
-                  echo "RELEASE_ID=${trimmed_rel_id}" >> $GITHUB_ENV
-                  echo "AF_TAG=${tag}" >> $GITHUB_ENV
-                  echo "AF_VER=${ver}" >> $GITHUB_ENV
+  build:
+    name: Build the release source tarball
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Read the version from the tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: arrayfire-full-${{ steps.version.outputs.version }}
+          persist-credentials: false
+      - name: Create the source tarball
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          cp "arrayfire-full-$VERSION/.github/scripts/make-source-tarball.sh" "$RUNNER_TEMP/"
+          "$RUNNER_TEMP/make-source-tarball.sh" "arrayfire-full-$VERSION" "$VERSION"
+      - name: Keep the tarball as an artifact
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          path: arrayfire-full-${{ steps.version.outputs.version }}.tar.bz2
+          archive: false
+          if-no-files-found: error
 
-            - name: Checkout Repo
-              run: |
-                  cd ${GITHUB_WORKSPACE}
-                  clone_url="https://github.com/${GITHUB_REPOSITORY}"
-                  git clone --depth 1 -b ${AF_TAG} ${clone_url} arrayfire-full-${AF_VER}
-
-            - name: Install Dependencies
-              run: |
-                  sudo add-apt-repository ppa:mhier/libboost-latest
-                  sudo apt-get -qq update
-                  sudo apt-get install -y libfontconfig1-dev \
-                                          libglfw3-dev \
-                                          libfftw3-dev \
-                                          liblapacke-dev \
-                                          libopenblas-dev \
-                                          ocl-icd-opencl-dev \
-                                          nvidia-cuda-toolkit \
-                                          libboost-dev
-
-            - name: CMake Configure
-              run: |
-                  cd ${GITHUB_WORKSPACE}/arrayfire-full-${AF_VER}
-                  mkdir build && cd build
-                  cmake .. -DAF_BUILD_FORGE:BOOL=ON -DAF_COMPUTE_LIBRARY="FFTW/LAPACK/BLAS"
-
-            - name: Create source tarball
-              id: create-src-tarball
-              run: |
-                  cd $GITHUB_WORKSPACE
-                  rm -rf arrayfire-full-${AF_VER}/.git
-                  rm -rf arrayfire-full-${AF_VER}/.github
-                  rm arrayfire-full-${AF_VER}/.gitmodules
-                  cd arrayfire-full-${AF_VER}/build/
-                  shopt -s extglob
-                  rm -r !(extern)
-                  cd ./extern
-                  rm -rf ./*-build
-                  rm -rf ./*-subbuild
-                  declare -a deps
-                  deps=($(ls))
-                  for dep in ${deps[@]}; do
-                    rm -rf ./${dep}/.git
-                    rm -rf ./${dep}/.gitattributes
-                    rm -rf ./${dep}/.gitmodules
-                  done
-                  shopt -u extglob
-                  rm -rf matrixmarket
-                  cp -r ./* ../../extern/
-                  cd ..
-                  wget https://github.com/arrayfire/forge/releases/download/v1.0.8/forge-full-1.0.8.tar.bz2
-                  tar -xf forge-full-1.0.8.tar.bz2
-                  mv forge-full-1.0.8 ../extern/af_forge-src
-                  cd ..
-                  rm -rf build
-                  cd ..
-                  tar -cjf arrayfire-full-${AF_VER}.tar.bz2 arrayfire-full-${AF_VER}/
-                  echo "UPLOAD_FILE=arrayfire-full-${AF_VER}.tar.bz2" >> $GITHUB_ENV
-
-            - name: Upload source tarball
-              uses: actions/upload-release-asset@v1
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              with:
-                  upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.RELEASE_ID }}/assets{?name,label}
-                  asset_path: ${{ env.UPLOAD_FILE }}
-                  asset_name: ${{ env.UPLOAD_FILE }}
-                  asset_content_type: application/x-bzip2
+  # The only job that can write to the repository, and only for a version tag.
+  upload:
+    name: Upload release source tarball
+    needs: build
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    env:
+      TARBALL: arrayfire-full-${{ needs.build.outputs.version }}.tar.bz2
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ${{ env.TARBALL }}
+      - name: Upload the tarball to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$GITHUB_REF_NAME" "$TARBALL" --repo "$GITHUB_REPOSITORY" --clobber

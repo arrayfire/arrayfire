@@ -18,30 +18,28 @@ using detail::Array;
 using detail::copyArray;
 using detail::createNodeArray;
 
-using std::make_shared;
-using std::shared_ptr;
-using std::array;
 using arrayfire::common::Node;
 using arrayfire::common::Node_ptr;
+using std::array;
+using std::make_shared;
+using std::shared_ptr;
 using std::vector;
 
 namespace arrayfire {
 namespace common {
 
 Node_ptr copyModdims(const Node_ptr &in, const af::dim4 &newDim) {
-
     Node_ptr out = in->clone();
-    for(int i = 0; i < in->kMaxChildren && in->m_children[i] != nullptr; ++i) {
+    for (int i = 0; i < in->kMaxChildren && in->m_children[i] != nullptr; ++i) {
         out->m_children[i] = copyModdims(in->m_children[i], newDim);
     }
-    if(out->isBuffer()) out->modDims(newDim);
+    if (out->isBuffer()) out->modDims(newDim);
 
     return out;
 }
 
 template<typename T>
 Array<T> moddimOp(const Array<T> &in, af::dim4 outDim) {
-
     const auto &node = in.getNode();
 
     NodeIterator<> it(node.get());
@@ -55,7 +53,8 @@ Array<T> moddimOp(const Array<T> &in, af::dim4 outDim) {
     }
     if (all_linear == false) in.eval();
 
-    Array<T> out = createNodeArray<T>(outDim, copyModdims(in.getNode(), outDim));
+    Array<T> out =
+        createNodeArray<T>(outDim, copyModdims(in.getNode(), outDim));
 
     return out;
 }

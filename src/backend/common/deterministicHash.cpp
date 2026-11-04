@@ -10,6 +10,7 @@
 #include <common/deterministicHash.hpp>
 
 #include <nonstd/span.hpp>
+#include <cstdint>
 #include <numeric>
 #include <string>
 

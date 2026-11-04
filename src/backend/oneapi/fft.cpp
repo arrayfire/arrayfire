@@ -18,7 +18,6 @@
 #include <platform.hpp>
 #include <af/dim4.hpp>
 
-#include <oneapi/mkl/dfti.hpp>
 #include <oneapi/mkl/exceptions.hpp>
 
 #include <cstdint>
@@ -120,19 +119,23 @@ PlanType findPlan(int rank, const bool isInPlace, const dim_t *idims,
         return new desc_ty({idims[3], idims[2], idims[1], idims[0]});
     }();
 
+    // FWD_STRIDES and BWD_STRIDES describe the forward and backward domains,
+    // not the input and output of a transform. Callers pass them in that order
     if (rank > 1) {
-        desc->set_value(::oneapi::mkl::dft::config_param::INPUT_STRIDES,
-                        istrides);
-        desc->set_value(::oneapi::mkl::dft::config_param::OUTPUT_STRIDES,
-                        ostrides);
+        desc->set_value(
+            ::oneapi::mkl::dft::config_param::FWD_STRIDES,
+            std::vector<std::int64_t>(istrides, istrides + rank + 1));
+        desc->set_value(
+            ::oneapi::mkl::dft::config_param::BWD_STRIDES,
+            std::vector<std::int64_t>(ostrides, ostrides + rank + 1));
     }
 
     if (isInPlace) {
         desc->set_value(::oneapi::mkl::dft::config_param::PLACEMENT,
-                        DFTI_INPLACE);
+                        ::oneapi::mkl::dft::config_value::INPLACE);
     } else {
         desc->set_value(::oneapi::mkl::dft::config_param::PLACEMENT,
-                        DFTI_NOT_INPLACE);
+                        ::oneapi::mkl::dft::config_value::NOT_INPLACE);
     }
 
     desc->set_value(::oneapi::mkl::dft::config_param::NUMBER_OF_TRANSFORMS,
@@ -141,15 +144,10 @@ PlanType findPlan(int rank, const bool isInPlace, const dim_t *idims,
     desc->set_value(::oneapi::mkl::dft::config_param::FWD_DISTANCE, ibatch);
     desc->set_value(::oneapi::mkl::dft::config_param::BWD_DISTANCE, obatch);
 
+    // Real transforms always use the complex conjugate-even format
     if constexpr (domain == ::oneapi::mkl::dft::domain::COMPLEX) {
         desc->set_value(::oneapi::mkl::dft::config_param::COMPLEX_STORAGE,
-                        DFTI_COMPLEX_COMPLEX);
-    } else {
-        desc->set_value(
-            ::oneapi::mkl::dft::config_param::CONJUGATE_EVEN_STORAGE,
-            DFTI_COMPLEX_COMPLEX);
-        desc->set_value(::oneapi::mkl::dft::config_param::PACKED_FORMAT,
-                        DFTI_CCE_FORMAT);
+                        ::oneapi::mkl::dft::config_value::COMPLEX_COMPLEX);
     }
 
     try {
@@ -265,8 +263,8 @@ Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims, const int rank) {
 
     const bool isInPlace = false;
     PlanType descP = findPlan<precision, ::oneapi::mkl::dft::domain::REAL>(
-        rank, isInPlace, odims.get(), fft_input_strides.data(), ostrides[rank],
-        fft_output_strides.data(), istrides[rank], batch);
+        rank, isInPlace, odims.get(), fft_output_strides.data(), ostrides[rank],
+        fft_input_strides.data(), istrides[rank], batch);
 
     desc_ty *desc = (desc_ty *)descP.get();
 

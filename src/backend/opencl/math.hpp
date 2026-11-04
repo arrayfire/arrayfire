@@ -17,8 +17,8 @@
 #include <types.hpp>
 
 #include <algorithm>
-#include <complex>
 #include <climits>
+#include <complex>
 #include <limits>
 
 #if defined(__GNUC__) || defined(__GNUG__)

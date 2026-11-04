@@ -18,7 +18,6 @@ endif()
 include(AFcuda_helpers)
 include(FileToString)
 include(InternalUtils)
-include(select_compute_arch)
 
 # Remove cublas_device library which is no longer included with the cuda
 # toolkit. Fixes issues with older CMake versions
@@ -673,13 +672,17 @@ target_compile_options(afcuda
     $<$<BOOL:${AF_WITH_FAST_MATH}>:$<$<COMPILE_LANGUAGE:CUDA>:-use_fast_math>>
     $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>
     $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe --diag_suppress=unrecognized_gcc_pragma>
-    $<$<COMPILE_LANGUAGE:CUDA>: $<$<CXX_COMPILER_ID:MSVC>:  -Xcompiler=/wd4251
+    # nvcc always uses cl.exe as its host compiler on Windows, even when
+    # CMAKE_CXX_COMPILER is something else such as icx
+    $<$<COMPILE_LANGUAGE:CUDA>: $<$<PLATFORM_ID:Windows>:   -Xcompiler=/wd4251
                                                             -Xcompiler=/wd4068
                                                             -Xcompiler=/wd4275
                                                             -Xcompiler=/wd4668
                                                             -Xcompiler=/wd4710
                                                             -Xcompiler=/wd4505
                                                             -Xcompiler=/bigobj>>
+    # CCCL in CUDA 13 rejects the traditional MSVC preprocessor
+    $<$<COMPILE_LANGUAGE:CUDA>:$<$<PLATFORM_ID:Windows>:$<$<VERSION_GREATER_EQUAL:${CUDA_VERSION},13.0>:-Xcompiler=/Zc:preprocessor>>>
 )
 
 
@@ -778,7 +781,9 @@ function(afcu_collect_libs libname)
 
   cmake_parse_arguments(cuda_args "${options}" "${single_args}" "${multi_args}" ${ARGN})
 
-  if(cuda_args_LIB_MAJOR AND cuda_args_LIB_MINOR)
+  # DEFINED, not truthiness: LIB_MINOR is legitimately 0 (cufft/cusolver/
+  # cusparse under CUDA 13 are 12.0) and a bare 0 evaluates as false.
+  if(DEFINED cuda_args_LIB_MAJOR AND DEFINED cuda_args_LIB_MINOR)
     set(lib_major ${cuda_args_LIB_MAJOR})
 	  set(lib_minor ${cuda_args_LIB_MINOR})
   else()
@@ -788,6 +793,9 @@ function(afcu_collect_libs libname)
   set(lib_version "${lib_major}.${lib_minor}")
 
   if (WIN32)
+    # CUDA 13 moved the redistributable DLLs from bin/ to bin/x64/.
+    # NO_DEFAULT_PATH keeps find_file from picking a DLL of some other
+    # toolkit off the environment PATH.
     find_file(CUDA_${libname}_LIBRARY_DLL
       NAMES
         "${PX}${libname}64_${lib_major}${SX}"
@@ -796,8 +804,13 @@ function(afcu_collect_libs libname)
         "${PX}${libname}64_${lib_major}${lib_minor}_0${SX}"
         "${PX}${libname}_${lib_major}0_0${SX}"
       PATHS ${dlib_path_prefix}
+      PATH_SUFFIXES x64
+      NO_DEFAULT_PATH
     )
     mark_as_advanced(CUDA_${libname}_LIBRARY_DLL)
+    if(NOT CUDA_${libname}_LIBRARY_DLL)
+      message(FATAL_ERROR "AF_INSTALL_STANDALONE: ${libname} DLL (major ${lib_major}) not found under ${dlib_path_prefix}")
+    endif()
     install(FILES "${CUDA_${libname}_LIBRARY_DLL}"
       DESTINATION ${AF_INSTALL_BIN_DIR}
       COMPONENT cuda_dependencies)
@@ -808,10 +821,16 @@ function(afcu_collect_libs libname)
             RENAME      "${PX}${libname}.${lib_version}${SX}"
             COMPONENT   cuda_dependencies)
   else () #UNIX
+    # NO_DEFAULT_PATH: package the library of the toolkit being built
+    # against, never a distro or wheel copy found on the default paths.
     find_library(CUDA_${libname}_LIBRARY
       NAMES ${libname}
       PATHS
-        ${dlib_path_prefix})
+        ${dlib_path_prefix}
+      NO_DEFAULT_PATH)
+    if(NOT CUDA_${libname}_LIBRARY)
+      message(FATAL_ERROR "AF_INSTALL_STANDALONE: ${libname} library not found under ${dlib_path_prefix}")
+    endif()
 
     get_filename_component(outpath "${CUDA_${libname}_LIBRARY}" REALPATH)
     if(cuda_args_FULL_VERSION)
@@ -851,14 +870,23 @@ if(AF_INSTALL_STANDALONE)
       afcu_collect_cudnn_libs(ops_infer)
       afcu_collect_cudnn_libs(ops_train)
     elseif(cuDNN_VERSION_MAJOR VERSION_GREATER_EQUAL 9)
-      # infer and train libraries are now combined in version 9
+      # infer and train libraries are now combined in version 9. The engine
+      # libraries are loaded on demand. Without them every convolution
+      # algorithm reports CUDNN_STATUS_NOT_SUPPORTED
       afcu_collect_cudnn_libs(cnn)
       afcu_collect_cudnn_libs(ops)
+      afcu_collect_cudnn_libs(graph)
+      afcu_collect_cudnn_libs(heuristic)
+      afcu_collect_cudnn_libs(engines_precompiled)
+      afcu_collect_cudnn_libs(engines_runtime_compiled)
+      afcu_collect_cudnn_libs(engines_tensor_ir)
     endif()
   endif()
 
   if(WIN32 OR NOT AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
-    if(CUDA_VERSION_MAJOR VERSION_EQUAL 12)
+    if(CUDA_VERSION_MAJOR VERSION_EQUAL 13)
+        afcu_collect_libs(cufft LIB_MAJOR 12 LIB_MINOR 0)
+    elseif(CUDA_VERSION_MAJOR VERSION_EQUAL 12)
         afcu_collect_libs(cufft LIB_MAJOR 11 LIB_MINOR 3)
     elseif(CUDA_VERSION_MAJOR VERSION_EQUAL 11)
         afcu_collect_libs(cufft LIB_MAJOR 10 LIB_MINOR 4)
@@ -869,17 +897,26 @@ if(AF_INSTALL_STANDALONE)
     if(CUDA_VERSION VERSION_GREATER 10.0)
       afcu_collect_libs(cublasLt)
     endif()
-    if(CUDA_VERSION_MAJOR VERSION_EQUAL 12)
+    if(CUDA_VERSION_MAJOR VERSION_EQUAL 13)
+        afcu_collect_libs(cusolver LIB_MAJOR 12 LIB_MINOR 0)
+    elseif(CUDA_VERSION_MAJOR VERSION_EQUAL 12)
         afcu_collect_libs(cusolver LIB_MAJOR 11 LIB_MINOR 7)
     else()
         afcu_collect_libs(cusolver)
     endif()
-    afcu_collect_libs(cusparse)
+    if(CUDA_VERSION_MAJOR VERSION_EQUAL 13)
+        # CUDA 13.x still ships cuSPARSE with a major version of 12
+        afcu_collect_libs(cusparse LIB_MAJOR 12 LIB_MINOR 0)
+    else()
+        afcu_collect_libs(cusparse)
+    endif()
     if(CUDA_VERSION VERSION_GREATER 12.0)
       afcu_collect_libs(nvJitLink)
     endif()
   elseif(NOT ${use_static_cuda_lapack})
-    if(CUDA_VERSION_MAJOR VERSION_EQUAL 12)
+    if(CUDA_VERSION_MAJOR VERSION_EQUAL 13)
+        afcu_collect_libs(cusolver LIB_MAJOR 12 LIB_MINOR 0)
+    elseif(CUDA_VERSION_MAJOR VERSION_EQUAL 12)
         afcu_collect_libs(cusolver LIB_MAJOR 11 LIB_MINOR 7)
     else()
         afcu_collect_libs(cusolver)

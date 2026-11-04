@@ -1,5 +1,4 @@
-GFOR: Parallel For-Loops {#page_gfor}
-========================
+\page page_gfor GFOR: Parallel For-Loops
 
 [TOC]
 
