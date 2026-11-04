@@ -1640,6 +1640,19 @@ TEST(Indexing, SNIPPET_indexing_ref) {
     // TODO: Confirm the outputs are correct. see #697
 }
 
+TEST(Indexing, IndexArrayOnSubarrayUsesSubarrayOffset) {
+    array data  = iota(dim4(100)).as(s32);
+    array slice = data(seq(10, 29));
+
+    const uint h_indices[] = {0, 1, 2, 3};
+    array indices(4, h_indices);
+    array result = slice(indices);
+
+    int actual[4] = {};
+    result.host(actual);
+    for (int i = 0; i < 4; ++i) { ASSERT_EQ(10 + i, actual[i]); }
+}
+
 TEST(Indexing, IndexingCopy) {
     array A = constant(0, 1, s32);
     af::index s1;
