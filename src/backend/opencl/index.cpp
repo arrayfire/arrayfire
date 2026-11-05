@@ -11,6 +11,7 @@
 #include <kernel/index.hpp>
 
 #include <Array.hpp>
+#include <copy.hpp>
 #include <err_opencl.hpp>
 #include <handle.hpp>
 #include <memory.hpp>
@@ -63,7 +64,11 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[]) {
         // set index pointers were applicable
         if (!p.isSeq[x]) {
             idxArrs[x] = castArray<uint>(idxrs[x].idx.arr);
-            bPtrs[x]   = idxArrs[x].get();
+            // The kernel reads index arrays from the start of their buffer
+            if (idxArrs[x].getOffset() != 0 || !idxArrs[x].isLinear()) {
+                idxArrs[x] = copyArray(idxArrs[x]);
+            }
+            bPtrs[x] = idxArrs[x].get();
             // set output array ith dimension value
             oDims[x] = idxArrs[x].elements();
         } else {

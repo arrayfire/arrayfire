@@ -10,6 +10,7 @@
 #include <index.hpp>
 
 #include <Array.hpp>
+#include <copy.hpp>
 #include <err_oneapi.hpp>
 #include <handle.hpp>
 #include <kernel/assign_kernel_param.hpp>
@@ -61,7 +62,11 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[]) {
     for (dim_t x = 0; x < 4; ++x) {
         if (!p.isSeq[x]) {
             idxArrs[x] = castArray<uint>(idxrs[x].idx.arr);
-            oDims[x]   = idxArrs[x].elements();
+            // The kernel reads index arrays from the start of their buffer
+            if (idxArrs[x].getOffset() != 0 || !idxArrs[x].isLinear()) {
+                idxArrs[x] = copyArray(idxArrs[x]);
+            }
+            oDims[x] = idxArrs[x].elements();
         }
     }
 

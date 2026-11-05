@@ -12,6 +12,7 @@
 
 #include <Array.hpp>
 #include <common/half.hpp>
+#include <copy.hpp>
 #include <err_opencl.hpp>
 #include <handle.hpp>
 #include <memory.hpp>
@@ -80,7 +81,11 @@ void assign(Array<T>& out, const af_index_t idxrs[], const Array<T>& rhs) {
         // set index pointers were applicable
         if (!p.isSeq[x]) {
             idxArrs[x] = castArray<uint>(idxrs[x].idx.arr);
-            bPtrs[x]   = idxArrs[x].get();
+            // The kernel reads index arrays from the start of their buffer
+            if (idxArrs[x].getOffset() != 0 || !idxArrs[x].isLinear()) {
+                idxArrs[x] = copyArray(idxArrs[x]);
+            }
+            bPtrs[x] = idxArrs[x].get();
         } else {
             // alloc an 1-element buffer to avoid OpenCL from failing using
             // direct buffer allocation as opposed to mem manager to avoid
