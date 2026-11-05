@@ -104,6 +104,11 @@ CPUInfo::CPUInfo()
         mModelName += string(reinterpret_cast<const char*>(&cpuID.ECX()), 4);
         mModelName += string(reinterpret_cast<const char*>(&cpuID.EDX()), 4);
     }
+    // The brand string is padded with NULs (Intel) or spaces (AMD). A NUL
+    // left in the string cuts off the rest of af::info()'s output.
+    size_t nul = mModelName.find('\0');
+    if (nul != string::npos) { mModelName.resize(nul); }
+    mModelName.erase(mModelName.find_last_not_of(' ') + 1);
     mModelName.shrink_to_fit();
 }
 
