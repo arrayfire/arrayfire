@@ -222,20 +222,13 @@ magma_int_t magma_geqrf2_gpu(magma_int_t m, magma_int_t n, cl_mem dA,
         return *info;
     }
 
-    /*
-    if ( MAGMA_SUCCESS != magma_zmalloc_cpu( &work, lwork ) ) {
+    // Not a mapped CL_MEM_ALLOC_HOST_PTR buffer: Intel's GPU OpenCL driver
+    // crashes in clEnqueueReadBufferRect when the destination is one
+    if (MAGMA_SUCCESS != magma_malloc_cpu<Ty>(&work, lwork)) {
         *info = MAGMA_ERR_HOST_ALLOC;
-        magma_free( dwork );
+        magma_free(dwork);
         return *info;
     }
-    */
-
-    cl_mem buffer = clCreateBuffer(arrayfire::opencl::getContext()(),
-                                   CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
-                                   sizeof(Ty) * lwork, NULL, NULL);
-    work          = (Ty *)clEnqueueMapBuffer(queue[0], buffer, CL_TRUE,
-                                             CL_MAP_READ | CL_MAP_WRITE, 0,
-                                             lwork * sizeof(Ty), 0, NULL, NULL, NULL);
 
     cpu_lapack_geqrf_work_func<Ty> cpu_lapack_geqrf;
     cpu_lapack_larft_func<Ty> cpu_lapack_larft;
@@ -341,9 +334,7 @@ magma_int_t magma_geqrf2_gpu(magma_int_t m, magma_int_t n, cl_mem dA,
     magma_queue_sync(queue[0]);
     magma_queue_sync(queue[1]);
 
-    // magma_free_cpu(work);
-    clEnqueueUnmapMemObject(queue[0], buffer, work, 0, NULL, NULL);
-    clReleaseMemObject(buffer);
+    magma_free_cpu(work);
 
     return *info;
 } /* magma_zgeqrf2_gpu */
