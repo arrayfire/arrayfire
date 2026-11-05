@@ -199,21 +199,6 @@ void sort0ByKey(Param<Tk> pKey, Param<Tv> pVal, bool isAscending) {
     template void sortByKeyBatched<Tk, Tv>(Param<Tk> okey, Param<Tv> oval,    \
                                            const int dim, bool isAscending);
 
-#define INSTANTIATE1(Tk)     \
-    INSTANTIATE(Tk, float)   \
-    INSTANTIATE(Tk, double)  \
-    INSTANTIATE(Tk, cfloat)  \
-    INSTANTIATE(Tk, cdouble) \
-    INSTANTIATE(Tk, int)     \
-    INSTANTIATE(Tk, uint)    \
-    INSTANTIATE(Tk, short)   \
-    INSTANTIATE(Tk, ushort)  \
-    INSTANTIATE(Tk, char)    \
-    INSTANTIATE(Tk, schar)   \
-    INSTANTIATE(Tk, uchar)   \
-    INSTANTIATE(Tk, intl)    \
-    INSTANTIATE(Tk, uintl)
-
 }  // namespace kernel
 }  // namespace oneapi
 }  // namespace arrayfire
