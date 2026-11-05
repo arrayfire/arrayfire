@@ -10,6 +10,13 @@ set(DOCS_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
 set(EXAMPLES_DIR "${PROJECT_SOURCE_DIR}/examples")
 set(SNIPPETS_DIR "${PROJECT_SOURCE_DIR}/test")
+# FILE_VERSION_FILTER runs git on every file doxygen reads, including the
+# images in ASSETS_DIR, which are outside the repository. Hide git's errors.
+if(WIN32)
+  set(AF_DOCS_NULL_DEVICE NUL)
+else()
+  set(AF_DOCS_NULL_DEVICE /dev/null)
+endif()
 configure_file(${AF_DOCS_CONFIG} ${AF_DOCS_CONFIG_OUT})
 configure_file(${AF_DOCS_LAYOUT} ${AF_DOCS_LAYOUT_OUT})
 
