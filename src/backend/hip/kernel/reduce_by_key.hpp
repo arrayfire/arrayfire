@@ -70,7 +70,7 @@ __global__ void test_needs_reduction(int *needs_another_reduction,
                                      int *needs_block_boundary_reduced,
                                      CParam<Tk> keys_in, const int n) {
     const int tid = blockIdx.x * blockDim.x + threadIdx.x;
-    Tk k;
+    Tk k{};
 
     if (tid < n) { k = keys_in.ptr[tid]; }
 
@@ -240,7 +240,7 @@ __global__ static void reduce_blocks_by_key(int *reduced_block_sizes,
     common::Transform<compute_t<Ti>, compute_t<To>, op> transform;
 
     // load keys and values to threads
-    compute_t<Tk> k;
+    compute_t<Tk> k{};
     compute_t<To> v;
     if (tidx < n) {
         const int tid = bidw * vals.strides[3] + bidz * vals.strides[2] +
@@ -317,7 +317,7 @@ __global__ static void reduce_blocks_by_key(int *reduced_block_sizes,
     // TODO: what if extra empty warps???
     if (unique_flag && unique_id == warpReduceSizes[warpid] &&
         warpid < nWarps - 1) {
-        int tid_next_warp = (blockIdx.x * blockDim.x + (warpid + 1) * 32);
+        int tid_next_warp = (blockIdx.x * blockDim.x + (warpid + 1) * kWarpSize);
         // check within data range
         if (tid_next_warp < n && k == warpReduceLeftBoundaryKeys[warpid + 1]) {
             // disable writing from warps that need carry but aren't terminal
@@ -465,7 +465,7 @@ __global__ static void reduce_blocks_dim_by_key(
     common::Transform<compute_t<Ti>, compute_t<To>, op> transform;
 
     // load keys and values to threads
-    Tk k;
+    Tk k{};
     compute_t<To> v;
     if (tidx < n) {
         const int tid = bidw * vals.strides[dim_ordering[3]] +
@@ -544,7 +544,7 @@ __global__ static void reduce_blocks_dim_by_key(
     // TODO: what if extra empty warps???
     if (unique_flag && unique_id == warpReduceSizes[warpid] &&
         warpid < nWarps - 1) {
-        int tid_next_warp = (blockIdx.x * blockDim.x + (warpid + 1) * 32);
+        int tid_next_warp = (blockIdx.x * blockDim.x + (warpid + 1) * kWarpSize);
         // check within data range
         if (tid_next_warp < n && k == warpReduceLeftBoundaryKeys[warpid + 1]) {
             // disable writing from warps that need carry but aren't terminal

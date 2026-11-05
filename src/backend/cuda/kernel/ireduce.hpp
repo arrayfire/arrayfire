@@ -167,8 +167,7 @@ T ireduce_all(uint *idx, CParam<T> in) {
 
     bool is_linear = (in.strides[0] == 1);
     for (int k = 1; k < 4; k++) {
-        is_linear &=
-            (in.strides[k] == (in.strides[k - 1] * in.dims[k - 1]));
+        is_linear &= (in.strides[k] == (in.strides[k - 1] * in.dims[k - 1]));
     }
 
     // FIXME: Use better heuristics to get to the optimum number

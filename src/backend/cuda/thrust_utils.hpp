@@ -9,7 +9,7 @@
 
 #pragma once
 #include <ThrustArrayFirePolicy.hpp>
-#include <thrust/system/cuda/detail/par.h>
+#include <thrust/system/cuda/execution_policy.h>
 #include <thrust/version.h>
 #include <ThrustAllocator.cuh>
 

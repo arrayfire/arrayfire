@@ -1,0 +1,430 @@
+name: CPU tests
+
+# The CPU builds and tests, plus the compile-only accelerator builds: CUDA on
+# Linux (with Blackwell targets and checks of the default architecture list and
+# the CUDA libraries the installers bundle) and on Windows, for each version in
+# AF_CI_CUDA_VERSIONS, and OpenCL and oneAPI on Linux.
+# The CPU tests run in the merge queue and on pushes to master; a pull request
+# gets them with a /cpu-tests comment (test-requests.yml), and anyone with write
+# access can run this workflow for a commit. The accelerator builds run on pushes
+# to master and on request, only when the repository variable
+# AF_CI_ACCELERATOR_BUILDS is 'true'.
+#
+# A merge-queue entry or a push to master that changes only non-code files, such
+# as Markdown or docs/ (code-changes.py), builds nothing: the CPU jobs still run,
+# so that the required checks keep their names, and pass in seconds, saying why.
+# A request for a commit, or a manual run, always runs in full.
+#
+# The Matrix Market tests run once .github/fixtures/matrixmarket.json pins an
+# arrayfire-data commit; until then they are off (check-matrix-data.py).
+#
+# A run for a SHA builds that commit, checked out on its own, with the scripts
+# and CI presets of the ref this workflow runs on.
+on:
+  push:
+    branches:
+      - master
+  merge_group:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: Full 40-character SHA of the commit to test; empty tests the selected branch
+        type: string
+      accelerators:
+        description: Also build the CUDA, OpenCL and oneAPI backends
+        type: boolean
+        default: false
+      macos-windows:
+        description: Also run the macOS and Windows jobs
+        type: boolean
+        default: true
+  workflow_call:
+    inputs:
+      sha:
+        description: Full 40-character SHA of the commit to test
+        required: true
+        type: string
+      accelerators:
+        description: Also build the CUDA, OpenCL and oneAPI backends
+        type: boolean
+        default: false
+      macos-windows:
+        description: >-
+          Also run the macOS and Windows jobs. They build on the runner itself, not in a
+          container, so the code under test could reach the runner's cache credentials.
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cpu-tests-${{ inputs.sha || github.ref }}
+  cancel-in-progress: false
+
+env:
+  SHA: ${{ inputs.sha }}
+  # Where the commit given by SHA is checked out; empty builds this checkout.
+  AF_CI_SOURCE_DIR: ${{ inputs.sha && format('{0}/under-test', github.workspace) || '' }}
+  UNDER_TEST: ${{ inputs.sha && 'under-test/' || '' }}
+
+# Every job restores the ccache of master's builds, but only those builds save
+# one: a build of another commit runs code that could plant entries in it. The same
+# goes for the Matrix Market matrices that check-matrix-data.py downloads, kept in
+# build/matrixmarket-downloads under the manifest's hash; one job of each OS saves them.
+jobs:
+  # Whether this run needs the CPU tests: code=false only for a merge-queue entry
+  # or a master push that changes nothing but non-code files.
+  changes:
+    name: changes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      code: ${{ steps.decide.outputs.code }}
+      reason: ${{ steps.decide.outputs.reason }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/scripts
+      - id: decide
+        name: List the changed files
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 .github/scripts/code-changes.py
+
+  # The CPU jobs run even when the changes job fails, and then test in full. With
+  # code=false every step but the first is skipped, rather than the job: a skipped
+  # matrix job's name isn't expanded, so its required checks would never report.
+  linux:
+    name: ${{ matrix.job }}
+    needs: changes
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        job: [linux-gcc-openblas, linux-clang-openblas]
+    env:
+      AF_CI_CCACHE_DIR: ${{ github.workspace }}/build/ccache
+      AF_CI_MTX_CACHE: ${{ github.workspace }}/build/matrixmarket-downloads
+      CCACHE_MAXSIZE: 500M
+      CPU_TESTS: ${{ needs.changes.outputs.code != 'false' }}
+    steps:
+      - name: Skip the CPU tests
+        if: env.CPU_TESTS != 'true'
+        env:
+          REASON: ${{ needs.changes.outputs.reason }}
+        run: echo "$REASON" | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: env.CPU_TESTS == 'true'
+        with:
+          persist-credentials: false
+      - name: Check out the commit under test
+        if: env.CPU_TESTS == 'true' && env.SHA != ''
+        run: .github/scripts/checkout-commit.sh "$SHA" "$AF_CI_SOURCE_DIR"
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: env.CPU_TESTS == 'true'
+        with:
+          path: build/ccache
+          key: ccache-${{ matrix.job }}-${{ github.sha }}
+          restore-keys: ccache-${{ matrix.job }}-
+      - id: matrixmarket
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: env.CPU_TESTS == 'true'
+        with:
+          path: build/matrixmarket-downloads
+          key: matrixmarket-${{ hashFiles('.github/fixtures/matrixmarket.json') }}
+      - name: Build and test
+        if: env.CPU_TESTS == 'true'
+        run: .github/scripts/ci.sh --docker ${{ matrix.job }}
+      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: env.CPU_TESTS == 'true' && github.event_name == 'push'
+        with:
+          path: build/ccache
+          key: ccache-${{ matrix.job }}-${{ github.sha }}
+      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: >-
+          env.CPU_TESTS == 'true' && github.event_name == 'push' && matrix.job == 'linux-gcc-openblas' &&
+          steps.matrixmarket.outputs.cache-hit != 'true' && hashFiles('build/matrixmarket-downloads/**') != ''
+        with:
+          path: build/matrixmarket-downloads
+          key: matrixmarket-${{ hashFiles('.github/fixtures/matrixmarket.json') }}
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !cancelled() && !env.ACT && env.CPU_TESTS == 'true' }}
+        with:
+          name: junit-${{ matrix.job }}
+          path: ${{ env.UNDER_TEST }}build/ci-${{ matrix.job }}/junit.xml
+          if-no-files-found: ignore
+
+  macos:
+    name: macos-arm64-clang-accelerate
+    needs: changes
+    if: ${{ !cancelled() && (!inputs.sha || inputs.macos-windows) }}
+    runs-on: macos-15
+    timeout-minutes: 90
+    env:
+      CCACHE_DIR: ${{ github.workspace }}/build/ccache
+      CCACHE_MAXSIZE: 500M
+      # A request builds the commit in under-test/, a push the workspace itself;
+      # with paths relative to the build directory, both share master's cache.
+      CCACHE_BASEDIR: ${{ github.workspace }}
+      AF_CI_MTX_CACHE: ${{ github.workspace }}/build/matrixmarket-downloads
+      CPU_TESTS: ${{ needs.changes.outputs.code != 'false' }}
+    steps:
+      - name: Skip the CPU tests
+        if: env.CPU_TESTS != 'true'
+        env:
+          REASON: ${{ needs.changes.outputs.reason }}
+        run: echo "$REASON" | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: env.CPU_TESTS == 'true'
+        with:
+          persist-credentials: false
+      - name: Check out the commit under test
+        if: env.CPU_TESTS == 'true' && env.SHA != ''
+        run: .github/scripts/checkout-commit.sh "$SHA" "$AF_CI_SOURCE_DIR"
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: env.CPU_TESTS == 'true'
+        with:
+          path: build/ccache
+          key: ccache-macos-arm64-clang-accelerate-${{ github.sha }}
+          restore-keys: ccache-macos-arm64-clang-accelerate-
+      - id: matrixmarket
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: env.CPU_TESTS == 'true'
+        with:
+          path: build/matrixmarket-downloads
+          key: matrixmarket-${{ hashFiles('.github/fixtures/matrixmarket.json') }}
+      - name: Build and test
+        if: env.CPU_TESTS == 'true'
+        run: .github/scripts/ci.sh macos-arm64-clang-accelerate
+      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: env.CPU_TESTS == 'true' && github.event_name == 'push'
+        with:
+          path: build/ccache
+          key: ccache-macos-arm64-clang-accelerate-${{ github.sha }}
+      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: >-
+          env.CPU_TESTS == 'true' && github.event_name == 'push' &&
+          steps.matrixmarket.outputs.cache-hit != 'true' && hashFiles('build/matrixmarket-downloads/**') != ''
+        with:
+          path: build/matrixmarket-downloads
+          key: matrixmarket-${{ hashFiles('.github/fixtures/matrixmarket.json') }}
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !cancelled() && !env.ACT && env.CPU_TESTS == 'true' }}
+        with:
+          name: junit-macos-arm64-clang-accelerate
+          path: ${{ env.UNDER_TEST }}build/ci-macos-arm64-clang-accelerate/junit.xml
+          if-no-files-found: ignore
+
+  windows:
+    name: windows-msvc-openblas
+    needs: changes
+    if: ${{ !cancelled() && (!inputs.sha || inputs.macos-windows) }}
+    runs-on: windows-2022
+    timeout-minutes: 180
+    env:
+      # MSBuild builds this many projects at once (/m). The configure preset also
+      # turns on MSBuild's multi-tool task, which compiles the files of a project in
+      # parallel, with at most one compiler per logical CPU across all projects.
+      CMAKE_BUILD_PARALLEL_LEVEL: ${{ vars.AF_CI_BUILD_PARALLEL_LEVEL || 4 }}
+      AF_CI_MTX_CACHE: ${{ github.workspace }}/build/matrixmarket-downloads
+      CPU_TESTS: ${{ needs.changes.outputs.code != 'false' }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Skip the CPU tests
+        if: env.CPU_TESTS != 'true'
+        env:
+          REASON: ${{ needs.changes.outputs.reason }}
+        run: echo "$REASON" | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: env.CPU_TESTS == 'true'
+        with:
+          persist-credentials: false
+      - name: Check out the commit under test
+        if: env.CPU_TESTS == 'true' && env.SHA != ''
+        run: .github/scripts/checkout-commit.sh "$SHA" "$AF_CI_SOURCE_DIR"
+      # vcpkg's binary cache, saved under a new key whenever a push run added
+      # archives, even if the run failed later: a key is never overwritten, and
+      # the newest entry with the prefix is restored.
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: env.CPU_TESTS == 'true'
+        with:
+          path: ~\AppData\Local\vcpkg\archives
+          key: vcpkg-windows-${{ hashFiles('vcpkg.json', 'CMakeModules/vcpkg/**', '.github/vcpkg-triplets/**', '.github/scripts/install-deps-windows.ps1') }}-${{ github.sha }}
+          restore-keys: vcpkg-windows-${{ hashFiles('vcpkg.json', 'CMakeModules/vcpkg/**', '.github/vcpkg-triplets/**', '.github/scripts/install-deps-windows.ps1') }}-
+      - name: Count the restored vcpkg archives
+        id: vcpkg-restored
+        if: env.CPU_TESTS == 'true'
+        run: .github/scripts/count-vcpkg-archives.sh ~/AppData/Local/vcpkg/archives
+      - id: matrixmarket
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: env.CPU_TESTS == 'true'
+        with:
+          path: build/matrixmarket-downloads
+          key: matrixmarket-${{ hashFiles('.github/fixtures/matrixmarket.json') }}
+      # Below the job's timeout, so that a slow build still leaves time to save.
+      - name: Build and test
+        if: env.CPU_TESTS == 'true'
+        timeout-minutes: 150
+        env:
+          VCPKG_ROOT: ${{ runner.temp }}\vcpkg
+        run: .github/scripts/ci.sh windows-msvc-openblas
+      - name: Count the vcpkg archives after the build
+        id: vcpkg-built
+        if: always() && env.CPU_TESTS == 'true' && github.event_name == 'push'
+        env:
+          RESTORED: ${{ steps.vcpkg-restored.outputs.count || 0 }}
+        run: .github/scripts/count-vcpkg-archives.sh ~/AppData/Local/vcpkg/archives "$RESTORED"
+      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: always() && env.CPU_TESTS == 'true' && steps.vcpkg-built.outputs.new == 'true'
+        with:
+          path: ~\AppData\Local\vcpkg\archives
+          key: vcpkg-windows-${{ hashFiles('vcpkg.json', 'CMakeModules/vcpkg/**', '.github/vcpkg-triplets/**', '.github/scripts/install-deps-windows.ps1') }}-${{ github.sha }}
+      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: >-
+          env.CPU_TESTS == 'true' && github.event_name == 'push' &&
+          steps.matrixmarket.outputs.cache-hit != 'true' && hashFiles('build/matrixmarket-downloads/**') != ''
+        with:
+          path: build/matrixmarket-downloads
+          key: matrixmarket-${{ hashFiles('.github/fixtures/matrixmarket.json') }}
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !cancelled() && !env.ACT && env.CPU_TESTS == 'true' }}
+        with:
+          name: junit-windows-msvc-openblas
+          path: ${{ env.UNDER_TEST }}build/ci-windows-msvc-openblas/junit.xml
+          if-no-files-found: ignore
+
+  # The accelerator builds' legs: a linux-cuda and a windows-cuda leg for each CUDA
+  # version in the repository variable AF_CI_CUDA_VERSIONS (default 12.9), plus
+  # linux-opencl and linux-oneapi. A push of non-code files skips them all.
+  accelerator-legs:
+    needs: changes
+    if: >-
+      !cancelled() && needs.changes.outputs.code != 'false' &&
+      vars.AF_CI_ACCELERATOR_BUILDS == 'true' &&
+      (github.event_name == 'push' || inputs.accelerators)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      linux: ${{ steps.legs.outputs.linux }}
+      cuda: ${{ steps.legs.outputs.cuda }}
+    steps:
+      - id: legs
+        name: List the legs
+        env:
+          CUDA_VERSIONS: ${{ vars.AF_CI_CUDA_VERSIONS || '12.9' }}
+        run: |
+          versions=()
+          for version in $CUDA_VERSIONS; do
+            [[ $version =~ ^[0-9]+\.[0-9]+$ ]] ||
+              { echo "::error::AF_CI_CUDA_VERSIONS must list versions like 12.9 13.4, not '$CUDA_VERSIONS'"; exit 1; }
+            versions+=("\"$version\"")
+          done
+          ((${#versions[@]})) || { echo "::error::AF_CI_CUDA_VERSIONS lists no version"; exit 1; }
+          cuda=$(printf '%s\n' "${versions[@]}" | jq -sc unique)
+          linux=$(jq -c 'map({job: "linux-cuda", cuda: .}) + [{job: "linux-opencl"}, {job: "linux-oneapi"}]' <<< "$cuda")
+          echo "cuda=$cuda" >> "$GITHUB_OUTPUT"
+          echo "linux=$linux" >> "$GITHUB_OUTPUT"
+          echo "CUDA versions: $cuda"
+
+  # Named without the matrix: GitHub never expands the matrix in a skipped job's
+  # name, which showed up as a check named "matrix.job", and appends each leg's
+  # values to a fixed name, as in "accelerators (linux-cuda, 12.9)".
+  accelerators:
+    name: accelerators
+    needs: accelerator-legs
+    runs-on: ubuntu-24.04
+    timeout-minutes: ${{ matrix.job == 'linux-oneapi' && 150 || matrix.job == 'linux-cuda' && 120 || 60 }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.accelerator-legs.outputs.linux) }}
+    env:
+      AF_CI_CCACHE_DIR: ${{ github.workspace }}/build/ccache
+      AF_CI_CUDA_VERSION: ${{ matrix.cuda }}
+      AF_CI_MTX_CACHE: ${{ github.workspace }}/build/matrixmarket-downloads
+      CACHE_NAME: ${{ matrix.job }}${{ matrix.cuda && format('-{0}', matrix.cuda) || '' }}
+      CCACHE_MAXSIZE: 1G
+      # The heaviest compiles (SYCL) take up to 2.5 GB each; four in parallel fit a
+      # 4-vCPU, 16 GB runner.
+      CMAKE_BUILD_PARALLEL_LEVEL: ${{ vars.AF_CI_BUILD_PARALLEL_LEVEL || 4 }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check out the commit under test
+        if: env.SHA != ''
+        run: .github/scripts/checkout-commit.sh "$SHA" "$AF_CI_SOURCE_DIR"
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: build/ccache
+          key: ccache-${{ env.CACHE_NAME }}-${{ github.sha }}
+          restore-keys: ccache-${{ env.CACHE_NAME }}-
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: build/matrixmarket-downloads
+          key: matrixmarket-${{ hashFiles('.github/fixtures/matrixmarket.json') }}
+      - name: Build
+        run: .github/scripts/ci.sh --docker ${{ matrix.job }}
+      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: github.event_name == 'push'
+        with:
+          path: build/ccache
+          key: ccache-${{ env.CACHE_NAME }}-${{ github.sha }}
+
+  # Compile only, like linux-cuda: GitHub's Windows GPU runner is old and costly.
+  # Like the Windows CPU job, it builds on the runner itself, so a request runs it
+  # only when the CPU tests' macOS and Windows jobs run. It uses the CPU job's vcpkg
+  # cache without saving one, Ninja (as on Linux) in Visual Studio's x64 developer
+  # environment, and NVIDIA's network installer with only the subpackages the build
+  # needs. The toolkit isn't cached: each version takes gigabytes of the
+  # repository's 10 GB of caches, which the vcpkg and ccache caches already use.
+  windows-cuda:
+    name: windows-cuda
+    needs: accelerator-legs
+    if: ${{ !inputs.sha || inputs.macos-windows }}
+    runs-on: windows-2022
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      matrix:
+        cuda: ${{ fromJSON(needs.accelerator-legs.outputs.cuda) }}
+    env:
+      AF_CI_CUDA_VERSION: ${{ matrix.cuda }}
+      AF_CI_MTX_CACHE: ${{ github.workspace }}/build/matrixmarket-downloads
+      CMAKE_BUILD_PARALLEL_LEVEL: ${{ vars.AF_CI_BUILD_PARALLEL_LEVEL || 4 }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check out the commit under test
+        if: env.SHA != ''
+        run: .github/scripts/checkout-commit.sh "$SHA" "$AF_CI_SOURCE_DIR"
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~\AppData\Local\vcpkg\archives
+          key: vcpkg-windows-${{ hashFiles('vcpkg.json', 'CMakeModules/vcpkg/**', '.github/vcpkg-triplets/**', '.github/scripts/install-deps-windows.ps1') }}-${{ github.sha }}
+          restore-keys: vcpkg-windows-${{ hashFiles('vcpkg.json', 'CMakeModules/vcpkg/**', '.github/vcpkg-triplets/**', '.github/scripts/install-deps-windows.ps1') }}-
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: build/matrixmarket-downloads
+          key: matrixmarket-${{ hashFiles('.github/fixtures/matrixmarket.json') }}
+      - name: Install CUDA ${{ matrix.cuda }}
+        shell: pwsh
+        run: .github/scripts/install-cuda-windows.ps1 -Version $env:AF_CI_CUDA_VERSION
+      - name: Set up Visual Studio's x64 developer environment
+        shell: pwsh
+        run: .github/scripts/msvc-env-windows.ps1
+      - name: Build and check the bundled DLLs
+        timeout-minutes: 120
+        env:
+          VCPKG_ROOT: ${{ runner.temp }}\vcpkg
+        run: .github/scripts/ci.sh windows-cuda

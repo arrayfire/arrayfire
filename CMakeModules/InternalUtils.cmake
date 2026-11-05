@@ -23,6 +23,9 @@ include(CheckCXXCompilerFlag)
 if(WIN32)
   check_cxx_compiler_flag(/Zc:__cplusplus cplusplus_define)
   check_cxx_compiler_flag(/permissive- cxx_compliance)
+  # icx on Windows takes MSVC style flags, so the -fp-model check below fails,
+  # and it defaults to /fp:fast rather than the /fp:precise that MSVC uses
+  check_cxx_compiler_flag(/fp:precise has_cxx_fp_precise)
 endif()
 
 check_cxx_compiler_flag(-ffast-math has_cxx_fast_math)
@@ -108,7 +111,8 @@ function(arrayfire_set_default_cxx_flags target)
                   >
 
               $<$<NOT:$<BOOL:${AF_WITH_FAST_MATH}>>:
-                    $<$<BOOL:${has_cxx_fp_model}>:-fp-model precise>>
+                    $<$<BOOL:${has_cxx_fp_model}>:-fp-model precise>
+                    $<$<BOOL:${has_cxx_fp_precise}>:/fp:precise>>
 
               $<$<BOOL:${has_cxx_debug-disables-optimization}>:
                   $<$<CONFIG:Debug>:-Rno-debug-disables-optimization>>

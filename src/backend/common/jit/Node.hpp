@@ -312,9 +312,7 @@ class Node {
     }
     virtual std::unique_ptr<Node> clone() = 0;
 
-    virtual void modDims(const af::dim4 &newDim) {
-        UNUSED(newDim);
-    }
+    virtual void modDims(const af::dim4 &newDim) { UNUSED(newDim); }
 
 #ifdef AF_CPU
     template<typename U>

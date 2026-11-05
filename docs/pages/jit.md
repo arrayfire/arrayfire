@@ -1,5 +1,4 @@
-ArrayFire JIT Code Generation {#jit}
-================
+\page jit ArrayFire JIT Code Generation
 
 The ArrayFire library offers JIT (Just In Time) compiling for elementwise
 arithmetic operations. This includes trigonometric functions, comparisons, and

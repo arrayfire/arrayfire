@@ -1,5 +1,4 @@
-Using ArrayFire on Linux {#using_on_linux}
-=====
+\page using_on_linux Using ArrayFire on Linux
 
 Once you have [installed](\ref installing) ArrayFire on your system, the next
 thing to do is set up your build system. On Linux, you can create ArrayFire
@@ -8,7 +7,7 @@ requirements are that you include the ArrayFire header directories and link
 with the ArrayFire library you intend to use i.e. CUDA, OpenCL, oneAPI, CPU,
 or Unified backends.
 
-## The big picture  {#big-picture-linux}
+# The big picture  {#big-picture-linux}
 
 On Linux, we recommend installing ArrayFire to `/opt/arrayfire` directory. The
 installer will populate files in the following sub-directories:
@@ -28,11 +27,11 @@ ArrayFire. Among the many possible build systems on Linux we suggest using
 ArrayFire with either CMake or Makefiles with CMake being our preferred build
 system.
 
-## Prerequisite software
+# Prerequisite software
 
 To build ArrayFire projects you will need a compiler
 
-#### Fedora, Centos and Redhat
+### Fedora, Centos and Redhat
 
 Install EPEL repo (not required for Fedora)
 
@@ -47,7 +46,7 @@ Install build dependencies
 yum install gcc gcc-c++ cmake3 make
 ```
 
-#### Debian and its derivatives
+### Debian and its derivatives
 
 Install common dependencies
 
@@ -55,7 +54,7 @@ Install common dependencies
 apt install build-essential cmake cmake-curses-gui
 ```
 
-## CMake
+# CMake
 
 We recommend that the CMake build system be used to create ArrayFire projects.
 As [discussed above](#big-picture-linux), ArrayFire ships with a series of
@@ -107,7 +106,7 @@ definition:
 
 You can also specify this information in the `ccmake` command-line interface.
 
-## Makefiles
+# Makefiles
 
 Building ArrayFire projects with Makefiles is fairly similar to CMake except
 you must specify all paths and libraries manually.

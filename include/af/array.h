@@ -1025,7 +1025,7 @@ namespace af
 
 #if AF_API_VERSION >= 310
 #define ASSIGN_310(OP)                                                                   \
-        array& OP(const signed char &val);          /**< \copydoc OP##(const array &) */
+        /** \copydoc OP##(const array &) */ array& OP(const signed char &val);
 #else
 #define ASSIGN_310(OP)
 #endif
@@ -1202,7 +1202,7 @@ namespace af
 #if AF_API_VERSION >= 310
 #define BIN_OP_310(OP)                                                                                                  \
     AFAPI array OP (const signed char& lhs, const array& rhs);        /**< \copydoc OP##(const array&, const array&) */ \
-    AFAPI array OP (const array& lhs, const signed char& rhs);        /**< \copydoc OP##(const array&, const array&) */
+    /** \copydoc OP##(const array&, const array&) */ AFAPI array OP (const array& lhs, const signed char& rhs);
 #else
 #define BIN_OP_310(OP)
 #endif

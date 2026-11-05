@@ -27,7 +27,11 @@ include(CMakeDetermineCompiler)
 #include(Platform/${CMAKE_SYSTEM_NAME}-Determine-SYCL OPTIONAL)
 #include(Platform/${CMAKE_SYSTEM_NAME}-SYCL OPTIONAL)
 if(NOT CMAKE_SYCL_COMPILER_NAMES)
-  set(CMAKE_SYCL_COMPILER_NAMES icpx)
+  if(CMAKE_HOST_WIN32)
+    set(CMAKE_SYCL_COMPILER_NAMES icx)
+  else()
+    set(CMAKE_SYCL_COMPILER_NAMES icpx)
+  endif()
 endif()
 
 if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
@@ -59,11 +63,12 @@ else()
 
     # finally list compilers to try
     if(NOT CMAKE_SYCL_COMPILER_INIT)
-      set(CMAKE_SYCL_COMPILER_LIST icpx icx)
-      if(NOT CMAKE_HOST_WIN32)
+      if(CMAKE_HOST_WIN32)
         # FIXME(#24314): Add support for the GNU-like icpx compiler driver
         # on Windows, first introduced by Intel oneAPI 2023.0.
-        list(APPEND CMAKE_SYCL_COMPILER_LIST icpx)
+        set(CMAKE_SYCL_COMPILER_LIST icx)
+      else()
+        set(CMAKE_SYCL_COMPILER_LIST icpx icx)
       endif()
     endif()
 

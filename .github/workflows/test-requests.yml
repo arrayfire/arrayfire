@@ -1,0 +1,159 @@
+name: Test requests
+
+# A "/cpu-tests" or "/gpu-tests" comment on a pull request asks for the CPU or GPU
+# tests of its head commit. This workflow runs from the default branch, so the
+# pull request can't change it. test-requests.py decides
+# whether the request is allowed and pins the head SHA; cpu.yml or gpu.yml then
+# builds and tests exactly that commit, and the result goes to the cpu-tests or
+# gpu-tests commit status and a comment. Nothing from the pull request is checked
+# out or run here.
+on:
+  issue_comment:
+    types: [created]
+
+# Request runs are named "/cpu-tests on #<number> by <login>", or the same with
+# /gpu-tests.
+run-name: >-
+  ${{ startsWith(github.event.comment.body, '/gpu-tests') && '/gpu-tests' ||
+      startsWith(github.event.comment.body, '/cpu-tests') && '/cpu-tests' || 'comment' }}
+  on #${{ github.event.issue.number }} by ${{ github.event.comment.user.login }}
+
+permissions: {}
+
+jobs:
+  decide:
+    if: >-
+      github.event.issue.pull_request && github.event.comment.user.login != 'github-actions[bot]' &&
+      (startsWith(github.event.comment.body, '/cpu-tests') ||
+       startsWith(github.event.comment.body, '/gpu-tests'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      checks: read
+      contents: read
+      pull-requests: read
+    outputs:
+      decision: ${{ steps.decide.outputs.decision }}
+      command: ${{ steps.decide.outputs.command }}
+      sha: ${{ steps.decide.outputs.sha }}
+      backends: ${{ steps.decide.outputs.backends }}
+      cuda-versions: ${{ steps.decide.outputs.cuda-versions }}
+      accelerators: ${{ steps.decide.outputs.accelerators }}
+      macos-windows: ${{ steps.decide.outputs.macos-windows }}
+      reply: ${{ steps.decide.outputs.reply }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - id: decide
+        name: Decide on the request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AF_CI_GPU_TESTS: ${{ vars.AF_CI_GPU_TESTS }}
+          AF_CI_GPU_RUNNER: ${{ vars.AF_CI_GPU_RUNNER }}
+          AF_CI_CUDA_VERSIONS: ${{ vars.AF_CI_CUDA_VERSIONS }}
+          AF_CI_ACCELERATOR_BUILDS: ${{ vars.AF_CI_ACCELERATOR_BUILDS }}
+        run: python3 .github/scripts/test-requests.py decide
+
+  reply:
+    needs: decide
+    if: needs.decide.outputs.decision == 'reply'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Reply on the pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPLY: ${{ needs.decide.outputs.reply }}
+        run: python3 .github/scripts/test-requests.py reply
+
+  # Its success marks an accepted request in the run history.
+  accepted:
+    needs: decide
+    if: needs.decide.outputs.decision == 'accept'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+      statuses: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set the pending status and reply
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMMAND: ${{ needs.decide.outputs.command }}
+          SHA: ${{ needs.decide.outputs.sha }}
+          BACKENDS: ${{ needs.decide.outputs.backends }}
+          CUDA_VERSIONS: ${{ needs.decide.outputs.cuda-versions }}
+          REPLY: ${{ needs.decide.outputs.reply }}
+        run: python3 .github/scripts/test-requests.py accepted
+
+  cpu:
+    needs: [decide, accepted]
+    if: needs.decide.outputs.decision == 'accept' && needs.decide.outputs.command == 'cpu'
+    # One CPU run per pull request at a time; a later request waits, and one after
+    # that replaces the waiting one, which is then reported as cancelled.
+    concurrency:
+      group: cpu-request-${{ github.event.issue.number }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+    uses: ./.github/workflows/cpu.yml
+    with:
+      sha: ${{ needs.decide.outputs.sha }}
+      accelerators: ${{ needs.decide.outputs.accelerators == 'true' }}
+      macos-windows: ${{ needs.decide.outputs.macos-windows == 'true' }}
+
+  gpu:
+    needs: [decide, accepted]
+    if: needs.decide.outputs.decision == 'accept' && needs.decide.outputs.command == 'gpu'
+    # One request per pull request at a time, as for the CPU tests; all of its legs
+    # run together.
+    concurrency:
+      group: gpu-request-${{ github.event.issue.number }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+    uses: ./.github/workflows/gpu.yml
+    with:
+      sha: ${{ needs.decide.outputs.sha }}
+      backends: ${{ needs.decide.outputs.backends }}
+      cuda-versions: ${{ needs.decide.outputs.cuda-versions }}
+
+  report:
+    needs: [decide, cpu, gpu]
+    if: always() && needs.decide.outputs.decision == 'accept'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+      statuses: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Report the result
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMMAND: ${{ needs.decide.outputs.command }}
+          SHA: ${{ needs.decide.outputs.sha }}
+          BACKENDS: ${{ needs.decide.outputs.backends }}
+          CUDA_VERSIONS: ${{ needs.decide.outputs.cuda-versions }}
+          RESULT: >-
+            ${{ needs.decide.outputs.command == 'gpu' && needs.gpu.result || needs.cpu.result }}
+          SUMMARY: ${{ needs.gpu.outputs.test-summary }}
+          REPORT: ${{ needs.gpu.outputs.test-report }}
+        run: python3 .github/scripts/test-requests.py report

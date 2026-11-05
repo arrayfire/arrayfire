@@ -105,6 +105,19 @@ The complete source code can be found [here][31].
 
 For more code examples, visit the [`examples/`][4] directory.
 
+# Experimental backends
+
+Community-contributed backends that are not part of ArrayFire releases live on
+their own branches. They build from source only and are not covered by the
+release test matrix.
+
+| Backend | Branch | Contributed by |
+|---|---|---|
+| Metal (macOS, Apple silicon) | [`experimental/metal`](https://github.com/arrayfire/arrayfire/tree/experimental/metal) | [@saarlemo](https://github.com/saarlemo) |
+| HIP (AMD ROCm) | [`experimental/hip`](https://github.com/arrayfire/arrayfire/tree/experimental/hip) | [@jeffdaily](https://github.com/jeffdaily) |
+
+Pull requests for these backends should target their branch, not `master`.
+
 # Documentation
 
 You can find the complete documentation [here](http://www.arrayfire.com/docs/index.htm).
