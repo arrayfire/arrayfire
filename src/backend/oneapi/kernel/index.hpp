@@ -100,10 +100,12 @@ class indexKernel {
                     trimIndex(s3 ? gw * p.steps[3] + p.offs[3] : ptr3[gw],
                               inp.dims[3]);
             // offset input and output pointers
-            const T* src = (const T*)in.get_pointer() + (i + j + k + l);
-            T* dst       = (T*)out.get_pointer() +
-                     (gx * outp.strides[0] + gy * outp.strides[1] +
-                      gz * outp.strides[2] + gw * outp.strides[3]);
+            const T* src =
+                (const T*)in.get_pointer() + (i + j + k + l) + inp.offset;
+            T* dst =
+                (T*)out.get_pointer() +
+                (gx * outp.strides[0] + gy * outp.strides[1] +
+                 gz * outp.strides[2] + gw * outp.strides[3] + outp.offset);
             // set the output
             dst[0] = src[0];
         }
