@@ -600,6 +600,33 @@ if(WIN32 AND AF_INSTALL_STANDALONE)
       endif()
     endif()
   endforeach()
+  if(AF_BUILD_ONEAPI)
+    # SYCL loads its Level Zero adapters at runtime. Without them it only sees
+    # OpenCL devices. They import UMF, which imports hwloc from oneAPI's tcm.
+    file(GLOB af_ur_adapters
+      "${af_compiler_bin_dir}/ur_adapter_level_zero.dll"
+      "${af_compiler_bin_dir}/ur_adapter_level_zero_v2.dll")
+    if(NOT af_ur_adapters)
+      message(FATAL_ERROR "AF_INSTALL_STANDALONE: no Level Zero adapters "
+                          "found in ${af_compiler_bin_dir}")
+    endif()
+    foreach(adapter ${af_ur_adapters})
+      # Copy the file a symlink points to, see the install code below
+      get_filename_component(adapter_name "${adapter}" NAME)
+      get_filename_component(adapter_file "${adapter}" REALPATH)
+      install(FILES "${adapter_file}"
+        DESTINATION ${AF_INSTALL_BIN_DIR}
+        RENAME "${adapter_name}"
+        COMPONENT common_backend_dependencies)
+      string(APPEND af_runtime_libs " \"${adapter}\"")
+    endforeach()
+    get_filename_component(af_oneapi_root "${af_compiler_bin_dir}/../../.." ABSOLUTE)
+    foreach(dir tcm/latest/bin umf/latest/bin)
+      if(EXISTS "${af_oneapi_root}/${dir}")
+        string(APPEND af_runtime_dirs " \"${af_oneapi_root}/${dir}\"")
+      endif()
+    endforeach()
+  endif()
   install(CODE "
     file(GET_RUNTIME_DEPENDENCIES
       LIBRARIES ${af_runtime_libs}
@@ -613,9 +640,17 @@ if(WIN32 AND AF_INSTALL_STANDALONE)
     if(af_unresolved_deps)
       message(FATAL_ERROR \"AF_INSTALL_STANDALONE: DLLs not found: \${af_unresolved_deps}\")
     endif()
-    file(INSTALL \${af_resolved_deps}
-      DESTINATION \"\${CMAKE_INSTALL_PREFIX}/${AF_INSTALL_BIN_DIR}\"
-      TYPE SHARED_LIBRARY)"
+    # Some oneAPI DLLs are symlinks, such as compiler/latest/bin/umf.dll.
+    # Install the files they point to, since file(INSTALL) would copy the
+    # link and creating one on Windows needs a privilege users rarely have.
+    foreach(dep IN LISTS af_resolved_deps)
+      get_filename_component(dep_name \"\${dep}\" NAME)
+      get_filename_component(dep_file \"\${dep}\" REALPATH)
+      file(INSTALL \"\${dep_file}\"
+        DESTINATION \"\${CMAKE_INSTALL_PREFIX}/${AF_INSTALL_BIN_DIR}\"
+        TYPE FILE
+        RENAME \"\${dep_name}\")
+    endforeach()"
     COMPONENT common_backend_dependencies)
 endif()
 
