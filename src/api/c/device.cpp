@@ -219,6 +219,8 @@ af_err af_get_device_count(int* nDevices) {
 
 af_err af_get_device(int* device) {
     try {
+        // The device manager applies AF_*_DEFAULT_DEVICE when it is created
+        init();
         *device = static_cast<int>(getActiveDeviceId());
     }
     CATCHALL;
