@@ -74,8 +74,9 @@ set_and_mark_depnames_advncd(clfft_prefix "ocl_clfft")
 set_and_mark_depnames_advncd(boost_prefix "boost_compute")
 
 macro(af_dep_check_and_populate dep_prefix)
-  set(single_args URI REF)
-  cmake_parse_arguments(adcp_args "" "${single_args}" "" ${ARGN})
+  set(single_args REF)
+  set(multi_args URI)
+  cmake_parse_arguments(adcp_args "" "${single_args}" "${multi_args}" ${ARGN})
 
   if("${adcp_args_URI}" STREQUAL "")
     message(FATAL_ERROR [=[
