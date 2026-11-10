@@ -104,8 +104,10 @@ if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
     # Cuda Versions >= 12.0 changed lib name to libcusolver_lapack_static.a
     if (CUDA_VERSION VERSION_GREATER_EQUAL 12.0)
       af_find_static_cuda_libs(cusolver_lapack_static)
+      set(cuda_lapack_static_lib "${AF_CUDA_cusolver_lapack_static_LIBRARY}")
     else()
       af_find_static_cuda_libs(lapack_static)
+      set(cuda_lapack_static_lib "${AF_CUDA_lapack_static_LIBRARY}")
     endif()
 
     set(af_cuda_static_flags "${af_cuda_static_flags};-lcusolver_static")
@@ -593,10 +595,10 @@ if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
         ${AF_CUDA_cublasLt_static_LIBRARY})
   endif()
 
-  if(CUDA_VERSION VERSION_GREATER 9.5)
+  if(${use_static_cuda_lapack})
     target_link_libraries(afcuda
       PRIVATE
-        ${CUDA_lapack_static_LIBRARY})
+        ${cuda_lapack_static_lib})
   endif()
 
 else()
