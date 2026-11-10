@@ -5,7 +5,15 @@
 # The complete license agreement can be obtained at:
 # http://arrayfire.com/licenses/BSD-3-Clause
 
+# The SuiteSparse Matrix Collection's storage at sparse.tamu.edu refuses every
+# archive download (403 AccessDenied). CI restores the matrices from the
+# arrayfire-data repository instead (.github/scripts/check-matrix-data.py).
+# For builds outside CI, the collection's older host at the University of
+# Florida still serves the identical archives (their SHA-256 match the
+# original_archive_sha256 entries in .github/fixtures/matrixmarket.json), so
+# each archive lists both hosts and CMake tries them in order.
 set(URL "https://sparse.tamu.edu")
+set(MIRROR_URL "https://www.cise.ufl.edu/research/sparse")
 
 function(mtxDownload name group)
   set(root_dir ${ArrayFire_BINARY_DIR}/extern/matrixmarket)
@@ -16,6 +24,7 @@ function(mtxDownload name group)
   set_and_mark_depnames_advncd(mtx_prefix ${mtx_name})
   af_dep_check_and_populate(${mtx_name}
     URI ${URL}/MM/${group}/${name}.tar.gz
+        ${MIRROR_URL}/MM/${group}/${name}.tar.gz
   )
 
   if(NOT EXISTS "${target_dir}/${name}.mtx")
