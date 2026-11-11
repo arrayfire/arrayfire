@@ -595,6 +595,12 @@ if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
         ${AF_CUDA_cublasLt_static_LIBRARY})
   endif()
 
+  # The static cuFFT library is built with relocatable device code for its
+  # callback support and references a registration symbol that only a device
+  # link step defines. Without it, libafcuda.so is left with that symbol
+  # unresolved and nothing can link against it.
+  set_target_properties(afcuda PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON)
+
   if(${use_static_cuda_lapack})
     target_link_libraries(afcuda
       PRIVATE
