@@ -1044,6 +1044,7 @@ void uniformDistributionMT(T *out, size_t elements, uint *const state,
     CUDA_LAUNCH(uniformMersenne, blocks, threads, out, state, pos, sh1, sh2,
                 mask, recursion_table, temper_table, elementsPerBlock,
                 elements);
+    POST_LAUNCH_CHECK();
 }
 
 template<typename T>
@@ -1060,6 +1061,7 @@ void normalDistributionMT(T *out, size_t elements, uint *const state,
     CUDA_LAUNCH(normalMersenne, blocks, threads, out, state, pos, sh1, sh2,
                 mask, recursion_table, temper_table, elementsPerBlock,
                 elements);
+    POST_LAUNCH_CHECK();
 }
 
 template<typename T>
@@ -1077,10 +1079,12 @@ void uniformDistributionCBRNG(T *out, size_t elements,
         case AF_RANDOM_ENGINE_PHILOX_4X32_10:
             CUDA_LAUNCH(uniformPhilox, blocks, threads, out, hi, lo, hic, loc,
                         elementsPerBlock, elements);
+            POST_LAUNCH_CHECK();
             break;
         case AF_RANDOM_ENGINE_THREEFRY_2X32_16:
             CUDA_LAUNCH(uniformThreefry, blocks, threads, out, hi, lo, hic, loc,
                         elementsPerBlock, elements);
+            POST_LAUNCH_CHECK();
             break;
         default:
             AF_ERROR("Random Engine Type Not Supported", AF_ERR_NOT_SUPPORTED);
@@ -1103,10 +1107,12 @@ void normalDistributionCBRNG(T *out, size_t elements,
         case AF_RANDOM_ENGINE_PHILOX_4X32_10:
             CUDA_LAUNCH(normalPhilox, blocks, threads, out, hi, lo, hic, loc,
                         elementsPerBlock, elements);
+            POST_LAUNCH_CHECK();
             break;
         case AF_RANDOM_ENGINE_THREEFRY_2X32_16:
             CUDA_LAUNCH(normalThreefry, blocks, threads, out, hi, lo, hic, loc,
                         elementsPerBlock, elements);
+            POST_LAUNCH_CHECK();
             break;
         default:
             AF_ERROR("Random Engine Type Not Supported", AF_ERR_NOT_SUPPORTED);
