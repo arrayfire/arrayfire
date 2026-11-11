@@ -654,6 +654,77 @@ if(WIN32 AND AF_INSTALL_STANDALONE)
     COMPONENT common_backend_dependencies)
 endif()
 
+if(UNIX AND NOT APPLE AND AF_INSTALL_STANDALONE)
+  # Collect whatever the backends load that no other component installs: the
+  # Intel compiler runtime (libimf, libsvml, libirng, libintlc), the SYCL
+  # runtime (libsycl, the Unified Runtime loader and adapters, UMF, hwloc)
+  # and TBB. MKL and CUDA have their own rules, and the C and C++ runtimes
+  # and the GPU drivers come from the user's system. Each library is installed
+  # under the soname the backends import, as a file rather than a symlink.
+  get_filename_component(af_compiler_bin_dir "${CMAKE_CXX_COMPILER}" DIRECTORY)
+  get_filename_component(af_compiler_lib_dir "${af_compiler_bin_dir}/../lib" ABSOLUTE)
+  set(af_runtime_libs "")
+  set(af_runtime_dirs "\"${af_compiler_lib_dir}\"")
+  foreach(backend ${built_backends})
+    string(APPEND af_runtime_libs " \"$<TARGET_FILE:${backend}>\"")
+  endforeach()
+  if(TARGET MKL::ThreadingLibrary)
+    string(APPEND af_runtime_dirs " \"$<TARGET_FILE_DIR:MKL::ThreadingLibrary>\"")
+  endif()
+  if(AF_BUILD_ONEAPI)
+    # SYCL loads its adapters at runtime; without the Level Zero ones it only
+    # sees OpenCL devices. They import UMF, which imports hwloc from oneAPI's tcm.
+    file(GLOB af_ur_adapters
+      "${af_compiler_lib_dir}/libur_adapter_level_zero.so"
+      "${af_compiler_lib_dir}/libur_adapter_level_zero_v2.so"
+      "${af_compiler_lib_dir}/libur_adapter_opencl.so")
+    if(NOT af_ur_adapters)
+      message(FATAL_ERROR "AF_INSTALL_STANDALONE: no Unified Runtime adapters "
+                          "found in ${af_compiler_lib_dir}")
+    endif()
+    foreach(adapter ${af_ur_adapters})
+      get_filename_component(adapter_file "${adapter}" REALPATH)
+      # The loader opens the adapter by its soname, libur_adapter_<name>.so.<n>
+      get_filename_component(adapter_soname "${adapter_file}" NAME)
+      string(REGEX REPLACE "(\\.so\\.[0-9]+)\\.[0-9.]+$" "\\1" adapter_soname "${adapter_soname}")
+      install(FILES "${adapter_file}"
+        DESTINATION ${AF_INSTALL_LIB_DIR}
+        RENAME "${adapter_soname}"
+        COMPONENT common_backend_dependencies)
+      string(APPEND af_runtime_libs " \"${adapter_file}\"")
+    endforeach()
+    get_filename_component(af_oneapi_root "${af_compiler_bin_dir}/../../.." ABSOLUTE)
+    foreach(dir tcm/latest/lib umf/latest/lib)
+      if(EXISTS "${af_oneapi_root}/${dir}")
+        string(APPEND af_runtime_dirs " \"${af_oneapi_root}/${dir}\"")
+      endif()
+    endforeach()
+  endif()
+  install(CODE "
+    file(GET_RUNTIME_DEPENDENCIES
+      LIBRARIES ${af_runtime_libs}
+      DIRECTORIES ${af_runtime_dirs}
+      PRE_EXCLUDE_REGEXES
+        \"^libaf\" \"^libmkl_\" \"^libcu\" \"^libnv\" \"^libOpenCL\" \"^libze_\"
+        \"^libc\\\\.\" \"^libm\\\\.\" \"^libdl\\\\.\" \"^libpthread\\\\.\" \"^librt\\\\.\"
+        \"^libstdc\\\\+\\\\+\" \"^libgcc_s\" \"^ld-linux\" \"^libgomp\" \"^libiomp\"
+      POST_EXCLUDE_REGEXES \"^/lib\" \"^/usr/lib\"
+      RESOLVED_DEPENDENCIES_VAR af_resolved_deps
+      UNRESOLVED_DEPENDENCIES_VAR af_unresolved_deps)
+    if(af_unresolved_deps)
+      message(FATAL_ERROR \"AF_INSTALL_STANDALONE: libraries not found: \${af_unresolved_deps}\")
+    endif()
+    foreach(dep IN LISTS af_resolved_deps)
+      get_filename_component(dep_name \"\${dep}\" NAME)
+      get_filename_component(dep_file \"\${dep}\" REALPATH)
+      file(INSTALL \"\${dep_file}\"
+        DESTINATION \"\${CMAKE_INSTALL_PREFIX}/${AF_INSTALL_LIB_DIR}\"
+        TYPE FILE
+        RENAME \"\${dep_name}\")
+    endforeach()"
+    COMPONENT common_backend_dependencies)
+endif()
+
 if(BUILD_WITH_MKL AND AF_INSTALL_STANDALONE)
   if(TARGET MKL::ThreadingLibrary)
     get_filename_component(mkl_tl ${MKL_ThreadingLibrary_LINK_LIBRARY} REALPATH)
